@@ -109,15 +109,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const signUp = async (email: string, password: string, firstName?: string, lastName?: string) => {
-    const options: any = { email, password }
-    if (firstName || lastName) {
-      options.data = {
-        user_metadata: {
-          full_name: `${firstName || ''} ${lastName || ''}`.trim()
-        }
-      }
-    }
-    const { error } = await supabase.auth.signUp(options)
+    const fullName = `${firstName || ''} ${lastName || ''}`.trim()
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          full_name: fullName || undefined,
+          display_name: fullName || undefined,
+        },
+      },
+    })
     return { error: error as Error | null }
   }
 

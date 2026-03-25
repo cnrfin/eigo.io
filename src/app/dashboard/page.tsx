@@ -11,6 +11,7 @@ import SquircleBox from '@/components/ui/SquircleBox'
 import Header from '@/components/Header'
 import BookingCalendar from '@/components/BookingCalendar'
 import { motion, AnimatePresence } from 'framer-motion'
+import { formatNextReview, previewIntervals, type ReviewRating } from '@/lib/srs'
 
 type Lesson = {
   id: string
@@ -23,7 +24,27 @@ type Lesson = {
   wherebyMeetingId: string | null
 }
 
-type Tab = 'home' | 'booking' | 'history'
+type Tab = 'home' | 'booking' | 'history' | 'vocab'
+
+type VocabCard = {
+  id: string
+  comfort_level: 'learning' | 'reviewing' | 'mastered'
+  last_reviewed: string | null
+  review_count: number
+  interval_days: number
+  ease_factor: number
+  next_review_at: string
+  phrase: {
+    id: string
+    phrase_en: string
+    example_en: string
+    translation_ja: string
+    explanation_ja: string
+    explanation_en: string
+    category: string
+    booking_id: string
+  }
+}
 
 type NewsItem = {
   id: string
@@ -299,12 +320,39 @@ function VideoPlayerModal({
 }
 
 // ─── Transcript Modal ───
-// ─── History Lesson Card ───
+// ─── Types for lesson analysis ───
+type LessonSummary = {
+  id: string
+  summary_en: string
+  summary_ja: string
+  key_topics: string[]
+  mistake_patterns: {
+    type: string
+    example_student: string
+    correction: string
+    explanation_ja: string
+    explanation_en: string
+  }[]
+}
+
+type VocabPhrase = {
+  id: string
+  phrase_en: string
+  example_en: string
+  translation_ja: string
+  explanation_ja: string
+  explanation_en: string
+  category: string
+}
+
+// ─── History Lesson Card (with accordion summary + phrases) ───
 function HistoryLessonCard({
-  lesson, locale, session, onViewTranscript,
+  lesson, locale, session, onViewTranscript, onAddToDeck, deckPhraseIds,
 }: {
   lesson: Lesson; locale: string; session: { access_token: string } | null
   onViewTranscript: (lesson: Lesson, content: string) => void
+  onAddToDeck?: (phraseId: string) => void
+  deckPhraseIds?: Set<string>
 }) {
   const [recordingState, setRecordingState] = useState<'idle' | 'loading' | 'ready' | 'none' | 'error'>('idle')
   const [accessLink, setAccessLink] = useState<string | null>(null)
@@ -320,9 +368,44 @@ function HistoryLessonCard({
   })
   const [transcriptContent, setTranscriptContent] = useState<string | null>(null)
 
+  // Analysis state
+  const [analysisState, setAnalysisState] = useState<'idle' | 'loading' | 'ready' | 'error'>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem(`eigo_analysis_${lesson.id}`)
+        if (stored === 'ready') return 'ready'
+      } catch { /* ignore */ }
+    }
+    return 'idle'
+  })
+  const [summary, setSummary] = useState<LessonSummary | null>(null)
+  const [phrases, setPhrases] = useState<VocabPhrase[]>([])
+  const [expanded, setExpanded] = useState(false)
+  const [selectedPhrase, setSelectedPhrase] = useState<VocabPhrase | null>(null)
+
   const date = new Date(`${lesson.date}T${lesson.startTime}`)
   const dateStr = date.toLocaleDateString(locale === 'ja' ? 'ja-JP' : 'en-GB', { weekday: 'short', month: 'short', day: 'numeric' })
   const timeStr = date.toLocaleTimeString(locale === 'ja' ? 'ja-JP' : 'en-GB', { hour: '2-digit', minute: '2-digit' })
+
+  // Check for existing analysis on mount
+  useEffect(() => {
+    if (!session?.access_token) return
+    if (summary) return // already loaded
+
+    fetch(`/api/lessons/analyze?bookingId=${lesson.id}`, {
+      headers: { Authorization: `Bearer ${session.access_token}` },
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.status === 'ready') {
+          setSummary(data.summary)
+          setPhrases(data.phrases || [])
+          setAnalysisState('ready')
+          try { localStorage.setItem(`eigo_analysis_${lesson.id}`, 'ready') } catch { /* ignore */ }
+        }
+      })
+      .catch(() => {})
+  }, [lesson.id, session?.access_token, summary])
 
   const fetchRecording = async () => {
     if (!lesson.wherebyRoomUrl || !session?.access_token) {
@@ -381,65 +464,258 @@ function HistoryLessonCard({
     }
   }
 
+  const generateAnalysis = async () => {
+    if (!session?.access_token) return
+    setAnalysisState('loading')
+    try {
+      const res = await fetch('/api/lessons/analyze', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ bookingId: lesson.id }),
+      })
+      const data = await res.json()
+      if (data.status === 'ready') {
+        setSummary(data.summary)
+        setPhrases(data.phrases || [])
+        setAnalysisState('ready')
+        setExpanded(true)
+        try { localStorage.setItem(`eigo_analysis_${lesson.id}`, 'ready') } catch { /* ignore */ }
+      } else {
+        setAnalysisState('error')
+      }
+    } catch {
+      setAnalysisState('error')
+    }
+  }
+
   const transcriptLabel = () => {
     switch (transcriptState) {
       case 'loading': return locale === 'ja' ? '取得中' : 'Loading'
       case 'processing': return locale === 'ja' ? '作成中...' : 'Processing...'
-      case 'ready': return locale === 'ja' ? '文字起こしを読む' : 'Read transcript'
+      case 'ready': return locale === 'ja' ? '文字起こし' : 'Transcript'
       case 'none': return locale === 'ja' ? '録画なし' : 'No recording'
       case 'error': return locale === 'ja' ? '再試行' : 'Retry'
-      default: return locale === 'ja' ? '文字起こしを取得' : 'Get transcript'
+      default: return locale === 'ja' ? '文字起こし' : 'Transcript'
+    }
+  }
+
+  const analysisLabel = () => {
+    switch (analysisState) {
+      case 'loading': return locale === 'ja' ? '分析中...' : 'Analyzing...'
+      case 'ready': return locale === 'ja' ? 'サマリー' : 'Summary'
+      case 'error': return locale === 'ja' ? '再試行' : 'Retry'
+      default: return locale === 'ja' ? 'サマリー' : 'Summary'
     }
   }
 
   return (
     <>
-      <SquircleBox cornerRadius={12} className="flex items-center justify-between px-6 py-4" style={{ background: 'var(--surface)' }}>
-        <div>
-          <p className="font-medium" style={{ color: 'var(--text)' }}>{dateStr}</p>
-          <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{timeStr} · {lesson.durationMinutes} min</p>
-        </div>
-        <div className="flex items-center gap-2">
-          {lesson.wherebyRoomUrl && (
-            <>
-              {/* Transcript button */}
-              <Squircle asChild cornerRadius={8} cornerSmoothing={0.8}>
-                <button
-                  onClick={fetchTranscript}
-                  disabled={transcriptState === 'loading' || transcriptState === 'processing' || transcriptState === 'none'}
-                  className="px-3 py-1.5 text-xs font-medium transition-all hover:opacity-90 disabled:opacity-50 flex items-center gap-1.5"
-                  style={{
-                    background: 'var(--surface-hover)',
-                    color: 'var(--text-muted)',
-                  }}
-                >
-                  {(transcriptState === 'loading' || transcriptState === 'processing') && (
-                    <span className="spinner-sm" />
-                  )}
-                  {transcriptLabel()}
-                </button>
-              </Squircle>
+      <SquircleBox cornerRadius={12} className="overflow-hidden" style={{ background: 'var(--surface)' }}>
+        {/* Main card row */}
+        <div className="flex items-center justify-between px-6 py-4">
+          <div>
+            <p className="font-medium" style={{ color: 'var(--text)' }}>{dateStr}</p>
+            <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{timeStr} · {lesson.durationMinutes} min</p>
+          </div>
+          <div className="flex items-center gap-2">
+            {lesson.wherebyRoomUrl && (
+              <>
+                {/* Transcript button */}
+                <Squircle asChild cornerRadius={8} cornerSmoothing={0.8}>
+                  <button
+                    onClick={fetchTranscript}
+                    disabled={transcriptState === 'loading' || transcriptState === 'processing' || transcriptState === 'none'}
+                    className="px-3 py-1.5 text-xs font-medium transition-all hover:opacity-90 disabled:opacity-50 flex items-center gap-1.5"
+                    style={{
+                      background: 'var(--surface-hover)',
+                      color: 'var(--text-muted)',
+                    }}
+                  >
+                    {(transcriptState === 'loading' || transcriptState === 'processing') && (
+                      <span className="spinner-sm" />
+                    )}
+                    {transcriptLabel()}
+                  </button>
+                </Squircle>
 
-              {/* Recording button */}
-              <Squircle asChild cornerRadius={8} cornerSmoothing={0.8}>
-                <button
-                  onClick={fetchRecording}
-                  disabled={recordingState === 'loading'}
-                  className="px-3 py-1.5 text-xs font-medium transition-all hover:opacity-90 disabled:opacity-50"
-                  style={{
-                    background: recordingState === 'none' ? 'var(--surface-hover)' : recordingState === 'error' ? 'var(--danger)' : 'var(--accent)',
-                    color: recordingState === 'none' ? 'var(--text-muted)' : 'var(--selected-text)',
-                  }}
-                >
-                  {recordingState === 'loading' ? '...'
-                    : recordingState === 'none' ? (locale === 'ja' ? '録画なし' : 'No recording')
-                    : recordingState === 'error' ? (locale === 'ja' ? '再試行' : 'Retry')
-                    : (locale === 'ja' ? '録画' : 'Watch')}
-                </button>
-              </Squircle>
-            </>
-          )}
+                {/* AI Analysis button — shows when transcript is ready or analysis already cached */}
+                {(transcriptState === 'ready' || analysisState === 'ready') && (
+                  <Squircle asChild cornerRadius={8} cornerSmoothing={0.8}>
+                    <button
+                      onClick={analysisState === 'ready' ? () => setExpanded(!expanded) : generateAnalysis}
+                      disabled={analysisState === 'loading'}
+                      className="px-3 py-1.5 text-xs font-medium transition-all hover:opacity-90 disabled:opacity-50 flex items-center gap-1.5"
+                      style={{
+                        background: analysisState === 'ready' ? 'var(--accent)' : 'var(--surface-hover)',
+                        color: analysisState === 'ready' ? 'var(--selected-text)' : 'var(--text-muted)',
+                      }}
+                    >
+                      {analysisState === 'loading' && <span className="spinner-sm" />}
+                      {analysisLabel()}
+                      {analysisState === 'ready' && (
+                        <span style={{ transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s', display: 'inline-block' }}>▾</span>
+                      )}
+                    </button>
+                  </Squircle>
+                )}
+
+                {/* Recording button */}
+                <Squircle asChild cornerRadius={8} cornerSmoothing={0.8}>
+                  <button
+                    onClick={fetchRecording}
+                    disabled={recordingState === 'loading'}
+                    className="px-3 py-1.5 text-xs font-medium transition-all hover:opacity-90 disabled:opacity-50"
+                    style={{
+                      background: recordingState === 'none' ? 'var(--surface-hover)' : recordingState === 'error' ? 'var(--danger)' : 'var(--accent)',
+                      color: recordingState === 'none' ? 'var(--text-muted)' : 'var(--selected-text)',
+                    }}
+                  >
+                    {recordingState === 'loading' ? '...'
+                      : recordingState === 'none' ? (locale === 'ja' ? '録画なし' : 'No recording')
+                      : recordingState === 'error' ? (locale === 'ja' ? '再試行' : 'Retry')
+                      : (locale === 'ja' ? '録画' : 'Watch')}
+                  </button>
+                </Squircle>
+              </>
+            )}
+          </div>
         </div>
+
+        {/* Accordion: Summary + Phrases */}
+        <AnimatePresence>
+          {expanded && analysisState === 'ready' && summary && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+              className="overflow-hidden"
+            >
+              <div className="px-6 pb-5 pt-2" style={{ borderTop: '1px solid var(--border-subtle)' }}>
+                {/* Key topics */}
+                {summary.key_topics.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 mb-3">
+                    {summary.key_topics.map((topic, i) => (
+                      <span
+                        key={i}
+                        className="px-2 py-0.5 text-xs rounded-full"
+                        style={{ background: 'var(--surface-hover)', color: 'var(--text-muted)' }}
+                      >
+                        {topic}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {/* Summary */}
+                <p className="text-sm leading-relaxed mb-4" style={{ color: 'var(--text-secondary)' }}>
+                  {locale === 'ja' ? summary.summary_ja : summary.summary_en}
+                </p>
+
+                {/* Mistake patterns */}
+                {summary.mistake_patterns.length > 0 && (
+                  <div className="mb-4">
+                    <p className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: 'var(--text-subtle)' }}>
+                      {locale === 'ja' ? '改善ポイント' : 'Areas to improve'}
+                    </p>
+                    <div className="space-y-2">
+                      {summary.mistake_patterns.map((m, i) => (
+                        <div key={i} className="text-sm rounded-lg p-3" style={{ background: 'var(--surface-hover)' }}>
+                          <div className="flex items-start gap-2 mb-1">
+                            <span className="text-xs rounded shrink-0 flex items-center justify-center" style={{ background: 'var(--danger)', color: '#fff', opacity: 0.8, width: '22px', height: '22px', lineHeight: '22px' }}>✗</span>
+                            <span className="pt-0.5" style={{ color: 'var(--text-muted)', textDecoration: 'line-through' }}>{m.example_student}</span>
+                          </div>
+                          <div className="flex items-start gap-2 mb-1.5">
+                            <span className="text-xs rounded shrink-0 flex items-center justify-center" style={{ background: 'var(--accent)', color: 'var(--selected-text)', width: '22px', height: '22px', lineHeight: '22px' }}>✓</span>
+                            <span className="pt-0.5" style={{ color: 'var(--text)' }}>{m.correction}</span>
+                          </div>
+                          <p className="text-xs" style={{ color: 'var(--text-muted)', paddingLeft: '30px' }}>
+                            {locale === 'ja' ? m.explanation_ja : m.explanation_en}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Vocabulary phrases */}
+                {phrases.length > 0 && (
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: 'var(--text-subtle)' }}>
+                      {locale === 'ja' ? 'フレーズ' : 'Phrases'}
+                    </p>
+                    <div className="space-y-1.5">
+                      {phrases.map((phrase) => (
+                        <div key={phrase.id}>
+                          <div
+                            onClick={() => setSelectedPhrase(selectedPhrase?.id === phrase.id ? null : phrase)}
+                            className="w-full text-left flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors hover:opacity-80 cursor-pointer"
+                            style={{ background: selectedPhrase?.id === phrase.id ? 'var(--surface-hover)' : 'transparent' }}
+                          >
+                            <div className="flex items-center gap-2 min-w-0">
+                              <span className="font-medium truncate" style={{ color: 'var(--text)' }}>{phrase.phrase_en}</span>
+                              <span className="text-xs shrink-0 px-1.5 py-0.5 rounded-full" style={{ background: 'var(--surface-hover)', color: 'var(--text-subtle)' }}>
+                                {phrase.category}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2 shrink-0 ml-2">
+                              {onAddToDeck && (
+                                <Squircle asChild cornerRadius={6} cornerSmoothing={0.8}>
+                                  <button
+                                    onClick={(e) => { e.stopPropagation(); onAddToDeck(phrase.id) }}
+                                    disabled={deckPhraseIds?.has(phrase.id)}
+                                    className="px-2 py-1 text-xs font-medium transition-all hover:opacity-90 disabled:opacity-40"
+                                    style={{
+                                      background: deckPhraseIds?.has(phrase.id) ? 'var(--surface-hover)' : 'var(--accent)',
+                                      color: deckPhraseIds?.has(phrase.id) ? 'var(--text-muted)' : 'var(--selected-text)',
+                                    }}
+                                  >
+                                    {deckPhraseIds?.has(phrase.id)
+                                      ? (locale === 'ja' ? '追加済み' : 'Added')
+                                      : (locale === 'ja' ? 'バンクに追加' : 'Add to bank')}
+                                  </button>
+                                </Squircle>
+                              )}
+                              <span style={{ transform: selectedPhrase?.id === phrase.id ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s', display: 'inline-block', color: 'var(--text-subtle)' }}>▾</span>
+                            </div>
+                          </div>
+                          <AnimatePresence>
+                            {selectedPhrase?.id === phrase.id && (
+                              <motion.div
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: 'auto', opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                transition={{ duration: 0.15 }}
+                                className="overflow-hidden"
+                              >
+                                <div className="px-3 pb-3 pt-1 space-y-1.5">
+                                  <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                                    <span className="font-medium" style={{ color: 'var(--text-muted)' }}>{locale === 'ja' ? '例' : 'Example'}: </span>
+                                    {phrase.example_en}
+                                  </p>
+                                  <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                                    <span className="font-medium" style={{ color: 'var(--text-muted)' }}>{locale === 'ja' ? '訳' : 'Translation'}: </span>
+                                    {phrase.translation_ja}
+                                  </p>
+                                  <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                                    {locale === 'ja' ? phrase.explanation_ja : phrase.explanation_en}
+                                  </p>
+                                </div>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </SquircleBox>
       {showPlayer && accessLink && (
         <VideoPlayerModal
@@ -475,6 +751,17 @@ function DashboardContent() {
   const [historyPage, setHistoryPage] = useState(0)
   const [lessonToReschedule, setLessonToReschedule] = useState<Lesson | null>(null)
   const [selectedTranscript, setSelectedTranscript] = useState<{ lesson: Lesson; content: string } | null>(null)
+  const [vocabCards, setVocabCards] = useState<VocabCard[]>([])
+  const [loadingVocab, setLoadingVocab] = useState(false)
+  const [vocabFilter, setVocabFilter] = useState<'all' | 'learning' | 'reviewing' | 'mastered'>('all')
+  const [vocabVisible, setVocabVisible] = useState(20)
+  const [flippedCardId, setFlippedCardId] = useState<string | null>(null)
+  const [reviewMode, setReviewMode] = useState(false)
+  const [reviewQueue, setReviewQueue] = useState<VocabCard[]>([])
+  const [reviewIndex, setReviewIndex] = useState(0)
+  const [reviewFlipped, setReviewFlipped] = useState(false)
+  const [reviewingCardId, setReviewingCardId] = useState<string | null>(null)
+  const [dueCount, setDueCount] = useState(0)
   const LESSONS_VISIBLE = 4 // 1 hero + 3 compact
   const NEWS_VISIBLE = 3
   const HISTORY_PER_PAGE = 10
@@ -538,6 +825,127 @@ function DashboardContent() {
       setLoadingHistory(false)
     }
   }, [session?.access_token])
+
+  const fetchVocab = useCallback(async () => {
+    if (!session?.access_token) return
+    setLoadingVocab(true)
+    try {
+      const res = await fetch('/api/vocabulary', {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      })
+      const data = await res.json()
+      setVocabCards(data.cards || [])
+      setDueCount(data.dueCount || 0)
+    } catch {
+      setVocabCards([])
+      setDueCount(0)
+    } finally {
+      setLoadingVocab(false)
+    }
+  }, [session?.access_token])
+
+  const deckPhraseIds = useMemo(() => new Set(vocabCards.map(c => c.phrase?.id).filter(Boolean)), [vocabCards])
+
+  const addToDeck = async (phraseId: string) => {
+    if (!session?.access_token) return
+    try {
+      const res = await fetch('/api/vocabulary', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ phraseId }),
+      })
+      if (res.ok) {
+        fetchVocab() // refresh deck
+      }
+    } catch { /* ignore */ }
+  }
+
+  const updateCardLevel = async (cardId: string, comfortLevel: string) => {
+    if (!session?.access_token) return
+    try {
+      await fetch('/api/vocabulary', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ cardId, comfortLevel }),
+      })
+      setVocabCards(prev => prev.map(c =>
+        c.id === cardId ? { ...c, comfort_level: comfortLevel as VocabCard['comfort_level'] } : c
+      ))
+    } catch { /* ignore */ }
+  }
+
+  const removeCard = async (cardId: string) => {
+    if (!session?.access_token) return
+    try {
+      await fetch(`/api/vocabulary?cardId=${cardId}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      })
+      setVocabCards(prev => prev.filter(c => c.id !== cardId))
+    } catch { /* ignore */ }
+  }
+
+  const startReview = () => {
+    const now = new Date().toISOString()
+    const due = vocabCards.filter(c => c.next_review_at <= now)
+    if (due.length === 0) return
+    // Shuffle due cards for variety
+    const shuffled = [...due].sort(() => Math.random() - 0.5)
+    setReviewQueue(shuffled)
+    setReviewIndex(0)
+    setReviewFlipped(false)
+    setReviewMode(true)
+  }
+
+  const reviewCard = async (rating: ReviewRating) => {
+    const card = reviewQueue[reviewIndex]
+    if (!card || !session?.access_token) return
+    setReviewingCardId(card.id)
+    try {
+      const res = await fetch('/api/vocabulary', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ cardId: card.id, rating }),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        // Update card in local state
+        setVocabCards(prev => prev.map(c =>
+          c.id === card.id ? {
+            ...c,
+            comfort_level: data.comfort_level,
+            interval_days: data.interval_days,
+            ease_factor: data.ease_factor,
+            next_review_at: data.next_review_at,
+            last_reviewed: new Date().toISOString(),
+            review_count: c.review_count + 1,
+          } : c
+        ))
+        setDueCount(prev => Math.max(0, prev - 1))
+      }
+    } catch { /* ignore */ } finally {
+      setReviewingCardId(null)
+    }
+    // Advance to next card
+    if (reviewIndex + 1 < reviewQueue.length) {
+      setReviewIndex(prev => prev + 1)
+      setReviewFlipped(false)
+    } else {
+      // Review session complete
+      setReviewMode(false)
+      setReviewQueue([])
+      setReviewIndex(0)
+    }
+  }
 
   const rescheduleLesson = (lesson: Lesson) => {
     setLessonToReschedule(lesson)
@@ -627,6 +1035,12 @@ function DashboardContent() {
     }
   }, [activeTab, session?.access_token, fetchHistory, historyLessons.length])
 
+  useEffect(() => {
+    if (activeTab === 'vocab' && session?.access_token && vocabCards.length === 0) {
+      fetchVocab()
+    }
+  }, [activeTab, session?.access_token, fetchVocab, vocabCards.length])
+
   const [news, setNews] = useState<(NewsItem & { title: string; body: string; posterName: string; posterAvatar: string })[]>([])
 
   // Fetch news from Supabase
@@ -684,6 +1098,7 @@ function DashboardContent() {
     { key: 'home', label: t('tabHome') },
     { key: 'booking', label: t('tabBooking') },
     { key: 'history', label: t('tabHistory') },
+    { key: 'vocab', label: locale === 'ja' ? 'フレーズ' : 'Phrases' },
   ]
 
   const nextLesson = lessons[0] || null
@@ -1061,6 +1476,8 @@ function DashboardContent() {
                             locale={locale}
                             session={session}
                             onViewTranscript={(l, content) => setSelectedTranscript({ lesson: l, content })}
+                            onAddToDeck={addToDeck}
+                            deckPhraseIds={deckPhraseIds}
                           />
                         ))}
                     </div>
@@ -1092,6 +1509,333 @@ function DashboardContent() {
                   </motion.div>
                 )}
               </AnimatePresence>
+              </motion.div>
+            )}
+
+            {/* ═══ VOCAB TAB ═══ */}
+            {activeTab === 'vocab' && (
+              <motion.div
+                key="tab-vocab"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
+              >
+                {loadingVocab ? (
+                  <SquircleBox cornerRadius={12} className="p-8 text-center" style={{ background: 'var(--surface)' }}>
+                    <p style={{ color: 'var(--text-muted)' }}>Loading...</p>
+                  </SquircleBox>
+                ) : vocabCards.length === 0 ? (
+                  <SquircleBox cornerRadius={16} className="p-8 text-center" style={{ background: 'var(--surface)' }}>
+                    <p className="text-lg mb-2" style={{ color: 'var(--text-muted)' }}>
+                      {locale === 'ja' ? 'まだフレーズがありません' : 'No phrases yet'}
+                    </p>
+                    <p className="text-sm mb-4" style={{ color: 'var(--text-subtle)' }}>
+                      {locale === 'ja'
+                        ? 'レッスン履歴からサマリーを生成して、フレーズをバンクに追加しましょう'
+                        : 'Generate a summary from your lesson history and add phrases to your bank'}
+                    </p>
+                    <button
+                      onClick={() => setActiveTab('history')}
+                      className="text-sm font-medium transition-colors hover:opacity-80"
+                      style={{ color: 'var(--accent)' }}
+                    >
+                      {locale === 'ja' ? 'レッスン履歴へ →' : 'Go to history →'}
+                    </button>
+                  </SquircleBox>
+                ) : reviewMode && reviewQueue.length > 0 ? (
+                  /* ═══ REVIEW SESSION ═══ */
+                  <>
+                    {/* Progress bar */}
+                    <div className="flex items-center gap-3 mb-4">
+                      <button
+                        onClick={() => { setReviewMode(false); setReviewQueue([]) }}
+                        className="text-sm font-medium transition-colors hover:opacity-80"
+                        style={{ color: 'var(--text-muted)' }}
+                      >
+                        ← {locale === 'ja' ? '戻る' : 'Back'}
+                      </button>
+                      <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--surface-hover)' }}>
+                        <motion.div
+                          className="h-full rounded-full"
+                          style={{ background: 'var(--accent)' }}
+                          initial={{ width: 0 }}
+                          animate={{ width: `${((reviewIndex) / reviewQueue.length) * 100}%` }}
+                          transition={{ duration: 0.3 }}
+                        />
+                      </div>
+                      <span className="text-xs tabular-nums" style={{ color: 'var(--text-subtle)' }}>
+                        {reviewIndex + 1}/{reviewQueue.length}
+                      </span>
+                    </div>
+
+                    {/* Review card */}
+                    <AnimatePresence mode="wait">
+                      <motion.div
+                        key={reviewQueue[reviewIndex]?.id}
+                        initial={{ opacity: 0, x: 30 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -30 }}
+                        transition={{ duration: 0.25 }}
+                      >
+                        <SquircleBox cornerRadius={16} className="overflow-hidden" style={{ background: 'var(--surface)' }}>
+                          {(() => {
+                            const card = reviewQueue[reviewIndex]
+                            if (!card?.phrase) return null
+                            return (
+                              <>
+                                {/* Question side */}
+                                <button
+                                  onClick={() => setReviewFlipped(true)}
+                                  className="w-full text-left px-6 py-8"
+                                  disabled={reviewFlipped}
+                                >
+                                  <p className="text-center text-xl font-semibold mb-2" style={{ color: 'var(--text)' }}>
+                                    {card.phrase.phrase_en}
+                                  </p>
+                                  <p className="text-center text-sm" style={{ color: 'var(--text-muted)' }}>
+                                    {card.phrase.example_en}
+                                  </p>
+                                  {!reviewFlipped && (
+                                    <p className="text-center text-xs mt-4" style={{ color: 'var(--text-subtle)' }}>
+                                      {locale === 'ja' ? 'タップして答えを見る' : 'Tap to reveal answer'}
+                                    </p>
+                                  )}
+                                </button>
+
+                                {/* Answer side */}
+                                <AnimatePresence>
+                                  {reviewFlipped && (
+                                    <motion.div
+                                      initial={{ height: 0, opacity: 0 }}
+                                      animate={{ height: 'auto', opacity: 1 }}
+                                      transition={{ duration: 0.25 }}
+                                    >
+                                      <div style={{ borderTop: '1px solid var(--border-subtle)' }}>
+                                        <div className="px-6 py-5">
+                                          <p className="text-center text-lg font-medium mb-1" style={{ color: 'var(--accent)' }}>
+                                            {card.phrase.translation_ja}
+                                          </p>
+                                          <p className="text-center text-sm" style={{ color: 'var(--text-muted)' }}>
+                                            {locale === 'ja' ? card.phrase.explanation_ja : card.phrase.explanation_en}
+                                          </p>
+                                        </div>
+
+                                        {/* Rating buttons */}
+                                        <div className="px-4 pb-5">
+                                          <p className="text-center text-xs mb-3" style={{ color: 'var(--text-subtle)' }}>
+                                            {locale === 'ja' ? 'どれくらい覚えていましたか？' : 'How well did you know this?'}
+                                          </p>
+                                          <div className="grid grid-cols-4 gap-2">
+                                            {previewIntervals(card.interval_days ?? 1, card.ease_factor ?? 2.5).map(r => (
+                                              <Squircle key={r.rating} asChild cornerRadius={10} cornerSmoothing={0.8}>
+                                                <button
+                                                  onClick={() => reviewCard(r.rating)}
+                                                  disabled={reviewingCardId === card.id}
+                                                  className="py-2.5 text-center transition-all hover:opacity-90 disabled:opacity-50"
+                                                  style={{
+                                                    background: r.rating === 1 ? 'rgba(239,68,68,0.15)'
+                                                      : r.rating === 2 ? 'rgba(234,179,8,0.15)'
+                                                      : r.rating === 3 ? 'rgba(59,130,246,0.15)'
+                                                      : 'rgba(34,197,94,0.15)',
+                                                    color: r.rating === 1 ? '#ef4444'
+                                                      : r.rating === 2 ? '#ca8a04'
+                                                      : r.rating === 3 ? '#3b82f6'
+                                                      : '#16a34a',
+                                                  }}
+                                                >
+                                                  <span className="text-xs font-semibold block">
+                                                    {locale === 'ja' ? r.label_ja : r.label_en}
+                                                  </span>
+                                                  <span className="text-[10px] block mt-0.5 opacity-70">
+                                                    {locale === 'ja' ? r.preview_ja : r.preview_en}
+                                                  </span>
+                                                </button>
+                                              </Squircle>
+                                            ))}
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </motion.div>
+                                  )}
+                                </AnimatePresence>
+                              </>
+                            )
+                          })()}
+                        </SquircleBox>
+                      </motion.div>
+                    </AnimatePresence>
+                  </>
+                ) : (
+                  /* ═══ PHRASE BANK (default view) ═══ */
+                  <>
+                    {/* Review banner */}
+                    {dueCount > 0 && (
+                      <SquircleBox cornerRadius={12} className="p-4 mb-4 flex items-center justify-between" style={{ background: 'var(--surface)', border: '1px solid var(--border-subtle)' }}>
+                        <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>
+                          {locale === 'ja'
+                            ? `${dueCount}件のフレーズが復習可能です`
+                            : `${dueCount} phrase${dueCount !== 1 ? 's' : ''} due for review`}
+                        </p>
+                        <Squircle asChild cornerRadius={8} cornerSmoothing={0.8}>
+                          <button
+                            onClick={startReview}
+                            className="px-4 py-2 text-sm font-semibold shrink-0 transition-all hover:opacity-90"
+                            style={{ background: 'var(--accent)', color: 'var(--selected-text)' }}
+                          >
+                            {locale === 'ja' ? '復習する' : 'Review'}
+                          </button>
+                        </Squircle>
+                      </SquircleBox>
+                    )}
+
+                    {/* Stats bar */}
+                    <div className="flex items-center gap-4 mb-4">
+                      <span className="text-sm" style={{ color: 'var(--text-muted)' }}>
+                        {vocabCards.length} {locale === 'ja' ? 'フレーズ' : 'phrases'}
+                      </span>
+                      <div className="flex gap-1.5 ml-auto">
+                        {(['all', 'learning', 'reviewing', 'mastered'] as const).map(f => (
+                          <button
+                            key={f}
+                            onClick={() => { setVocabFilter(f); setVocabVisible(20) }}
+                            className="px-2.5 py-1 text-xs font-medium rounded-full transition-all"
+                            style={{
+                              background: vocabFilter === f ? 'var(--accent)' : 'var(--surface)',
+                              color: vocabFilter === f ? 'var(--selected-text)' : 'var(--text-muted)',
+                            }}
+                          >
+                            {f === 'all' ? (locale === 'ja' ? 'すべて' : 'All')
+                              : f === 'learning' ? (locale === 'ja' ? '学習中' : 'Learning')
+                              : f === 'reviewing' ? (locale === 'ja' ? '復習中' : 'Reviewing')
+                              : (locale === 'ja' ? 'マスター' : 'Mastered')}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Cards */}
+                    <div className="space-y-3">
+                      {vocabCards
+                        .filter(c => vocabFilter === 'all' || c.comfort_level === vocabFilter)
+                        .slice(0, vocabVisible)
+                        .map(card => (
+                          <SquircleBox key={card.id} cornerRadius={12} className="overflow-hidden" style={{ background: 'var(--surface)' }}>
+                            {/* Card front — tap to flip */}
+                            <button
+                              onClick={() => setFlippedCardId(flippedCardId === card.id ? null : card.id)}
+                              className="w-full text-left px-5 py-4"
+                            >
+                              <div className="flex items-center justify-between">
+                                <div className="min-w-0">
+                                  <p className="font-medium text-base" style={{ color: 'var(--text)' }}>
+                                    {card.phrase?.phrase_en}
+                                  </p>
+                                  <div className="flex items-center gap-2 mt-0.5">
+                                    {flippedCardId !== card.id && (
+                                      <span className="text-xs" style={{ color: 'var(--text-subtle)' }}>
+                                        {locale === 'ja' ? 'タップして詳細を見る' : 'Tap to reveal'}
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-2 shrink-0 ml-3">
+                                  <span className="text-xs px-1.5 py-0.5 rounded-full" style={{ background: 'var(--surface-hover)', color: 'var(--text-subtle)' }}>
+                                    {formatNextReview(card.next_review_at, locale)}
+                                  </span>
+                                  <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'var(--surface-hover)', color: 'var(--text-subtle)' }}>
+                                    {card.phrase?.category}
+                                  </span>
+                                  <span
+                                    className="w-2 h-2 rounded-full"
+                                    style={{
+                                      background: card.comfort_level === 'mastered' ? '#22c55e'
+                                        : card.comfort_level === 'reviewing' ? '#facc15'
+                                        : 'var(--accent)',
+                                    }}
+                                  />
+                                </div>
+                              </div>
+                            </button>
+
+                            {/* Card back — revealed content */}
+                            <AnimatePresence>
+                              {flippedCardId === card.id && card.phrase && (
+                                <motion.div
+                                  initial={{ height: 0, opacity: 0 }}
+                                  animate={{ height: 'auto', opacity: 1 }}
+                                  exit={{ height: 0, opacity: 0 }}
+                                  transition={{ duration: 0.2 }}
+                                  className="overflow-hidden"
+                                >
+                                  <div className="px-5 pb-4 space-y-2.5" style={{ borderTop: '1px solid var(--border-subtle)' }}>
+                                    <div className="pt-3">
+                                      <p className="text-sm font-medium mb-1" style={{ color: 'var(--accent)' }}>
+                                        {card.phrase.translation_ja}
+                                      </p>
+                                      <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                                        {card.phrase.example_en}
+                                      </p>
+                                      <p className="text-xs mt-1.5" style={{ color: 'var(--text-muted)' }}>
+                                        {locale === 'ja' ? card.phrase.explanation_ja : card.phrase.explanation_en}
+                                      </p>
+                                    </div>
+
+                                    {/* Card info + remove */}
+                                    <div className="flex items-center justify-between pt-1">
+                                      <div className="flex items-center gap-3">
+                                        <span className="text-xs" style={{ color: 'var(--text-subtle)' }}>
+                                          {locale === 'ja' ? '復習回数' : 'Reviews'}: {card.review_count}
+                                        </span>
+                                        <span
+                                          className="text-xs px-2 py-0.5 rounded-full"
+                                          style={{
+                                            background: card.comfort_level === 'mastered' ? 'rgba(34,197,94,0.15)'
+                                              : card.comfort_level === 'reviewing' ? 'rgba(234,179,8,0.15)'
+                                              : 'rgba(59,130,246,0.15)',
+                                            color: card.comfort_level === 'mastered' ? '#16a34a'
+                                              : card.comfort_level === 'reviewing' ? '#ca8a04'
+                                              : '#3b82f6',
+                                          }}
+                                        >
+                                          {card.comfort_level === 'learning' ? (locale === 'ja' ? '学習中' : 'Learning')
+                                            : card.comfort_level === 'reviewing' ? (locale === 'ja' ? '復習中' : 'Reviewing')
+                                            : (locale === 'ja' ? 'マスター' : 'Mastered')}
+                                        </span>
+                                      </div>
+                                      <button
+                                        onClick={() => removeCard(card.id)}
+                                        className="text-xs transition-colors hover:opacity-80"
+                                        style={{ color: 'var(--text-subtle)' }}
+                                      >
+                                        {locale === 'ja' ? '削除' : 'Remove'}
+                                      </button>
+                                    </div>
+                                  </div>
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
+                          </SquircleBox>
+                        ))}
+                    </div>
+
+                    {/* Show more */}
+                    {(() => {
+                      const filtered = vocabCards.filter(c => vocabFilter === 'all' || c.comfort_level === vocabFilter)
+                      return filtered.length > vocabVisible && (
+                        <button
+                          onClick={() => setVocabVisible(prev => prev + 20)}
+                          className="w-full mt-4 py-2.5 text-sm font-medium rounded-lg transition-colors hover:opacity-80"
+                          style={{ color: 'var(--accent)' }}
+                        >
+                          {locale === 'ja'
+                            ? `さらに表示（残り${filtered.length - vocabVisible}件）`
+                            : `Show more (${filtered.length - vocabVisible} remaining)`}
+                        </button>
+                      )
+                    })()}
+                  </>
+                )}
               </motion.div>
             )}
             </AnimatePresence>
