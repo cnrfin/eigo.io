@@ -34,6 +34,10 @@ export const translations = {
     howStep2Desc: 'カレンダーから\n空いている時間を予約',
     howStep3Title: 'レッスン開始',
     howStep3Desc: 'マイページから\n教室に入るだけ',
+    howStep4Title: 'レッスンを振り返る',
+    howStep4Desc: 'レッスン後にサマリーと\nフィードバックを確認',
+    howStep5Title: 'フレーズを復習する',
+    howStep5Desc: 'レッスンから抽出された\nフレーズを繰り返し学習',
 
     // CTA
     ctaHeadline: '英会話、始めてみませんか？',
@@ -168,6 +172,10 @@ export const translations = {
     howStep2Desc: 'Choose an available\nslot from the calendar',
     howStep3Title: 'Start your lesson',
     howStep3Desc: 'Enter the classroom\nfrom your dashboard',
+    howStep4Title: 'Review your lesson',
+    howStep4Desc: 'Get a summary and\nfeedback after each lesson',
+    howStep5Title: 'Build your vocabulary',
+    howStep5Desc: 'Study personalised phrases\nfrom your lessons',
 
     // CTA
     ctaHeadline: 'Ready to start speaking?',
