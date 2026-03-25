@@ -280,7 +280,7 @@ export default function SettingsPage() {
             >
               {/* Profile Section */}
               <motion.div variants={{ hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0 } }}>
-              <SquircleBox cornerRadius={16} className="p-8" style={{ background: 'var(--surface)' }}>
+              <SquircleBox cornerRadius={16} className="p-5 sm:p-8" style={{ background: 'var(--surface)' }}>
                 <h2 className="text-lg font-semibold mb-6" style={{ color: 'var(--text)' }}>
                   {locale === 'ja' ? 'プロフィール' : 'Profile'}
                 </h2>
@@ -507,7 +507,7 @@ export default function SettingsPage() {
 
               {/* Preferences Section */}
               <motion.div variants={{ hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0 } }}>
-              <SquircleBox cornerRadius={16} className="p-8" style={{ background: 'var(--surface)' }}>
+              <SquircleBox cornerRadius={16} className="p-5 sm:p-8" style={{ background: 'var(--surface)' }}>
                 <h2 className="text-lg font-semibold mb-6" style={{ color: 'var(--text)' }}>
                   {locale === 'ja' ? 'プリファレンス' : 'Preferences'}
                 </h2>
@@ -547,9 +547,9 @@ export default function SettingsPage() {
               </SquircleBox>
               </motion.div>
 
-              {/* Google Calendar Integration */}
-              <motion.div variants={{ hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0 } }}>
-              <SquircleBox cornerRadius={16} className="p-8" style={{ background: 'var(--surface)' }}>
+              {/* Google Calendar Integration — hidden until Google OAuth verification is complete */}
+              {false && <motion.div variants={{ hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0 } }}>
+              <SquircleBox cornerRadius={16} className="p-5 sm:p-8" style={{ background: 'var(--surface)' }}>
                 <h2 className="text-lg font-semibold mb-2" style={{ color: 'var(--text)' }}>
                   {locale === 'ja' ? 'カレンダー' : 'Calendar'}
                 </h2>
@@ -633,7 +633,7 @@ export default function SettingsPage() {
                   )}
                 </div>
               </SquircleBox>
-              </motion.div>
+              </motion.div>}
 
               {/* Sign out - simple link style, no container */}
               <motion.div variants={{ hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0 } }} className="text-center pt-2 pb-8">

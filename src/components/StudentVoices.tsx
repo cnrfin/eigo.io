@@ -81,11 +81,17 @@ function ReviewCard({ name, text, isCentre }: { name: string; text: string; isCe
    ──────────────────────────────────────────── */
 
 const VISIBLE_RANGE = 2
-const CARD_WIDTH = 300
+const CARD_WIDTH_DESKTOP = 300
+const CARD_WIDTH_MOBILE = 260
 const GAP = 40
 const SWIPE_THRESHOLD = 40 // px drag to trigger card change
 
-function getCoverflowStyle(offset: number) {
+function getCardWidth() {
+  if (typeof window === 'undefined') return CARD_WIDTH_DESKTOP
+  return window.innerWidth < 640 ? CARD_WIDTH_MOBILE : CARD_WIDTH_DESKTOP
+}
+
+function getCoverflowStyle(offset: number, cardWidth: number) {
   const absOff = Math.abs(offset)
   const sign = offset < 0 ? 1 : -1
 
@@ -96,7 +102,7 @@ function getCoverflowStyle(offset: number) {
   return {
     rotateY: sign * 45,
     scale: 0.78 - absOff * 0.04,
-    x: offset * (CARD_WIDTH * 0.52 + GAP),
+    x: offset * (cardWidth * 0.52 + GAP),
     opacity: absOff <= VISIBLE_RANGE ? 1 - absOff * 0.2 : 0,
   }
 }
@@ -108,7 +114,16 @@ export default function StudentVoices() {
   const isInView = useInView(sectionRef, { once: true, margin: '-60px' })
 
   const [active, setActive] = useState(0)
+  const [cardWidth, setCardWidth] = useState(CARD_WIDTH_DESKTOP)
   const total = REVIEWS.length
+
+  // Update card width on resize
+  useEffect(() => {
+    const update = () => setCardWidth(getCardWidth())
+    update()
+    window.addEventListener('resize', update)
+    return () => window.removeEventListener('resize', update)
+  }, [])
 
   // Wrap-safe advance by N cards
   const advance = useCallback(
@@ -270,12 +285,12 @@ export default function StudentVoices() {
       <div className="relative" style={{ maxWidth: 1200, margin: '0 auto' }}>
         {/* Left fade */}
         <div
-          className="absolute left-0 top-0 bottom-0 z-10 pointer-events-none"
+          className="carousel-fade absolute left-0 top-0 bottom-0 z-10 pointer-events-none"
           style={{ width: 120, background: 'linear-gradient(to right, var(--bg), transparent)' }}
         />
         {/* Right fade */}
         <div
-          className="absolute right-0 top-0 bottom-0 z-10 pointer-events-none"
+          className="carousel-fade absolute right-0 top-0 bottom-0 z-10 pointer-events-none"
           style={{ width: 120, background: 'linear-gradient(to left, var(--bg), transparent)' }}
         />
 
@@ -296,7 +311,7 @@ export default function StudentVoices() {
             if (offset > total / 2) offset -= total
             if (offset < -total / 2) offset += total
 
-            const s = getCoverflowStyle(offset)
+            const s = getCoverflowStyle(offset, cardWidth)
 
             return (
               <motion.div
@@ -311,7 +326,7 @@ export default function StudentVoices() {
                 transition={{ type: 'spring', stiffness: 260, damping: 30 }}
                 className="absolute pointer-events-none"
                 style={{
-                  width: CARD_WIDTH,
+                  width: cardWidth,
                   zIndex: 10 - Math.abs(offset),
                   transformStyle: 'preserve-3d',
                 }}

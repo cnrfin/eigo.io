@@ -48,7 +48,7 @@ export default function InfoSection() {
           {rows.map((row, i) => (
             <div
               key={row.label}
-              className="grid grid-cols-[140px_1fr] sm:grid-cols-[180px_1fr]"
+              className="grid grid-cols-[110px_1fr] sm:grid-cols-[180px_1fr]"
               style={{ borderTop: i > 0 ? '1px solid var(--border-subtle)' : undefined }}
             >
               {/* Label cell */}

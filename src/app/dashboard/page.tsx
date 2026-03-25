@@ -698,18 +698,18 @@ function DashboardContent() {
 
           <section className="py-8 px-6">
             {/* Welcome */}
-            <h1 className="text-4xl font-bold mb-8" style={{ color: 'var(--text)' }}>
+            <h1 className="text-2xl sm:text-4xl font-bold mb-8" style={{ color: 'var(--text)' }}>
               {greeting}
-              {user && <span className="font-normal text-xl ml-3" style={{ color: 'var(--text-muted)' }}>{(user.user_metadata?.full_name?.split(' ')[0] || user.user_metadata?.name?.split(' ')[0] || (user.email && !user.email.endsWith('@line.eigo.io') ? user.email.split('@')[0] : '') || '')}{locale === 'ja' ? 'さん' : ''}</span>}
+              {user && <span className="font-normal text-base sm:text-xl ml-2 sm:ml-3" style={{ color: 'var(--text-muted)' }}>{(user.user_metadata?.full_name?.split(' ')[0] || user.user_metadata?.name?.split(' ')[0] || (user.email && !user.email.endsWith('@line.eigo.io') ? user.email.split('@')[0] : '') || '')}{locale === 'ja' ? 'さん' : ''}</span>}
             </h1>
 
             {/* Tab navigation */}
-            <div className="flex gap-1 mb-8" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+            <div className="flex gap-1 mb-8 overflow-x-auto" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
               {tabs.map(({ key, label }) => (
                 <button
                   key={key}
                   onClick={() => { setActiveTab(key); if (key !== 'history') setSelectedTranscript(null) }}
-                  className="px-5 py-3 font-medium transition-colors relative"
+                  className="px-3 sm:px-5 py-3 font-medium transition-colors relative text-sm sm:text-base whitespace-nowrap"
                   style={{
                     color: activeTab === key ? 'var(--text)' : 'var(--text-muted)',
                   }}

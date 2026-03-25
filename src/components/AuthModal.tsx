@@ -48,9 +48,9 @@ export default function AuthModal({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 modal-backdrop">
-      <div className="modal-card">
-      <SquircleBox cornerRadius={20} className="p-8 w-full max-w-sm mx-4 relative shadow-[0_0_0_1px_var(--border)]" style={{ background: 'var(--surface)' }}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 modal-backdrop overflow-y-auto py-6">
+      <div className="modal-card w-full flex items-center justify-center min-h-0">
+      <SquircleBox cornerRadius={20} className="p-6 sm:p-8 w-full max-w-sm mx-4 relative shadow-[0_0_0_1px_var(--border)]" style={{ background: 'var(--surface)' }}>
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-xl hover:opacity-80"
