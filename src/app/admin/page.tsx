@@ -16,6 +16,8 @@ type StudentProfile = {
   display_name: string | null
   email: string | null
   avatar_url: string | null
+  minutesRemaining: number | null
+  minutesPerMonth: number | null
 }
 
 type StudentProgress = {
@@ -830,6 +832,21 @@ function AdminContent() {
                             <img src={s.avatar_url} alt="" className="w-5 h-5 rounded-full" />
                           )}
                           {s.display_name || s.email || 'Unknown'}
+                          {s.minutesRemaining !== null && (
+                            <span
+                              className="text-[10px] font-medium px-1.5 py-0.5 rounded-full ml-1"
+                              style={{
+                                background: selectedStudentId === s.id
+                                  ? 'rgba(255, 255, 255, 0.25)'
+                                  : s.minutesRemaining < 30 ? 'rgba(240, 96, 96, 0.15)' : 'rgba(0, 194, 184, 0.15)',
+                                color: selectedStudentId === s.id
+                                  ? 'var(--selected-text)'
+                                  : s.minutesRemaining < 30 ? 'var(--danger)' : 'var(--accent)',
+                              }}
+                            >
+                              {s.minutesRemaining}min
+                            </span>
+                          )}
                         </button>
                       </Squircle>
                     ))}

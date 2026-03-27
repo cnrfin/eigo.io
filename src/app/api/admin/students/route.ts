@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { getMinuteBalance } from '@/lib/subscription'
 
 const ADMIN_EMAILS = ['cnrfin93@gmail.com']
 
 /**
  * GET /api/admin/students
- * List all students who have bookings.
+ * List all students who have bookings, including their minute balance.
  */
 export async function GET(request: NextRequest) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
@@ -44,5 +45,17 @@ export async function GET(request: NextRequest) {
     .select('id, display_name, email, avatar_url')
     .in('id', uniqueUserIds)
 
-  return NextResponse.json({ students: profiles || [] })
+  // Fetch minute balance for each student
+  const students = await Promise.all(
+    (profiles || []).map(async (p) => {
+      const balance = await getMinuteBalance(p.id)
+      return {
+        ...p,
+        minutesRemaining: balance?.minutesRemaining ?? null,
+        minutesPerMonth: balance?.minutesPerMonth ?? null,
+      }
+    })
+  )
+
+  return NextResponse.json({ students })
 }
