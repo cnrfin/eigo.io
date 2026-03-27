@@ -58,6 +58,36 @@
   --header-glass: rgba(246, 246, 248, 0.7);
 }
 
+/* Glass card — frosted surface for pricing cards */
+.glass-card {
+  background: rgba(22, 22, 29, 0.6);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+}
+:root[data-theme="light"] .glass-card {
+  background: rgba(255, 255, 255, 0.55);
+}
+.glass-card-accent {
+  background: rgba(22, 22, 29, 0.6);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1.5px solid rgba(0, 194, 184, 0.4);
+}
+:root[data-theme="light"] .glass-card-accent {
+  background: rgba(255, 255, 255, 0.55);
+  border: 1.5px solid rgba(0, 168, 159, 0.4);
+}
+
+/* Book-trial CTA — white in dark mode, accent in light mode */
+.btn-trial {
+  background: var(--selected-bg);
+  color: var(--selected-text);
+}
+:root[data-theme="light"] .btn-trial {
+  background: var(--accent);
+  color: #fff;
+}
+
 /* Google sign-in button — dark in dark mode, light in light mode */
 .google-signin-btn {
   background: #3a3a48;

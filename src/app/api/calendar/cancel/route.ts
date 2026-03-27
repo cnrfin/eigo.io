@@ -5,6 +5,7 @@ import { deleteWherebyRoom } from '@/lib/whereby'
 import { sendAdminCancellationNotification } from '@/lib/email'
 import { notifyCancellation } from '@/lib/notify'
 import { deleteStudentCalendarEvent } from '@/lib/student-calendar'
+import { getUserSubscription, recordMinuteUsage } from '@/lib/subscription'
 
 // POST /api/calendar/cancel
 // Body: { bookingId: 'uuid', googleEventId: 'string', skipEmail?: boolean }
@@ -53,6 +54,49 @@ export async function POST(request: NextRequest) {
     if (dbError) {
       console.error('Failed to cancel booking in Supabase:', dbError)
       return NextResponse.json({ error: 'Failed to cancel booking' }, { status: 500 })
+    }
+
+    // If this was a trial booking, clear trial state so user can rebook
+    if (booking) {
+      try {
+        const supabaseService = createClient(supabaseUrl, process.env.SUPABASE_SERVICE_ROLE_KEY!)
+        const { data: profile } = await supabaseService
+          .from('profiles')
+          .select('trial_booking_id')
+          .eq('id', user.id)
+          .single()
+        if (profile?.trial_booking_id === bookingId) {
+          await supabaseService
+            .from('profiles')
+            .update({ trial_booking_id: null, trial_completed_at: null })
+            .eq('id', user.id)
+        }
+      } catch (trialErr) {
+        console.error('Failed to clear trial state:', trialErr)
+      }
+    }
+
+    // Refund minutes if cancelled >= 15 minutes before lesson start
+    if (booking) {
+      try {
+        const lessonStartJST = new Date(`${booking.date}T${booking.start_time}+09:00`)
+        const minutesUntilLesson = (lessonStartJST.getTime() - Date.now()) / (1000 * 60)
+
+        const subscription = await getUserSubscription(user.id)
+        if (subscription && minutesUntilLesson >= 15) {
+          // Refund minutes — cancelled with enough notice
+          await recordMinuteUsage(
+            user.id,
+            bookingId,
+            booking.duration_minutes,
+            subscription.current_period_start,
+            'cancelled_refund',
+          )
+        }
+        // If < 15 min before lesson: no refund, minutes are spent
+      } catch (refundError) {
+        console.error('Failed to process minute refund:', refundError)
+      }
     }
 
     // Delete from Google Calendar

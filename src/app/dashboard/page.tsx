@@ -762,6 +762,10 @@ function DashboardContent() {
   const [reviewFlipped, setReviewFlipped] = useState(false)
   const [reviewingCardId, setReviewingCardId] = useState<string | null>(null)
   const [dueCount, setDueCount] = useState(0)
+  const [subStatus, setSubStatus] = useState<'loading' | 'none' | 'active' | 'past_due'>('loading')
+  const [minutesRemaining, setMinutesRemaining] = useState<number | null>(null)
+  const [minutesPerMonth, setMinutesPerMonth] = useState<number | null>(null)
+  const [trialCompleted, setTrialCompleted] = useState<boolean | null>(null) // null = loading
   const LESSONS_VISIBLE = 4 // 1 hero + 3 compact
   const NEWS_VISIBLE = 3
   const HISTORY_PER_PAGE = 10
@@ -789,9 +793,13 @@ function DashboardContent() {
     })
   }, [readNewsKey])
 
-  // If user navigated with ?duration=, jump to booking tab
+  // If user navigated with ?duration= or ?tab=booking, jump to booking tab
   useEffect(() => {
     if (durationParam) setActiveTab('booking')
+    else if (typeof window !== 'undefined') {
+      const tabParam = new URLSearchParams(window.location.search).get('tab')
+      if (tabParam === 'booking') setActiveTab('booking')
+    }
   }, [durationParam])
 
   const fetchLessons = useCallback(async () => {
@@ -1029,6 +1037,46 @@ function DashboardContent() {
     if (session?.access_token) fetchLessons()
   }, [session?.access_token, fetchLessons])
 
+  // Fetch subscription status + trial status
+  useEffect(() => {
+    if (!session?.access_token) return
+    const fetchSub = async () => {
+      try {
+        const [subRes, profileRes] = await Promise.all([
+          fetch('/api/subscription', {
+            headers: { Authorization: `Bearer ${session.access_token}` },
+          }),
+          import('@/lib/supabase').then(({ supabase }) =>
+            supabase.from('profiles').select('trial_completed_at').eq('id', user?.id).single()
+          ),
+        ])
+
+        if (subRes.ok) {
+          const data = await subRes.json()
+          if (!data.subscription || data.subscription.status === 'cancelled') {
+            setSubStatus('none')
+          } else if (data.subscription.status === 'past_due') {
+            setSubStatus('past_due')
+          } else {
+            setSubStatus('active')
+          }
+          if (data.balance) {
+            setMinutesRemaining(data.balance.minutesRemaining)
+            setMinutesPerMonth(data.balance.minutesPerMonth)
+          }
+        } else {
+          setSubStatus('none')
+        }
+
+        setTrialCompleted(!!profileRes.data?.trial_completed_at)
+      } catch {
+        setSubStatus('none')
+        setTrialCompleted(false)
+      }
+    }
+    fetchSub()
+  }, [session?.access_token, user?.id])
+
   useEffect(() => {
     if (activeTab === 'history' && session?.access_token && historyLessons.length === 0) {
       fetchHistory()
@@ -1225,6 +1273,71 @@ function DashboardContent() {
                     transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
                     className="space-y-8"
                   >
+                    {/* Subscription / trial banner */}
+                    {subStatus === 'none' && trialCompleted !== null && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+                      >
+                      <div
+                        className="rounded-xl px-5 py-4"
+                        style={{
+                          background: 'var(--surface)',
+                          border: '1px solid var(--border-subtle)',
+                        }}
+                      >
+                        {!trialCompleted ? (
+                          /* User hasn't done trial yet */
+                          <div className="flex items-center justify-between gap-4">
+                            <div>
+                              <p className="text-sm font-medium mb-0.5" style={{ color: 'var(--text)' }}>
+                                {locale === 'ja' ? '無料体験レッスンを予約しよう' : 'Book your free trial lesson'}
+                              </p>
+                              <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                                {locale === 'ja'
+                                  ? '15分の体験後、48時間以内の入会で最大50%オフ'
+                                  : 'Get up to 50% off when you subscribe within 48h of your trial'}
+                              </p>
+                            </div>
+                            <Squircle asChild cornerRadius={10} cornerSmoothing={0.8}>
+                              <button
+                                onClick={() => { setActiveTab('booking') }}
+                                className="btn-trial shrink-0 px-4 py-2.5 text-sm font-medium transition-colors hover:opacity-90"
+                              >
+                                {locale === 'ja' ? '体験予約' : 'Book trial'}
+                              </button>
+                            </Squircle>
+                          </div>
+                        ) : (
+                          /* Trial done but no subscription */
+                          <div className="flex items-center justify-between gap-4">
+                            <div>
+                              <p className="text-sm font-medium mb-0.5" style={{ color: 'var(--text)' }}>
+                                {locale === 'ja' ? 'プランを選んでレッスンを始めよう' : 'Choose a plan to start booking'}
+                              </p>
+                              <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                                {locale === 'ja'
+                                  ? 'レッスンの予約にはプランの登録が必要です'
+                                  : 'A subscription is required to book lessons'}
+                              </p>
+                            </div>
+                            <Squircle asChild cornerRadius={10} cornerSmoothing={0.8}>
+                              <button
+                                onClick={() => (window.location.href = '/plans')}
+                                className="shrink-0 px-4 py-2.5 text-sm font-medium transition-colors hover:opacity-90"
+                                style={{ background: 'var(--accent)', color: 'var(--selected-text)' }}
+                              >
+                                {locale === 'ja' ? 'プランを見る' : 'View plans'}
+                              </button>
+                            </Squircle>
+                          </div>
+                        )}
+                      </div>
+                      </motion.div>
+                    )}
+
+
                     {/* Upcoming lessons — next lesson is hero, rest are compact */}
                     {loadingLessons ? (
                       <SquircleBox cornerRadius={12} className="p-8 text-center" style={{ background: 'var(--surface)' }}>
@@ -1350,10 +1463,27 @@ function DashboardContent() {
                 exit={{ opacity: 0, y: -8 }}
                 transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
               >
+              {/* Minutes remaining badge */}
+              {subStatus === 'active' && minutesRemaining !== null && (
+                <div className="flex justify-end mb-3">
+                  <span
+                    className="text-xs font-medium px-3 py-1.5 rounded-full"
+                    style={{
+                      background: minutesRemaining < 30 ? 'rgba(240, 96, 96, 0.1)' : 'rgba(0, 194, 184, 0.1)',
+                      color: minutesRemaining < 30 ? 'var(--danger)' : 'var(--accent)',
+                    }}
+                  >
+                    {locale === 'ja'
+                      ? `${minutesRemaining}分残り`
+                      : `${minutesRemaining} min left`}
+                  </span>
+                </div>
+              )}
               <BookingCalendar
                 selectedDuration={durationParam ? parseInt(durationParam) : undefined}
                 onBookingComplete={() => { fetchLessons(); setLessonToReschedule(null); setActiveTab('home') }}
                 rescheduleLesson={lessonToReschedule ? { id: lessonToReschedule.id, googleEventId: lessonToReschedule.googleEventId } : undefined}
+                hasSubscription={subStatus === 'active'}
               />
               </motion.div>
             )}

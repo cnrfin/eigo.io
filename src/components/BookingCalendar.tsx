@@ -8,12 +8,12 @@ import SquircleBox from '@/components/ui/SquircleBox'
 
 type SelectedBooking = { date: string; time: string; dayLabel: string }
 
-export default function BookingCalendar({ selectedDuration, onBookingComplete, rescheduleLesson }: { selectedDuration?: number; onBookingComplete?: () => void; rescheduleLesson?: { id: string; googleEventId: string | null } }) {
+export default function BookingCalendar({ selectedDuration, onBookingComplete, rescheduleLesson, hasSubscription = false }: { selectedDuration?: number; onBookingComplete?: () => void; rescheduleLesson?: { id: string; googleEventId: string | null }; hasSubscription?: boolean }) {
   const { t, locale } = useLanguage()
   const { session } = useAuth()
   const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedDay, setSelectedDay] = useState<number | null>(null)
-  const [duration, setDuration] = useState(selectedDuration || 30)
+  const [duration, setDuration] = useState(selectedDuration || (hasSubscription ? 30 : 15))
   const [availableSlots, setAvailableSlots] = useState<string[]>([])
   const [loadingSlots, setLoadingSlots] = useState(false)
   const [booking, setBooking] = useState(false)
@@ -311,20 +311,27 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
 
       {/* Duration selector */}
       <div className="flex gap-2 mb-6 justify-center">
-        {[15, 30, 45, 60].map((d) => (
-          <Squircle key={d} asChild cornerRadius={8} cornerSmoothing={0.8}>
-            <button
-              onClick={() => { setDuration(d); setSelectedBookings([]); setBookingResult(null) }}
-              className="px-5 py-2.5 text-sm font-medium transition-colors"
-              style={{
-                background: duration === d ? 'var(--selected-bg)' : 'var(--surface)',
-                color: duration === d ? 'var(--selected-text)' : 'var(--text-secondary)',
-              }}
-            >
-              {d} min
-            </button>
-          </Squircle>
-        ))}
+        {[15, 30, 45, 60].map((d) => {
+          const locked = !hasSubscription && d !== 15
+          return (
+            <Squircle key={d} asChild cornerRadius={8} cornerSmoothing={0.8}>
+              <button
+                onClick={() => { if (!locked) { setDuration(d); setSelectedBookings([]); setBookingResult(null) } }}
+                disabled={locked}
+                className="px-5 py-2.5 text-sm font-medium transition-colors"
+                style={{
+                  background: duration === d ? 'var(--selected-bg)' : 'var(--surface)',
+                  color: locked ? 'var(--text-disabled)' : duration === d ? 'var(--selected-text)' : 'var(--text-secondary)',
+                  cursor: locked ? 'not-allowed' : 'pointer',
+                  opacity: locked ? 0.5 : 1,
+                }}
+                title={locked ? (locale === 'ja' ? 'プランの登録が必要です' : 'Subscription required') : undefined}
+              >
+                {d} min
+              </button>
+            </Squircle>
+          )
+        })}
       </div>
 
       {/* Timezone indicator */}

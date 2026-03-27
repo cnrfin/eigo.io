@@ -19,6 +19,18 @@ export default function SettingsPage() {
   const [savingDisplayName, setSavingDisplayName] = useState(false)
   const [saveMessage, setSaveMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
+  // Subscription
+  const [subscription, setSubscription] = useState<{
+    plan: string; billingInterval: string; priceTier: string; status: string;
+    cancelAtPeriodEnd: boolean; currentPeriodEnd: string;
+  } | null>(null)
+  const [balance, setBalance] = useState<{
+    minutesPerMonth: number; minutesUsed: number; minutesRemaining: number;
+    periodStart: string; periodEnd: string;
+  } | null>(null)
+  const [loadingSub, setLoadingSub] = useState(true)
+  const [openingPortal, setOpeningPortal] = useState(false)
+
   // Avatar upload
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
   const [uploadingAvatar, setUploadingAvatar] = useState(false)
@@ -62,6 +74,46 @@ export default function SettingsPage() {
     }
     loadContactEmail()
   }, [session?.access_token, user?.id])
+
+  // Load subscription data
+  useEffect(() => {
+    if (!session?.access_token) { setLoadingSub(false); return }
+    const loadSub = async () => {
+      try {
+        const res = await fetch('/api/subscription', {
+          headers: { Authorization: `Bearer ${session.access_token}` },
+        })
+        if (res.ok) {
+          const data = await res.json()
+          setSubscription(data.subscription)
+          setBalance(data.balance)
+        }
+      } catch {
+        // ignore
+      } finally {
+        setLoadingSub(false)
+      }
+    }
+    loadSub()
+  }, [session?.access_token])
+
+  const handleOpenPortal = async () => {
+    if (!session?.access_token) return
+    setOpeningPortal(true)
+    try {
+      const res = await fetch('/api/stripe/portal', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      })
+      const data = await res.json()
+      if (data.url) window.location.href = data.url
+    } catch {
+      setSaveMessage({ type: 'error', text: locale === 'ja' ? 'エラーが発生しました' : 'Something went wrong' })
+      setTimeout(() => setSaveMessage(null), 3000)
+    } finally {
+      setOpeningPortal(false)
+    }
+  }
 
   useEffect(() => {
     if (!loading && !user) {
@@ -544,6 +596,117 @@ export default function SettingsPage() {
                     </button>
                   </div>
                 </div>
+              </SquircleBox>
+              </motion.div>
+
+              {/* Subscription / Your Plan */}
+              <motion.div variants={{ hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0 } }}>
+              <SquircleBox cornerRadius={16} className="p-5 sm:p-8" style={{ background: 'var(--surface)' }}>
+                <h2 className="text-lg font-semibold mb-6" style={{ color: 'var(--text)' }}>
+                  {locale === 'ja' ? 'プラン' : 'Your Plan'}
+                </h2>
+
+                {loadingSub ? (
+                  <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Loading...</p>
+                ) : !subscription || subscription.status === 'cancelled' ? (
+                  <div>
+                    <p className="text-sm mb-4" style={{ color: 'var(--text-muted)' }}>
+                      {locale === 'ja'
+                        ? 'プランに登録していません。レッスンを予約するにはプランの選択が必要です。'
+                        : "You don't have an active plan. Subscribe to start booking lessons."}
+                    </p>
+                    <Squircle asChild cornerRadius={10} cornerSmoothing={0.8}>
+                      <button
+                        onClick={() => (window.location.href = '/plans')}
+                        className="px-5 py-2.5 text-sm font-medium transition-colors hover:opacity-90"
+                        style={{ background: 'var(--accent)', color: 'var(--selected-text)' }}
+                      >
+                        {locale === 'ja' ? 'プランを選ぶ' : 'Choose a plan'}
+                      </button>
+                    </Squircle>
+                  </div>
+                ) : (
+                  <div className="space-y-5">
+                    {/* Plan name & status */}
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-base font-medium" style={{ color: 'var(--text)' }}>
+                          {subscription.plan === 'light' ? 'Student Lite' : 'Student Standard'}
+                          <span className="text-sm font-normal ml-2" style={{ color: 'var(--text-muted)' }}>
+                            ({subscription.billingInterval === 'monthly'
+                              ? (locale === 'ja' ? '月額' : 'Monthly')
+                              : (locale === 'ja' ? '年額' : 'Yearly')})
+                          </span>
+                        </p>
+                      </div>
+                      <span
+                        className="text-xs font-medium px-2.5 py-1 rounded-full"
+                        style={{
+                          background: subscription.status === 'active'
+                            ? 'rgba(34, 197, 94, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                          color: subscription.status === 'active'
+                            ? 'var(--success)' : 'var(--danger)',
+                        }}
+                      >
+                        {subscription.status === 'active'
+                          ? (locale === 'ja' ? '有効' : 'Active')
+                          : subscription.status === 'past_due'
+                            ? (locale === 'ja' ? '未払い' : 'Past due')
+                            : subscription.status}
+                      </span>
+                    </div>
+
+                    {/* Minute usage bar */}
+                    {balance && (
+                      <div>
+                        <div className="flex justify-between text-xs mb-2" style={{ color: 'var(--text-muted)' }}>
+                          <span>
+                            {locale === 'ja'
+                              ? `${balance.minutesRemaining} / ${balance.minutesPerMonth}分 残り`
+                              : `${balance.minutesRemaining} / ${balance.minutesPerMonth} min remaining`}
+                          </span>
+                        </div>
+                        <div
+                          className="h-2 rounded-full overflow-hidden"
+                          style={{ background: 'var(--surface-hover)' }}
+                        >
+                          <motion.div
+                            className="h-full rounded-full"
+                            style={{
+                              background: balance.minutesRemaining < 30 ? 'var(--danger)' : 'var(--accent)',
+                            }}
+                            initial={{ width: '100%' }}
+                            animate={{ width: `${Math.min(100, (balance.minutesRemaining / balance.minutesPerMonth) * 100)}%` }}
+                            transition={{ duration: 0.8, ease: [0.4, 0, 0.2, 1], delay: 0.15 }}
+                          />
+                        </div>
+                        <p className="text-xs mt-2" style={{ color: 'var(--text-subtle)' }}>
+                          {subscription.cancelAtPeriodEnd
+                            ? (locale === 'ja'
+                              ? `${new Date(balance.periodEnd).toLocaleDateString('ja-JP')} に解約されます`
+                              : `Cancels on ${new Date(balance.periodEnd).toLocaleDateString('en-GB')}`)
+                            : (locale === 'ja'
+                              ? `次回更新: ${new Date(balance.periodEnd).toLocaleDateString('ja-JP')}`
+                              : `Renews: ${new Date(balance.periodEnd).toLocaleDateString('en-GB')}`)}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Manage button */}
+                    <Squircle asChild cornerRadius={10} cornerSmoothing={0.8}>
+                      <button
+                        onClick={handleOpenPortal}
+                        disabled={openingPortal}
+                        className="px-5 py-2.5 text-sm font-medium transition-colors hover:opacity-80 disabled:opacity-50"
+                        style={{ background: 'var(--surface-hover)', color: 'var(--text-muted)' }}
+                      >
+                        {openingPortal
+                          ? '...'
+                          : locale === 'ja' ? 'プランを管理する' : 'Manage plan'}
+                      </button>
+                    </Squircle>
+                  </div>
+                )}
               </SquircleBox>
               </motion.div>
 

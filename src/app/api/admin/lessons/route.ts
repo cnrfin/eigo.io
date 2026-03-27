@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
 
   const { data, error } = await supabase
     .from('bookings')
-    .select('id, date, start_time, duration_minutes, status, user_id, whereby_room_url, profiles(display_name, email)')
+    .select('id, date, start_time, duration_minutes, status, user_id, whereby_room_url, profiles!bookings_user_id_fkey(display_name, email)')
     .eq('status', 'confirmed')
     .gte('date', yesterday)
     .order('date', { ascending: true })

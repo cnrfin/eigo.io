@@ -5,6 +5,7 @@ import { createWherebyRoom } from '@/lib/whereby'
 import { sendAdminBookingNotification } from '@/lib/email'
 import { notifyBooking } from '@/lib/notify'
 import { createStudentCalendarEvent } from '@/lib/student-calendar'
+import { getUserSubscription, hasEnoughMinutes, recordMinuteUsage } from '@/lib/subscription'
 
 // POST /api/calendar/book
 // Body: { date: '2026-03-23', time: '17:00', duration: 30, timezone: 'Europe/London' }
@@ -36,6 +37,32 @@ export async function POST(request: NextRequest) {
 
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Check subscription & minute balance (skip for trial lessons — 15 min with no subscription)
+    const subscription = await getUserSubscription(user.id)
+    const isTrial = duration === 15 && !subscription
+
+    if (!isTrial) {
+      if (!subscription || subscription.status === 'cancelled') {
+        return NextResponse.json(
+          { error: 'No active subscription. Please subscribe first.', code: 'NO_SUBSCRIPTION' },
+          { status: 403 },
+        )
+      }
+
+      const minuteCheck = await hasEnoughMinutes(user.id, duration)
+      if (!minuteCheck.allowed) {
+        return NextResponse.json(
+          {
+            error: `Not enough minutes remaining. You have ${minuteCheck.remaining} minutes left but need ${minuteCheck.needed}.`,
+            code: 'INSUFFICIENT_MINUTES',
+            remaining: minuteCheck.remaining,
+            needed: minuteCheck.needed,
+          },
+          { status: 403 },
+        )
+      }
     }
 
     // Verify the slot is still available (in the user's timezone)
@@ -103,6 +130,38 @@ export async function POST(request: NextRequest) {
 
     if (dbError) {
       console.error('Failed to store booking in Supabase:', dbError)
+    }
+
+    // Record minute usage (skip for free trial lessons)
+    if (!isTrial && bookingRow?.id && subscription) {
+      try {
+        await recordMinuteUsage(
+          user.id,
+          bookingRow.id,
+          duration,
+          subscription.current_period_start,
+          'booked',
+        )
+      } catch (usageError) {
+        console.error('Failed to record minute usage:', usageError)
+        // Don't fail the booking if usage recording fails
+      }
+    }
+
+    // Mark trial lesson if this is a 15-min trial
+    // Set trial_completed_at to the lesson end time so the 48h discount window
+    // starts automatically when the lesson finishes (no cron needed)
+    if (isTrial && bookingRow?.id) {
+      const lessonEnd = new Date(`${jstDate}T${jstTime}:00+09:00`)
+      lessonEnd.setMinutes(lessonEnd.getMinutes() + duration)
+      const supabaseService = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
+      await supabaseService
+        .from('profiles')
+        .update({
+          trial_booking_id: bookingRow.id,
+          trial_completed_at: lessonEnd.toISOString(),
+        })
+        .eq('id', user.id)
     }
 
     // Add to student's Google Calendar (non-blocking)

@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
     // Bookings store date/time in JST
     const { data: bookings, error: fetchError } = await supabaseAdmin
       .from('bookings')
-      .select('*, profiles(email, display_name, contact_email)')
+      .select('*, profiles!bookings_user_id_fkey(email, display_name, contact_email)')
       .eq('status', 'confirmed')
       .eq('reminder_30min_sent', false)
 
