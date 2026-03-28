@@ -350,7 +350,7 @@ function HistoryLessonCard({
   lesson, locale, session, onViewTranscript, onAddToDeck, deckPhraseIds,
 }: {
   lesson: Lesson; locale: string; session: { access_token: string } | null
-  onViewTranscript: (lesson: Lesson, content: string, cleanedContent?: string, hasSummary?: boolean) => void
+  onViewTranscript: (lesson: Lesson, content: string, cleanedContent?: string) => void
   onAddToDeck?: (phraseId: string) => void
   deckPhraseIds?: Set<string>
 }) {
@@ -434,7 +434,7 @@ function HistoryLessonCard({
 
     // If we already have content, show it inline
     if (transcriptContent) {
-      onViewTranscript(lesson, transcriptContent, cleanedTranscriptContent, analysisState === 'ready')
+      onViewTranscript(lesson, transcriptContent, cleanedTranscriptContent)
       return
     }
 
@@ -449,7 +449,7 @@ function HistoryLessonCard({
         setTranscriptContent(data.content)
         setCleanedTranscriptContent(data.cleanedContent || undefined)
         setTranscriptState('ready')
-        onViewTranscript(lesson, data.content, data.cleanedContent || undefined, analysisState === 'ready')
+        onViewTranscript(lesson, data.content, data.cleanedContent || undefined)
         try { localStorage.setItem(`eigo_transcript_${lesson.id}`, 'ready') } catch { /* ignore */ }
       } else if (data.status === 'processing') {
         setTranscriptState('processing')
@@ -752,9 +752,10 @@ function DashboardContent() {
   const [readNewsIds, setReadNewsIds] = useState<Set<string>>(new Set())
   const [historyPage, setHistoryPage] = useState(0)
   const [lessonToReschedule, setLessonToReschedule] = useState<Lesson | null>(null)
-  const [selectedTranscript, setSelectedTranscript] = useState<{ lesson: Lesson; content: string; cleanedContent?: string; hasSummary?: boolean } | null>(null)
+  const [selectedTranscript, setSelectedTranscript] = useState<{ lesson: Lesson; content: string; cleanedContent?: string } | null>(null)
   const [transcriptView, setTranscriptView] = useState<'clean' | 'original'>('clean')
   const [cleaningTranscript, setCleaningTranscript] = useState(false)
+  const [copiedTranscript, setCopiedTranscript] = useState(false)
   const [vocabCards, setVocabCards] = useState<VocabCard[]>([])
   const [loadingVocab, setLoadingVocab] = useState(false)
   const [vocabFilter, setVocabFilter] = useState<'all' | 'learning' | 'reviewing' | 'mastered'>('all')
@@ -1543,82 +1544,145 @@ function DashboardContent() {
                             <p className="text-xs" style={{ color: 'var(--text-subtle)' }}>
                               {new Date(`${selectedTranscript.lesson.date}T${selectedTranscript.lesson.startTime}`).toLocaleDateString(
                                 locale === 'ja' ? 'ja-JP' : 'en-GB',
-                                { year: 'numeric', month: 'short', day: 'numeric', weekday: 'short' }
+                                { day: 'numeric', month: 'short' }
                               )}
-                              {' · '}
-                              {new Date(`${selectedTranscript.lesson.date}T${selectedTranscript.lesson.startTime}`).toLocaleTimeString(
-                                locale === 'ja' ? 'ja-JP' : 'en-GB',
-                                { hour: '2-digit', minute: '2-digit' }
-                              )}
-                              {' · '}
-                              {selectedTranscript.lesson.durationMinutes} min
                             </p>
                           </div>
                         </div>
 
-                        {/* Clean / Original toggle */}
-                        {selectedTranscript.cleanedContent ? (
-                          <div
-                            className="flex rounded-full p-0.5 shrink-0"
-                            style={{ background: 'var(--surface-hover)' }}
-                          >
+                        {/* Action buttons */}
+                        <div className="flex items-center gap-1 shrink-0">
+                          {/* Copy */}
+                          <Squircle asChild cornerRadius={8} cornerSmoothing={0.8}>
                             <button
-                              onClick={() => setTranscriptView('clean')}
-                              className="px-3 py-1 text-xs font-medium rounded-full transition-all"
-                              style={{
-                                background: transcriptView === 'clean' ? 'var(--accent)' : 'transparent',
-                                color: transcriptView === 'clean' ? 'var(--selected-text)' : 'var(--text-muted)',
+                              onClick={() => {
+                                const text = transcriptView === 'clean' && selectedTranscript.cleanedContent
+                                  ? selectedTranscript.cleanedContent
+                                  : selectedTranscript.content
+                                navigator.clipboard.writeText(text)
+                                setCopiedTranscript(true)
+                                setTimeout(() => setCopiedTranscript(false), 1500)
                               }}
+                              className="w-8 h-8 flex items-center justify-center transition-all hover:opacity-80"
+                              style={{ background: 'var(--surface-hover)', color: copiedTranscript ? 'var(--accent)' : 'var(--text-muted)' }}
+                              title={locale === 'ja' ? 'コピー' : 'Copy'}
                             >
-                              {locale === 'ja' ? '整理済み' : 'Clean'}
+                              {copiedTranscript ? (
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                  <polyline points="20 6 9 17 4 12" />
+                                </svg>
+                              ) : (
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                                </svg>
+                              )}
                             </button>
+                          </Squircle>
+                          {/* Download */}
+                          <Squircle asChild cornerRadius={8} cornerSmoothing={0.8}>
                             <button
-                              onClick={() => setTranscriptView('original')}
-                              className="px-3 py-1 text-xs font-medium rounded-full transition-all"
-                              style={{
-                                background: transcriptView === 'original' ? 'var(--accent)' : 'transparent',
-                                color: transcriptView === 'original' ? 'var(--selected-text)' : 'var(--text-muted)',
+                              onClick={() => {
+                                const text = transcriptView === 'clean' && selectedTranscript.cleanedContent
+                                  ? selectedTranscript.cleanedContent
+                                  : selectedTranscript.content
+                                const dateStr = selectedTranscript.lesson.date
+                                const blob = new Blob([text], { type: 'text/markdown' })
+                                const url = URL.createObjectURL(blob)
+                                const a = document.createElement('a')
+                                a.href = url
+                                a.download = `transcript-${dateStr}.md`
+                                a.click()
+                                URL.revokeObjectURL(url)
                               }}
+                              className="w-8 h-8 flex items-center justify-center transition-all hover:opacity-80"
+                              style={{ background: 'var(--surface-hover)', color: 'var(--text-muted)' }}
+                              title={locale === 'ja' ? 'ダウンロード' : 'Download'}
                             >
-                              {locale === 'ja' ? '元の文字起こし' : 'Original'}
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                <polyline points="7 10 12 15 17 10" />
+                                <line x1="12" y1="15" x2="12" y2="3" />
+                              </svg>
                             </button>
-                          </div>
-                        ) : cleaningTranscript ? (
-                          <span
-                            className="px-3 py-1.5 text-xs font-medium rounded-full flex items-center gap-1.5 shrink-0"
-                            style={{ background: 'var(--surface-hover)', color: 'var(--text-muted)' }}
-                          >
-                            <span className="spinner-sm" />
-                            {locale === 'ja' ? '整理中...' : 'Cleaning...'}
-                          </span>
-                        ) : selectedTranscript.hasSummary ? (
-                          <button
-                            onClick={async () => {
-                              if (!session?.access_token) return
-                              setCleaningTranscript(true)
-                              try {
-                                const res = await fetch('/api/transcriptions/clean', {
-                                  method: 'POST',
-                                  headers: {
-                                    'Content-Type': 'application/json',
-                                    Authorization: `Bearer ${session.access_token}`,
-                                  },
-                                  body: JSON.stringify({ bookingId: selectedTranscript.lesson.id }),
-                                })
-                                const data = await res.json()
-                                if (data.status === 'ready' && data.cleanedContent) {
-                                  setSelectedTranscript(prev => prev ? { ...prev, cleanedContent: data.cleanedContent } : prev)
-                                  setTranscriptView('clean')
-                                }
-                              } catch { /* ignore */ }
-                              setCleaningTranscript(false)
-                            }}
-                            className="px-3 py-1.5 text-xs font-medium rounded-full transition-all hover:opacity-90 shrink-0"
-                            style={{ background: 'var(--surface-hover)', color: 'var(--text-muted)' }}
-                          >
-                            {locale === 'ja' ? '✨ 文字起こしを整理' : '✨ Clean up'}
-                          </button>
-                        ) : null}
+                          </Squircle>
+                          {/* Clean / Original toggle or Clean up button */}
+                          {selectedTranscript.cleanedContent ? (
+                            <Squircle asChild cornerRadius={8} cornerSmoothing={0.8}>
+                              <div
+                                className="flex h-8 p-0.5 ml-1 items-center"
+                                style={{ background: 'var(--surface-hover)' }}
+                              >
+                                <Squircle asChild cornerRadius={6} cornerSmoothing={0.8}>
+                                  <button
+                                    onClick={() => setTranscriptView('clean')}
+                                    className="h-full px-3 text-xs font-medium transition-all flex items-center"
+                                    style={{
+                                      background: transcriptView === 'clean' ? 'var(--accent)' : 'transparent',
+                                      color: transcriptView === 'clean' ? 'var(--selected-text)' : 'var(--text-muted)',
+                                    }}
+                                  >
+                                    {locale === 'ja' ? '整理済み' : 'Clean'}
+                                  </button>
+                                </Squircle>
+                                <Squircle asChild cornerRadius={6} cornerSmoothing={0.8}>
+                                  <button
+                                    onClick={() => setTranscriptView('original')}
+                                    className="h-full px-3 text-xs font-medium transition-all flex items-center"
+                                    style={{
+                                      background: transcriptView === 'original' ? 'var(--accent)' : 'transparent',
+                                      color: transcriptView === 'original' ? 'var(--selected-text)' : 'var(--text-muted)',
+                                    }}
+                                  >
+                                    {locale === 'ja' ? '元の文字起こし' : 'Original'}
+                                  </button>
+                                </Squircle>
+                              </div>
+                            </Squircle>
+                          ) : cleaningTranscript ? (
+                            <Squircle asChild cornerRadius={8} cornerSmoothing={0.8}>
+                              <span
+                                className="h-8 px-3 text-xs font-medium flex items-center gap-1.5 shrink-0"
+                                style={{ background: 'var(--surface-hover)', color: 'var(--text-muted)' }}
+                              >
+                                <span className="spinner-sm" />
+                                {locale === 'ja' ? '整理中...' : 'Cleaning...'}
+                              </span>
+                            </Squircle>
+                          ) : (
+                            <Squircle asChild cornerRadius={8} cornerSmoothing={0.8}>
+                              <button
+                                onClick={async () => {
+                                  if (!session?.access_token) return
+                                  setCleaningTranscript(true)
+                                  try {
+                                    const res = await fetch('/api/transcriptions/clean', {
+                                      method: 'POST',
+                                      headers: {
+                                        'Content-Type': 'application/json',
+                                        Authorization: `Bearer ${session.access_token}`,
+                                      },
+                                      body: JSON.stringify({ bookingId: selectedTranscript.lesson.id }),
+                                    })
+                                    const data = await res.json()
+                                    if (data.status === 'ready' && data.cleanedContent) {
+                                      setSelectedTranscript(prev => prev ? { ...prev, cleanedContent: data.cleanedContent } : prev)
+                                      setTranscriptView('clean')
+                                    }
+                                  } catch { /* ignore */ }
+                                  setCleaningTranscript(false)
+                                }}
+                                className="h-8 px-3 text-xs font-medium transition-all hover:opacity-90 shrink-0 flex items-center gap-1.5"
+                                style={{ background: 'var(--surface-hover)', color: 'var(--text-muted)' }}
+                              >
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+                                  <path d="M12 3l1.912 5.813a2 2 0 0 0 1.275 1.275L21 12l-5.813 1.912a2 2 0 0 0-1.275 1.275L12 21l-1.912-5.813a2 2 0 0 0-1.275-1.275L3 12l5.813-1.912a2 2 0 0 0 1.275-1.275L12 3z" />
+                                </svg>
+                                {locale === 'ja' ? '整理' : 'Clean up'}
+                              </button>
+                            </Squircle>
+                          )}
+                        </div>
                       </div>
 
                       {/* Transcript content */}
@@ -1678,7 +1742,7 @@ function DashboardContent() {
                             lesson={lesson}
                             locale={locale}
                             session={session}
-                            onViewTranscript={(l, content, cleanedContent, hasSummary) => { setSelectedTranscript({ lesson: l, content, cleanedContent, hasSummary }); setTranscriptView(cleanedContent ? 'clean' : 'original') }}
+                            onViewTranscript={(l, content, cleanedContent) => { setSelectedTranscript({ lesson: l, content, cleanedContent }); setTranscriptView(cleanedContent ? 'clean' : 'original') }}
                             onAddToDeck={addToDeck}
                             deckPhraseIds={deckPhraseIds}
                           />

@@ -68,21 +68,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Must have a summary (ensures mistakes are captured from the raw version first)
-    const { data: summary } = await supabase
-      .from('lesson_summaries')
-      .select('id')
-      .eq('booking_id', bookingId)
-      .single()
-
-    if (!summary) {
-      return NextResponse.json(
-        { error: 'Generate a summary first so mistakes are captured from the original transcript.' },
-        { status: 400 },
-      )
-    }
-
-    // Clean the transcript
+    // Clean the transcript (summary always uses transcript_text, so cleanup is independent)
     const cleaned = await cleanTranscript(booking.transcript_text)
 
     // Save to Supabase

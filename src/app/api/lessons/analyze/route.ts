@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
   // Fetch booking and verify ownership
   const { data: booking, error: dbError } = await supabase
     .from('bookings')
-    .select('id, user_id, transcription_id')
+    .select('id, user_id, transcription_id, transcript_text')
     .eq('id', bookingId)
     .single()
 
@@ -81,31 +81,38 @@ export async function POST(request: NextRequest) {
     })
   }
 
-  // Need to generate — fetch transcript first
-  if (!booking.transcription_id) {
-    console.log('[analyze] No transcription_id for booking:', bookingId, 'booking data:', JSON.stringify(booking))
-    return NextResponse.json({
-      error: 'Transcript not available yet. Please generate the transcript first.',
-    }, { status: 400 })
-  }
-
+  // Need to generate — get transcript text (prefer cached version in Supabase)
   try {
-    // Check transcription is ready
-    const transcription = await getTranscription(booking.transcription_id)
-    if (!transcription || (transcription.state !== 'finished' && transcription.state !== 'ready')) {
-      return NextResponse.json({
-        error: 'Transcript is still processing. Please try again shortly.',
-      }, { status: 400 })
-    }
+    let transcriptText = booking.transcript_text
 
-    // Fetch transcript content
-    const accessLink = await getTranscriptionAccessLink(booking.transcription_id)
-    if (!accessLink) {
-      return NextResponse.json({ error: 'Could not fetch transcript content' }, { status: 500 })
-    }
+    // Fallback: fetch from Whereby if not cached yet
+    if (!transcriptText) {
+      if (!booking.transcription_id) {
+        return NextResponse.json({
+          error: 'Transcript not available yet. Please generate the transcript first.',
+        }, { status: 400 })
+      }
 
-    const contentRes = await fetch(accessLink)
-    const transcriptText = await contentRes.text()
+      const transcription = await getTranscription(booking.transcription_id)
+      if (!transcription || (transcription.state !== 'finished' && transcription.state !== 'ready')) {
+        return NextResponse.json({
+          error: 'Transcript is still processing. Please try again shortly.',
+        }, { status: 400 })
+      }
+
+      const accessLink = await getTranscriptionAccessLink(booking.transcription_id)
+      if (!accessLink) {
+        return NextResponse.json({ error: 'Could not fetch transcript content' }, { status: 500 })
+      }
+
+      const contentRes = await fetch(accessLink)
+      transcriptText = await contentRes.text()
+
+      // Cache it for next time
+      if (transcriptText) {
+        await supabase.from('bookings').update({ transcript_text: transcriptText }).eq('id', bookingId)
+      }
+    }
 
     if (!transcriptText || transcriptText.trim().length < 50) {
       return NextResponse.json({
