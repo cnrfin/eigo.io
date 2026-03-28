@@ -12,6 +12,7 @@ import Header from '@/components/Header'
 import BookingCalendar from '@/components/BookingCalendar'
 import { motion, AnimatePresence } from 'framer-motion'
 import { formatNextReview, previewIntervals, type ReviewRating } from '@/lib/srs'
+import AudioPlayer from '@/components/AudioPlayer'
 
 type Lesson = {
   id: string
@@ -756,6 +757,8 @@ function DashboardContent() {
   const [transcriptView, setTranscriptView] = useState<'clean' | 'original'>('clean')
   const [cleaningTranscript, setCleaningTranscript] = useState(false)
   const [copiedTranscript, setCopiedTranscript] = useState(false)
+  const [audioPlayer, setAudioPlayer] = useState<{ src: string } | null>(null)
+  const [loadingAudio, setLoadingAudio] = useState(false)
   const [vocabCards, setVocabCards] = useState<VocabCard[]>([])
   const [loadingVocab, setLoadingVocab] = useState(false)
   const [vocabFilter, setVocabFilter] = useState<'all' | 'learning' | 'reviewing' | 'mastered'>('all')
@@ -1176,7 +1179,7 @@ function DashboardContent() {
               {tabs.map(({ key, label }) => (
                 <button
                   key={key}
-                  onClick={() => { setActiveTab(key); if (key !== 'history') setSelectedTranscript(null) }}
+                  onClick={() => { setActiveTab(key); if (key !== 'history') { setSelectedTranscript(null); setAudioPlayer(null) } }}
                   className="px-3 sm:px-5 py-3 font-medium transition-colors relative text-sm sm:text-base whitespace-nowrap"
                   style={{
                     color: activeTab === key ? 'var(--text)' : 'var(--text-muted)',
@@ -1514,7 +1517,7 @@ function DashboardContent() {
                   >
                     {/* Back button */}
                     <button
-                      onClick={() => setSelectedTranscript(null)}
+                      onClick={() => { setSelectedTranscript(null); setAudioPlayer(null) }}
                       className="flex items-center gap-2 mb-6 text-sm font-medium transition-colors hover:opacity-80"
                       style={{ color: 'var(--text-muted)' }}
                     >
@@ -1606,6 +1609,39 @@ function DashboardContent() {
                               </svg>
                             </button>
                           </Squircle>
+                          {/* Listen */}
+                          <Squircle asChild cornerRadius={8} cornerSmoothing={0.8}>
+                            <button
+                              onClick={async () => {
+                                if (!session?.access_token || !selectedTranscript) return
+                                if (audioPlayer) { setAudioPlayer(null); return }
+                                setLoadingAudio(true)
+                                try {
+                                  const res = await fetch(`/api/recordings/audio?bookingId=${selectedTranscript.lesson.id}`, {
+                                    headers: { Authorization: `Bearer ${session.access_token}` },
+                                  })
+                                  const data = await res.json()
+                                  if (data.accessLink) {
+                                    setAudioPlayer({ src: data.accessLink })
+                                  }
+                                } catch { /* ignore */ }
+                                setLoadingAudio(false)
+                              }}
+                              disabled={loadingAudio}
+                              className="w-8 h-8 flex items-center justify-center transition-all hover:opacity-80 disabled:opacity-40"
+                              style={{ background: audioPlayer ? 'var(--accent)' : 'var(--surface-hover)', color: audioPlayer ? 'var(--selected-text)' : 'var(--text-muted)' }}
+                              title={locale === 'ja' ? '録音を聴く' : 'Listen'}
+                            >
+                              {loadingAudio ? (
+                                <span className="spinner-sm" />
+                              ) : (
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                  <path d="M3 18v-6a9 9 0 0 1 18 0v6" />
+                                  <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z" />
+                                </svg>
+                              )}
+                            </button>
+                          </Squircle>
                           {/* Clean / Original toggle or Clean up button */}
                           {selectedTranscript.cleanedContent ? (
                             <Squircle asChild cornerRadius={8} cornerSmoothing={0.8}>
@@ -1686,7 +1722,7 @@ function DashboardContent() {
                       </div>
 
                       {/* Transcript content */}
-                      <div className="space-y-4">
+                      <div className="space-y-4" style={{ paddingBottom: audioPlayer ? '140px' : undefined }}>
                         {(transcriptView === 'clean' && selectedTranscript.cleanedContent
                           ? selectedTranscript.cleanedContent
                           : selectedTranscript.content
@@ -2109,6 +2145,13 @@ function DashboardContent() {
           </section>
         </div>
       </main>
+
+      {audioPlayer && (
+        <AudioPlayer
+          src={audioPlayer.src}
+          onClose={() => setAudioPlayer(null)}
+        />
+      )}
 
       {lessonToCancel && (
         <CancelModal

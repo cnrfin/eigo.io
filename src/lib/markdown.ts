@@ -81,6 +81,8 @@ export function renderMarkdown(text: string): string {
 
 function inlineFormat(text: string): string {
   return text
+    // Images: ![alt](url)
+    .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" style="max-width:100%;border-radius:8px;margin:4px 0" />')
     // Links: [text](url)
     .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
     // Bold: **text**
