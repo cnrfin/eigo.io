@@ -518,12 +518,12 @@ function HistoryLessonCard({
     <>
       <SquircleBox cornerRadius={12} className="overflow-hidden" style={{ background: 'var(--surface)' }}>
         {/* Main card row */}
-        <div className="flex items-center justify-between px-6 py-4">
-          <div>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-6 py-4">
+          <div className="shrink-0">
             <p className="font-medium" style={{ color: 'var(--text)' }}>{dateStr}</p>
             <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{timeStr} · {lesson.durationMinutes} min</p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             {lesson.wherebyRoomUrl && (
               <>
                 {/* Transcript button */}
@@ -1527,7 +1527,8 @@ function DashboardContent() {
 
                     <SquircleBox cornerRadius={16} className="p-6 sm:p-8" style={{ background: 'var(--surface)' }}>
                       {/* Header with lesson date/time */}
-                      <div className="flex items-center justify-between mb-5">
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
+                        {/* Top row: title + info */}
                         <div className="flex items-center gap-3">
                           <div
                             className="w-9 h-9 rounded-full shrink-0 flex items-center justify-center"
@@ -1547,14 +1548,21 @@ function DashboardContent() {
                             <p className="text-xs" style={{ color: 'var(--text-subtle)' }}>
                               {new Date(`${selectedTranscript.lesson.date}T${selectedTranscript.lesson.startTime}`).toLocaleDateString(
                                 locale === 'ja' ? 'ja-JP' : 'en-GB',
-                                { day: 'numeric', month: 'short' }
+                                { weekday: 'short', day: 'numeric', month: 'short' }
                               )}
+                              {' · '}
+                              {new Date(`${selectedTranscript.lesson.date}T${selectedTranscript.lesson.startTime}`).toLocaleTimeString(
+                                locale === 'ja' ? 'ja-JP' : 'en-GB',
+                                { hour: '2-digit', minute: '2-digit' }
+                              )}
+                              {' · '}
+                              {selectedTranscript.lesson.durationMinutes} min
                             </p>
                           </div>
                         </div>
 
-                        {/* Action buttons */}
-                        <div className="flex items-center gap-1 shrink-0">
+                        {/* Action buttons row */}
+                        <div className="flex items-center gap-1 flex-wrap">
                           {/* Copy */}
                           <Squircle asChild cornerRadius={8} cornerSmoothing={0.8}>
                             <button
@@ -1670,7 +1678,7 @@ function DashboardContent() {
                                       color: transcriptView === 'original' ? 'var(--selected-text)' : 'var(--text-muted)',
                                     }}
                                   >
-                                    {locale === 'ja' ? '元の文字起こし' : 'Original'}
+                                    {locale === 'ja' ? 'オリジナル' : 'Original'}
                                   </button>
                                 </Squircle>
                               </div>
