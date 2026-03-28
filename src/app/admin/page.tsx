@@ -299,6 +299,7 @@ function AdminContent() {
   const [loadingStudents, setLoadingStudents] = useState(false)
   const [loadingProgress, setLoadingProgress] = useState(false)
   const [studentPhraseVisible, setStudentPhraseVisible] = useState(20)
+  const [impersonating, setImpersonating] = useState(false)
 
   // Settings
   const [settings, setSettings] = useState<Settings | null>(null)
@@ -423,6 +424,29 @@ function AdminContent() {
       fetchStudentProgress(selectedStudentId)
     }
   }, [selectedStudentId, fetchStudentProgress])
+
+  // Impersonate student — open their dashboard in a new tab
+  const handleViewAs = useCallback(async (email: string) => {
+    if (!session?.access_token) return
+    setImpersonating(true)
+    try {
+      const res = await fetch('/api/admin/impersonate', {
+        method: 'POST',
+        headers: headers(),
+        body: JSON.stringify({ email }),
+      })
+      if (res.ok) {
+        const { url } = await res.json()
+        window.open(url, '_blank')
+      } else {
+        const err = await res.json()
+        alert(`Failed to impersonate: ${err.error}`)
+      }
+    } catch {
+      alert('Failed to generate impersonation link')
+    }
+    setImpersonating(false)
+  }, [session?.access_token, headers])
 
   // News CRUD
   const saveNews = async (data: Partial<NewsItem>) => {
@@ -858,6 +882,22 @@ function AdminContent() {
                       <p style={{ color: 'var(--text-muted)' }}>Loading progress...</p>
                     ) : studentProgress ? (
                       <div className="space-y-6">
+                        {/* View as student button */}
+                        {studentProgress.profile.email && (
+                          <div className="flex justify-end">
+                            <Squircle asChild cornerRadius={8} cornerSmoothing={0.8}>
+                              <button
+                                onClick={() => handleViewAs(studentProgress.profile.email!)}
+                                disabled={impersonating}
+                                className="px-3 py-1.5 text-xs font-medium transition-all hover:opacity-90"
+                                style={{ background: 'var(--surface)', color: 'var(--text-muted)' }}
+                              >
+                                {impersonating ? 'Opening...' : `View as ${studentProgress.profile.display_name || 'student'}`}
+                              </button>
+                            </Squircle>
+                          </div>
+                        )}
+
                         {/* Overview stats */}
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                           <SquircleBox cornerRadius={12} className="p-4" style={{ background: 'var(--surface)' }}>

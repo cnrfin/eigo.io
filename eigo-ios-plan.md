@@ -11,25 +11,26 @@ A React Native (Expo 54) universal iOS app (iPhone + iPad) that mirrors the core
 
 ## What the app does
 
-The app gives students two things: the ability to book and manage lessons, and a place to study their phrase bank. It connects to the existing Next.js API and Supabase database — no backend changes needed.
+The app gives students the full eigo.io experience: sign up, book a trial lesson, subscribe to a plan via Stripe, book and manage lessons, and study their phrase bank. It connects to the existing Next.js API and Supabase database — minimal backend changes needed (just accepting mobile deep links for Stripe redirects).
 
 **In scope:**
 
-- Log in to existing accounts (Google, LINE, email/password) — no sign-up in-app
-- Browse available slots and book lessons
+- Sign up for new accounts (Google, LINE, email/password) and log in to existing ones
+- Trial lesson gating — new users book a free trial before seeing plan options
+- Plan selection and Stripe checkout for subscriptions (light / standard, monthly / yearly)
+- Browse available slots and book lessons (with minute balance enforcement)
 - View upcoming lessons with countdown and join button
 - View past lessons with transcripts, summaries, and phrase extraction
 - Phrase bank with spaced repetition review sessions
+- Subscription management (view plan, minutes remaining, cancel via Stripe portal)
 - Bilingual UI (EN/JA) synced to user preference
 - Push notifications for lesson reminders
 
 **Out of scope (stays web-only):**
 
-- Account creation / sign-up (users register on the web first)
 - Admin dashboard (news, settings, student insights)
 - AI test panel and seed endpoints
 - Landing page / marketing site
-- Payments or in-app purchases (all billing handled outside the app)
 
 ---
 
@@ -40,7 +41,11 @@ eigo-ios/
 ├── app/                          # Expo Router file-based routing
 │   ├── _layout.tsx               # Root layout (providers, fonts)
 │   ├── index.tsx                 # Auth gate → redirect to /home or /sign-in
-│   ├── sign-in.tsx               # Login/signup screen
+│   ├── sign-in.tsx               # Login + signup screen (toggle mode)
+│   ├── plans.tsx                 # Plan selection after trial completion
+│   ├── payment/
+│   │   ├── success.tsx           # Deep link target after Stripe payment
+│   │   └── cancel.tsx            # Deep link target if payment cancelled
 │   ├── (tabs)/                   # Tab navigator (authenticated)
 │   │   ├── _layout.tsx           # Tab bar config
 │   │   ├── home.tsx              # Upcoming lessons + news
@@ -72,6 +77,7 @@ eigo-ios/
 │   ├── useLessons.ts             # Fetch upcoming/history lessons
 │   ├── useVocab.ts               # Fetch vocab cards, review, add/remove
 │   ├── useBooking.ts             # Available slots, book, cancel, reschedule
+│   ├── useSubscription.ts        # Fetch subscription status + minute balance
 │   └── useNews.ts                # Fetch news feed
 └── assets/                       # Fonts, images
 ```
@@ -80,11 +86,27 @@ eigo-ios/
 
 ## Screen-by-screen breakdown
 
-### Sign In (login only — no registration)
+### Sign In / Sign Up
 
-Login screen with three options: Google OAuth, LINE OAuth, and email/password. Uses `supabase.auth.signInWithOAuth()` for social providers with Expo AuthSession for the redirect flow. No sign-up flow — users must create their account on the web first. The login screen should include a link to eigo.io for new users who need to register.
+Auth screen with three provider options: Google OAuth, LINE OAuth, and email/password. Toggle between "Log in" and "Sign up" modes. Uses `supabase.auth.signInWithOAuth()` / `supabase.auth.signUp()` for the respective flows, with Expo AuthSession handling OAuth redirects.
 
-After login, fetch the user profile from the `profiles` table to get `preferred_language` and `avatar_url`.
+After auth, fetch the user profile from the `profiles` table to get `preferred_language`, `avatar_url`, `trial_completed_at`, and subscription status. Route the user based on their state:
+
+- **No trial booked** → Book tab with trial prompt
+- **Trial booked, not completed** → Home tab showing upcoming trial lesson
+- **Trial completed, no subscription** → Plan selection screen (with trial discount countdown if within 48h)
+- **Active subscription** → Home tab (normal flow)
+
+### Plan Selection
+
+Shown after trial completion when the user has no active subscription. Mirrors the web pricing flow.
+
+- **Plan cards** — Light (120 min/month) and Standard (240 min/month) with monthly/yearly toggle.
+- **Trial discount banner** — if within 48 hours of trial completion, show discounted prices with a countdown timer. Uses the same `trialHoursRemaining()` logic from the web.
+- **"Subscribe" button** → opens Stripe Checkout in an in-app browser (see Payments section below).
+- After successful payment, the Stripe webhook creates the subscription record server-side. The app polls `GET /api/subscription` until active, then navigates to Home.
+
+Data: `GET /api/stripe/prices` (plan details) + `POST /api/stripe/checkout` (create session) + `GET /api/subscription` (poll for activation)
 
 ### Home (tab)
 
@@ -100,10 +122,12 @@ Data: `GET /api/calendar/upcoming` + `GET /api/news`
 
 Calendar and slot picker for scheduling new lessons.
 
+- **Minutes remaining badge** — top-right corner showing remaining minutes for the current billing period (same as web booking tab).
 - **Calendar** — horizontal scrolling week view or monthly grid. Dates with available slots get a dot indicator. Fetches availability per date from `GET /api/calendar/available`.
 - **Slot grid** — shows available times for the selected date. Tap to select.
-- **Duration toggle** — 30 or 60 minute options.
-- **Confirm sheet** — bottom sheet summary before booking. Hits `POST /api/calendar/book`.
+- **Duration toggle** — 30 or 60 minute options. Disabled options greyed out if insufficient minutes remaining.
+- **Confirm sheet** — bottom sheet summary before booking. Shows minutes to be deducted. Hits `POST /api/calendar/book`.
+- **No subscription state** — if user has no active subscription, show a prompt to complete their trial or select a plan instead of the calendar.
 
 This is the most interaction-heavy screen — Reanimated for the calendar scroll and slot selection animations.
 
@@ -150,23 +174,26 @@ The `srs.ts` algorithm is pure TypeScript and can be copied directly from the we
 - Avatar (from profile or upload)
 - Language toggle (EN/JA)
 - Push notification preferences
+- **Subscription panel** — current plan, billing interval, minutes usage bar (depleting), renewal/cancellation date. "Manage subscription" button opens the Stripe billing portal in an in-app browser.
 - Sign out
 
 ---
 
 ## Authentication
 
-Supabase auth with `@supabase/supabase-js` + `expo-secure-store` for token persistence.
+Supabase auth with `@supabase/supabase-js` + `expo-secure-store` for token persistence. Both sign-up and login are supported.
 
 ```
-Google  → supabase.auth.signInWithOAuth() via Expo AuthSession
+Google  → supabase.auth.signInWithOAuth() via Expo AuthSession (handles both new + existing users)
 LINE    → Custom OAuth flow (same as web, redirect back to app via deep link)
-Email   → supabase.auth.signInWithPassword() (login only, no signUp)
+Email   → supabase.auth.signUp() for new users / supabase.auth.signInWithPassword() for existing
 ```
 
 LINE OAuth needs a custom redirect URI registered for the app scheme (e.g. `eigo://auth/line/callback`). The existing `/api/auth/line` endpoint would need a small tweak to accept a `redirect_uri` parameter for mobile.
 
 Session tokens are stored in `expo-secure-store` and attached to all API calls via an auth header.
+
+On first sign-up, the `profiles` row is created automatically by the existing Supabase trigger. The app then routes to the trial booking flow.
 
 ---
 
@@ -192,6 +219,69 @@ export async function api(path: string, options?: RequestInit) {
 ```
 
 All existing API routes already accept Bearer token auth — no changes needed.
+
+---
+
+## Payments (Stripe — external payment)
+
+### Why external payment is allowed
+
+eigo.io provides **one-to-one English tutoring with a real human teacher** — this qualifies as a "real-world service" (person-to-person tutoring) under Apple's App Store Review Guidelines §3.1.3(e). Apps that facilitate real-world services (tutoring, personal training, real estate tours, etc.) have always been permitted to use external payment processors. No Apple commission applies.
+
+Additionally, following the April 2025 Epic v. Apple ruling, US App Store apps can link to external payment methods without commission. Since eigo.io serves students in both Japan and the US, the real-world service exemption is the primary basis (applies globally), with the Epic ruling as additional coverage for US users.
+
+### Payment flow
+
+The app never collects payment information directly. All payment is handled through Stripe Checkout, opened in an in-app browser (`expo-web-browser`).
+
+```
+1. User completes trial lesson
+2. App shows Plan Selection screen with pricing
+3. User taps "Subscribe" on their chosen plan
+4. App calls POST /api/stripe/checkout with:
+   - plan (light / standard)
+   - billing_interval (monthly / yearly)
+   - price_tier (trial / full — based on trialHoursRemaining)
+   - success_url: eigo://payment/success
+   - cancel_url: eigo://payment/cancel
+5. API returns Stripe Checkout session URL
+6. App opens URL in expo-web-browser (Safari view controller)
+7. User completes payment on Stripe's hosted page
+8. Stripe redirects to eigo://payment/success (deep link back to app)
+9. Stripe webhook fires → creates subscription in Supabase (server-side)
+10. App polls GET /api/subscription until status is active
+11. App navigates to Home tab with full access
+```
+
+### Subscription management
+
+- **View subscription** — Settings screen shows plan details and minute balance via `GET /api/subscription`.
+- **Cancel / change plan** — "Manage subscription" button calls `POST /api/stripe/portal` to get a Stripe billing portal URL, then opens it in an in-app browser. Portal is configured to enforce "cancel at end of billing period."
+- **Webhook sync** — all subscription state changes (cancel, reactivate, period renewal) are handled by the existing `/api/stripe/webhook` endpoint. The app just reads the current state from the API.
+
+### Deep link configuration
+
+Register the `eigo://` scheme in `app.json` for payment redirect handling:
+
+```json
+{
+  "expo": {
+    "scheme": "eigo",
+    "ios": {
+      "associatedDomains": ["applinks:eigo.io"]
+    }
+  }
+}
+```
+
+The app's root layout listens for deep links and routes `eigo://payment/success` and `eigo://payment/cancel` to the appropriate screens.
+
+### Backend changes needed for mobile payments
+
+Minimal — the existing Stripe checkout and webhook routes already handle everything. Two small additions:
+
+1. **`POST /api/stripe/checkout`** — accept `success_url` and `cancel_url` parameters (currently hardcoded to web URLs). When the request includes a mobile deep link URL, use it instead.
+2. **`app.json` scheme registration** — register `eigo://` as the app's URL scheme so Stripe can redirect back after payment.
 
 ---
 
@@ -243,11 +333,18 @@ Use `useWindowDimensions()` to detect screen size and adjust layouts. A simple b
 
 ## App Store review notes
 
-**No payments in-app:** The app has no in-app purchases, subscriptions, or payment flows. All billing is handled outside the app. This keeps things clean with Apple's guidelines — no revenue share concerns.
+**Real-world service exemption (Guidelines §3.1.3(e)):** eigo.io connects students with a real human English tutor for live one-to-one video lessons. This is a real-world, person-to-person service — the same category as personal training apps, tutoring platforms, and home service apps. Under Apple's guidelines, apps facilitating real-world services may use external payment processors (Stripe) without Apple's in-app purchase system and without commission. The subscription pays for scheduled time with a real teacher, not for digital content.
 
-**Login-only (no registration):** Users must create accounts on the web. The app only supports logging in to existing accounts. This is fine for App Store approval, but Apple's review team needs to test the app. You must provide a **demo account** (email + password) in App Store Connect when submitting for review.
+**No IAP integration needed:** The app uses Stripe Checkout (opened in a Safari view controller via `expo-web-browser`) for all payment. No StoreKit integration, no IAP, no Apple commission. This is standard practice for tutoring and service-booking apps on the App Store.
 
-**Content:** The app is an educational companion for English language lessons. No user-generated public content, no social features, no content moderation concerns.
+**Full sign-up and login supported:** Users can create new accounts or log in to existing ones directly in the app. Apple's review team needs to test the full flow — provide a **demo account** (email + password) in App Store Connect, and ensure the demo account has an active subscription so reviewers can access all features. Also provide clear instructions for testing the trial → subscription flow with a second test account.
+
+**Content:** The app is an educational platform for English language lessons. No user-generated public content, no social features, no content moderation concerns.
+
+**Review submission notes to include:**
+- Explain that the app facilitates real-world tutoring services (live video lessons with a human teacher) and uses external payment per Guidelines §3.1.3(e).
+- Provide demo credentials for a subscribed account and a fresh account (to test trial flow).
+- Note that payment is processed via Stripe Checkout in a Safari view controller — no payment data is collected within the app itself.
 
 ---
 
@@ -259,6 +356,8 @@ These files can be copied directly from the web codebase with zero changes:
 |------|-------------|
 | `src/lib/srs.ts` | Spaced repetition algorithm (calculateNextReview, formatNextReview, previewIntervals) |
 | `src/lib/i18n.ts` | Translation strings |
+| `src/lib/stripe.ts` | Price tier types, plan definitions, price lookups |
+| `src/lib/subscription.ts` | `getPriceTier()`, `trialHoursRemaining()` — pure functions for trial discount logic |
 
 The API route signatures are identical — the mobile app is just a different client hitting the same endpoints.
 
@@ -276,7 +375,7 @@ The API route signatures are identical — the mobile app is just a different cl
   "expo-secure-store": "~14.0.0",
   "expo-auth-session": "~6.0.0",
   "expo-notifications": "~0.29.0",
-  "expo-web-browser": "~14.0.0",
+  "expo-web-browser": "~14.0.0",       // Used for Stripe Checkout + billing portal
   "expo-image": "~2.0.0",
   "react-native-gesture-handler": "~2.20.0",
   "@expo/vector-icons": "^14.0.0"
@@ -292,10 +391,11 @@ The API route signatures are identical — the mobile app is just a different cl
 Get the app functional with the essentials.
 
 - Project setup (Expo 54, Router, Reanimated, Supabase)
-- Auth flow — login only, no sign-up (Google, LINE, email) with link to web for registration
+- Auth flow — sign-up and login (Google, LINE, email)
+- User state routing (trial → plan selection → home)
 - Home tab (upcoming lessons, enter room, countdown)
-- Book tab (calendar, slots, booking flow)
-- Settings screen (profile, language, sign out)
+- Book tab (calendar, slots, booking flow, minute balance badge)
+- Settings screen (profile, language, subscription panel, sign out)
 - iPad adaptive layouts (responsive breakpoints, multi-column grids)
 
 ### Phase 2 — History & Analysis (week 3)
@@ -316,7 +416,19 @@ The study experience.
 - SRS integration (due count, next review badges)
 - Reanimated card transitions
 
-### Phase 4 — Polish & Notifications (week 5)
+### Phase 4 — Payments & Subscriptions (week 5)
+
+Stripe integration and subscription management.
+
+- Plan selection screen (pricing cards, monthly/yearly toggle, trial discount countdown)
+- Stripe Checkout flow via expo-web-browser
+- Deep link handling for payment success/cancel redirects (`eigo://payment/*`)
+- Subscription polling after payment completion
+- Settings subscription panel (plan info, minutes bar, manage/cancel via Stripe portal)
+- Update `POST /api/stripe/checkout` to accept mobile deep link URLs
+- Test full trial → checkout → subscription → booking flow end-to-end
+
+### Phase 5 — Polish & Notifications (week 6)
 
 Ship-ready quality.
 
@@ -326,20 +438,23 @@ Ship-ready quality.
 - Error states and offline handling
 - iPad landscape and split-screen testing
 - App Store assets (iPhone + iPad screenshots, description)
-- Create demo account for App Store review team
+- Create two demo accounts for App Store review (one subscribed, one fresh for trial flow)
+- Write App Store review notes explaining real-world service exemption
 - TestFlight beta
 
 ---
 
 ## Database changes needed
 
-Minimal — just one new column for push tokens:
+Minimal — just one new column for push tokens. The subscription, minute_usage, and profile tables already exist and support the full payment flow.
 
 ```sql
 ALTER TABLE profiles ADD COLUMN IF NOT EXISTS expo_push_token TEXT;
 ```
 
 The cron reminders endpoint gets updated to check for this column and send push notifications when present.
+
+No new tables needed for payments — the existing `subscriptions`, `minute_usage`, and `profiles` tables (with `trial_completed_at`) handle everything.
 
 ---
 

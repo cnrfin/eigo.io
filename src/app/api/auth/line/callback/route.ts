@@ -9,19 +9,38 @@ export async function GET(request: NextRequest) {
   const error = searchParams.get('error')
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
 
+  // Detect if this is a mobile callback (state prefixed with "ios_")
+  const isMobile = state?.startsWith('ios_')
+
+  // Helper: redirect to web or app depending on platform
+  const redirectTo = (path: string) => {
+    if (isMobile) {
+      // path is like /?error=xxx or /auth/line/complete?token_hash=xxx
+      return NextResponse.redirect(`eigo:/${path}`)
+    }
+    return NextResponse.redirect(`${siteUrl}${path}`)
+  }
+
   // Check for LINE errors
   if (error) {
-    return NextResponse.redirect(`${siteUrl}/?error=line_auth_denied`)
+    return redirectTo('/?error=line_auth_denied')
   }
 
   // Validate state (CSRF protection)
-  const storedState = request.cookies.get('line_oauth_state')?.value
-  if (!state || state !== storedState) {
-    return NextResponse.redirect(`${siteUrl}/?error=invalid_state`)
+  // Mobile: can't use cookies cross-app, so we just verify state is present
+  // Web: validate against stored cookie
+  if (!state) {
+    return redirectTo('/?error=invalid_state')
+  }
+  if (!isMobile) {
+    const storedState = request.cookies.get('line_oauth_state')?.value
+    if (state !== storedState) {
+      return redirectTo('/?error=invalid_state')
+    }
   }
 
   if (!code) {
-    return NextResponse.redirect(`${siteUrl}/?error=no_code`)
+    return redirectTo('/?error=no_code')
   }
 
   const supabaseAdmin = getSupabaseAdmin()
@@ -42,7 +61,7 @@ export async function GET(request: NextRequest) {
 
     if (!tokenRes.ok) {
       console.error('LINE token exchange failed:', await tokenRes.text())
-      return NextResponse.redirect(`${siteUrl}/?error=line_token_failed`)
+      return redirectTo('/?error=line_token_failed')
     }
 
     const tokens = await tokenRes.json()
@@ -54,7 +73,7 @@ export async function GET(request: NextRequest) {
 
     if (!profileRes.ok) {
       console.error('LINE profile fetch failed:', await profileRes.text())
-      return NextResponse.redirect(`${siteUrl}/?error=line_profile_failed`)
+      return redirectTo('/?error=line_profile_failed')
     }
 
     const lineProfile = await profileRes.json()
@@ -112,7 +131,7 @@ export async function GET(request: NextRequest) {
 
       if (createError || !newUser.user) {
         console.error('Failed to create user:', createError)
-        return NextResponse.redirect(`${siteUrl}/?error=user_creation_failed`)
+        return redirectTo('/?error=user_creation_failed')
       }
       userId = newUser.user.id
     }
@@ -132,19 +151,19 @@ export async function GET(request: NextRequest) {
 
     if (linkError || !linkData) {
       console.error('Failed to generate magic link:', linkError)
-      return NextResponse.redirect(`${siteUrl}/?error=session_failed`)
+      return redirectTo('/?error=session_failed')
     }
 
     // Redirect to our client-side auth handler with the token hash
     const tokenHash = linkData.properties.hashed_token
-    const response = NextResponse.redirect(
-      `${siteUrl}/auth/line/complete?token_hash=${tokenHash}&type=magiclink`
-    )
-    // Clean up the state cookie
-    response.cookies.delete('line_oauth_state')
+    const response = redirectTo(`/auth/line/complete?token_hash=${tokenHash}&type=magiclink`)
+    // Clean up the state cookie (web only)
+    if (!isMobile) {
+      response.cookies.delete('line_oauth_state')
+    }
     return response
   } catch (err) {
     console.error('LINE auth error:', err)
-    return NextResponse.redirect(`${siteUrl}/?error=line_auth_error`)
+    return redirectTo('/?error=line_auth_error')
   }
 }

@@ -5,19 +5,23 @@ import type { PlanName, BillingInterval } from '@/lib/stripe'
 import { getPriceTier } from '@/lib/subscription'
 
 // POST /api/stripe/checkout
-// Body: { plan: 'light' | 'standard', interval: 'monthly' | 'yearly' }
+// Body: { plan: 'light' | 'standard', billing_interval: 'monthly' | 'yearly', successUrl?: string, cancelUrl?: string }
 // Creates a Stripe Checkout session and returns the URL
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { plan, interval } = body as {
+    const { plan, billing_interval, successUrl, cancelUrl } = body as {
       plan: PlanName
-      interval: BillingInterval
+      billing_interval: BillingInterval
+      successUrl?: string
+      cancelUrl?: string
     }
+
+    const interval = billing_interval
 
     if (!plan || !interval) {
       return NextResponse.json(
-        { error: 'plan and interval are required' },
+        { error: 'plan and billing_interval are required' },
         { status: 400 },
       )
     }
@@ -91,13 +95,16 @@ export async function POST(request: NextRequest) {
 
     // Create Checkout Session
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://eigo.io'
+    const success_url = successUrl || `${baseUrl}/dashboard?subscribed=true`
+    const cancel_url = cancelUrl || `${baseUrl}/plans`
+
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       mode: 'subscription',
       currency: 'jpy',
       line_items: [{ price: priceId, quantity: 1 }],
-      success_url: `${baseUrl}/dashboard?subscribed=true`,
-      cancel_url: `${baseUrl}/plans`,
+      success_url: success_url,
+      cancel_url: cancel_url,
       metadata: {
         supabase_user_id: user.id,
         plan,
