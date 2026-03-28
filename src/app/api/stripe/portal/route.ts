@@ -84,19 +84,30 @@ export async function POST(request: NextRequest) {
 
     const stripe = getStripe()
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://eigo.io'
-    const configId = await getPortalConfigId()
 
-    const session = await stripe.billingPortal.sessions.create({
-      customer: sub.stripe_customer_id,
-      return_url: `${baseUrl}/settings`,
-      configuration: configId,
-    })
+    let session
+    try {
+      const configId = await getPortalConfigId()
+      session = await stripe.billingPortal.sessions.create({
+        customer: sub.stripe_customer_id,
+        return_url: `${baseUrl}/settings`,
+        configuration: configId,
+      })
+    } catch {
+      // Config may be stale — retry without custom configuration
+      cachedPortalConfigId = null
+      session = await stripe.billingPortal.sessions.create({
+        customer: sub.stripe_customer_id,
+        return_url: `${baseUrl}/settings`,
+      })
+    }
 
     return NextResponse.json({ url: session.url })
-  } catch (error) {
-    console.error('Stripe portal error:', error)
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : String(error)
+    console.error('Stripe portal error:', msg, error)
     return NextResponse.json(
-      { error: 'Failed to create portal session' },
+      { error: `Failed to create portal session: ${msg}` },
       { status: 500 },
     )
   }
