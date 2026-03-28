@@ -628,11 +628,11 @@ function HistoryLessonCard({
                       {summary.mistake_patterns.map((m, i) => (
                         <div key={i} className="text-sm rounded-lg p-3" style={{ background: 'var(--surface-hover)' }}>
                           <div className="flex items-start gap-2 mb-1">
-                            <span className="text-xs rounded shrink-0 flex items-center justify-center" style={{ background: 'var(--danger)', color: '#fff', opacity: 0.8, width: '22px', height: '22px', lineHeight: '22px' }}>✗</span>
+                            <span className="shrink-0 flex items-center justify-center" style={{ width: '22px', height: '22px', fontSize: '14px', lineHeight: '22px' }}>❌</span>
                             <span className="pt-0.5" style={{ color: 'var(--text-muted)', textDecoration: 'line-through' }}>{m.example_student}</span>
                           </div>
                           <div className="flex items-start gap-2 mb-1.5">
-                            <span className="text-xs rounded shrink-0 flex items-center justify-center" style={{ background: 'var(--accent)', color: 'var(--selected-text)', width: '22px', height: '22px', lineHeight: '22px' }}>✓</span>
+                            <span className="shrink-0 flex items-center justify-center" style={{ width: '22px', height: '22px', fontSize: '14px', lineHeight: '22px' }}>✅</span>
                             <span className="pt-0.5" style={{ color: 'var(--text)' }}>{m.correction}</span>
                           </div>
                           <p className="text-xs" style={{ color: 'var(--text-muted)', paddingLeft: '30px' }}>
