@@ -350,7 +350,7 @@ function HistoryLessonCard({
   lesson, locale, session, onViewTranscript, onAddToDeck, deckPhraseIds,
 }: {
   lesson: Lesson; locale: string; session: { access_token: string } | null
-  onViewTranscript: (lesson: Lesson, content: string) => void
+  onViewTranscript: (lesson: Lesson, content: string, cleanedContent?: string, hasSummary?: boolean) => void
   onAddToDeck?: (phraseId: string) => void
   deckPhraseIds?: Set<string>
 }) {
@@ -367,6 +367,7 @@ function HistoryLessonCard({
     return 'idle'
   })
   const [transcriptContent, setTranscriptContent] = useState<string | null>(null)
+  const [cleanedTranscriptContent, setCleanedTranscriptContent] = useState<string | undefined>(undefined)
 
   // Analysis state
   const [analysisState, setAnalysisState] = useState<'idle' | 'loading' | 'ready' | 'error'>(() => {
@@ -433,7 +434,7 @@ function HistoryLessonCard({
 
     // If we already have content, show it inline
     if (transcriptContent) {
-      onViewTranscript(lesson, transcriptContent)
+      onViewTranscript(lesson, transcriptContent, cleanedTranscriptContent, analysisState === 'ready')
       return
     }
 
@@ -446,8 +447,9 @@ function HistoryLessonCard({
 
       if (data.status === 'ready' && data.content) {
         setTranscriptContent(data.content)
+        setCleanedTranscriptContent(data.cleanedContent || undefined)
         setTranscriptState('ready')
-        onViewTranscript(lesson, data.content)
+        onViewTranscript(lesson, data.content, data.cleanedContent || undefined, analysisState === 'ready')
         try { localStorage.setItem(`eigo_transcript_${lesson.id}`, 'ready') } catch { /* ignore */ }
       } else if (data.status === 'processing') {
         setTranscriptState('processing')
@@ -750,7 +752,9 @@ function DashboardContent() {
   const [readNewsIds, setReadNewsIds] = useState<Set<string>>(new Set())
   const [historyPage, setHistoryPage] = useState(0)
   const [lessonToReschedule, setLessonToReschedule] = useState<Lesson | null>(null)
-  const [selectedTranscript, setSelectedTranscript] = useState<{ lesson: Lesson; content: string } | null>(null)
+  const [selectedTranscript, setSelectedTranscript] = useState<{ lesson: Lesson; content: string; cleanedContent?: string; hasSummary?: boolean } | null>(null)
+  const [transcriptView, setTranscriptView] = useState<'clean' | 'original'>('clean')
+  const [cleaningTranscript, setCleaningTranscript] = useState(false)
   const [vocabCards, setVocabCards] = useState<VocabCard[]>([])
   const [loadingVocab, setLoadingVocab] = useState(false)
   const [vocabFilter, setVocabFilter] = useState<'all' | 'learning' | 'reviewing' | 'mastered'>('all')
@@ -1519,41 +1523,110 @@ function DashboardContent() {
 
                     <SquircleBox cornerRadius={16} className="p-6 sm:p-8" style={{ background: 'var(--surface)' }}>
                       {/* Header with lesson date/time */}
-                      <div className="flex items-center gap-3 mb-5">
-                        <div
-                          className="w-9 h-9 rounded-full shrink-0 flex items-center justify-center"
-                          style={{ background: 'var(--accent)', color: 'var(--selected-text)' }}
-                        >
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
-                            <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
-                            <line x1="12" y1="19" x2="12" y2="23" />
-                            <line x1="8" y1="23" x2="16" y2="23" />
-                          </svg>
+                      <div className="flex items-center justify-between mb-5">
+                        <div className="flex items-center gap-3">
+                          <div
+                            className="w-9 h-9 rounded-full shrink-0 flex items-center justify-center"
+                            style={{ background: 'var(--accent)', color: 'var(--selected-text)' }}
+                          >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+                              <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                              <line x1="12" y1="19" x2="12" y2="23" />
+                              <line x1="8" y1="23" x2="16" y2="23" />
+                            </svg>
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium" style={{ color: 'var(--text)' }}>
+                              {locale === 'ja' ? '文字起こし' : 'Transcript'}
+                            </p>
+                            <p className="text-xs" style={{ color: 'var(--text-subtle)' }}>
+                              {new Date(`${selectedTranscript.lesson.date}T${selectedTranscript.lesson.startTime}`).toLocaleDateString(
+                                locale === 'ja' ? 'ja-JP' : 'en-GB',
+                                { year: 'numeric', month: 'short', day: 'numeric', weekday: 'short' }
+                              )}
+                              {' · '}
+                              {new Date(`${selectedTranscript.lesson.date}T${selectedTranscript.lesson.startTime}`).toLocaleTimeString(
+                                locale === 'ja' ? 'ja-JP' : 'en-GB',
+                                { hour: '2-digit', minute: '2-digit' }
+                              )}
+                              {' · '}
+                              {selectedTranscript.lesson.durationMinutes} min
+                            </p>
+                          </div>
                         </div>
-                        <div className="min-w-0">
-                          <p className="text-sm font-medium" style={{ color: 'var(--text)' }}>
-                            {locale === 'ja' ? '文字起こし' : 'Transcript'}
-                          </p>
-                          <p className="text-xs" style={{ color: 'var(--text-subtle)' }}>
-                            {new Date(`${selectedTranscript.lesson.date}T${selectedTranscript.lesson.startTime}`).toLocaleDateString(
-                              locale === 'ja' ? 'ja-JP' : 'en-GB',
-                              { year: 'numeric', month: 'short', day: 'numeric', weekday: 'short' }
-                            )}
-                            {' · '}
-                            {new Date(`${selectedTranscript.lesson.date}T${selectedTranscript.lesson.startTime}`).toLocaleTimeString(
-                              locale === 'ja' ? 'ja-JP' : 'en-GB',
-                              { hour: '2-digit', minute: '2-digit' }
-                            )}
-                            {' · '}
-                            {selectedTranscript.lesson.durationMinutes} min
-                          </p>
-                        </div>
+
+                        {/* Clean / Original toggle */}
+                        {selectedTranscript.cleanedContent ? (
+                          <div
+                            className="flex rounded-full p-0.5 shrink-0"
+                            style={{ background: 'var(--surface-hover)' }}
+                          >
+                            <button
+                              onClick={() => setTranscriptView('clean')}
+                              className="px-3 py-1 text-xs font-medium rounded-full transition-all"
+                              style={{
+                                background: transcriptView === 'clean' ? 'var(--accent)' : 'transparent',
+                                color: transcriptView === 'clean' ? 'var(--selected-text)' : 'var(--text-muted)',
+                              }}
+                            >
+                              {locale === 'ja' ? '整理済み' : 'Clean'}
+                            </button>
+                            <button
+                              onClick={() => setTranscriptView('original')}
+                              className="px-3 py-1 text-xs font-medium rounded-full transition-all"
+                              style={{
+                                background: transcriptView === 'original' ? 'var(--accent)' : 'transparent',
+                                color: transcriptView === 'original' ? 'var(--selected-text)' : 'var(--text-muted)',
+                              }}
+                            >
+                              {locale === 'ja' ? '元の文字起こし' : 'Original'}
+                            </button>
+                          </div>
+                        ) : cleaningTranscript ? (
+                          <span
+                            className="px-3 py-1.5 text-xs font-medium rounded-full flex items-center gap-1.5 shrink-0"
+                            style={{ background: 'var(--surface-hover)', color: 'var(--text-muted)' }}
+                          >
+                            <span className="spinner-sm" />
+                            {locale === 'ja' ? '整理中...' : 'Cleaning...'}
+                          </span>
+                        ) : selectedTranscript.hasSummary ? (
+                          <button
+                            onClick={async () => {
+                              if (!session?.access_token) return
+                              setCleaningTranscript(true)
+                              try {
+                                const res = await fetch('/api/transcriptions/clean', {
+                                  method: 'POST',
+                                  headers: {
+                                    'Content-Type': 'application/json',
+                                    Authorization: `Bearer ${session.access_token}`,
+                                  },
+                                  body: JSON.stringify({ bookingId: selectedTranscript.lesson.id }),
+                                })
+                                const data = await res.json()
+                                if (data.status === 'ready' && data.cleanedContent) {
+                                  setSelectedTranscript(prev => prev ? { ...prev, cleanedContent: data.cleanedContent } : prev)
+                                  setTranscriptView('clean')
+                                }
+                              } catch { /* ignore */ }
+                              setCleaningTranscript(false)
+                            }}
+                            className="px-3 py-1.5 text-xs font-medium rounded-full transition-all hover:opacity-90 shrink-0"
+                            style={{ background: 'var(--surface-hover)', color: 'var(--text-muted)' }}
+                          >
+                            {locale === 'ja' ? '✨ 文字起こしを整理' : '✨ Clean up'}
+                          </button>
+                        ) : null}
                       </div>
 
                       {/* Transcript content */}
                       <div className="space-y-4">
-                        {selectedTranscript.content.split('\n').filter(line => line.trim()).map((line, i) => {
+                        {(transcriptView === 'clean' && selectedTranscript.cleanedContent
+                          ? selectedTranscript.cleanedContent
+                          : selectedTranscript.content
+                        ).split('\n').filter(line => line.trim()).map((line, i) => {
                           // Try to parse "Speaker: text" format
                           const speakerMatch = line.match(/^([^:]{1,30}):\s*(.+)/)
                           if (speakerMatch) {
@@ -1605,7 +1678,7 @@ function DashboardContent() {
                             lesson={lesson}
                             locale={locale}
                             session={session}
-                            onViewTranscript={(l, content) => setSelectedTranscript({ lesson: l, content })}
+                            onViewTranscript={(l, content, cleanedContent, hasSummary) => { setSelectedTranscript({ lesson: l, content, cleanedContent, hasSummary }); setTranscriptView(cleanedContent ? 'clean' : 'original') }}
                             onAddToDeck={addToDeck}
                             deckPhraseIds={deckPhraseIds}
                           />
