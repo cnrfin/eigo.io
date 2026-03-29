@@ -6,6 +6,7 @@ import { useLanguage } from '@/context/LanguageContext'
 import { Squircle } from '@squircle-js/react'
 import SquircleBox from '@/components/ui/SquircleBox'
 import Header from '@/components/Header'
+import { motion, AnimatePresence } from 'framer-motion'
 
 const ADMIN_EMAILS = ['cnrfin93@gmail.com']
 
@@ -300,6 +301,7 @@ function AdminContent() {
   const [loadingStudents, setLoadingStudents] = useState(false)
   const [loadingProgress, setLoadingProgress] = useState(false)
   const [studentPhraseVisible, setStudentPhraseVisible] = useState(20)
+  const [expandedInsightId, setExpandedInsightId] = useState<string | null>(null)
   const [impersonating, setImpersonating] = useState(false)
 
   // Settings
@@ -1037,55 +1039,101 @@ function AdminContent() {
 
                         {/* Lesson insights */}
                         {studentProgress.summaries.length > 0 && (
-                          <SquircleBox cornerRadius={12} className="p-4" style={{ background: 'var(--surface)' }}>
+                          <div>
                             <p className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: 'var(--text-subtle)' }}>
                               Lesson insights ({studentProgress.summaries.length})
                             </p>
-                            <div className="space-y-4">
-                              {studentProgress.summaries.map(summary => (
-                                <div key={summary.id} className="rounded-lg p-3" style={{ background: 'var(--surface-hover)' }}>
-                                  {summary.booking && (
-                                    <p className="text-xs font-medium mb-2" style={{ color: 'var(--text-muted)' }}>
-                                      {new Date(`${summary.booking.date}T${summary.booking.start_time}`).toLocaleDateString('en-GB', { weekday: 'short', month: 'short', day: 'numeric' })}
-                                      {' · '}
-                                      {summary.booking.duration_minutes} min
-                                    </p>
-                                  )}
-                                  <p className="text-sm mb-2" style={{ color: 'var(--text-secondary)' }}>
-                                    {locale === 'ja' ? summary.summary_ja : summary.summary_en}
-                                  </p>
-                                  {summary.key_topics.length > 0 && (
-                                    <div className="flex flex-wrap gap-1.5 mb-2">
-                                      {summary.key_topics.map((topic, i) => (
-                                        <span key={i} className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'var(--surface)', color: 'var(--text-muted)' }}>
-                                          {topic}
-                                        </span>
-                                      ))}
-                                    </div>
-                                  )}
-                                  {summary.mistake_patterns.length > 0 && (
-                                    <div className="space-y-1.5 mt-2">
-                                      {summary.mistake_patterns.map((m, i) => (
-                                        <div key={i} className="text-xs">
-                                          <div className="flex items-center gap-1.5">
-                                            <span className="shrink-0 flex items-center justify-center rounded" style={{ background: 'var(--danger)', color: '#fff', opacity: 0.8, width: '16px', height: '16px', fontSize: '10px' }}>✗</span>
-                                            <span style={{ color: 'var(--text-muted)', textDecoration: 'line-through' }}>{m.example_student}</span>
-                                          </div>
-                                          <div className="flex items-center gap-1.5 mt-0.5">
-                                            <span className="shrink-0 flex items-center justify-center rounded" style={{ background: 'var(--accent)', color: 'var(--selected-text)', width: '16px', height: '16px', fontSize: '10px' }}>✓</span>
-                                            <span style={{ color: 'var(--text)' }}>{m.correction}</span>
-                                          </div>
-                                          <p className="mt-0.5" style={{ color: 'var(--text-subtle)', paddingLeft: '24px' }}>
-                                            {locale === 'ja' ? m.explanation_ja : m.explanation_en}
+                            <div className="space-y-2">
+                              {studentProgress.summaries.map(summary => {
+                                const isExpanded = expandedInsightId === summary.id
+                                const dateObj = summary.booking ? new Date(`${summary.booking.date}T${summary.booking.start_time}`) : null
+                                const dateStr = dateObj ? dateObj.toLocaleDateString('en-GB', { weekday: 'short', month: 'short', day: 'numeric' }) : null
+                                return (
+                                  <SquircleBox key={summary.id} cornerRadius={12} className="overflow-hidden" style={{ background: 'var(--surface)' }}>
+                                    {/* Clickable header row */}
+                                    <div
+                                      className="flex items-center justify-between px-4 py-3 cursor-pointer hover:opacity-80 transition-opacity"
+                                      onClick={() => setExpandedInsightId(isExpanded ? null : summary.id)}
+                                    >
+                                      <div>
+                                        {dateStr && (
+                                          <p className="font-medium text-sm" style={{ color: 'var(--text)' }}>
+                                            {dateStr}
+                                            {summary.booking && <span className="text-xs ml-1.5" style={{ color: 'var(--text-secondary)' }}>· {summary.booking.duration_minutes} min</span>}
                                           </p>
-                                        </div>
-                                      ))}
+                                        )}
+                                      </div>
+                                      <div className="flex items-center gap-2">
+                                        {summary.key_topics.slice(0, 2).map((topic, i) => (
+                                          <span key={i} className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'var(--surface-hover)', color: 'var(--text-muted)' }}>
+                                            {topic}
+                                          </span>
+                                        ))}
+                                        <span style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s', display: 'inline-block', color: 'var(--text-subtle)' }}>▾</span>
+                                      </div>
                                     </div>
-                                  )}
-                                </div>
-                              ))}
+
+                                    {/* Expandable content */}
+                                    <AnimatePresence>
+                                      {isExpanded && (
+                                        <motion.div
+                                          initial={{ height: 0, opacity: 0 }}
+                                          animate={{ height: 'auto', opacity: 1 }}
+                                          exit={{ height: 0, opacity: 0 }}
+                                          transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+                                          className="overflow-hidden"
+                                        >
+                                          <div className="px-4 pb-4 pt-1" style={{ borderTop: '1px solid var(--border-subtle)' }}>
+                                            {/* All key topics */}
+                                            {summary.key_topics.length > 0 && (
+                                              <div className="flex flex-wrap gap-1.5 mb-3">
+                                                {summary.key_topics.map((topic, i) => (
+                                                  <span key={i} className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'var(--surface-hover)', color: 'var(--text-muted)' }}>
+                                                    {topic}
+                                                  </span>
+                                                ))}
+                                              </div>
+                                            )}
+
+                                            {/* Summary text */}
+                                            <p className="text-sm leading-relaxed mb-4" style={{ color: 'var(--text-secondary)' }}>
+                                              {locale === 'ja' ? summary.summary_ja : summary.summary_en}
+                                            </p>
+
+                                            {/* Mistake patterns */}
+                                            {summary.mistake_patterns.length > 0 && (
+                                              <div>
+                                                <p className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: 'var(--text-subtle)' }}>
+                                                  Areas to improve
+                                                </p>
+                                                <div className="space-y-2">
+                                                  {summary.mistake_patterns.map((m, i) => (
+                                                    <div key={i} className="text-sm rounded-lg p-3" style={{ background: 'var(--surface-hover)' }}>
+                                                      <div className="flex items-start gap-2 mb-1">
+                                                        <span className="shrink-0 flex items-center justify-center" style={{ width: '22px', height: '22px', fontSize: '14px', lineHeight: '22px' }}>❌</span>
+                                                        <span className="pt-0.5" style={{ color: 'var(--text-muted)', textDecoration: 'line-through' }}>{m.example_student}</span>
+                                                      </div>
+                                                      <div className="flex items-start gap-2 mb-1.5">
+                                                        <span className="shrink-0 flex items-center justify-center" style={{ width: '22px', height: '22px', fontSize: '14px', lineHeight: '22px' }}>✅</span>
+                                                        <span className="pt-0.5" style={{ color: 'var(--text)' }}>{m.correction}</span>
+                                                      </div>
+                                                      <p className="text-xs" style={{ color: 'var(--text)', paddingLeft: '30px' }}>
+                                                        {locale === 'ja' ? m.explanation_ja : m.explanation_en}
+                                                      </p>
+                                                    </div>
+                                                  ))}
+                                                </div>
+                                              </div>
+                                            )}
+                                          </div>
+                                        </motion.div>
+                                      )}
+                                    </AnimatePresence>
+                                  </SquircleBox>
+                                )
+                              })}
                             </div>
-                          </SquircleBox>
+                          </div>
                         )}
 
                         {/* Empty state */}
@@ -1299,9 +1347,15 @@ function AITestPanel({ session, locale }: { session: { access_token: string } | 
               <div className="space-y-2">
                 {result.summary.mistake_patterns.map((m, i) => (
                   <div key={i} className="text-sm rounded-lg p-3" style={{ background: 'var(--surface-hover)' }}>
-                    <p><span style={{ color: 'var(--danger)' }}>✗</span> <span style={{ textDecoration: 'line-through', color: 'var(--text-muted)' }}>{m.example_student}</span></p>
-                    <p><span style={{ color: 'var(--accent)' }}>✓</span> <span style={{ color: 'var(--text)' }}>{m.correction}</span></p>
-                    <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
+                    <div className="flex items-start gap-2 mb-1">
+                      <span className="shrink-0 flex items-center justify-center" style={{ width: '22px', height: '22px', fontSize: '14px', lineHeight: '22px' }}>❌</span>
+                      <span className="pt-0.5" style={{ color: 'var(--text-muted)', textDecoration: 'line-through' }}>{m.example_student}</span>
+                    </div>
+                    <div className="flex items-start gap-2 mb-1.5">
+                      <span className="shrink-0 flex items-center justify-center" style={{ width: '22px', height: '22px', fontSize: '14px', lineHeight: '22px' }}>✅</span>
+                      <span className="pt-0.5" style={{ color: 'var(--text)' }}>{m.correction}</span>
+                    </div>
+                    <p className="text-xs" style={{ color: 'var(--text)', paddingLeft: '30px' }}>
                       {locale === 'ja' ? m.explanation_ja : m.explanation_en}
                     </p>
                   </div>
@@ -1326,7 +1380,7 @@ function AITestPanel({ session, locale }: { session: { access_token: string } | 
                     <p className="text-xs" style={{ color: 'var(--accent)' }}>
                       {locale === 'ja' ? '訳' : 'Translation'}: {p.translation_ja}
                     </p>
-                    <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                    <p className="text-xs mt-0.5" style={{ color: 'var(--text)' }}>
                       {locale === 'ja' ? p.explanation_ja : p.explanation_en || p.explanation_ja}
                     </p>
                   </div>
