@@ -635,7 +635,7 @@ function HistoryLessonCard({
                             <span className="shrink-0 flex items-center justify-center" style={{ width: '22px', height: '22px', fontSize: '14px', lineHeight: '22px' }}>✅</span>
                             <span className="pt-0.5" style={{ color: 'var(--text)' }}>{m.correction}</span>
                           </div>
-                          <p className="text-xs" style={{ color: 'var(--text-muted)', paddingLeft: '30px' }}>
+                          <p className="text-xs" style={{ color: 'var(--text)', paddingLeft: '30px' }}>
                             {locale === 'ja' ? m.explanation_ja : m.explanation_en}
                           </p>
                         </div>
@@ -703,7 +703,7 @@ function HistoryLessonCard({
                                     <span className="font-medium" style={{ color: 'var(--text-muted)' }}>{locale === 'ja' ? '訳' : 'Translation'}: </span>
                                     {phrase.translation_ja}
                                   </p>
-                                  <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                                  <p className="text-xs" style={{ color: 'var(--text)' }}>
                                     {locale === 'ja' ? phrase.explanation_ja : phrase.explanation_en}
                                   </p>
                                 </div>
