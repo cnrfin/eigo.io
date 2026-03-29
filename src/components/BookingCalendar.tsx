@@ -472,12 +472,13 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
               role="switch"
               aria-checked={recurringEnabled}
               onClick={() => setRecurringEnabled(!recurringEnabled)}
-              className="relative w-9 h-5 rounded-full transition-colors duration-200 shrink-0"
-              style={{ background: recurringEnabled ? 'var(--accent)' : 'var(--surface-hover)' }}
+              className="relative rounded-full transition-colors duration-200 shrink-0"
+              style={{ width: '36px', height: '20px', background: recurringEnabled ? 'var(--accent)' : 'var(--surface-hover)' }}
             >
               <span
-                className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full transition-transform duration-200 shadow-sm ${recurringEnabled ? '' : 'toggle-handle-off'}`}
+                className={`absolute rounded-full transition-transform duration-200 shadow-sm ${recurringEnabled ? '' : 'toggle-handle-off'}`}
                 style={{
+                  width: '16px', height: '16px', top: '2px', left: '2px',
                   ...(recurringEnabled ? { background: '#fff' } : {}),
                   transform: recurringEnabled ? 'translateX(16px)' : 'translateX(0)',
                 }}

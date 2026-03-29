@@ -86,12 +86,13 @@ function CancelModal({
           className="flex items-center gap-3 mb-6 cursor-pointer"
         >
           <span
-            className="relative inline-flex items-center shrink-0 w-10 h-6 rounded-full transition-colors"
-            style={{ background: cancelAll ? 'var(--danger)' : 'var(--surface-hover)' }}
+            className="relative inline-flex items-center shrink-0 rounded-full transition-colors"
+            style={{ width: '40px', height: '24px', background: cancelAll ? 'var(--danger)' : 'var(--surface-hover)' }}
           >
             <span
-              className={`absolute w-4 h-4 rounded-full transition-transform shadow-sm ${cancelAll ? '' : 'toggle-handle-off'}`}
+              className={`absolute rounded-full transition-transform shadow-sm ${cancelAll ? '' : 'toggle-handle-off'}`}
               style={{
+                width: '16px', height: '16px',
                 ...(cancelAll ? { background: '#fff' } : {}),
                 transform: cancelAll ? 'translateX(21px)' : 'translateX(3px)',
               }}

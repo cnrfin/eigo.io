@@ -583,12 +583,13 @@ export default function SettingsPage() {
                     </div>
                     <button
                       onClick={toggleTheme}
-                      className="w-12 h-6 rounded-full transition-colors relative shrink-0"
-                      style={{ background: theme === 'dark' ? 'var(--surface-alt)' : 'var(--accent)' }}
+                      className="rounded-full transition-colors relative shrink-0"
+                      style={{ width: '48px', height: '24px', background: theme === 'dark' ? 'var(--surface-alt)' : 'var(--accent)' }}
                     >
                       <span
-                        className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full transition-transform duration-200 shadow-sm ${theme === 'dark' ? 'toggle-handle-off' : ''}`}
+                        className={`absolute rounded-full transition-transform duration-200 shadow-sm ${theme === 'dark' ? 'toggle-handle-off' : ''}`}
                         style={{
+                          width: '20px', height: '20px', top: '2px', left: '2px',
                           ...(theme === 'dark' ? {} : { background: '#fff' }),
                           transform: theme === 'dark' ? 'translateX(0px)' : 'translateX(24px)',
                         }}
