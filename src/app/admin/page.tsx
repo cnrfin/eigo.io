@@ -83,6 +83,7 @@ type AdminLesson = {
   status: string
   user_id: string
   whereby_room_url: string | null
+  whereby_host_url: string | null
   profiles: { display_name: string | null; email: string | null } | null
 }
 
@@ -588,10 +589,10 @@ function AdminContent() {
                             </div>
                           </div>
                           <div className="flex items-center gap-2">
-                            {lesson.whereby_room_url && (
+                            {(lesson.whereby_host_url || lesson.whereby_room_url) && (
                               <Squircle asChild cornerRadius={8} cornerSmoothing={0.8}>
                                 <a
-                                  href={lesson.whereby_room_url}
+                                  href={lesson.whereby_host_url || lesson.whereby_room_url!}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   className="px-3 py-1.5 text-xs font-medium transition-colors hover:opacity-90"
