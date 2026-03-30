@@ -774,6 +774,92 @@ export async function sendAdminRescheduleNotification({
   return data
 }
 
+// Admin support ticket notification
+export async function sendAdminSupportTicketNotification({
+  ticketId,
+  studentName,
+  studentEmail,
+  category,
+  subject,
+  body,
+  deviceInfo,
+}: {
+  ticketId: string
+  studentName: string
+  studentEmail: string
+  category: string
+  subject: string
+  body: string
+  deviceInfo?: { model?: string; os?: string; app_version?: string; device_name?: string } | null
+}) {
+  const adminEmail = 'cnrfin93@gmail.com'
+  const emailSubject = `🎫 New support ticket: ${subject}`
+
+  const categoryLabel: Record<string, string> = {
+    bug: 'Bug Report',
+    booking: 'Booking Issue',
+    payment: 'Payment Issue',
+    lesson: 'Lesson Issue',
+    feature: 'Feature Request',
+    other: 'Other',
+  }
+
+  const deviceRows = deviceInfo
+    ? `
+        <div class="student-info-label" style="margin-top: 16px;">Device Info</div>
+        ${deviceInfo.model ? `<div class="student-info-row"><strong>Model:</strong> ${deviceInfo.model}</div>` : ''}
+        ${deviceInfo.os ? `<div class="student-info-row"><strong>OS:</strong> ${deviceInfo.os}</div>` : ''}
+        ${deviceInfo.app_version ? `<div class="student-info-row"><strong>App version:</strong> ${deviceInfo.app_version}</div>` : ''}
+        ${deviceInfo.device_name ? `<div class="student-info-row"><strong>Device:</strong> ${deviceInfo.device_name}</div>` : ''}
+      `
+    : ''
+
+  const content = `
+      <p class="greeting">
+        New support ticket received
+      </p>
+
+      <div class="student-info">
+        <div class="student-info-label">From</div>
+        <div class="student-info-row"><strong>Name:</strong> ${studentName}</div>
+        <div class="student-info-row"><strong>Email:</strong> ${studentEmail}</div>
+
+        <div class="student-info-label" style="margin-top: 16px;">Ticket Details</div>
+        <div class="student-info-row"><strong>Category:</strong> ${categoryLabel[category] ?? category}</div>
+        <div class="student-info-row"><strong>Subject:</strong> ${subject}</div>
+        ${deviceRows}
+      </div>
+
+      <div class="lesson-box">
+        <div class="lesson-label">Message</div>
+        <div style="font-size: 14px; color: #27272a; line-height: 1.6; white-space: pre-wrap;">${body}</div>
+      </div>
+
+      <a href="https://eigo.io/admin" class="button">Open Admin Dashboard</a>
+
+      <p class="note">
+        Ticket ID: ${ticketId}
+      </p>
+  `
+
+  const html = emailLayout(content, 'eigo.io — Support Ticket Notification')
+
+  const fromEmail = process.env.RESEND_FROM_EMAIL || 'eigo.io <noreply@eigo.io>'
+  const { data, error } = await getResend().emails.send({
+    from: fromEmail,
+    to: adminEmail,
+    subject: emailSubject,
+    html,
+  })
+
+  if (error) {
+    console.error(`Failed to send admin support ticket notification:`, error)
+    throw error
+  }
+
+  return data
+}
+
 // Custom-branded email verification
 export async function sendVerificationEmail({
   to,

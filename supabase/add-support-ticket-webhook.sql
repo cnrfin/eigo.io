@@ -1,0 +1,32 @@
+-- ════════════════════════════════════════════════════════════
+-- Support ticket webhook — notify admin via email on new tickets
+-- ════════════════════════════════════════════════════════════
+--
+-- This is NOT run as SQL. It's a reference for the Supabase
+-- Database Webhook you need to configure in the dashboard.
+--
+-- SETUP STEPS:
+--
+-- 1. Go to Supabase Dashboard → Database → Webhooks
+--    (or Project Settings → Database → Webhooks)
+--
+-- 2. Click "Create a new webhook"
+--
+-- 3. Configure:
+--    • Name: support_ticket_admin_email
+--    • Table: support_tickets
+--    • Events: INSERT (only)
+--    • Type: HTTP Request
+--    • Method: POST
+--    • URL: https://eigo.io/api/webhooks/support-ticket
+--    • Headers:
+--        Authorization: Bearer <your SUPABASE_WEBHOOK_SECRET>
+--        Content-Type: application/json
+--
+-- 4. Add SUPABASE_WEBHOOK_SECRET to your .env / Vercel env vars
+--    (pick any strong random string — it just needs to match)
+--
+-- That's it! When a user submits a support ticket from the iOS
+-- app, Supabase will fire the webhook → your API route sends
+-- you a branded email via Resend.
+-- ════════════════════════════════════════════════════════════
