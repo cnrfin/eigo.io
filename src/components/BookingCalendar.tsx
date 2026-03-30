@@ -571,7 +571,7 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
                 style={{ background: 'var(--accent)', color: 'var(--selected-text)' }}
               >
                 {booking
-                  ? '...'
+                  ? <span className="spinner-sm" />
                   : locale === 'ja'
                     ? `${recurringEnabled ? selectedBookings.length * recurringWeeks : selectedBookings.length}件のレッスンを予約する`
                     : `Book ${recurringEnabled ? selectedBookings.length * recurringWeeks : selectedBookings.length} lesson${(recurringEnabled ? selectedBookings.length * recurringWeeks : selectedBookings.length) > 1 ? 's' : ''}`
