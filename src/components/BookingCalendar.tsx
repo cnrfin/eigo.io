@@ -8,7 +8,10 @@ import SquircleBox from '@/components/ui/SquircleBox'
 
 type SelectedBooking = { date: string; time: string; dayLabel: string }
 
-export default function BookingCalendar({ selectedDuration, onBookingComplete, rescheduleLesson, hasSubscription = false }: { selectedDuration?: number; onBookingComplete?: () => void; rescheduleLesson?: { id: string; googleEventId: string | null }; hasSubscription?: boolean }) {
+export type BookingResultDetail = { date: string; time: string; success: boolean; reason?: string }
+export type BookingResult = { success: boolean; message: string; details?: BookingResultDetail[] }
+
+export default function BookingCalendar({ selectedDuration, onBookingComplete, rescheduleLesson, hasSubscription = false }: { selectedDuration?: number; onBookingComplete?: (result?: BookingResult) => void; rescheduleLesson?: { id: string; googleEventId: string | null }; hasSubscription?: boolean }) {
   const { t, locale } = useLanguage()
   const { session } = useAuth()
   const [currentDate, setCurrentDate] = useState(new Date())
@@ -268,23 +271,25 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
       }
     }
 
+    let result: BookingResult
     if (failCount === 0) {
       const msg = rescheduleLesson
         ? (locale === 'ja' ? 'レッスンの日時を変更しました ✓' : 'Lesson rescheduled ✓')
         : (locale === 'ja'
             ? `${successCount}件のレッスンを予約しました ✓`
             : `${successCount} lesson${successCount > 1 ? 's' : ''} booked ✓`)
-      setBookingResult({ success: true, message: msg })
+      result = { success: true, message: msg, details: isMultiBooking ? bookingDetails : undefined }
     } else {
       const msg = locale === 'ja'
         ? `${successCount}件成功、${failCount}件失敗`
         : `${successCount} booked, ${failCount} unavailable`
-      setBookingResult({ success: false, message: msg, details: bookingDetails })
+      result = { success: false, message: msg, details: bookingDetails }
     }
+    setBookingResult(result)
 
     setSelectedBookings([])
     if (selectedDay) fetchSlots(selectedDay)
-    onBookingComplete?.()
+    onBookingComplete?.(result)
     setBooking(false)
   }
 

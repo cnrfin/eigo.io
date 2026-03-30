@@ -9,7 +9,7 @@ import { renderMarkdown } from '@/lib/markdown'
 import { Squircle } from '@squircle-js/react'
 import SquircleBox from '@/components/ui/SquircleBox'
 import Header from '@/components/Header'
-import BookingCalendar from '@/components/BookingCalendar'
+import BookingCalendar, { type BookingResult } from '@/components/BookingCalendar'
 import { motion, AnimatePresence } from 'framer-motion'
 import { formatNextReview, previewIntervals, type ReviewRating } from '@/lib/srs'
 import AudioPlayer from '@/components/AudioPlayer'
@@ -758,6 +758,7 @@ function DashboardContent() {
   const [transcriptView, setTranscriptView] = useState<'clean' | 'original'>('clean')
   const [cleaningTranscript, setCleaningTranscript] = useState(false)
   const [copiedTranscript, setCopiedTranscript] = useState(false)
+  const [bookingResultModal, setBookingResultModal] = useState<BookingResult | null>(null)
   const [audioPlayer, setAudioPlayer] = useState<{ src: string } | null>(null)
   const [loadingAudio, setLoadingAudio] = useState(false)
   const [vocabCards, setVocabCards] = useState<VocabCard[]>([])
@@ -1490,7 +1491,7 @@ function DashboardContent() {
               )}
               <BookingCalendar
                 selectedDuration={durationParam ? parseInt(durationParam) : undefined}
-                onBookingComplete={() => { fetchLessons(); setLessonToReschedule(null); setActiveTab('home') }}
+                onBookingComplete={(result) => { fetchLessons(); setLessonToReschedule(null); setActiveTab('home'); if (result) setBookingResultModal(result) }}
                 rescheduleLesson={lessonToReschedule ? { id: lessonToReschedule.id, googleEventId: lessonToReschedule.googleEventId } : undefined}
                 hasSubscription={subStatus === 'active'}
               />
@@ -2172,6 +2173,71 @@ function DashboardContent() {
           cancelAll={cancelAllFuture}
           setCancelAll={setCancelAllFuture}
         />
+      )}
+
+      {/* Booking result modal */}
+      {bookingResultModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 modal-backdrop overflow-y-auto py-6"
+          onClick={() => setBookingResultModal(null)}
+        >
+          <div className="modal-card w-full flex items-center justify-center min-h-0" onClick={(e) => e.stopPropagation()}>
+            <SquircleBox cornerRadius={20} className="p-6 sm:p-8 w-full max-w-sm mx-4 relative shadow-[0_0_0_1px_var(--border)]" style={{ background: 'var(--surface)' }}>
+              <button
+                onClick={() => setBookingResultModal(null)}
+                className="absolute top-4 right-4 text-xl hover:opacity-80"
+                style={{ color: 'var(--text-muted)' }}
+              >
+                ✕
+              </button>
+
+              <h2 className="text-lg font-bold mb-1" style={{ color: 'var(--text)' }}>
+                {bookingResultModal.success
+                  ? (locale === 'ja' ? '予約完了' : 'Lessons booked')
+                  : (locale === 'ja' ? '予約結果' : 'Booking results')}
+              </h2>
+              <p className="text-sm mb-4" style={{ color: bookingResultModal.success ? 'var(--success)' : 'var(--text-muted)' }}>
+                {bookingResultModal.message}
+              </p>
+
+              {bookingResultModal.details && bookingResultModal.details.length > 0 && (
+                <SquircleBox cornerRadius={10} className="p-3 space-y-2 mb-4" style={{ background: 'var(--surface-hover)' }}>
+                  {bookingResultModal.details.map((d, i) => {
+                    const dt = new Date(`${d.date}T${d.time}:00`)
+                    const label = dt.toLocaleDateString(locale === 'ja' ? 'ja-JP' : 'en-GB', { weekday: 'short', month: 'short', day: 'numeric' })
+                    return (
+                      <div key={i}>
+                        <div className="flex items-center gap-2 text-sm">
+                          <span style={{ fontSize: '14px' }}>{d.success ? '✅' : '❌'}</span>
+                          <span style={{ color: 'var(--text)' }}>{label} · {d.time}</span>
+                        </div>
+                        {!d.success && d.reason && (
+                          <p className="text-xs ml-6" style={{ color: 'var(--text-muted)' }}>
+                            {d.reason === 'This time slot is no longer available'
+                              ? (locale === 'ja' ? 'この時間は予約できません' : 'Time unavailable')
+                              : d.reason?.includes('Not enough minutes')
+                                ? (locale === 'ja' ? '残り時間が足りません' : 'Not enough minutes')
+                                : (locale === 'ja' ? '予約できませんでした' : 'Could not book')}
+                          </p>
+                        )}
+                      </div>
+                    )
+                  })}
+                </SquircleBox>
+              )}
+
+              <Squircle asChild cornerRadius={12} cornerSmoothing={0.8}>
+                <button
+                  onClick={() => setBookingResultModal(null)}
+                  className="w-full py-2.5 text-sm font-medium transition-colors hover:opacity-90"
+                  style={{ background: 'var(--accent)', color: 'var(--selected-text)' }}
+                >
+                  {locale === 'ja' ? '閉じる' : 'Done'}
+                </button>
+              </Squircle>
+            </SquircleBox>
+          </div>
+        </div>
       )}
     </>
   )
