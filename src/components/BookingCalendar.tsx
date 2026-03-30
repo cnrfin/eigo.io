@@ -17,7 +17,11 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
   const [availableSlots, setAvailableSlots] = useState<string[]>([])
   const [loadingSlots, setLoadingSlots] = useState(false)
   const [booking, setBooking] = useState(false)
-  const [bookingResult, setBookingResult] = useState<{ success: boolean; message: string } | null>(null)
+  const [bookingResult, setBookingResult] = useState<{
+    success: boolean
+    message: string
+    details?: { date: string; time: string; success: boolean; reason?: string }[]
+  } | null>(null)
 
   // Multi-slot selection
   const [selectedBookings, setSelectedBookings] = useState<SelectedBooking[]>([])
@@ -186,6 +190,7 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
     let failCount = 0
     const isMultiBooking = allBookings.length > 1
     const bookedLessons: { lessonDate: string; lessonTime: string; durationMinutes: number }[] = []
+    const bookingDetails: { date: string; time: string; success: boolean; reason?: string }[] = []
 
     for (const b of allBookings) {
       try {
@@ -206,7 +211,14 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
               timezone: userTimezone,
             }),
           })
-          if (res.ok) { successCount++ } else { failCount++ }
+          if (res.ok) {
+            successCount++
+            bookingDetails.push({ date: b.date, time: b.time, success: true })
+          } else {
+            const data = await res.json().catch(() => ({}))
+            failCount++
+            bookingDetails.push({ date: b.date, time: b.time, success: false, reason: data.error })
+          }
         } else {
           const res = await fetch('/api/calendar/book', {
             method: 'POST',
@@ -224,13 +236,19 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
           })
           if (res.ok) {
             successCount++
+            bookingDetails.push({ date: b.date, time: b.time, success: true })
             if (isMultiBooking) {
               bookedLessons.push({ lessonDate: b.date, lessonTime: b.time, durationMinutes: duration })
             }
-          } else { failCount++ }
+          } else {
+            const data = await res.json().catch(() => ({}))
+            failCount++
+            bookingDetails.push({ date: b.date, time: b.time, success: false, reason: data.error })
+          }
         }
       } catch {
         failCount++
+        bookingDetails.push({ date: b.date, time: b.time, success: false, reason: 'Network error' })
       }
     }
 
@@ -260,8 +278,8 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
     } else {
       const msg = locale === 'ja'
         ? `${successCount}件成功、${failCount}件失敗`
-        : `${successCount} booked, ${failCount} failed`
-      setBookingResult({ success: false, message: msg })
+        : `${successCount} booked, ${failCount} unavailable`
+      setBookingResult({ success: false, message: msg, details: bookingDetails })
     }
 
     setSelectedBookings([])
@@ -507,8 +525,35 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
 
           {/* Booking result message */}
           {bookingResult && (
-            <div className="text-center text-sm mb-4" style={{ color: bookingResult.success ? 'var(--success)' : 'var(--danger)' }}>
-              {bookingResult.message}
+            <div className="mb-4">
+              <p className="text-center text-sm font-medium mb-2" style={{ color: bookingResult.success ? 'var(--success)' : bookingResult.details ? 'var(--text)' : 'var(--danger)' }}>
+                {bookingResult.message}
+              </p>
+              {bookingResult.details && bookingResult.details.length > 0 && (
+                <SquircleBox cornerRadius={10} className="p-3 space-y-1.5" style={{ background: 'var(--surface-hover)' }}>
+                  {bookingResult.details.map((d, i) => {
+                    const dt = new Date(`${d.date}T${d.time}:00`)
+                    const label = dt.toLocaleDateString(locale === 'ja' ? 'ja-JP' : 'en-GB', { weekday: 'short', month: 'short', day: 'numeric' })
+                    return (
+                      <div key={i}>
+                        <div className="flex items-center gap-2 text-sm">
+                          <span style={{ fontSize: '14px' }}>{d.success ? '✅' : '❌'}</span>
+                          <span style={{ color: 'var(--text)' }}>{label} · {d.time}</span>
+                        </div>
+                        {!d.success && d.reason && (
+                          <p className="text-xs ml-6" style={{ color: 'var(--text-muted)' }}>
+                            {d.reason === 'This time slot is no longer available'
+                              ? (locale === 'ja' ? 'この時間は予約できません' : 'Time unavailable')
+                              : d.reason?.includes('Not enough minutes')
+                                ? (locale === 'ja' ? '残り時間が足りません' : 'Not enough minutes')
+                                : (locale === 'ja' ? '予約できませんでした' : 'Could not book')}
+                          </p>
+                        )}
+                      </div>
+                    )
+                  })}
+                </SquircleBox>
+              )}
             </div>
           )}
 
