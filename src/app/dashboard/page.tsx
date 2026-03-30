@@ -64,7 +64,7 @@ function CancelModal({
 }: {
   lesson: Lesson; onConfirm: () => void; onClose: () => void; cancelling: boolean; locale: string; cancelAll: boolean; setCancelAll: (v: boolean) => void
 }) {
-  const date = new Date(`${lesson.date}T${lesson.startTime}`)
+  const date = new Date(`${lesson.date}T${lesson.startTime}+09:00`)
   const dateStr = date.toLocaleDateString(locale === 'ja' ? 'ja-JP' : 'en-GB', { weekday: 'short', month: 'short', day: 'numeric' })
   const timeStr = date.toLocaleTimeString(locale === 'ja' ? 'ja-JP' : 'en-GB', { hour: '2-digit', minute: '2-digit' })
 
@@ -128,7 +128,7 @@ function NextLessonCard({
 }: {
   lesson: Lesson; locale: string; wherebyUrl: string; onCancel: (lesson: Lesson) => void; onReschedule: (lesson: Lesson) => void; isAdmin?: boolean
 }) {
-  const date = new Date(`${lesson.date}T${lesson.startTime}`)
+  const date = new Date(`${lesson.date}T${lesson.startTime}+09:00`)
   const dateStr = date.toLocaleDateString(locale === 'ja' ? 'ja-JP' : 'en-GB', { weekday: 'long', month: 'long', day: 'numeric' })
   const timeStr = date.toLocaleTimeString(locale === 'ja' ? 'ja-JP' : 'en-GB', { hour: '2-digit', minute: '2-digit' })
 
@@ -217,7 +217,7 @@ function LessonCard({
 }: {
   lesson: Lesson; locale: string; wherebyUrl: string; onCancel: (lesson: Lesson) => void; onReschedule: (lesson: Lesson) => void; isAdmin?: boolean
 }) {
-  const date = new Date(`${lesson.date}T${lesson.startTime}`)
+  const date = new Date(`${lesson.date}T${lesson.startTime}+09:00`)
   const dateStr = date.toLocaleDateString(locale === 'ja' ? 'ja-JP' : 'en-GB', { weekday: 'short', month: 'short', day: 'numeric' })
   const timeStr = date.toLocaleTimeString(locale === 'ja' ? 'ja-JP' : 'en-GB', { hour: '2-digit', minute: '2-digit' })
 
@@ -386,7 +386,7 @@ function HistoryLessonCard({
   const [expanded, setExpanded] = useState(false)
   const [selectedPhrase, setSelectedPhrase] = useState<VocabPhrase | null>(null)
 
-  const date = new Date(`${lesson.date}T${lesson.startTime}`)
+  const date = new Date(`${lesson.date}T${lesson.startTime}+09:00`)
   const dateStr = date.toLocaleDateString(locale === 'ja' ? 'ja-JP' : 'en-GB', { weekday: 'short', month: 'short', day: 'numeric' })
   const timeStr = date.toLocaleTimeString(locale === 'ja' ? 'ja-JP' : 'en-GB', { hour: '2-digit', minute: '2-digit' })
 
@@ -1547,12 +1547,12 @@ function DashboardContent() {
                               {locale === 'ja' ? '文字起こし' : 'Transcript'}
                             </p>
                             <p className="text-xs" style={{ color: 'var(--text-subtle)' }}>
-                              {new Date(`${selectedTranscript.lesson.date}T${selectedTranscript.lesson.startTime}`).toLocaleDateString(
+                              {new Date(`${selectedTranscript.lesson.date}T${selectedTranscript.lesson.startTime}+09:00`).toLocaleDateString(
                                 locale === 'ja' ? 'ja-JP' : 'en-GB',
                                 { weekday: 'short', day: 'numeric', month: 'short' }
                               )}
                               {' · '}
-                              {new Date(`${selectedTranscript.lesson.date}T${selectedTranscript.lesson.startTime}`).toLocaleTimeString(
+                              {new Date(`${selectedTranscript.lesson.date}T${selectedTranscript.lesson.startTime}+09:00`).toLocaleTimeString(
                                 locale === 'ja' ? 'ja-JP' : 'en-GB',
                                 { hour: '2-digit', minute: '2-digit' }
                               )}

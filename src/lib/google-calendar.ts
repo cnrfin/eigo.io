@@ -132,11 +132,12 @@ function jstToTimezone(jstDate: string, jstTime: string, timezone: string): { lo
  * Convert a user's local time back to JST for storage/booking
  */
 function timezoneToJst(localDate: string, localTime: string, timezone: string): { jstDate: string; jstTime: string } {
-  // Build an ISO string in the user's timezone by calculating the offset
-  // We use a trick: create the date as if it's UTC, then adjust
-  const fakeUtc = new Date(`${localDate}T${localTime}:00Z`)
+  // Strategy: treat localDate + localTime as if UTC, then compute the offset
+  // between the user's timezone and UTC at that instant, and adjust.
+  // This avoids day-of-month arithmetic that breaks at month boundaries.
 
-  // Get the offset of the target timezone at this moment
+  const refUtc = new Date(`${localDate}T${localTime}:00Z`)
+
   const targetFormatter = new Intl.DateTimeFormat('en-GB', {
     timeZone: timezone,
     year: 'numeric', month: '2-digit', day: '2-digit',
@@ -150,29 +151,20 @@ function timezoneToJst(localDate: string, localTime: string, timezone: string): 
     hour12: false,
   })
 
-  // Find the UTC time that corresponds to localDate localTime in the user's timezone
-  // by iterating (simple approach: try the date and adjust)
-  // More reliable: use the timezone offset difference
-  const refDate = new Date(`${localDate}T${localTime}:00Z`)
+  // What does the user's timezone show for this UTC instant?
+  const userParts = targetFormatter.formatToParts(refUtc)
+  const g = (type: string) => userParts.find(p => p.type === type)?.value || ''
+  // Reconstruct the shown datetime as a UTC timestamp for comparison
+  const userShownUtc = new Date(`${g('year')}-${g('month')}-${g('day')}T${g('hour')}:${g('minute')}:${g('second')}Z`)
 
-  // What time does the user's timezone show for this UTC instant?
-  const userParts = targetFormatter.formatToParts(refDate)
-  const userGet = (type: string) => userParts.find(p => p.type === type)?.value || ''
-  const userShownHour = parseInt(userGet('hour'))
-  const userShownMinute = parseInt(userGet('minute'))
-  const userShownDay = parseInt(userGet('day'))
+  // The requested local datetime as a UTC timestamp (for subtraction only)
+  const requestedUtc = new Date(`${localDate}T${localTime}:00Z`)
 
-  const requestedHour = parseInt(localTime.split(':')[0])
-  const requestedMinute = parseInt(localTime.split(':')[1])
-  const requestedDay = parseInt(localDate.split('-')[2])
+  // Difference = how far off the shown time is from what was requested
+  const diffMs = requestedUtc.getTime() - userShownUtc.getTime()
 
-  // Calculate the difference in minutes
-  const shownMinutes = (userShownDay * 24 * 60) + (userShownHour * 60) + userShownMinute
-  const requestedMinutes = (requestedDay * 24 * 60) + (requestedHour * 60) + requestedMinute
-  const diffMinutes = requestedMinutes - shownMinutes
-
-  // Adjust the UTC time by the difference
-  const correctedUtc = new Date(refDate.getTime() + diffMinutes * 60 * 1000)
+  // Adjust the reference UTC by this difference to get the true UTC instant
+  const correctedUtc = new Date(refUtc.getTime() + diffMs)
 
   // Now format in JST
   const jstParts = jstFormatter.formatToParts(correctedUtc)
