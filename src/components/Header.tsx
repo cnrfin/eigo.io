@@ -7,7 +7,7 @@ import { useState, useRef, useEffect } from 'react'
 import { Squircle } from '@squircle-js/react'
 import AuthModal from './AuthModal'
 
-export default function Header() {
+export default function Header({ hideLogin = false }: { hideLogin?: boolean }) {
   const { t, locale, toggleLocale } = useLanguage()
   const { user, signOut, loading, avatarUrl: profileAvatarUrl } = useAuth()
   const { theme, toggleTheme } = useTheme()
@@ -84,15 +84,17 @@ export default function Header() {
               </a>
 
               <div className="flex items-center justify-end">
-                <Squircle asChild cornerRadius={8} cornerSmoothing={0.8}>
-                  <button
-                    onClick={() => setShowAuth(true)}
-                    className="text-sm px-4 py-1.5 font-medium transition-opacity hover:opacity-90"
-                    style={{ background: 'var(--accent)', color: 'var(--selected-text)' }}
-                  >
-                    {t('login')}
-                  </button>
-                </Squircle>
+                {!hideLogin && (
+                  <Squircle asChild cornerRadius={8} cornerSmoothing={0.8}>
+                    <button
+                      onClick={() => setShowAuth(true)}
+                      className="text-sm px-4 py-1.5 font-medium transition-opacity hover:opacity-90"
+                      style={{ background: 'var(--accent)', color: 'var(--selected-text)' }}
+                    >
+                      {t('login')}
+                    </button>
+                  </Squircle>
+                )}
               </div>
             </>
           ) : (

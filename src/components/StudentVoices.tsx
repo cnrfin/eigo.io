@@ -48,29 +48,30 @@ function ReviewCard({ name, text, isCentre }: { name: string; text: string; isCe
   return (
     <SquircleBox
       cornerRadius={18}
-      className="p-6 sm:p-7 h-full flex flex-col select-none"
+      className="h-full flex flex-col select-none"
       style={{
+        padding: '24px',
         background: 'var(--surface)',
         border: `1px solid ${isCentre ? 'var(--border)' : 'var(--border-subtle)'}`,
       }}
     >
       <span
-        className="text-3xl leading-none font-serif mb-2 block select-none"
-        style={{ color: 'var(--accent)', opacity: 0.45 }}
+        className="leading-none font-serif block select-none"
+        style={{ fontSize: '30px', marginBottom: '8px', color: 'var(--accent)', opacity: 0.45 }}
       >
         &ldquo;
       </span>
-      <p className="text-sm leading-relaxed flex-1 mb-4" style={{ color: 'var(--text-secondary)' }}>
+      <p className="leading-relaxed flex-1" style={{ fontSize: '14px', marginBottom: '16px', color: 'var(--text-secondary)' }}>
         {text}
       </p>
-      <div className="flex items-center gap-3 pt-3" style={{ borderTop: '1px solid var(--border-subtle)' }}>
+      <div className="flex items-center" style={{ gap: '12px', paddingTop: '12px', borderTop: '1px solid var(--border-subtle)' }}>
         <div
-          className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
-          style={{ background: bg, color: '#fff' }}
+          className="rounded-full flex items-center justify-center font-bold shrink-0"
+          style={{ width: '32px', height: '32px', fontSize: '12px', background: bg, color: '#fff' }}
         >
           {initial}
         </div>
-        <span className="font-medium text-sm" style={{ color: 'var(--text)' }}>{name}</span>
+        <span className="font-medium" style={{ fontSize: '14px', color: 'var(--text)' }}>{name}</span>
       </div>
     </SquircleBox>
   )
@@ -268,7 +269,7 @@ export default function StudentVoices() {
   }
 
   return (
-    <section ref={sectionRef} className="py-20 overflow-hidden" style={{ fontSize: '16px' }}>
+    <section ref={sectionRef} className="py-20 overflow-hidden">
       <div className="max-w-4xl mx-auto px-6">
         <motion.h2
           initial={{ opacity: 0, y: 14 }}
