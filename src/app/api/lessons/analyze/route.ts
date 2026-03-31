@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { getTranscription, getTranscriptionAccessLink } from '@/lib/whereby'
-import { analyzeLesson } from '@/lib/lesson-ai'
+import { analyzeLesson, cleanTranscript } from '@/lib/lesson-ai'
 
 /**
  * POST /api/lessons/analyze
@@ -120,8 +120,20 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
-    // Analyze with AI — pass both raw and cleaned transcripts if available
-    const cleanedTranscriptText = booking.cleaned_transcript_text || undefined
+    // Auto-generate cleaned transcript if it doesn't exist yet
+    let cleanedTranscriptText = booking.cleaned_transcript_text || undefined
+    if (!cleanedTranscriptText) {
+      try {
+        cleanedTranscriptText = await cleanTranscript(transcriptText)
+        // Save immediately so it's not lost if the user leaves during analysis
+        await supabase.from('bookings').update({ cleaned_transcript_text: cleanedTranscriptText }).eq('id', bookingId)
+      } catch (cleanErr) {
+        console.error('Auto-cleanup failed, proceeding with raw only:', cleanErr)
+        // Continue with raw-only analysis — better than failing entirely
+      }
+    }
+
+    // Analyze with AI — pass both raw and cleaned transcripts for best results
     const analysis = await analyzeLesson(transcriptText, cleanedTranscriptText)
 
     // Store summary
