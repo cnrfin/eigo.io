@@ -107,24 +107,40 @@ export type LessonAnalysis = {
 
 /**
  * Analyze a lesson transcript using GPT-4.1 Nano.
- * Returns summary, vocabulary phrases, and mistake patterns in one call.
+ * Takes both raw and cleaned transcripts — uses cleaned for context and attribution,
+ * cross-references raw to confirm mistakes are real (not transcription errors).
  */
-export async function analyzeLesson(transcript: string): Promise<LessonAnalysis> {
+export async function analyzeLesson(rawTranscript: string, cleanedTranscript?: string): Promise<LessonAnalysis> {
   const systemPrompt = `You are an expert English language teaching assistant for Japanese students learning English.
 
-Analyze the following lesson transcript between a teacher and student. Return a JSON object with:
+You will be given ${cleanedTranscript ? 'TWO versions of the same lesson transcript' : 'a lesson transcript'}:
+${cleanedTranscript ? `
+- RAW TRANSCRIPT: The original auto-generated transcription from Whereby. Contains transcription errors, misheard words, speaker misattributions, and hallucinations.
+- CLEANED TRANSCRIPT: A corrected version where transcription noise has been removed and speakers have been properly attributed as "Teacher:" and "Student:".
+
+Use the CLEANED transcript to understand the conversation, identify what the student actually said, and extract vocabulary phrases.
+Use the RAW transcript as a cross-reference when identifying student mistakes — only flag a mistake if the error is clearly visible in the CLEANED transcript AND makes sense in context as something the student genuinely said.
+` : ''}
+
+Return a JSON object with:
 
 1. "summary_en": A brief 2-3 sentence summary of the lesson in English (what topics were discussed, what the student practiced)
 2. "summary_ja": The same summary in natural Japanese
 3. "key_topics": An array of 2-5 topic tags in English (e.g. "travel", "business email", "daily conversation")
-4. "mistake_patterns": An array of grammar/vocabulary mistakes the student made. For each:
-   - "type": Category (e.g. "grammar", "vocabulary", "pronunciation", "word choice")
-   - "example_student": What the student actually said (or close approximation)
-   - "correction": The corrected version
+4. "mistake_patterns": An array of genuine grammar/vocabulary mistakes the student made. Rules:
+   - ONLY include lines clearly attributed to "Student:" — never flag anything the Teacher said
+   - ONLY flag mistakes where the student's version is clearly wrong AND your correction is meaningfully different from what they said
+   - NEVER flag a sentence that is already correct — if the correction would be essentially the same as the original, omit it
+   - SKIP anything that looks like a transcription error or garbled text (incoherent phrases, random words, things that make no grammatical or contextual sense) — these are recording artifacts, not real student mistakes
+   - If you are not confident it's a genuine student mistake, omit it
+   - Maximum 5 mistakes
+   For each genuine mistake:
+   - "type": Category (e.g. "grammar", "vocabulary", "word choice")
+   - "example_student": Exactly what the student said (from the cleaned transcript)
+   - "correction": The corrected version (must be meaningfully different from example_student)
    - "explanation_ja": A clear, friendly explanation in Japanese of why it's wrong and how to fix it
    - "explanation_en": Same explanation in English
-   Only include clear mistakes, not minor hesitations. Maximum 5 mistakes.
-5. "vocabulary_phrases": An array of 5-10 useful English phrases or expressions from the lesson that would help the student. Focus on:
+5. "vocabulary_phrases": An array of 5-10 useful English phrases or expressions from the lesson. Focus on:
    - Multi-word phrases and expressions (NOT single common words like "run", "play")
    - Phrases the teacher used or taught
    - Natural collocations and idioms
@@ -143,11 +159,15 @@ IMPORTANT:
 - If the transcript is too short or unclear, still provide what you can
 - Return ONLY valid JSON, no markdown or explanation`
 
+  const userContent = cleanedTranscript
+    ? `RAW TRANSCRIPT:\n\n${rawTranscript}\n\n---\n\nCLEANED TRANSCRIPT:\n\n${cleanedTranscript}`
+    : `Lesson transcript:\n\n${rawTranscript}`
+
   const response = await getOpenAI().chat.completions.create({
     model: 'gpt-5.4-nano',
     messages: [
       { role: 'system', content: systemPrompt },
-      { role: 'user', content: `Lesson transcript:\n\n${transcript}` },
+      { role: 'user', content: userContent },
     ],
     response_format: { type: 'json_object' },
     temperature: 0.3,

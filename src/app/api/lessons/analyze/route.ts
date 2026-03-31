@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
   // Fetch booking and verify ownership
   const { data: booking, error: dbError } = await supabase
     .from('bookings')
-    .select('id, user_id, transcription_id, transcript_text')
+    .select('id, user_id, transcription_id, transcript_text, cleaned_transcript_text')
     .eq('id', bookingId)
     .single()
 
@@ -120,8 +120,9 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
-    // Analyze with AI
-    const analysis = await analyzeLesson(transcriptText)
+    // Analyze with AI — pass both raw and cleaned transcripts if available
+    const cleanedTranscriptText = booking.cleaned_transcript_text || undefined
+    const analysis = await analyzeLesson(transcriptText, cleanedTranscriptText)
 
     // Store summary
     const { data: summary, error: summaryError } = await supabase
