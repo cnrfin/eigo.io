@@ -268,7 +268,7 @@ export default function StudentVoices() {
   }
 
   return (
-    <section ref={sectionRef} className="py-20 overflow-hidden">
+    <section ref={sectionRef} className="py-20 overflow-hidden" style={{ fontSize: '16px' }}>
       <div className="max-w-4xl mx-auto px-6">
         <motion.h2
           initial={{ opacity: 0, y: 14 }}
