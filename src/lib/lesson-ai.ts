@@ -132,6 +132,7 @@ Return a JSON object with:
    - ONLY flag mistakes where the student's version is clearly wrong AND your correction is meaningfully different from what they said
    - NEVER flag a sentence that is already correct — if the correction would be essentially the same as the original, omit it
    - SKIP anything that looks like a transcription error or garbled text (incoherent phrases, random words, things that make no grammatical or contextual sense) — these are recording artifacts, not real student mistakes
+   - IGNORE self-corrections and natural repetition (e.g. "Maid. Maid. Classical maid.") — in conversation, people repeat words to correct themselves or think aloud. This is normal speech, not a mistake
    - If you are not confident it's a genuine student mistake, omit it
    - Maximum 5 mistakes
    For each genuine mistake:
