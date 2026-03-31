@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
   // Fetch booking and verify ownership
   const { data: booking, error: dbError } = await supabase
     .from('bookings')
-    .select('id, user_id, transcription_id, transcript_text, cleaned_transcript_text')
+    .select('id, user_id, transcription_id, transcript_text, cleaned_transcript')
     .eq('id', bookingId)
     .single()
 
@@ -121,12 +121,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Auto-generate cleaned transcript if it doesn't exist yet
-    let cleanedTranscriptText = booking.cleaned_transcript_text || undefined
+    let cleanedTranscriptText = booking.cleaned_transcript || undefined
     if (!cleanedTranscriptText) {
       try {
         cleanedTranscriptText = await cleanTranscript(transcriptText)
         // Save immediately so it's not lost if the user leaves during analysis
-        await supabase.from('bookings').update({ cleaned_transcript_text: cleanedTranscriptText }).eq('id', bookingId)
+        await supabase.from('bookings').update({ cleaned_transcript: cleanedTranscriptText }).eq('id', bookingId)
       } catch (cleanErr) {
         console.error('Auto-cleanup failed, proceeding with raw only:', cleanErr)
         // Continue with raw-only analysis — better than failing entirely
