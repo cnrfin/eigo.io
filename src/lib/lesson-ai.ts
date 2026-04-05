@@ -57,6 +57,27 @@ The transcriber sometimes produces sentences that make no sense. Use the surroun
 - Break up long messy blocks into proper back-and-forth dialogue
 - The conversation should read naturally — like you're reading a screenplay
 
+### 6. Preserving student mistakes (CRITICAL for lesson analysis)
+The cleaned transcript will be used to identify the student's real English mistakes. You MUST preserve genuine grammar/vocabulary errors the student made — do NOT correct their English. Only fix TRANSCRIPTION errors.
+
+To help you distinguish real mistakes from transcription errors, here are the most common mistakes Japanese English learners make. If you see these patterns in the student's speech, they are almost certainly REAL mistakes — keep them exactly as spoken:
+
+- Missing articles: "I went to store" "She is teacher" "I have cat"
+- Wrong article: "I ate a rice" "She is a Japanese"
+- Missing/wrong prepositions: "I go to there" "I arrived to Tokyo" "I listen music"
+- L/R confusion in word choice: "I was really relaxed" when they mean "I was really relapsed" — but note the transcriber may also mishear L/R sounds
+- Tense errors: "Yesterday I go to..." "I have been there last year" "I didn't went"
+- Missing plural -s: "I have two cat" "many student"
+- Subject-verb agreement: "He don't" "She have" "It don't matter"
+- Word order: "I yesterday went" "I think is good"
+- Direct Japanese translation patterns: "I am exciting" (instead of "excited"), "The typhoon is coming so I am scary" (instead of "scared"), "I could see Mt. Fuji" when meaning "I was able to see"
+- Omitting subjects: "Is very good" "Yesterday went to park"
+- Confusing "borrow/lend", "teach/learn", "say/tell", "listen/hear", "see/watch/look"
+- "I can't hear" instead of "I don't understand" (直訳 of 聞こえない/わからない)
+- Overuse of "so" as a connector: "So I went to the store so I bought milk so..."
+
+When in doubt about whether something is a transcription error or a genuine student mistake, lean toward KEEPING it. It's better to preserve a possible mistake than to accidentally correct one.
+
 ## Rules
 
 - Use "Teacher:" and "Student:" as speaker labels (not "Speaker 0" / "Speaker 1"). Figure out which speaker is the teacher (native English, explains things, asks teaching questions) and which is the student (Japanese speaker, learning English, sometimes uses Japanese).
@@ -143,15 +164,13 @@ Return a JSON object with:
    - "correction": The corrected version (must be meaningfully different from example_student)
    - "explanation_ja": A clear, friendly explanation in Japanese of why it's wrong and how to fix it
    - "explanation_en": Same explanation in English
-5. "vocabulary_phrases": An array of useful English phrases or expressions from the lesson. STRICT rules:
-   - Extract the GENERAL collocation or pattern, not the overly specific version from the lesson. For example: "room temperature" NOT "room-temperature beer", "twice as [adjective]" NOT "twice as expensive", "fuel surcharge" is fine but "fuel surcharge will start charging from this June" is too specific
-   - The phrase should be REUSABLE in many contexts — if it only makes sense in the exact situation discussed in the lesson, don't include it
-   - Do NOT include phrases that aren't genuinely useful for an English learner (e.g. "walk through the streets and rob stores" teaches nothing practical)
-   - Do NOT pad the list to reach a quota. If only 3-4 phrases are genuinely useful, return only 3-4. Quality matters far more than quantity.
-   - Focus on: natural collocations, useful multi-word expressions, phrasal verbs, idioms, and patterns the teacher taught or used
-   - NOT single common words like "run", "play"
+5. "vocabulary_phrases": An array of 5-10 useful English phrases or expressions from the lesson. Focus on:
+   - Multi-word phrases and expressions (NOT single common words like "run", "play")
+   - Phrases the teacher used or taught
+   - Natural collocations and idioms
+   - Practical phrases the student can reuse
    For each phrase:
-   - "phrase_en": The general English phrase/collocation (e.g. "room temperature", "look forward to", "twice as [adjective]")
+   - "phrase_en": The English phrase (e.g. "I'm looking forward to")
    - "example_en": A full example sentence using the phrase
    - "translation_ja": Natural Japanese translation of the phrase
    - "explanation_ja": Brief explanation in Japanese of when/how to use this phrase
@@ -160,6 +179,7 @@ Return a JSON object with:
 
 IMPORTANT:
 - Write all Japanese naturally and casually — not overly formal
+- Focus on practical, reusable phrases rather than topic-specific vocabulary
 - If the transcript is too short or unclear, still provide what you can
 - Return ONLY valid JSON, no markdown or explanation`
 
