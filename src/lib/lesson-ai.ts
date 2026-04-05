@@ -132,8 +132,10 @@ Return a JSON object with:
    - ONLY flag mistakes where the student's version is clearly wrong AND your correction is meaningfully different from what they said
    - NEVER flag a sentence that is already correct — if the correction would be essentially the same as the original, omit it
    - SKIP anything that looks like a transcription error or garbled text (incoherent phrases, random words, things that make no grammatical or contextual sense) — these are recording artifacts, not real student mistakes
+   - SKIP anything that looks like it could be a transcription hallucination — if a phrase seems unnatural or out of context, it was likely misheard by the transcriber, not actually said by the student
    - IGNORE self-corrections and natural repetition (e.g. "Maid. Maid. Classical maid.") — in conversation, people repeat words to correct themselves or think aloud. This is normal speech, not a mistake
    - If you are not confident it's a genuine student mistake, omit it
+   - Quality over quantity — only include mistakes that would genuinely help the student improve. An empty array is fine if there are no clear mistakes.
    - Maximum 5 mistakes
    For each genuine mistake:
    - "type": Category (e.g. "grammar", "vocabulary", "word choice")
@@ -141,13 +143,15 @@ Return a JSON object with:
    - "correction": The corrected version (must be meaningfully different from example_student)
    - "explanation_ja": A clear, friendly explanation in Japanese of why it's wrong and how to fix it
    - "explanation_en": Same explanation in English
-5. "vocabulary_phrases": An array of 5-10 useful English phrases or expressions from the lesson. Focus on:
-   - Multi-word phrases and expressions (NOT single common words like "run", "play")
-   - Phrases the teacher used or taught
-   - Natural collocations and idioms
-   - Practical phrases the student can reuse
+5. "vocabulary_phrases": An array of useful English phrases or expressions from the lesson. STRICT rules:
+   - Extract the GENERAL collocation or pattern, not the overly specific version from the lesson. For example: "room temperature" NOT "room-temperature beer", "twice as [adjective]" NOT "twice as expensive", "fuel surcharge" is fine but "fuel surcharge will start charging from this June" is too specific
+   - The phrase should be REUSABLE in many contexts — if it only makes sense in the exact situation discussed in the lesson, don't include it
+   - Do NOT include phrases that aren't genuinely useful for an English learner (e.g. "walk through the streets and rob stores" teaches nothing practical)
+   - Do NOT pad the list to reach a quota. If only 3-4 phrases are genuinely useful, return only 3-4. Quality matters far more than quantity.
+   - Focus on: natural collocations, useful multi-word expressions, phrasal verbs, idioms, and patterns the teacher taught or used
+   - NOT single common words like "run", "play"
    For each phrase:
-   - "phrase_en": The English phrase (e.g. "I'm looking forward to")
+   - "phrase_en": The general English phrase/collocation (e.g. "room temperature", "look forward to", "twice as [adjective]")
    - "example_en": A full example sentence using the phrase
    - "translation_ja": Natural Japanese translation of the phrase
    - "explanation_ja": Brief explanation in Japanese of when/how to use this phrase
@@ -156,7 +160,6 @@ Return a JSON object with:
 
 IMPORTANT:
 - Write all Japanese naturally and casually — not overly formal
-- Focus on practical, reusable phrases rather than topic-specific vocabulary
 - If the transcript is too short or unclear, still provide what you can
 - Return ONLY valid JSON, no markdown or explanation`
 
