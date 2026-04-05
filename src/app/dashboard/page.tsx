@@ -405,6 +405,10 @@ function HistoryLessonCard({
           setPhrases(data.phrases || [])
           setAnalysisState('ready')
           try { localStorage.setItem(`eigo_analysis_${lesson.id}`, 'ready') } catch { /* ignore */ }
+        } else {
+          // Summary was deleted or doesn't exist — reset to idle
+          setAnalysisState('idle')
+          try { localStorage.removeItem(`eigo_analysis_${lesson.id}`) } catch { /* ignore */ }
         }
       })
       .catch(() => {})
