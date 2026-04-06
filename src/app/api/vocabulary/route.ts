@@ -105,11 +105,63 @@ export async function POST(request: NextRequest) {
 
   const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
-  let body: { phraseId?: string; cardId?: string; comfortLevel?: string; rating?: number }
+  let body: {
+    phraseId?: string
+    cardId?: string
+    comfortLevel?: string
+    rating?: number
+    action?: string
+    phrase_en?: string
+    phrase_ja?: string
+    example_en?: string
+    explanation_en?: string
+    explanation_ja?: string
+    category?: string
+  }
   try {
     body = await request.json()
   } catch {
     return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
+  }
+
+  // ── Edit phrase fields ──────────────────────────────────────
+  if (body.action === 'updatePhrase' && body.cardId) {
+    // Look up the card to get phrase_id, verify ownership
+    const { data: card } = await supabase
+      .from('vocabulary_cards')
+      .select('phrase_id')
+      .eq('id', body.cardId)
+      .eq('user_id', user.id)
+      .single()
+
+    if (!card) {
+      return NextResponse.json({ error: 'Card not found' }, { status: 404 })
+    }
+
+    const phraseUpdate: Record<string, string> = {}
+    if (body.phrase_en !== undefined) phraseUpdate.phrase_en = body.phrase_en
+    if (body.phrase_ja !== undefined) phraseUpdate.translation_ja = body.phrase_ja
+    if (body.example_en !== undefined) phraseUpdate.example_en = body.example_en
+    if (body.explanation_en !== undefined) phraseUpdate.explanation_en = body.explanation_en
+    if (body.explanation_ja !== undefined) phraseUpdate.explanation_ja = body.explanation_ja
+    if (body.category !== undefined) phraseUpdate.category = body.category
+
+    if (Object.keys(phraseUpdate).length === 0) {
+      return NextResponse.json({ error: 'No fields to update' }, { status: 400 })
+    }
+
+    const { error } = await supabase
+      .from('vocabulary_phrases')
+      .update(phraseUpdate)
+      .eq('id', card.phrase_id)
+      .eq('user_id', user.id)
+
+    if (error) {
+      console.error('Failed to update phrase:', error)
+      return NextResponse.json({ error: 'Failed to update phrase' }, { status: 500 })
+    }
+
+    return NextResponse.json({ status: 'updated' })
   }
 
   // SRS review — new rating-based system
@@ -225,6 +277,89 @@ export async function POST(request: NextRequest) {
   }
 
   return NextResponse.json({ error: 'phraseId or cardId+rating required' }, { status: 400 })
+}
+
+/**
+ * PATCH /api/vocabulary
+ * Update phrase fields for a vocabulary card.
+ * Body: { cardId: string, phrase_en?: string, phrase_ja?: string, example_en?: string, explanation_en?: string, explanation_ja?: string, category?: string }
+ */
+export async function PATCH(request: NextRequest) {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+
+  const authHeader = request.headers.get('Authorization')
+  if (!authHeader?.startsWith('Bearer ')) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  const token = authHeader.replace('Bearer ', '')
+  const supabaseAnon = createClient(supabaseUrl, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
+    global: { headers: { Authorization: `Bearer ${token}` } },
+  })
+  const { data: { user }, error: authError } = await supabaseAnon.auth.getUser(token)
+  if (authError || !user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  let body: {
+    cardId?: string
+    phrase_en?: string
+    phrase_ja?: string
+    example_en?: string
+    explanation_en?: string
+    explanation_ja?: string
+    category?: string
+  }
+  try {
+    body = await request.json()
+  } catch {
+    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
+  }
+
+  if (!body.cardId) {
+    return NextResponse.json({ error: 'cardId required' }, { status: 400 })
+  }
+
+  const supabase = createClient(supabaseUrl, supabaseServiceKey)
+
+  // Look up the card to get phrase_id, verify ownership
+  const { data: card } = await supabase
+    .from('vocabulary_cards')
+    .select('phrase_id')
+    .eq('id', body.cardId)
+    .eq('user_id', user.id)
+    .single()
+
+  if (!card) {
+    return NextResponse.json({ error: 'Card not found' }, { status: 404 })
+  }
+
+  // Build the update object for vocabulary_phrases
+  const phraseUpdate: Record<string, string> = {}
+  if (body.phrase_en !== undefined) phraseUpdate.phrase_en = body.phrase_en
+  if (body.phrase_ja !== undefined) phraseUpdate.translation_ja = body.phrase_ja
+  if (body.example_en !== undefined) phraseUpdate.example_en = body.example_en
+  if (body.explanation_en !== undefined) phraseUpdate.explanation_en = body.explanation_en
+  if (body.explanation_ja !== undefined) phraseUpdate.explanation_ja = body.explanation_ja
+  if (body.category !== undefined) phraseUpdate.category = body.category
+
+  if (Object.keys(phraseUpdate).length === 0) {
+    return NextResponse.json({ error: 'No fields to update' }, { status: 400 })
+  }
+
+  const { error } = await supabase
+    .from('vocabulary_phrases')
+    .update(phraseUpdate)
+    .eq('id', card.phrase_id)
+    .eq('user_id', user.id)
+
+  if (error) {
+    console.error('Failed to update phrase:', error)
+    return NextResponse.json({ error: 'Failed to update phrase' }, { status: 500 })
+  }
+
+  return NextResponse.json({ status: 'updated' })
 }
 
 /**
