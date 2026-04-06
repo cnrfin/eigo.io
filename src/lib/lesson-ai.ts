@@ -127,20 +127,16 @@ export type LessonAnalysis = {
 }
 
 /**
- * Analyze a lesson transcript using GPT-4.1 Nano.
- * Takes both raw and cleaned transcripts — uses cleaned for context and attribution,
- * cross-references raw to confirm mistakes are real (not transcription errors).
+ * Analyze a lesson transcript using GPT-5.4 Nano.
+ * Prefers the cleaned transcript (which preserves genuine student mistakes).
+ * Falls back to raw transcript if no cleaned version is available.
  */
 export async function analyzeLesson(rawTranscript: string, cleanedTranscript?: string): Promise<LessonAnalysis> {
   const systemPrompt = `You are an expert English language teaching assistant for Japanese students learning English.
 
-You will be given ${cleanedTranscript ? 'TWO versions of the same lesson transcript' : 'a lesson transcript'}:
+You will be given ${cleanedTranscript ? 'a CLEANED lesson transcript' : 'a lesson transcript'}.
 ${cleanedTranscript ? `
-- RAW TRANSCRIPT: The original auto-generated transcription from Whereby. Contains transcription errors, misheard words, speaker misattributions, and hallucinations.
-- CLEANED TRANSCRIPT: A corrected version where transcription noise has been removed and speakers have been properly attributed as "Teacher:" and "Student:".
-
-Use the CLEANED transcript to understand the conversation, identify what the student actually said, and extract vocabulary phrases.
-Use the RAW transcript as a cross-reference when identifying student mistakes — only flag a mistake if the error is clearly visible in the CLEANED transcript AND makes sense in context as something the student genuinely said.
+The transcript has been cleaned up from a messy auto-generated transcription. Speaker labels ("Teacher:" and "Student:") have been corrected, transcription noise removed, but the student's genuine English mistakes have been intentionally preserved. Trust this transcript as the source of truth for everything — summary, mistakes, and phrases. Do NOT reference or consider the raw transcript.
 ` : ''}
 
 Return a JSON object with:
@@ -150,18 +146,20 @@ Return a JSON object with:
 3. "key_topics": An array of 2-5 topic tags in English (e.g. "travel", "business email", "daily conversation")
 4. "mistake_patterns": An array of genuine grammar/vocabulary mistakes the student made. Rules:
    - ONLY include lines clearly attributed to "Student:" — never flag anything the Teacher said
-   - ONLY flag mistakes where the student's version is clearly wrong AND your correction is meaningfully different from what they said
-   - NEVER flag a sentence that is already correct — if the correction would be essentially the same as the original, omit it
-   - SKIP anything that looks like a transcription error or garbled text (incoherent phrases, random words, things that make no grammatical or contextual sense) — these are recording artifacts, not real student mistakes
-   - SKIP anything that looks like it could be a transcription hallucination — if a phrase seems unnatural or out of context, it was likely misheard by the transcriber, not actually said by the student
-   - IGNORE self-corrections and natural repetition (e.g. "Maid. Maid. Classical maid.") — in conversation, people repeat words to correct themselves or think aloud. This is normal speech, not a mistake
-   - If you are not confident it's a genuine student mistake, omit it
-   - Quality over quantity — only include mistakes that would genuinely help the student improve. An empty array is fine if there are no clear mistakes.
+   - ONLY flag mistakes where the student's version is clearly wrong AND your correction is meaningfully different
+   - NEVER flag a sentence that is already correct
+   - IGNORE incomplete thoughts and trailing off — this is normal in conversation (e.g. "I felt like it's just... it's a little odd", "Maybe I should..." are NOT mistakes, they're natural speech patterns)
+   - IGNORE repeated words during pronunciation practice — in English lessons the teacher often has the student repeat a word multiple times. This is drilling, not a mistake
+   - IGNORE self-corrections (e.g. "Maid. Maid. Classical maid.") — people repeat words to correct themselves or think aloud
+   - IGNORE filler phrases and hesitation markers — "how do I say", "what's the word", etc.
+   - Focus on clear, teachable grammar/vocabulary errors common among Japanese English learners: missing articles, wrong prepositions, tense errors, subject-verb agreement, word order, confusing similar words (borrow/lend, say/tell), direct Japanese translation patterns
+   - If you are not confident it's a genuine student mistake, leave it out
+   - Quality over quantity — an empty array is perfectly fine if there are no clear mistakes
    - Maximum 5 mistakes
    For each genuine mistake:
    - "type": Category (e.g. "grammar", "vocabulary", "word choice")
-   - "example_student": Exactly what the student said (from the cleaned transcript)
-   - "correction": The corrected version (must be meaningfully different from example_student)
+   - "example_student": Exactly what the student said
+   - "correction": The corrected version
    - "explanation_ja": A clear, friendly explanation in Japanese of why it's wrong and how to fix it
    - "explanation_en": Same explanation in English
 5. "vocabulary_phrases": An array of 5-10 useful English phrases or expressions from the lesson. Focus on:
@@ -184,7 +182,7 @@ IMPORTANT:
 - Return ONLY valid JSON, no markdown or explanation`
 
   const userContent = cleanedTranscript
-    ? `RAW TRANSCRIPT:\n\n${rawTranscript}\n\n---\n\nCLEANED TRANSCRIPT:\n\n${cleanedTranscript}`
+    ? `LESSON TRANSCRIPT:\n\n${cleanedTranscript}`
     : `Lesson transcript:\n\n${rawTranscript}`
 
   const response = await getOpenAI().chat.completions.create({
