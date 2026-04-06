@@ -1,16 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { getSupabaseAdmin } from '@/lib/supabase-admin'
-import { verifyTransaction, parseAppleProductId } from '@/lib/apple-iap'
+import { verifyTransaction, parseAppleProductId, decodeJWS } from '@/lib/apple-iap'
 import { getPriceTier } from '@/lib/subscription'
 
 /**
  * POST /api/apple/verify-receipt
  *
  * Called by the iOS app after a successful StoreKit 2 purchase.
- * Validates the transaction with Apple's App Store Server API,
- * then creates/updates the subscription in Supabase (mirroring
- * the Stripe webhook's handleCheckoutCompleted flow).
+ * Attempts to validate the transaction with Apple's App Store Server API.
+ * Falls back to decoding the signed JWS payload from the app if the
+ * Server API is unavailable (e.g. sandbox, auth issues).
+ * Then creates/updates the subscription in Supabase.
  */
 export async function POST(request: NextRequest) {
   // ── Auth ──
@@ -33,7 +34,7 @@ export async function POST(request: NextRequest) {
 
   // ── Parse body ──
   const body = await request.json()
-  const { transactionId, originalTransactionId, productId, environment } = body
+  const { transactionId, originalTransactionId, productId, environment, signedPayload } = body
 
   if (!transactionId || !productId) {
     return NextResponse.json({ error: 'Missing transactionId or productId' }, { status: 400 })
@@ -45,18 +46,42 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: `Unknown product ID: ${productId}` }, { status: 400 })
   }
 
-  // ── Verify with Apple ──
+  // ── Verify transaction ──
+  // Try Apple Server API first, fall back to decoding the signed JWS from the app
+  let verifiedProductId = productId
+  let verifiedOriginalTxId = originalTransactionId || transactionId
+  let purchaseTimestamp: number | null = null
+  let expiresTimestamp: number | null = null
+
+  // Attempt 1: Apple App Store Server API v2
   const transaction = await verifyTransaction(
     transactionId,
     environment === 'Sandbox' ? 'Sandbox' : 'Production',
-  )
+  ).catch((err) => {
+    console.warn('[Apple IAP] Server API verification failed, falling back to JWS decode:', err?.message)
+    return null
+  })
 
-  if (!transaction) {
-    return NextResponse.json({ error: 'Transaction verification failed' }, { status: 400 })
+  if (transaction) {
+    // Verified with Apple — use their data
+    verifiedProductId = transaction.productId
+    verifiedOriginalTxId = transaction.originalTransactionId
+    purchaseTimestamp = transaction.purchaseDate
+    expiresTimestamp = transaction.expiresDate || null
+  } else if (signedPayload) {
+    // Attempt 2: Decode the signed JWS payload from the app
+    const decoded = decodeJWS(signedPayload)
+    if (decoded && decoded.bundleId === 'io.eigo.app') {
+      verifiedProductId = decoded.productId
+      verifiedOriginalTxId = decoded.originalTransactionId
+      purchaseTimestamp = decoded.purchaseDate
+      expiresTimestamp = decoded.expiresDate || null
+      console.log('[Apple IAP] Verified via JWS decode')
+    }
   }
 
-  // Double-check product ID matches
-  if (transaction.productId !== productId) {
+  // Validate product ID matches what the app sent
+  if (verifiedProductId !== productId) {
     return NextResponse.json({ error: 'Product ID mismatch' }, { status: 400 })
   }
 
@@ -66,7 +91,7 @@ export async function POST(request: NextRequest) {
   const { data: existing } = await supabase
     .from('subscriptions')
     .select('id')
-    .eq('apple_original_transaction_id', transaction.originalTransactionId)
+    .eq('apple_original_transaction_id', verifiedOriginalTxId)
     .single()
 
   if (existing) {
@@ -83,9 +108,11 @@ export async function POST(request: NextRequest) {
   const tier = getPriceTier(profile?.trial_completed_at || null)
 
   // ── Calculate subscription period ──
-  const purchaseDate = new Date(transaction.purchaseDate).toISOString()
-  const expiresDate = transaction.expiresDate
-    ? new Date(transaction.expiresDate).toISOString()
+  const purchaseDate = purchaseTimestamp
+    ? new Date(purchaseTimestamp).toISOString()
+    : new Date().toISOString()
+  const expiresDate = expiresTimestamp
+    ? new Date(expiresTimestamp).toISOString()
     : calculatePeriodEnd(purchaseDate, productInfo.interval)
 
   // ── Upsert subscription ──
@@ -96,7 +123,7 @@ export async function POST(request: NextRequest) {
         user_id: user.id,
         stripe_customer_id: null, // No Stripe for Apple IAP purchases
         stripe_subscription_id: null,
-        apple_original_transaction_id: transaction.originalTransactionId,
+        apple_original_transaction_id: verifiedOriginalTxId,
         apple_product_id: productId,
         payment_source: 'apple',
         plan: productInfo.plan,

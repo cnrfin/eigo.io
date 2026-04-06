@@ -77,7 +77,7 @@ export async function verifyTransaction(
  * In production, you should verify the signature against Apple's certificates.
  * For now, we decode the payload (base64url-encoded JSON).
  */
-function decodeJWS(jws: string): AppleTransactionInfo | null {
+export function decodeJWS(jws: string): AppleTransactionInfo | null {
   try {
     const parts = jws.split('.')
     if (parts.length !== 3) return null
@@ -122,17 +122,58 @@ async function getAppStoreServerToken(): Promise<string> {
   }
 
   // Sign with ES256 using Node crypto
-  const { createSign } = await import('crypto')
+  const { createSign, createPrivateKey } = await import('crypto')
 
   const headerB64 = Buffer.from(JSON.stringify(header)).toString('base64url')
   const payloadB64 = Buffer.from(JSON.stringify(payload)).toString('base64url')
   const signingInput = `${headerB64}.${payloadB64}`
 
+  // The private key from env var may have escaped newlines or be base64-only
+  let formattedKey = privateKey.replace(/\\n/g, '\n')
+
+  // If the key doesn't have PEM headers, wrap it
+  if (!formattedKey.includes('-----BEGIN')) {
+    formattedKey = `-----BEGIN PRIVATE KEY-----\n${formattedKey.trim()}\n-----END PRIVATE KEY-----`
+  }
+
+  // Parse the key explicitly as PKCS8 EC key
+  const keyObject = createPrivateKey({
+    key: formattedKey,
+    format: 'pem',
+  })
+
   const sign = createSign('SHA256')
   sign.update(signingInput)
-  // The private key may have escaped newlines from env var
-  const formattedKey = privateKey.replace(/\\n/g, '\n')
-  const signature = sign.sign(formattedKey, 'base64url')
+  const derSignature = sign.sign(keyObject)
+
+  // Node's sign() returns DER-encoded ECDSA signature, but JWT needs raw r||s format
+  // DER: 0x30 [len] 0x02 [rlen] [r] 0x02 [slen] [s]
+  const derToBuf = (der: Buffer): Buffer => {
+    let offset = 2 // skip 0x30 + length
+    if (der[1] & 0x80) offset += (der[1] & 0x7f) // long form length
+
+    // Read r
+    offset++ // skip 0x02
+    let rLen = der[offset++]
+    const r = der.subarray(offset, offset + rLen)
+    offset += rLen
+
+    // Read s
+    offset++ // skip 0x02
+    let sLen = der[offset++]
+    const s = der.subarray(offset, offset + sLen)
+
+    // Pad/trim to 32 bytes each (P-256)
+    const rPad = Buffer.alloc(32)
+    r.copy(rPad, Math.max(0, 32 - r.length), Math.max(0, r.length - 32))
+    const sPad = Buffer.alloc(32)
+    s.copy(sPad, Math.max(0, 32 - s.length), Math.max(0, s.length - 32))
+
+    return Buffer.concat([rPad, sPad])
+  }
+
+  const rawSignature = derToBuf(derSignature)
+  const signature = rawSignature.toString('base64url')
 
   return `${signingInput}.${signature}`
 }
