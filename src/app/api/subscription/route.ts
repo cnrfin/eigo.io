@@ -42,6 +42,7 @@ export async function GET(request: NextRequest) {
         status: subscription.status,
         cancelAtPeriodEnd: subscription.cancel_at_period_end,
         currentPeriodEnd: subscription.current_period_end,
+        paymentSource: subscription.payment_source || 'stripe',
       },
       balance,
     })
