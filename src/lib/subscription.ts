@@ -31,8 +31,11 @@ export function trialHoursRemaining(trialCompletedAt: string | null): number {
 export interface Subscription {
   id: string
   user_id: string
-  stripe_customer_id: string
+  stripe_customer_id: string | null
   stripe_subscription_id: string | null
+  apple_original_transaction_id: string | null
+  apple_product_id: string | null
+  payment_source: 'stripe' | 'apple' | null
   plan: 'light' | 'standard'
   billing_interval: 'monthly' | 'yearly'
   price_tier: PriceTier
