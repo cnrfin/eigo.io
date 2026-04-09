@@ -45,6 +45,18 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Failed to fetch history' }, { status: 500 })
   }
 
+  // Look up which of these bookings already have a summary so the UI
+  // can show an indicator on lessons that still need one
+  const bookingIds = pastBookings.map((b) => b.id)
+  let summarizedIds = new Set<string>()
+  if (bookingIds.length > 0) {
+    const { data: summaries } = await supabase
+      .from('lesson_summaries')
+      .select('booking_id')
+      .in('booking_id', bookingIds)
+    summarizedIds = new Set((summaries || []).map((s: { booking_id: string }) => s.booking_id))
+  }
+
   const lessons = pastBookings.map((b) => ({
     id: b.id,
     date: b.date,
@@ -54,6 +66,7 @@ export async function GET(request: NextRequest) {
     googleEventId: b.google_event_id,
     wherebyMeetingId: b.whereby_meeting_id,
     wherebyRoomUrl: b.whereby_room_url,
+    hasSummary: summarizedIds.has(b.id),
   }))
 
   return NextResponse.json({ lessons })

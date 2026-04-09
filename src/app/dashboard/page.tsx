@@ -23,6 +23,7 @@ type Lesson = {
   googleEventId: string | null
   wherebyRoomUrl: string | null
   wherebyMeetingId: string | null
+  hasSummary?: boolean
 }
 
 type Tab = 'home' | 'booking' | 'history' | 'vocab'
@@ -1156,17 +1157,14 @@ function DashboardContent() {
     fetchSub()
   }, [session?.access_token, user?.id])
 
+  // Fetch history and vocab on mount so tab indicators (unsummarized lessons,
+  // phrases due for review) are accurate before the user visits those tabs
   useEffect(() => {
-    if (activeTab === 'history' && session?.access_token && historyLessons.length === 0) {
+    if (session?.access_token) {
       fetchHistory()
-    }
-  }, [activeTab, session?.access_token, fetchHistory, historyLessons.length])
-
-  useEffect(() => {
-    if (activeTab === 'vocab' && session?.access_token && vocabCards.length === 0) {
       fetchVocab()
     }
-  }, [activeTab, session?.access_token, fetchVocab, vocabCards.length])
+  }, [session?.access_token, fetchHistory, fetchVocab])
 
   const [news, setNews] = useState<(NewsItem & { title: string; body: string; posterName: string; posterAvatar: string })[]>([])
 
@@ -1221,11 +1219,14 @@ function DashboardContent() {
   }
   if (!user) return null
 
-  const tabs: { key: Tab; label: string }[] = [
+  // Lessons in history that don't yet have a summary — shown as a pulsing dot on the tab
+  const unsummarizedCount = historyLessons.filter(l => l.hasSummary === false).length
+
+  const tabs: { key: Tab; label: string; showDot?: boolean }[] = [
     { key: 'home', label: t('tabHome') },
     { key: 'booking', label: t('tabBooking') },
-    { key: 'history', label: t('tabHistory') },
-    { key: 'vocab', label: locale === 'ja' ? 'フレーズ' : 'Phrases' },
+    { key: 'history', label: t('tabHistory'), showDot: unsummarizedCount > 0 },
+    { key: 'vocab', label: locale === 'ja' ? 'フレーズ' : 'Phrases', showDot: dueCount > 0 },
   ]
 
   const nextLesson = lessons[0] || null
@@ -1247,7 +1248,7 @@ function DashboardContent() {
 
             {/* Tab navigation */}
             <div className="flex gap-1 mb-8 overflow-x-auto" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
-              {tabs.map(({ key, label }) => (
+              {tabs.map(({ key, label, showDot }) => (
                 <button
                   key={key}
                   onClick={() => { setActiveTab(key); if (key !== 'history') { setSelectedTranscript(null); setAudioPlayer(null) } }}
@@ -1257,6 +1258,13 @@ function DashboardContent() {
                   }}
                 >
                   {label}
+                  {showDot && (
+                    <span
+                      className="news-unread-dot absolute rounded-full"
+                      style={{ top: 8, right: 8, width: 8, height: 8, background: 'var(--accent)' }}
+                      aria-hidden="true"
+                    />
+                  )}
                   {activeTab === key && (
                     <motion.span
                       layoutId="tab-underline"
