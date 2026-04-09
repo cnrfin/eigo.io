@@ -414,9 +414,34 @@ function HistoryLessonCard({
       .catch(() => {})
   }, [lesson.id, session?.access_token, summary])
 
+  // Prefetch recording metadata silently in the background.
+  // Doesn't show loading state or open the player — just warms up the data.
+  const prefetchRecording = useCallback(async () => {
+    if (!lesson.wherebyRoomUrl || !session?.access_token) return
+    if (recordingState !== 'idle') return // already loading, ready, or known to be missing
+    try {
+      const res = await fetch(`/api/recordings?roomUrl=${encodeURIComponent(lesson.wherebyRoomUrl)}`)
+      const data = await res.json()
+      if (data.recordings && data.recordings.length > 0 && data.recordings[0].accessLink) {
+        setAccessLink(data.recordings[0].accessLink)
+        setRecordingState('ready')
+        // Don't open the player — wait for the user to actually click
+      } else {
+        setRecordingState('none')
+      }
+    } catch {
+      // Silent fail — let the user retry by clicking the button
+    }
+  }, [lesson.wherebyRoomUrl, session?.access_token, recordingState])
+
   const fetchRecording = async () => {
     if (!lesson.wherebyRoomUrl || !session?.access_token) {
       setRecordingState('none')
+      return
+    }
+    // If already prefetched, just open the player instantly
+    if (recordingState === 'ready' && accessLink) {
+      setShowPlayer(true)
       return
     }
     setRecordingState('loading')
@@ -434,6 +459,39 @@ function HistoryLessonCard({
       setRecordingState('error')
     }
   }
+
+  // Prefetch transcript content silently in the background.
+  const prefetchTranscript = useCallback(async () => {
+    if (!session?.access_token) return
+    if (transcriptContent) return // already loaded
+    if (transcriptState !== 'idle' && transcriptState !== 'ready') return
+    try {
+      const res = await fetch(`/api/transcriptions?bookingId=${lesson.id}`, {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      })
+      const data = await res.json()
+      if (data.status === 'ready' && data.content) {
+        setTranscriptContent(data.content)
+        setCleanedTranscriptContent(data.cleanedContent || undefined)
+        setTranscriptState('ready')
+        try { localStorage.setItem(`eigo_transcript_${lesson.id}`, 'ready') } catch { /* ignore */ }
+      } else if (data.status === 'no_recording') {
+        setTranscriptState('none')
+      }
+      // Ignore 'processing' or 'failed' on prefetch — don't poll silently
+    } catch {
+      // Silent fail
+    }
+  }, [lesson.id, session?.access_token, transcriptContent, transcriptState])
+
+  // Trigger both prefetches once when user shows intent (hover/focus/touch).
+  const prefetchedRef = useRef(false)
+  const handlePrefetch = useCallback(() => {
+    if (prefetchedRef.current) return
+    prefetchedRef.current = true
+    prefetchRecording()
+    prefetchTranscript()
+  }, [prefetchRecording, prefetchTranscript])
 
   const fetchTranscript = async () => {
     if (!session?.access_token) return
@@ -521,7 +579,14 @@ function HistoryLessonCard({
 
   return (
     <>
-      <SquircleBox cornerRadius={12} className="overflow-hidden" style={{ background: 'var(--surface)' }}>
+      <SquircleBox
+        cornerRadius={12}
+        className="overflow-hidden"
+        style={{ background: 'var(--surface)' }}
+        onMouseEnter={handlePrefetch}
+        onTouchStart={handlePrefetch}
+        onFocus={handlePrefetch}
+      >
         {/* Main card row */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-6 py-4">
           <div className="shrink-0">
