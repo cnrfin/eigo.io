@@ -360,7 +360,7 @@ function HistoryLessonCard({
   const [recordingState, setRecordingState] = useState<'idle' | 'loading' | 'ready' | 'none' | 'error'>('idle')
   const [accessLink, setAccessLink] = useState<string | null>(null)
   const [showPlayer, setShowPlayer] = useState(false)
-  const [transcriptState, setTranscriptState] = useState<'idle' | 'loading' | 'processing' | 'ready' | 'none' | 'error'>(() => {
+  const [transcriptState, setTranscriptState] = useState<'idle' | 'loading' | 'cleaning' | 'processing' | 'ready' | 'none' | 'error'>(() => {
     if (typeof window !== 'undefined') {
       try {
         const stored = localStorage.getItem(`eigo_transcript_${lesson.id}`)
@@ -494,12 +494,52 @@ function HistoryLessonCard({
     prefetchTranscript()
   }, [prefetchRecording, prefetchTranscript])
 
+  // Run cleanup on a raw transcript and open the viewer with the result.
+  // Falls back to raw if cleanup fails so the user always sees something.
+  const runCleanupAndShow = async (rawContent: string) => {
+    if (!session?.access_token) return
+    setTranscriptState('cleaning')
+    try {
+      const res = await fetch('/api/transcriptions/clean', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ bookingId: lesson.id }),
+      })
+      const data = await res.json()
+      if (data.status === 'ready' && data.cleanedContent) {
+        setCleanedTranscriptContent(data.cleanedContent)
+        setTranscriptState('ready')
+        onViewTranscript(lesson, rawContent, data.cleanedContent)
+        try { localStorage.setItem(`eigo_transcript_${lesson.id}`, 'ready') } catch { /* ignore */ }
+      } else {
+        // Cleanup failed — still show the raw transcript so the user isn't stuck
+        setTranscriptState('ready')
+        onViewTranscript(lesson, rawContent, undefined)
+        try { localStorage.setItem(`eigo_transcript_${lesson.id}`, 'ready') } catch { /* ignore */ }
+      }
+    } catch {
+      // Network error — still show raw
+      setTranscriptState('ready')
+      onViewTranscript(lesson, rawContent, undefined)
+      try { localStorage.setItem(`eigo_transcript_${lesson.id}`, 'ready') } catch { /* ignore */ }
+    }
+  }
+
   const fetchTranscript = async () => {
     if (!session?.access_token) return
 
-    // If we already have content, show it inline
-    if (transcriptContent) {
+    // If we already have raw + cleaned, open immediately
+    if (transcriptContent && cleanedTranscriptContent) {
       onViewTranscript(lesson, transcriptContent, cleanedTranscriptContent)
+      return
+    }
+
+    // If we have raw but no cleaned version yet, trigger cleanup now
+    if (transcriptContent && !cleanedTranscriptContent) {
+      await runCleanupAndShow(transcriptContent)
       return
     }
 
@@ -512,10 +552,16 @@ function HistoryLessonCard({
 
       if (data.status === 'ready' && data.content) {
         setTranscriptContent(data.content)
-        setCleanedTranscriptContent(data.cleanedContent || undefined)
-        setTranscriptState('ready')
-        onViewTranscript(lesson, data.content, data.cleanedContent || undefined)
-        try { localStorage.setItem(`eigo_transcript_${lesson.id}`, 'ready') } catch { /* ignore */ }
+        if (data.cleanedContent) {
+          // Already cleaned — open immediately
+          setCleanedTranscriptContent(data.cleanedContent)
+          setTranscriptState('ready')
+          onViewTranscript(lesson, data.content, data.cleanedContent)
+          try { localStorage.setItem(`eigo_transcript_${lesson.id}`, 'ready') } catch { /* ignore */ }
+        } else {
+          // Raw only — run cleanup, then open
+          await runCleanupAndShow(data.content)
+        }
       } else if (data.status === 'processing') {
         setTranscriptState('processing')
         setTimeout(() => { fetchTranscript() }, 5000)
@@ -561,6 +607,7 @@ function HistoryLessonCard({
   const transcriptLabel = () => {
     switch (transcriptState) {
       case 'loading': return locale === 'ja' ? '取得中' : 'Loading'
+      case 'cleaning': return locale === 'ja' ? '整理中...' : 'Cleaning...'
       case 'processing': return locale === 'ja' ? '作成中...' : 'Processing...'
       case 'ready': return locale === 'ja' ? '文字起こし' : 'Transcript'
       case 'none': return locale === 'ja' ? '録画なし' : 'No recording'
@@ -601,14 +648,14 @@ function HistoryLessonCard({
                 <Squircle asChild cornerRadius={8} cornerSmoothing={0.8}>
                   <button
                     onClick={fetchTranscript}
-                    disabled={transcriptState === 'loading' || transcriptState === 'processing' || transcriptState === 'none'}
+                    disabled={transcriptState === 'loading' || transcriptState === 'cleaning' || transcriptState === 'processing' || transcriptState === 'none'}
                     className="px-3 py-1.5 text-xs font-medium transition-all hover:opacity-90 disabled:opacity-50 flex items-center gap-1.5"
                     style={{
                       background: 'var(--surface-hover)',
                       color: 'var(--text-muted)',
                     }}
                   >
-                    {(transcriptState === 'loading' || transcriptState === 'processing') && (
+                    {(transcriptState === 'loading' || transcriptState === 'cleaning' || transcriptState === 'processing') && (
                       <span className="spinner-sm" />
                     )}
                     {transcriptLabel()}
