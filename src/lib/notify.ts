@@ -51,7 +51,7 @@ async function getUserPushTokens(
         .from('notification_preferences')
         .select('push_enabled, ' + preferenceKey)
         .eq('user_id', userId)
-        .single()
+        .single() as { data: Record<string, boolean> | null }
 
       // If prefs exist and push is disabled or the specific type is off, skip
       if (prefs && (!prefs.push_enabled || !prefs[preferenceKey])) {
