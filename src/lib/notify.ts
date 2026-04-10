@@ -1,11 +1,11 @@
 // Unified notification dispatcher
-// Routes notifications to email or LINE depending on user type
+// Routes notifications to all available channels:
 //
-// Priority:
-// 1. If user has a contact_email set → send email to that address
-// 2. If user has a real email (not @line.eigo.io) → send email
-// 3. If user has a line_user_id → send LINE push message
-// 4. Skip (no valid channel)
+// 1. Push notification (if user has registered Expo push tokens + preference enabled)
+// 2. Email (if user has a real email address)
+// 3. LINE push message (if user signed in with LINE)
+//
+// Push notifications are sent IN ADDITION to email/LINE (not instead of).
 
 import {
   sendBookingConfirmationEmail,
@@ -21,11 +21,55 @@ import {
   sendLineReminderNotification,
 } from '@/lib/line-notify'
 
+import { sendPushToUser } from '@/lib/expo-push'
+import { getSupabaseAdmin } from '@/lib/supabase-admin'
+
 type UserInfo = {
   email?: string | null           // auth email (may be fake @line.eigo.io)
   contactEmail?: string | null    // real email set by user in settings
   lineUserId?: string | null      // LINE user ID from metadata
   displayName?: string            // for greeting
+  userId?: string | null          // Supabase user ID (for push token lookup)
+}
+
+/**
+ * Get push tokens for a user, respecting their notification preferences.
+ * Returns empty array if push is disabled or user has no tokens.
+ */
+async function getUserPushTokens(
+  userId: string | null | undefined,
+  preferenceKey?: 'lesson_reminders' | 'review_reminders' | 'news_updates' | 'promotional',
+): Promise<string[]> {
+  if (!userId) return []
+
+  try {
+    const supabase = getSupabaseAdmin()
+
+    // Check notification preferences
+    if (preferenceKey) {
+      const { data: prefs } = await supabase
+        .from('notification_preferences')
+        .select('push_enabled, ' + preferenceKey)
+        .eq('user_id', userId)
+        .single()
+
+      // If prefs exist and push is disabled or the specific type is off, skip
+      if (prefs && (!prefs.push_enabled || !prefs[preferenceKey])) {
+        return []
+      }
+    }
+
+    // Get all push tokens for this user
+    const { data: tokens } = await supabase
+      .from('push_tokens')
+      .select('token')
+      .eq('user_id', userId)
+
+    return tokens?.map((t) => t.token) || []
+  } catch (err) {
+    console.error('[notify] Failed to get push tokens:', err)
+    return []
+  }
 }
 
 function isRealEmail(email: string | null | undefined): email is string {
@@ -58,6 +102,16 @@ export async function notifyBooking({
   const email = getNotificationEmail(user)
   const studentName = user.displayName || 'Student'
 
+  // Send push notification
+  const tokens = await getUserPushTokens(user.userId, 'lesson_reminders')
+  if (tokens.length > 0) {
+    await sendPushToUser(tokens, {
+      title: 'Lesson Booked ✅',
+      body: `${lessonDate} ${lessonTime} — ${durationMinutes}min lesson confirmed.`,
+      data: { screen: 'home' },
+    }).catch((err) => console.error('[notify] Push error (booking):', err))
+  }
+
   if (email) {
     return sendBookingConfirmationEmail({
       to: email,
@@ -81,7 +135,9 @@ export async function notifyBooking({
     })
   }
 
-  console.warn('No notification channel for user:', user.email)
+  if (tokens.length === 0) {
+    console.warn('No notification channel for user:', user.email)
+  }
 }
 
 // ── Cancellation ──
@@ -99,6 +155,16 @@ export async function notifyCancellation({
 }) {
   const email = getNotificationEmail(user)
   const studentName = user.displayName || 'Student'
+
+  // Send push notification
+  const tokens = await getUserPushTokens(user.userId, 'lesson_reminders')
+  if (tokens.length > 0) {
+    await sendPushToUser(tokens, {
+      title: 'Lesson Cancelled',
+      body: `Your ${lessonDate} ${lessonTime} lesson has been cancelled.`,
+      data: { screen: 'home' },
+    }).catch((err) => console.error('[notify] Push error (cancellation):', err))
+  }
 
   if (email) {
     return sendCancellationEmail({
@@ -120,7 +186,9 @@ export async function notifyCancellation({
     })
   }
 
-  console.warn('No notification channel for user:', user.email)
+  if (tokens.length === 0) {
+    console.warn('No notification channel for user:', user.email)
+  }
 }
 
 // ── Reschedule ──
@@ -146,6 +214,16 @@ export async function notifyReschedule({
 }) {
   const email = getNotificationEmail(user)
   const studentName = user.displayName || 'Student'
+
+  // Send push notification
+  const tokens = await getUserPushTokens(user.userId, 'lesson_reminders')
+  if (tokens.length > 0) {
+    await sendPushToUser(tokens, {
+      title: 'Lesson Rescheduled',
+      body: `Moved to ${newLessonDate} ${newLessonTime}.`,
+      data: { screen: 'home' },
+    }).catch((err) => console.error('[notify] Push error (reschedule):', err))
+  }
 
   if (email) {
     return sendRescheduleEmail({
@@ -174,7 +252,9 @@ export async function notifyReschedule({
     })
   }
 
-  console.warn('No notification channel for user:', user.email)
+  if (tokens.length === 0) {
+    console.warn('No notification channel for user:', user.email)
+  }
 }
 
 // ── Reminder ──
@@ -196,6 +276,16 @@ export async function notifyReminder({
 }) {
   const email = getNotificationEmail(user)
   const studentName = user.displayName || 'Student'
+
+  // Send push notification
+  const tokens = await getUserPushTokens(user.userId, 'lesson_reminders')
+  if (tokens.length > 0) {
+    await sendPushToUser(tokens, {
+      title: 'Lesson Starting Soon ⏰',
+      body: `Your lesson starts in 30 minutes (${lessonTime}).`,
+      data: { screen: 'home' },
+    }).catch((err) => console.error('[notify] Push error (reminder):', err))
+  }
 
   if (email) {
     return sendReminderEmail({
@@ -221,5 +311,7 @@ export async function notifyReminder({
     })
   }
 
-  console.warn('No notification channel for user:', user.email)
+  if (tokens.length === 0) {
+    console.warn('No notification channel for user:', user.email)
+  }
 }

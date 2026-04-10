@@ -152,6 +152,7 @@ export async function POST(request: NextRequest) {
             contactEmail: profile?.contact_email,
             lineUserId: user.user_metadata?.line_user_id,
             displayName: studentName,
+            userId: user.id,
           },
           lessonDate: emailDate,
           lessonTime: emailTime,

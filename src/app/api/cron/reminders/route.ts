@@ -73,8 +73,10 @@ export async function GET(request: NextRequest) {
         studentName = email?.split('@')[0] || 'Student'
       }
 
-      // Skip if we have no way to contact the student
-      if (!contactEmail && !email && !lineUserId) continue
+      // Skip if we have no way to contact the student (email, LINE, or push)
+      if (!contactEmail && !email && !lineUserId) {
+        // Still continue — the user may have push tokens registered
+      }
 
       // Format the date for the notification
       const lessonDate = lessonStartJST.toLocaleDateString('ja-JP', {
@@ -95,7 +97,7 @@ export async function GET(request: NextRequest) {
         const minutesUntil = hoursUntil * 60
         if (!booking.reminder_30min_sent && minutesUntil <= 45 && minutesUntil > 5) {
           await notifyReminder({
-            user: { email, contactEmail, lineUserId, displayName: studentName },
+            user: { email, contactEmail, lineUserId, displayName: studentName, userId: booking.user_id },
             lessonDate,
             lessonTime,
             durationMinutes: booking.duration_minutes,
