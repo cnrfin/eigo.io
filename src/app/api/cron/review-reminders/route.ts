@@ -6,12 +6,9 @@ import { sendPushToUser } from '@/lib/expo-push'
  * GET /api/cron/review-reminders
  *
  * Called every 15 minutes by an external cron service.
- * Checks which users have review_reminders enabled and whose
- * review_reminder_time falls within the current 15-minute window (JST).
- * Sends a push notification to each matching user.
- *
- * Users set their reminder time in JST (Japan Standard Time) since
- * the app targets Japanese learners.
+ * Fetches all users with review reminders enabled, then checks
+ * if the current time in each user's timezone matches their
+ * chosen review_reminder_time. Sends a push notification if so.
  */
 export async function GET(request: NextRequest) {
   // Verify cron secret
@@ -29,26 +26,12 @@ export async function GET(request: NextRequest) {
   const results = { sent: 0, errors: 0, skipped: 0 }
 
   try {
-    // Get current time in JST (UTC+9)
-    const nowJST = new Date(Date.now() + 9 * 60 * 60 * 1000)
-    const currentHour = nowJST.getUTCHours()
-    const currentMinute = nowJST.getUTCMinutes()
-
-    // Build the time slots that fall within this 15-minute window
-    // e.g. if it's 09:07 JST, we match 09:00
-    // if it's 09:16, we match 09:15
-    const windowStart = Math.floor(currentMinute / 15) * 15
-    const timeSlot = `${String(currentHour).padStart(2, '0')}:${String(windowStart).padStart(2, '0')}`
-
-    console.log(`[ReviewReminder] Current JST: ${currentHour}:${String(currentMinute).padStart(2, '0')}, matching time slot: ${timeSlot}`)
-
-    // Find users who have review reminders enabled at this time
+    // Fetch all users with review reminders enabled
     const { data: prefs, error: prefsError } = await supabase
       .from('notification_preferences')
-      .select('user_id, review_reminder_time')
+      .select('user_id, review_reminder_time, timezone')
       .eq('push_enabled', true)
       .eq('review_reminders', true)
-      .eq('review_reminder_time', timeSlot)
 
     if (prefsError) {
       console.error('[ReviewReminder] Failed to fetch preferences:', prefsError)
@@ -56,15 +39,33 @@ export async function GET(request: NextRequest) {
     }
 
     if (!prefs || prefs.length === 0) {
-      console.log('[ReviewReminder] No users matched for time slot:', timeSlot)
-      return NextResponse.json({ message: 'No reminders to send', timeSlot, ...results })
+      return NextResponse.json({ message: 'No users with review reminders', ...results })
     }
 
-    console.log(`[ReviewReminder] Found ${prefs.length} user(s) for time slot ${timeSlot}`)
+    const now = new Date()
 
-    // Send push notifications to each matching user
+    // Check each user's local time against their reminder time
     for (const pref of prefs) {
       try {
+        const tz = pref.timezone || 'Asia/Tokyo'
+        const reminderTime = pref.review_reminder_time || '09:00'
+
+        // Get current time in the user's timezone
+        const localTime = now.toLocaleTimeString('en-GB', {
+          timeZone: tz,
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false,
+        })
+
+        // Round down to nearest 15-minute slot (matching the cron interval)
+        const [h, m] = localTime.split(':').map(Number)
+        const slotMinute = Math.floor(m / 15) * 15
+        const currentSlot = `${String(h).padStart(2, '0')}:${String(slotMinute).padStart(2, '0')}`
+
+        // Skip if the user's local time doesn't match their reminder time
+        if (currentSlot !== reminderTime) continue
+
         // Get push tokens for this user
         const { data: tokens } = await supabase
           .from('push_tokens')
@@ -77,6 +78,8 @@ export async function GET(request: NextRequest) {
           results.skipped++
           continue
         }
+
+        console.log(`[ReviewReminder] Sending to user ${pref.user_id} (tz: ${tz}, slot: ${currentSlot})`)
 
         await sendPushToUser(tokenList, {
           title: 'Time to review! 📖',
@@ -91,7 +94,7 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    return NextResponse.json({ message: 'Review reminders processed', timeSlot, ...results })
+    return NextResponse.json({ message: 'Review reminders processed', ...results })
   } catch (err) {
     console.error('[ReviewReminder] Cron error:', err)
     return NextResponse.json({ error: 'Internal error' }, { status: 500 })
