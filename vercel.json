@@ -1,1 +1,16 @@
-{}
+{
+  "crons": [
+    {
+      "path": "/api/cron/reminders",
+      "schedule": "*/15 * * * *"
+    },
+    {
+      "path": "/api/cron/review-reminders",
+      "schedule": "*/15 * * * *"
+    },
+    {
+      "path": "/api/cron/check-subscriptions",
+      "schedule": "0 4 * * *"
+    }
+  ]
+}
