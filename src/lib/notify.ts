@@ -30,6 +30,12 @@ type UserInfo = {
   lineUserId?: string | null      // LINE user ID from metadata
   displayName?: string            // for greeting
   userId?: string | null          // Supabase user ID (for push token lookup)
+  locale?: 'ja' | 'en' | null    // user's preferred language
+}
+
+/** Pick text based on user locale (defaults to Japanese) */
+function t(user: UserInfo, ja: string, en: string): string {
+  return user.locale === 'en' ? en : ja
 }
 
 /**
@@ -106,8 +112,12 @@ export async function notifyBooking({
   const tokens = await getUserPushTokens(user.userId, 'lesson_reminders')
   if (tokens.length > 0) {
     await sendPushToUser(tokens, {
-      title: 'Lesson Booked ✅',
-      body: `${lessonDate} ${lessonTime} — ${durationMinutes}min lesson confirmed.`,
+      title: t(user, 'レッスン予約完了 ✅', 'Lesson Booked ✅'),
+      body: t(
+        user,
+        `${lessonDate} ${lessonTime} — ${durationMinutes}分のレッスンが確定しました。`,
+        `${lessonDate} ${lessonTime} — ${durationMinutes}min lesson confirmed.`,
+      ),
       data: { screen: 'home' },
     }).catch((err) => console.error('[notify] Push error (booking):', err))
   }
@@ -160,8 +170,12 @@ export async function notifyCancellation({
   const tokens = await getUserPushTokens(user.userId, 'lesson_reminders')
   if (tokens.length > 0) {
     await sendPushToUser(tokens, {
-      title: 'Lesson Cancelled',
-      body: `Your ${lessonDate} ${lessonTime} lesson has been cancelled.`,
+      title: t(user, 'レッスンキャンセル ❌', 'Lesson Cancelled ❌'),
+      body: t(
+        user,
+        `${lessonDate} ${lessonTime} のレッスンがキャンセルされました。分数は返還されます。`,
+        `Your ${lessonDate} ${lessonTime} lesson has been cancelled. Your minutes have been refunded.`,
+      ),
       data: { screen: 'home' },
     }).catch((err) => console.error('[notify] Push error (cancellation):', err))
   }
@@ -219,8 +233,12 @@ export async function notifyReschedule({
   const tokens = await getUserPushTokens(user.userId, 'lesson_reminders')
   if (tokens.length > 0) {
     await sendPushToUser(tokens, {
-      title: 'Lesson Rescheduled',
-      body: `Moved to ${newLessonDate} ${newLessonTime}.`,
+      title: t(user, 'レッスン日時変更 📅', 'Lesson Rescheduled 📅'),
+      body: t(
+        user,
+        `レッスンが ${newLessonDate} ${newLessonTime} に変更されました。`,
+        `Your lesson has been moved to ${newLessonDate} ${newLessonTime}.`,
+      ),
       data: { screen: 'home' },
     }).catch((err) => console.error('[notify] Push error (reschedule):', err))
   }
@@ -281,8 +299,12 @@ export async function notifyReminder({
   const tokens = await getUserPushTokens(user.userId, 'lesson_reminders')
   if (tokens.length > 0) {
     await sendPushToUser(tokens, {
-      title: 'Lesson Starting Soon ⏰',
-      body: `Your lesson starts in 30 minutes (${lessonTime}).`,
+      title: t(user, 'まもなくレッスン開始 ⏰', 'Lesson Starting Soon ⏰'),
+      body: t(
+        user,
+        `レッスンは30分後に始まります（${lessonTime}）`,
+        `Your lesson starts in 30 minutes (${lessonTime}).`,
+      ),
       data: { screen: 'home' },
     }).catch((err) => console.error('[notify] Push error (reminder):', err))
   }

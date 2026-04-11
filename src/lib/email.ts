@@ -343,7 +343,7 @@ export async function sendAdminBookingNotification({
   durationMinutes: number
   classroomUrl: string
 }) {
-  const adminEmail = 'cnrfin93@gmail.com'
+  const adminEmail = process.env.ADMIN_EMAIL || 'cnrfin93@gmail.com'
   const subject = `New booking: ${studentName} - ${lessonDate} ${lessonTime}`
 
   const content = `
@@ -396,7 +396,7 @@ export async function sendAdminBatchBookingNotification({
   studentEmail: string
   lessons: { lessonDate: string; lessonTime: string; durationMinutes: number }[]
 }) {
-  const adminEmail = 'cnrfin93@gmail.com'
+  const adminEmail = process.env.ADMIN_EMAIL || 'cnrfin93@gmail.com'
   const subject = `New bookings: ${studentName} — ${lessons.length} lessons`
 
   const lessonRows = lessons
@@ -521,7 +521,7 @@ export async function sendAdminCancellationNotification({
   lessonTime: string
   durationMinutes: number
 }) {
-  const adminEmail = 'cnrfin93@gmail.com'
+  const adminEmail = process.env.ADMIN_EMAIL || 'cnrfin93@gmail.com'
   const subject = `Lesson cancelled: ${studentName} — ${lessonDate} ${lessonTime}`
 
   const content = `
@@ -569,7 +569,7 @@ export async function sendAdminBatchCancellationNotification({
   studentEmail: string
   lessons: { lessonDate: string; lessonTime: string; durationMinutes: number }[]
 }) {
-  const adminEmail = 'cnrfin93@gmail.com'
+  const adminEmail = process.env.ADMIN_EMAIL || 'cnrfin93@gmail.com'
   const subject = `Lessons cancelled: ${studentName} — ${lessons.length} lessons`
 
   const lessonRows = lessons
@@ -731,7 +731,7 @@ export async function sendAdminRescheduleNotification({
   durationMinutes: number
   classroomUrl: string
 }) {
-  const adminEmail = 'cnrfin93@gmail.com'
+  const adminEmail = process.env.ADMIN_EMAIL || 'cnrfin93@gmail.com'
   const subject = `Lesson rescheduled: ${studentName} — ${newLessonDate} ${newLessonTime}`
 
   const content = `
@@ -792,7 +792,7 @@ export async function sendAdminSupportTicketNotification({
   body: string
   deviceInfo?: { model?: string; os?: string; app_version?: string; device_name?: string } | null
 }) {
-  const adminEmail = 'cnrfin93@gmail.com'
+  const adminEmail = process.env.ADMIN_EMAIL || 'cnrfin93@gmail.com'
   const emailSubject = `🎫 New support ticket: ${subject}`
 
   const categoryLabel: Record<string, string> = {

@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
     // Bookings store date/time in JST
     const { data: bookings, error: fetchError } = await supabaseAdmin
       .from('bookings')
-      .select('*, profiles!bookings_user_id_fkey(email, display_name, contact_email)')
+      .select('*, profiles!bookings_user_id_fkey(email, display_name, contact_email, preferred_language)')
       .eq('status', 'confirmed')
       .eq('reminder_30min_sent', false)
 
@@ -97,7 +97,7 @@ export async function GET(request: NextRequest) {
         const minutesUntil = hoursUntil * 60
         if (!booking.reminder_30min_sent && minutesUntil <= 45 && minutesUntil > 5) {
           await notifyReminder({
-            user: { email, contactEmail, lineUserId, displayName: studentName, userId: booking.user_id },
+            user: { email, contactEmail, lineUserId, displayName: studentName, userId: booking.user_id, locale: booking.profiles?.preferred_language || 'ja' },
             lessonDate,
             lessonTime,
             durationMinutes: booking.duration_minutes,

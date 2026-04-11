@@ -8,7 +8,8 @@ import { sendPushToUser } from '@/lib/expo-push'
  * Called every 15 minutes by an external cron service.
  * Fetches all users with review reminders enabled, then checks
  * if the current time in each user's timezone matches their
- * chosen review_reminder_time. Sends a push notification if so.
+ * chosen review_reminder_time. Counts due vocabulary phrases
+ * and sends a push notification only if there are cards to review.
  */
 export async function GET(request: NextRequest) {
   // Verify cron secret
@@ -43,6 +44,7 @@ export async function GET(request: NextRequest) {
     }
 
     const now = new Date()
+    const nowISO = now.toISOString()
 
     // Check each user's local time against their reminder time
     for (const pref of prefs) {
@@ -66,6 +68,19 @@ export async function GET(request: NextRequest) {
         // Skip if the user's local time doesn't match their reminder time
         if (currentSlot !== reminderTime) continue
 
+        // Count vocabulary phrases that are due for review
+        const { count: dueCount } = await supabase
+          .from('vocabulary_phrases')
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', pref.user_id)
+          .lte('next_review_at', nowISO)
+
+        // Skip if no phrases are due
+        if (!dueCount || dueCount === 0) {
+          results.skipped++
+          continue
+        }
+
         // Get push tokens for this user
         const { data: tokens } = await supabase
           .from('push_tokens')
@@ -79,11 +94,24 @@ export async function GET(request: NextRequest) {
           continue
         }
 
-        console.log(`[ReviewReminder] Sending to user ${pref.user_id} (tz: ${tz}, slot: ${currentSlot})`)
+        // Get user's language preference
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('preferred_language')
+          .eq('id', pref.user_id)
+          .single()
+
+        const isJa = profile?.preferred_language !== 'en'
+
+        console.log(`[ReviewReminder] Sending to user ${pref.user_id} (tz: ${tz}, due: ${dueCount})`)
+
+        const phraseWord = isJa ? 'フレーズ' : (dueCount === 1 ? 'phrase' : 'phrases')
 
         await sendPushToUser(tokenList, {
-          title: 'Time to review! 📖',
-          body: 'Practice your vocabulary from recent lessons.',
+          title: isJa ? '復習の時間です 📖' : 'Time to review! 📖',
+          body: isJa
+            ? `${dueCount}件の${phraseWord}が復習待ちです。続けていきましょう！`
+            : `You have ${dueCount} ${phraseWord} to review. Let's keep it up!`,
           data: { screen: 'phrases' },
         })
 

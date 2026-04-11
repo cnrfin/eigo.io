@@ -187,7 +187,7 @@ export async function POST(request: NextRequest) {
       // Fetch contact_email from profile
       const { data: profile } = await supabase
         .from('profiles')
-        .select('contact_email')
+        .select('contact_email, preferred_language')
         .eq('id', user.id)
         .single()
 
@@ -200,6 +200,7 @@ export async function POST(request: NextRequest) {
           lineUserId: user.user_metadata?.line_user_id,
           displayName: studentName,
           userId: user.id,
+          locale: profile?.preferred_language || 'ja',
         },
         oldLessonDate: oldEmailDate,
         oldLessonTime: oldEmailTime,

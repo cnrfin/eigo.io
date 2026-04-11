@@ -7,31 +7,31 @@ import Footer from '@/components/Footer'
 const content = {
   ja: {
     title: '利用規約',
-    lastUpdated: '最終更新日：2026年3月25日',
+    lastUpdated: '最終更新日：2026年4月11日',
     sections: [
       {
         heading: '1. サービスの概要',
-        body: 'eigo.io（以下「当スクール」）は、Connor Finleyが個人事業として運営するオンライン英会話スクールです。当スクールは、マンツーマンの英会話レッスン、英語試験対策、発音トレーニング、翻訳・英文ライティングサービスを提供します。\n\n予約確認やリマインダーなどの通知は、メールまたはLINEメッセージで送信されます。LINEでログインされた利用者には、LINEメッセージで通知が届きます。設定画面から通知先メールアドレスを登録することで、メール通知に変更することも可能です。',
+        body: 'eigo.io（以下「当スクール」）は、Connor Finleyが個人事業として運営するオンライン英会話スクールです。当スクールは、マンツーマンの英会話レッスン、英語試験対策、発音トレーニング、翻訳・英文ライティングサービスを提供します。\n\n予約確認やリマインダーなどの通知は、メール、LINEメッセージ、またはプッシュ通知で送信されます。通知設定はアプリの設定画面からいつでも変更可能です。',
       },
       {
         heading: '2. アカウント登録',
-        body: '当スクールのサービスを利用するには、アカウント登録が必要です。登録にはGoogle、LINE、またはメールアドレスを使用できます。利用者は、正確な情報を提供し、アカウントの安全管理に責任を負います。',
+        body: '当スクールのサービスを利用するには、アカウント登録が必要です。登録にはGoogle、Apple、LINE、またはメールアドレスを使用できます。利用者は、正確な情報を提供し、アカウントの安全管理に責任を負います。',
       },
       {
         heading: '3. レッスンの予約・キャンセル',
-        body: 'レッスンは、ダッシュボードのカレンダーから予約できます。キャンセルはレッスン開始の1時間前まで無料で可能です。1時間以内のキャンセルは、レッスン1回分の消化として扱われ、返金の対象外となります。\n\n講師側の都合によるキャンセルの場合は、振替レッスンまたは該当分の返金で対応します。',
+        body: 'レッスンは、アプリの予約画面から予約できます。キャンセルはレッスン開始の15分前まで可能で、レッスン分数は返還されます。15分以内のキャンセルは、レッスン分数の消化として扱われ、返還の対象外となります。\n\n講師側の都合によるキャンセルの場合は、レッスン分数の返還で対応します。',
       },
       {
-        heading: '4. 料金・お支払い',
-        body: '月額料金はStripeを通じて請求されます。\n\n・体験レッスン後48時間以内にご入会の場合：12,000円/月（税込）\n・体験なしでのご入会：20,000円/月（税込）\n\n月4時間までのレッスンが予約可能です。お支払いは入会日と同日に毎月自動的に課金されます。',
+        heading: '4. プランと料金',
+        body: '当スクールでは以下のプランを提供しています：\n\n【ライトプラン】月120分（週約30分）\n・月額：10,000円（税込）\n・年額：120,000円（税込）\n\n【スタンダードプラン】月240分（週約60分）\n・月額：20,000円（税込）\n・年額：160,000円（税込）\n\n体験レッスン後48時間以内にご入会の場合、初回の料金が割引になります。\n\nお支払いはApple App内課金またはStripe（クレジットカード）で行えます。お支払いは入会日と同日に自動更新されます。',
       },
       {
         heading: '5. 無料体験レッスン',
-        body: '初回のお客様には、無料体験レッスンを1回提供します。体験レッスンは入会の義務を伴いません。',
+        body: '初回のお客様には、15分の無料体験レッスンを1回提供します。体験レッスンは入会の義務を伴いません。',
       },
       {
         heading: '6. レッスンの録画・文字起こし',
-        body: 'すべてのレッスンは自動的に録画され、文字起こしが生成されます。これらは利用者のダッシュボードから確認できます。録画データは復習目的で提供されるものであり、第三者への共有や商用利用は禁止します。',
+        body: 'すべてのレッスンは自動的に録画され、文字起こしが生成されます。これらはアプリの履歴画面から確認できます。録画データは復習目的で提供されるものであり、第三者への共有や商用利用は禁止します。',
       },
       {
         heading: '7. 禁止事項',
@@ -39,7 +39,7 @@ const content = {
       },
       {
         heading: '8. 解約',
-        body: 'アカウントはいつでも解約できます。解約した場合、次回の課金は発生しません。当月分の残りのレッスンは課金期間終了まで利用可能です。解約の手続きは、設定画面またはconnor@eigo.ioへの連絡で行えます。',
+        body: 'サブスクリプションはいつでも解約できます。解約した場合、次回の課金は発生しません。残りのレッスン分数は現在の課金期間終了まで利用可能です。\n\nApple App内課金の場合は、iOSの設定画面またはアプリ内の「サブスクリプション管理」から解約できます。Stripeの場合は、アプリの設定画面から解約できます。connor@eigo.io へのご連絡でも対応いたします。',
       },
       {
         heading: '9. 免責事項',
@@ -47,11 +47,11 @@ const content = {
       },
       {
         heading: '10. 規約の変更',
-        body: '本規約は、必要に応じて変更されることがあります。重要な変更がある場合は、サイト上でお知らせします。サービスの継続利用をもって、変更後の規約に同意したものとみなします。',
+        body: '本規約は、必要に応じて変更されることがあります。重要な変更がある場合は、アプリ内でお知らせします。サービスの継続利用をもって、変更後の規約に同意したものとみなします。',
       },
       {
         heading: '11. 準拠法',
-        body: '本規約は、イギリス法に準拠し、解釈されます。',
+        body: '本規約は、イングランドおよびウェールズの法律に準拠し、解釈されます。',
       },
       {
         heading: '12. お問い合わせ',
@@ -61,31 +61,31 @@ const content = {
   },
   en: {
     title: 'Terms of Service',
-    lastUpdated: 'Last updated: 25 March 2026',
+    lastUpdated: 'Last updated: 11 April 2026',
     sections: [
       {
         heading: '1. About the service',
-        body: 'eigo.io ("the School") is an online English school operated by Connor Finley as a sole trader based in the United Kingdom. We provide private 1-to-1 English conversation lessons, test preparation, pronunciation training, and translation and script writing services.\n\nBooking confirmations, reminders, and other notifications are sent via email or LINE message. If you sign in with LINE, notifications will be sent as LINE messages by default. You can set a notification email address in Settings to receive notifications by email instead.',
+        body: 'eigo.io ("the School") is an online English school operated by Connor Finley as a sole trader based in the United Kingdom. We provide private 1-to-1 English conversation lessons, test preparation, pronunciation training, and translation and script writing services.\n\nBooking confirmations, reminders, and other notifications are sent via email, LINE message, or push notification. You can manage your notification preferences in the app settings.',
       },
       {
         heading: '2. Account registration',
-        body: 'You must create an account to use our service. You can register using Google, LINE, or email. You are responsible for providing accurate information and keeping your account secure.',
+        body: 'You must create an account to use our service. You can register using Google, Apple, LINE, or email. You are responsible for providing accurate information and keeping your account secure.',
       },
       {
         heading: '3. Booking and cancellation',
-        body: 'Lessons can be booked through the calendar on your dashboard. Cancellations must be made at least 1 hour before the lesson start time. Late cancellations (within 1 hour) will be counted as a used lesson and are not eligible for a refund.\n\nIf the teacher cancels, you will receive a replacement lesson or a refund for that session.',
+        body: 'Lessons can be booked through the booking screen in the app. Cancellations made at least 15 minutes before the lesson start time will receive a full minute refund. Late cancellations (within 15 minutes) will be counted as used minutes and are not eligible for a refund.\n\nIf the teacher cancels, your lesson minutes will be refunded.',
       },
       {
-        heading: '4. Pricing and payment',
-        body: 'Monthly fees are billed through Stripe.\n\n• After a trial lesson (joined within 48 hours): ¥12,000/month (tax included)\n• Without a trial lesson: ¥20,000/month (tax included)\n\nYou may book up to 4 hours of lessons per month. Payment is automatically charged on the same date each month as your sign-up date.',
+        heading: '4. Plans and pricing',
+        body: 'We offer the following subscription plans:\n\nLite Plan — 120 minutes per month (approx. 30 min/week)\n• Monthly: ¥10,000 (tax included)\n• Yearly: ¥120,000 (tax included)\n\nStandard Plan — 240 minutes per month (approx. 60 min/week)\n• Monthly: ¥20,000 (tax included)\n• Yearly: ¥160,000 (tax included)\n\nA discounted rate is available for the first billing period if you subscribe within 48 hours of completing your trial lesson.\n\nPayment is processed via Apple In-App Purchase or Stripe (credit card). Subscriptions renew automatically on the same date each billing cycle.',
       },
       {
         heading: '5. Free trial lesson',
-        body: 'New students receive one free trial lesson. The trial does not commit you to a subscription.',
+        body: 'New students receive one free 15-minute trial lesson. The trial does not commit you to a subscription.',
       },
       {
         heading: '6. Lesson recordings and transcriptions',
-        body: 'All lessons are automatically recorded and transcribed. Recordings and transcriptions are available on your dashboard for personal review. You may not redistribute, share publicly, or use recordings for commercial purposes.',
+        body: 'All lessons are automatically recorded and transcribed. Recordings and transcriptions are available in the app for personal review. You may not redistribute, share publicly, or use recordings for commercial purposes.',
       },
       {
         heading: '7. Prohibited conduct',
@@ -93,7 +93,7 @@ const content = {
       },
       {
         heading: '8. Cancelling your subscription',
-        body: 'You may cancel your subscription at any time. After cancellation, you will not be charged again. You may continue to use remaining lessons until the end of your current billing period. To cancel, use the Settings page or contact connor@eigo.io.',
+        body: 'You may cancel your subscription at any time. After cancellation, you will not be charged again. You may continue to use remaining minutes until the end of your current billing period.\n\nFor Apple In-App Purchase subscriptions, you can cancel through iOS Settings or the "Manage Subscription" option in the app. For Stripe subscriptions, use the Settings page in the app. You can also contact connor@eigo.io for assistance.',
       },
       {
         heading: '9. Limitation of liability',
@@ -101,7 +101,7 @@ const content = {
       },
       {
         heading: '10. Changes to these terms',
-        body: 'We may update these terms from time to time. If we make significant changes, we will notify you on the site. Continued use of the service constitutes acceptance of the updated terms.',
+        body: 'We may update these terms from time to time. If we make significant changes, we will notify you in the app. Continued use of the service constitutes acceptance of the updated terms.',
       },
       {
         heading: '11. Governing law',
