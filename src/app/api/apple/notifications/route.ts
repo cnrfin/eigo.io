@@ -78,6 +78,7 @@ async function handleV2(
         await handleRefundOrRevoke(supabase, transaction)
         break
       case 'DID_CHANGE_RENEWAL_INFO':
+      case 'DID_CHANGE_RENEWAL_STATUS':
         if (notification.subtype === 'AUTO_RENEW_DISABLED') {
           await handleAutoRenewDisabled(supabase, transaction)
         } else if (notification.subtype === 'AUTO_RENEW_ENABLED') {
