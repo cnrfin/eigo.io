@@ -68,9 +68,9 @@ export async function GET(request: NextRequest) {
         // Skip if the user's local time doesn't match their reminder time
         if (currentSlot !== reminderTime) continue
 
-        // Count vocabulary phrases that are due for review
+        // Count vocabulary cards that are due for review
         const { count: dueCount } = await supabase
-          .from('vocabulary_phrases')
+          .from('vocabulary_cards')
           .select('id', { count: 'exact', head: true })
           .eq('user_id', pref.user_id)
           .lte('next_review_at', nowISO)
