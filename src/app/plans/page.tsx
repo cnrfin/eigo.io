@@ -119,7 +119,7 @@ export default function PlansPage() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${session.access_token}`,
         },
-        body: JSON.stringify({ plan, interval }),
+        body: JSON.stringify({ plan, billing_interval: interval }),
       })
 
       const data = await res.json()
