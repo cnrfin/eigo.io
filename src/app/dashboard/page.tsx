@@ -1430,8 +1430,8 @@ function DashboardContent() {
                               </p>
                               <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
                                 {locale === 'ja'
-                                  ? '15分の体験後、48時間以内の入会で最大50%オフ'
-                                  : 'Get up to 50% off when you subscribe within 48h of your trial'}
+                                  ? '15分の体験後、48時間以内の入会で最大45%オフ'
+                                  : 'Get up to 45% off when you subscribe within 48h of your trial'}
                               </p>
                             </div>
                             <Squircle asChild cornerRadius={10} cornerSmoothing={0.8}>

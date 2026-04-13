@@ -62,10 +62,10 @@ export const PLAN_DISPLAY_NAMES: Record<PlanName, string> = {
 export const PLAN_PRICES = {
   light: {
     monthly: { trial: 6000, full: 10000 },
-    yearly: { trial: 60000, full: 120000 },
+    yearly: { trial: 66000, full: 100000 },
   },
   standard: {
     monthly: { trial: 12000, full: 20000 },
-    yearly: { trial: 120000, full: 240000 },
+    yearly: { trial: 132000, full: 200000 },
   },
 } as const

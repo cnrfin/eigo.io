@@ -23,7 +23,7 @@ const content = {
       },
       {
         heading: '4. プランと料金',
-        body: '当スクールでは以下のプランを提供しています：\n\n【ライトプラン】月120分（週約30分）\n・月額：10,000円（税込）\n・年額：120,000円（税込）\n\n【スタンダードプラン】月240分（週約60分）\n・月額：20,000円（税込）\n・年額：160,000円（税込）\n\n体験レッスン後48時間以内にご入会の場合、初回の料金が割引になります。\n\nお支払いはApple App内課金またはStripe（クレジットカード）で行えます。お支払いは入会日と同日に自動更新されます。',
+        body: '当スクールでは以下のプランを提供しています：\n\n【ライトプラン】月120分（週約30分）\n・月額：10,000円（税込）\n・年額：100,000円（税込）\n\n【スタンダードプラン】月240分（週約60分）\n・月額：20,000円（税込）\n・年額：200,000円（税込）\n\n体験レッスン後48時間以内にご入会の場合、初回の料金が割引になります。\n\nお支払いはApple App内課金またはStripe（クレジットカード）で行えます。Apple経由の年額料金は異なる場合があります。お支払いは入会日と同日に自動更新されます。',
       },
       {
         heading: '5. 無料体験レッスン',
@@ -77,7 +77,7 @@ const content = {
       },
       {
         heading: '4. Plans and pricing',
-        body: 'We offer the following subscription plans:\n\nLite Plan — 120 minutes per month (approx. 30 min/week)\n• Monthly: ¥10,000 (tax included)\n• Yearly: ¥120,000 (tax included)\n\nStandard Plan — 240 minutes per month (approx. 60 min/week)\n• Monthly: ¥20,000 (tax included)\n• Yearly: ¥160,000 (tax included)\n\nA discounted rate is available for the first billing period if you subscribe within 48 hours of completing your trial lesson.\n\nPayment is processed via Apple In-App Purchase or Stripe (credit card). Subscriptions renew automatically on the same date each billing cycle.',
+        body: 'We offer the following subscription plans:\n\nLite Plan — 120 minutes per month (approx. 30 min/week)\n• Monthly: ¥10,000 (tax included)\n• Yearly: ¥100,000 (tax included)\n\nStandard Plan — 240 minutes per month (approx. 60 min/week)\n• Monthly: ¥20,000 (tax included)\n• Yearly: ¥200,000 (tax included)\n\nA discounted rate is available for the first billing period if you subscribe within 48 hours of completing your trial lesson.\n\nPayment is processed via Apple In-App Purchase or Stripe (credit card). Yearly prices may differ when purchased through Apple. Subscriptions renew automatically on the same date each billing cycle.',
       },
       {
         heading: '5. Free trial lesson',

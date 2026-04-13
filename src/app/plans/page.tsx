@@ -19,7 +19,7 @@ const PLANS = [
     minutesPerMonth: 120,
     prices: {
       monthly: { trial: 6000, full: 10000 },
-      yearly: { trial: 60000, full: 120000 },
+      yearly: { trial: 66000, full: 100000 },
     },
   },
   {
@@ -31,7 +31,7 @@ const PLANS = [
     minutesPerMonth: 240,
     prices: {
       monthly: { trial: 12000, full: 20000 },
-      yearly: { trial: 120000, full: 240000 },
+      yearly: { trial: 132000, full: 200000 },
     },
   },
 ]
@@ -231,8 +231,8 @@ export default function PlansPage() {
                 <div>
                   <p className="text-sm font-medium mb-0.5" style={{ color: 'var(--text)' }}>
                     {locale === 'ja'
-                      ? '体験レッスンで最大50%オフ'
-                      : 'Get up to 50% off with a trial lesson'}
+                      ? '体験レッスンで最大45%オフ'
+                      : 'Get up to 45% off with a trial lesson'}
                   </p>
                   <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
                     {locale === 'ja'
