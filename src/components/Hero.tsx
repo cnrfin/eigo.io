@@ -2,15 +2,13 @@
 
 import { useLanguage } from '@/context/LanguageContext'
 import { motion } from 'framer-motion'
-import { Squircle } from '@squircle-js/react'
 
 export default function Hero() {
-  const { t } = useLanguage()
+  const { t, locale } = useLanguage()
 
-  const scrollDown = () => {
-    const el = document.getElementById('about')
-    if (el) el.scrollIntoView({ behavior: 'smooth' })
-  }
+  const appStoreBadge = locale === 'ja'
+    ? 'https://tools.applemediaservices.com/api/badges/download-on-the-app-store/black/ja-jp?size=250x83'
+    : 'https://tools.applemediaservices.com/api/badges/download-on-the-app-store/black/en-us?size=250x83'
 
   return (
     <section className="flex flex-col items-center justify-center text-center px-6 pt-28 sm:pt-40 pb-24 sm:pb-32">
@@ -46,21 +44,24 @@ export default function Hero() {
         {t('heroSubheadline')}
       </motion.p>
 
-      {/* CTA — scrolls down */}
+      {/* App Store badge */}
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.35, ease: 'easeOut' }}
       >
-        <Squircle asChild cornerRadius={14} cornerSmoothing={0.8}>
-          <button
-            onClick={scrollDown}
-            className="inline-block font-semibold px-10 py-4 text-base sm:text-lg transition-opacity hover:opacity-90"
-            style={{ background: 'var(--accent)', color: 'var(--selected-text)' }}
-          >
-            {t('heroCta')}
-          </button>
-        </Squircle>
+        <a
+          href="https://apps.apple.com/gb/app/eigo-io/id6761731252"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-block transition-opacity hover:opacity-80"
+        >
+          <img
+            src={appStoreBadge}
+            alt="Download on the App Store"
+            style={{ height: '54px', width: 'auto' }}
+          />
+        </a>
       </motion.div>
     </section>
   )
