@@ -267,7 +267,10 @@ function sanitiseTranslation(raw: string): string {
 
   // Strip an enclosing pair of matching quotes (straight, curly,
   // CJK corner brackets) without touching mid-string punctuation.
-  s = s.replace(/^["'“”‘’「」『』](.*)["'“”‘’「」『』]$/s, '$1')
+  // Using [\s\S] instead of . with the /s flag because the project's
+  // tsconfig targets an older ES version that doesn't allow the
+  // dotall flag — same matching behaviour, no flag required.
+  s = s.replace(/^["'“”‘’「」『』]([\s\S]*)["'“”‘’「」『』]$/, '$1')
 
   // Collapse any internal newlines — TTS shouldn't see line breaks.
   s = s.replace(/\s*\n+\s*/g, ' ')
