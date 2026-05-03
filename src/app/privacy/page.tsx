@@ -7,7 +7,7 @@ import Footer from '@/components/Footer'
 const content = {
   ja: {
     title: 'プライバシーポリシー',
-    lastUpdated: '最終更新日：2026年3月25日',
+    lastUpdated: '最終更新日：2026年5月3日',
     sections: [
       {
         heading: '1. はじめに',
@@ -15,7 +15,7 @@ const content = {
       },
       {
         heading: '2. 収集する情報',
-        body: '当スクールは、以下の情報を収集する場合があります：\n\n・氏名、メールアドレス（アカウント登録時）\n・Googleアカウント情報（Google認証によるログイン時）\n・LINEアカウント情報（LINE認証によるログイン時：ユーザーID、表示名、プロフィール画像）\n・レッスンの予約履歴、録画データ、文字起こしデータ\n・Googleカレンダーへのアクセス（利用者が任意で許可した場合のみ）\n・Stripeを通じた決済情報（カード情報は当スクールでは保管しません）\n・通知先メールアドレス（LINEログインの利用者が任意で設定した場合）',
+        body: '当スクールは、以下の情報を収集する場合があります：\n\n・氏名、メールアドレス（アカウント登録時）\n・Googleアカウント情報（Google認証によるログイン時）\n・LINEアカウント情報（LINE認証によるログイン時：ユーザーID、表示名、プロフィール画像）\n・レッスンの予約履歴、録画データ、文字起こしデータ\n・Googleカレンダーへのアクセス（利用者が任意で許可した場合のみ）\n・Stripeを通じた決済情報（カード情報は当スクールでは保管しません）\n・通知先メールアドレス（LINEログインの利用者が任意で設定した場合）\n・キャンペーン参加時：英語レベル、録画形式の希望（ビデオまたは音声のみ）、備考',
       },
       {
         heading: '3. 情報の利用目的',
@@ -30,30 +30,38 @@ const content = {
         body: 'レッスンの録画データおよび文字起こしデータは、サービス提供期間中保管されます。アカウントを削除された場合、関連するデータは合理的な期間内に削除されます。',
       },
       {
-        heading: '6. 利用者の権利',
+        heading: '6. キャンペーン参加者のデータ',
+        body: '「50時間無料英会話」キャンペーンに参加される場合、上記の情報に加えて、英語レベル、録画形式の希望、および備考を収集します。\n\nキャンペーン参加者のレッスン録画は、YouTube、SNS、およびeigo.ioプラットフォームで公開される場合があります。ビデオ参加者の場合は映像と音声が、音声のみの参加者の場合は音声のみが公開されます。すべての参加者は、ダッシュボードからレッスン録画を個人的に確認できます。\n\nキャンペーンで作成されたアカウントは通常のeigo.ioアカウントと同様に扱われ、本ポリシーのすべての条項が適用されます。',
+      },
+      {
+        heading: '7. 利用者の権利',
         body: '利用者は、以下の権利を有します：\n\n・自身の個人情報へのアクセス\n・個人情報の訂正・削除の要求\n・Googleカレンダー連携の解除（設定画面から可能）\n・アカウントの削除\n\nこれらの要求は、connor@eigo.io までご連絡ください。',
       },
       {
-        heading: '7. Cookieについて',
+        heading: '8. Cookieについて',
         body: '当スクールは、認証状態の維持およびテーマ設定の保存のためにCookieおよびローカルストレージを使用します。広告目的のCookieは使用しません。',
       },
       {
-        heading: '8. お子様のプライバシー',
+        heading: '9. お子様のプライバシー',
         body: '当スクールのサービスは、16歳未満の方を対象としていません。16歳未満の方の個人情報を意図的に収集することはありません。',
       },
       {
-        heading: '9. 本ポリシーの変更',
+        heading: '10. 本ポリシーの変更',
         body: '本ポリシーは、必要に応じて更新されることがあります。重要な変更がある場合は、サイト上でお知らせします。',
       },
       {
-        heading: '10. お問い合わせ',
+        heading: '11. Say After Me（iOSアプリ）',
+        body: 'Say After Meは、eigo.ioのもとで提供される語学学習用iOSアプリです。アカウント登録、サインアップ、メールアドレスの提供は不要で、匿名でご利用いただけます。以下では、本アプリ固有のデータの取り扱いについて説明します。eigo.ioの英会話レッスンサービスについては、本ポリシーの他のセクションが引き続き適用されます。\n\nサブスクリプション。Proプランへの加入はApp Storeを通じて行われ、お支払いはAppleが処理します。当方ではカード情報やApple IDを取得しません。サブスクリプションの状態管理は第三者サービスのRevenueCatが行い、各端末に匿名の識別子を割り当てます。当方では、この識別子を用いてサーバー側でProエンタイトルメントを確認します。RevenueCatのプライバシーポリシー：https://www.revenuecat.com/privacy。\n\nAIフレーズ生成（Pro限定）。入力された文章はOpenAIに翻訳のため、翻訳結果はElevenLabsに音声合成のため送信されます。いずれのサービスにも、リクエストを利用者に紐付ける識別子は付与されません。月間使用回数のカウンタは当方のSupabaseデータベースに保存され、匿名のRevenueCat識別子をキーとして、月100回の生成上限を公平に管理します。OpenAI：https://openai.com/policies/privacy-policy。ElevenLabs：https://elevenlabs.io/privacy。\n\n端末内データ。保存されたフレーズ、生成された音声ファイル、アプリの設定（テーマ、音声、言語、キューなど）はすべて端末内にのみ保管されます。サーバーへのアップロードは行われません。アプリを削除するとこれらのデータも削除されます。\n\n分析・トラッキングなし。本アプリは利用状況分析、行動データ、端末フィンガープリントの収集を行いません。広告SDKも一切組み込まれていません。\n\n本アプリにおける利用者の権利。当方は個人を特定できる情報を収集しないため、通常は開示・訂正・削除の対象となるデータがありません。匿名のRevenueCat識別子に紐付く使用回数カウンタの削除をご希望の場合は、識別子を添えて connor@eigo.io までご連絡ください。\n\nデータの所在。SupabaseのデータはEU内に保存されます。RevenueCat、OpenAI、ElevenLabsはアメリカ合衆国内で運営されており、入力された文章は翻訳および音声生成の目的に限り、これらのサービスに送信されます。\n\n未成年者について。Say After Meは一般向けのアプリであり、13歳未満のお子様からデータを意図的に収集することはありません。',
+      },
+      {
+        heading: '12. お問い合わせ',
         body: '本ポリシーに関するご質問は、connor@eigo.io までお問い合わせください。\n\n運営者：Connor Finley\n所在地：イギリス\nメール：connor@eigo.io',
       },
     ],
   },
   en: {
     title: 'Privacy Policy',
-    lastUpdated: 'Last updated: 25 March 2026',
+    lastUpdated: 'Last updated: 3 May 2026',
     sections: [
       {
         heading: '1. Introduction',
@@ -61,7 +69,7 @@ const content = {
       },
       {
         heading: '2. Information we collect',
-        body: 'We may collect the following information:\n\n• Name and email address (when you create an account)\n• Google account information (if you sign in with Google)\n• LINE account information (if you sign in with LINE: user ID, display name, profile picture)\n• Lesson booking history, video recordings, and transcriptions\n• Google Calendar access (only if you explicitly grant permission)\n• Payment information via Stripe (card details are not stored by us)\n• Notification email address (if you sign in with LINE and optionally provide one)',
+        body: 'We may collect the following information:\n\n• Name and email address (when you create an account)\n• Google account information (if you sign in with Google)\n• LINE account information (if you sign in with LINE: user ID, display name, profile picture)\n• Lesson booking history, video recordings, and transcriptions\n• Google Calendar access (only if you explicitly grant permission)\n• Payment information via Stripe (card details are not stored by us)\n• Notification email address (if you sign in with LINE and optionally provide one)\n• Campaign participation: English level, recording preference (video or audio-only), and notes',
       },
       {
         heading: '3. How we use your information',
@@ -76,23 +84,31 @@ const content = {
         body: 'Lesson recordings and transcriptions are retained for the duration of your account. If you delete your account, associated data will be removed within a reasonable timeframe.',
       },
       {
-        heading: '6. Your rights',
+        heading: '6. Campaign participant data',
+        body: 'If you participate in the "50 Hours Free English" campaign, we collect additional information including your English level, recording preference, and any notes you provide during signup.\n\nCampaign lesson recordings may be published on YouTube, social media, and the eigo.io platform. For video participants, your likeness and voice will appear. For audio-only participants, only your voice is used. All participants can review their lesson recordings privately from their dashboard.\n\nAccounts created through the campaign are treated the same as regular eigo.io accounts, and all provisions of this policy apply.',
+      },
+      {
+        heading: '7. Your rights',
         body: 'You have the right to:\n\n• Access your personal data\n• Request correction or deletion of your data\n• Disconnect Google Calendar integration (via Settings)\n• Delete your account\n\nTo exercise these rights, contact us at connor@eigo.io.',
       },
       {
-        heading: '7. Cookies',
+        heading: '8. Cookies',
         body: 'We use cookies and local storage to maintain your login session and save your theme preference. We do not use advertising cookies.',
       },
       {
-        heading: '8. Children\'s privacy',
+        heading: '9. Children\'s privacy',
         body: 'Our service is not intended for children under 16. We do not knowingly collect personal data from children under 16.',
       },
       {
-        heading: '9. Changes to this policy',
+        heading: '10. Changes to this policy',
         body: 'We may update this policy from time to time. If we make significant changes, we will notify you on the site.',
       },
       {
-        heading: '10. Contact',
+        heading: '11. Say After Me (iOS app)',
+        body: 'Say After Me is an iOS language-practice app published under the eigo.io umbrella. It is anonymous by design: there is no account, no signup, and no email address required to use it. The clauses below describe data collection specific to this app; the rest of this policy continues to govern the eigo.io tutoring service.\n\nSubscriptions. When you subscribe to Pro through the App Store, payment is handled entirely by Apple. We never see your card details or Apple ID. Subscription state is managed by RevenueCat, which assigns each device an anonymous identifier; we use this identifier server-side to verify Pro entitlement. RevenueCat\'s policy: https://www.revenuecat.com/privacy.\n\nAI phrase generation (Pro only). The text you type is sent to OpenAI for translation, and the translated phrase is sent to ElevenLabs for text-to-speech. Neither service receives identifiers tying the request back to you. A monthly usage counter is stored in our Supabase database, keyed to your anonymous RevenueCat identifier, so we can enforce the 100-generations-per-calendar-month Pro cap fairly. OpenAI: https://openai.com/policies/privacy-policy. ElevenLabs: https://elevenlabs.io/privacy.\n\nOn-device data. Saved phrases, generated audio files, and app preferences (theme, voices, languages, queues) live on your device only. They are not uploaded to any server. Deleting the app removes them.\n\nNo analytics, no tracking. The app does not collect usage analytics, behavioural data, or device fingerprints. There is no advertising SDK.\n\nYour rights for app data. Because we do not link any data to a real-world identity, there is generally no personal data tied to you to access, correct, or delete. To request that we clear the usage counter associated with your anonymous RevenueCat identifier, contact connor@eigo.io with the identifier.\n\nData location. Supabase data is stored in the EU. RevenueCat, OpenAI, and ElevenLabs operate from the United States; your phrase text is transmitted to them solely for the immediate purpose of generating a translation and audio.\n\nChildren. Say After Me is a general-audience app and does not knowingly collect data from children under 13.',
+      },
+      {
+        heading: '12. Contact',
         body: 'If you have questions about this policy, contact us at connor@eigo.io.\n\nOperator: Connor Finley\nLocation: United Kingdom\nEmail: connor@eigo.io',
       },
     ],
