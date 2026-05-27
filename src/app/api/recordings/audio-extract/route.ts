@@ -1,58 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { getRecordings, getRecordingAccessLink } from '@/lib/whereby'
-import { spawn, execSync } from 'node:child_process'
-import { createWriteStream, existsSync, chmodSync } from 'node:fs'
+import { spawn, execFileSync } from 'node:child_process'
+import { existsSync } from 'node:fs'
+import { join } from 'node:path'
 import { Readable, PassThrough } from 'node:stream'
-import { pipeline } from 'node:stream/promises'
 
 // Allow up to 5 minutes for long recordings
 export const maxDuration = 300
 
-// Static FFmpeg binary URL — John Van Sickle's widely-used static builds.
-// These are standalone, dependency-free linux-x64 binaries that run on any
-// glibc-based system including Vercel's Amazon Linux runtime.
-const FFMPEG_URL = 'https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz'
-const FFMPEG_PATH = '/tmp/ffmpeg'
-
 /**
- * Ensure FFmpeg is available. Checks in order:
- * 1. Already downloaded to /tmp (warm serverless instance)
- * 2. Available on system PATH (local dev, or hosts that ship it)
- * 3. Downloads a static linux-x64 build to /tmp (Vercel cold start)
+ * Resolve the FFmpeg binary path.
+ * 1. Bundled static binary at project root /bin/ffmpeg (Vercel — installed at build time)
+ * 2. System PATH (local dev — brew install ffmpeg, etc.)
  */
-async function ensureFfmpeg(): Promise<string> {
-  // Already downloaded on a previous invocation (warm lambda)
-  if (existsSync(FFMPEG_PATH)) return FFMPEG_PATH
+function getFfmpegPath(): string {
+  // Bundled binary (Vercel production)
+  const bundled = join(process.cwd(), 'bin', 'ffmpeg')
+  if (existsSync(bundled)) return bundled
 
-  // Available on system PATH (local dev with brew, etc.)
+  // System PATH (local dev)
   try {
-    const systemPath = execSync('which ffmpeg', { encoding: 'utf-8' }).trim()
-    if (systemPath) return systemPath
-  } catch { /* not on PATH */ }
+    return execFileSync('/usr/bin/env', ['which', 'ffmpeg'], { encoding: 'utf-8' }).trim()
+  } catch { /* not found */ }
 
-  // Download static build to /tmp
-  console.log('[audio-extract] Downloading static FFmpeg binary...')
-  const res = await fetch(FFMPEG_URL)
-  if (!res.ok || !res.body) {
-    throw new Error(`Failed to download FFmpeg: ${res.status}`)
-  }
-
-  // The download is a .tar.xz archive. Pipe it through tar to extract
-  // just the ffmpeg binary. tar reads from stdin (-f -), xz decompresses
-  // (--xz), and --wildcards picks out the single binary we need.
-  const tarPath = '/tmp/ffmpeg-download.tar.xz'
-  const nodeStream = Readable.fromWeb(res.body as import('stream/web').ReadableStream)
-  await pipeline(nodeStream, createWriteStream(tarPath))
-
-  execSync(
-    `cd /tmp && tar --xz -xf ffmpeg-download.tar.xz --wildcards '*/ffmpeg' --strip-components=1`,
-    { timeout: 30_000 },
-  )
-  chmodSync(FFMPEG_PATH, 0o755)
-  console.log('[audio-extract] FFmpeg ready at', FFMPEG_PATH)
-
-  return FFMPEG_PATH
+  throw new Error('FFmpeg not found — install via brew or run scripts/install-ffmpeg.sh')
 }
 
 // GET /api/recordings/audio-extract?bookingId=xxx
@@ -105,8 +77,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    // Ensure FFmpeg is available (system or downloaded)
-    const ffmpegBin = await ensureFfmpeg()
+    const ffmpegBin = getFfmpegPath()
 
     // Get the temporary access link from Whereby
     const roomName = new URL(booking.whereby_room_url).pathname
