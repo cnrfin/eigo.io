@@ -1,6 +1,7 @@
 'use client'
 
 import { Suspense, useEffect, useState, useCallback, useMemo, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { useSearchParams } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 import { useLanguage } from '@/context/LanguageContext'
@@ -288,40 +289,6 @@ function LessonCard({
   )
 }
 
-// ─── Video Player Modal ───
-function VideoPlayerModal({
-  accessLink, onClose, locale,
-}: {
-  accessLink: string; onClose: () => void; locale: string
-}) {
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 modal-backdrop"
-      onClick={onClose}
-    >
-      <div
-        className="w-full max-w-3xl mx-4 modal-card"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex justify-end mb-2">
-          <button onClick={onClose} className="text-white/70 hover:text-white text-sm px-3 py-1 transition-colors">
-            {locale === 'ja' ? '閉じる ✕' : 'Close ✕'}
-          </button>
-        </div>
-        <SquircleBox cornerRadius={16} className="overflow-hidden" style={{ background: '#000' }}>
-          <video
-            src={accessLink}
-            controls
-            autoPlay
-            className="w-full aspect-video"
-            style={{ outline: 'none' }}
-          />
-        </SquircleBox>
-      </div>
-    </div>
-  )
-}
-
 // ─── Transcript Modal ───
 // ─── Types for lesson analysis ───
 type LessonSummary = {
@@ -358,8 +325,10 @@ function HistoryLessonCard({
   deckPhraseIds?: Set<string>
 }) {
   const [recordingState, setRecordingState] = useState<'idle' | 'loading' | 'ready' | 'none' | 'error'>('idle')
-  const [accessLink, setAccessLink] = useState<string | null>(null)
-  const [showPlayer, setShowPlayer] = useState(false)
+  const [downloadOpen, setDownloadOpen] = useState(false)
+  const [downloadingType, setDownloadingType] = useState<'video' | 'audio' | null>(null)
+  const downloadBtnRef = useRef<HTMLButtonElement>(null)
+  const dropdownRef = useRef<HTMLDivElement>(null)
   const [transcriptState, setTranscriptState] = useState<'idle' | 'loading' | 'cleaning' | 'processing' | 'ready' | 'none' | 'error'>(() => {
     if (typeof window !== 'undefined') {
       try {
@@ -415,49 +384,80 @@ function HistoryLessonCard({
       .catch(() => {})
   }, [lesson.id, session?.access_token, summary])
 
-  // Prefetch recording metadata silently in the background.
-  // Doesn't show loading state or open the player — just warms up the data.
-  const prefetchRecording = useCallback(async () => {
-    if (!lesson.wherebyRoomUrl || !session?.access_token) return
-    if (recordingState !== 'idle') return // already loading, ready, or known to be missing
-    try {
-      const res = await fetch(`/api/recordings?roomUrl=${encodeURIComponent(lesson.wherebyRoomUrl)}`)
-      const data = await res.json()
-      if (data.recordings && data.recordings.length > 0 && data.recordings[0].accessLink) {
-        setAccessLink(data.recordings[0].accessLink)
-        setRecordingState('ready')
-        // Don't open the player — wait for the user to actually click
-      } else {
-        setRecordingState('none')
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    if (!downloadOpen) return
+    const handler = (e: MouseEvent) => {
+      const target = e.target as Node
+      if (
+        downloadBtnRef.current && !downloadBtnRef.current.contains(target) &&
+        dropdownRef.current && !dropdownRef.current.contains(target)
+      ) {
+        setDownloadOpen(false)
       }
-    } catch {
-      // Silent fail — let the user retry by clicking the button
     }
-  }, [lesson.wherebyRoomUrl, session?.access_token, recordingState])
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [downloadOpen])
 
-  const fetchRecording = async () => {
-    if (!lesson.wherebyRoomUrl || !session?.access_token) {
-      setRecordingState('none')
-      return
-    }
-    // If already prefetched, just open the player instantly
-    if (recordingState === 'ready' && accessLink) {
-      setShowPlayer(true)
-      return
-    }
+  const downloadVideo = async () => {
+    if (!session?.access_token) return
+    setDownloadOpen(false)
+    setDownloadingType('video')
     setRecordingState('loading')
     try {
-      const res = await fetch(`/api/recordings?roomUrl=${encodeURIComponent(lesson.wherebyRoomUrl)}`)
+      const res = await fetch(
+        `/api/recordings/audio?bookingId=${lesson.id}`,
+        { headers: { Authorization: `Bearer ${session.access_token}` } },
+      )
       const data = await res.json()
-      if (data.recordings && data.recordings.length > 0 && data.recordings[0].accessLink) {
-        setAccessLink(data.recordings[0].accessLink)
+      if (data.accessLink) {
+        const a = document.createElement('a')
+        a.href = data.accessLink
+        a.download = `eigo-lesson-${lesson.date}.mp4`
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
         setRecordingState('ready')
-        setShowPlayer(true)
       } else {
         setRecordingState('none')
       }
     } catch {
       setRecordingState('error')
+    } finally {
+      setDownloadingType(null)
+    }
+  }
+
+  const downloadAudio = async () => {
+    if (!session?.access_token) return
+    setDownloadOpen(false)
+    setDownloadingType('audio')
+    setRecordingState('loading')
+    try {
+      const res = await fetch(
+        `/api/recordings/audio-extract?bookingId=${lesson.id}`,
+        { headers: { Authorization: `Bearer ${session.access_token}` } },
+      )
+      if (!res.ok) {
+        setRecordingState('error')
+        return
+      }
+      // Stream the response as a file download
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `eigo-lesson-${lesson.date}.mp3`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+      setRecordingState('ready')
+    } catch {
+      setRecordingState('error')
+    } finally {
+      setDownloadingType(null)
     }
   }
 
@@ -485,14 +485,13 @@ function HistoryLessonCard({
     }
   }, [lesson.id, session?.access_token, transcriptContent, transcriptState])
 
-  // Trigger both prefetches once when user shows intent (hover/focus/touch).
+  // Prefetch transcript once when user shows intent (hover/focus/touch).
   const prefetchedRef = useRef(false)
   const handlePrefetch = useCallback(() => {
     if (prefetchedRef.current) return
     prefetchedRef.current = true
-    prefetchRecording()
     prefetchTranscript()
-  }, [prefetchRecording, prefetchTranscript])
+  }, [prefetchTranscript])
 
   // Run cleanup on a raw transcript and open the viewer with the result.
   // Falls back to raw if cleanup fails so the user always sees something.
@@ -629,7 +628,6 @@ function HistoryLessonCard({
     <>
       <SquircleBox
         cornerRadius={12}
-        className="overflow-hidden"
         style={{ background: 'var(--surface)' }}
         onMouseEnter={handlePrefetch}
         onTouchStart={handlePrefetch}
@@ -683,21 +681,29 @@ function HistoryLessonCard({
                   </Squircle>
                 )}
 
-                {/* Recording button */}
+                {/* Download recording button */}
                 <Squircle asChild cornerRadius={8} cornerSmoothing={0.8}>
                   <button
-                    onClick={fetchRecording}
-                    disabled={recordingState === 'loading'}
-                    className="px-3 py-1.5 text-xs font-medium transition-all hover:opacity-90 disabled:opacity-50"
+                    ref={downloadBtnRef}
+                    onClick={() => {
+                      if (recordingState === 'loading') return
+                      setDownloadOpen(!downloadOpen)
+                    }}
+                    disabled={recordingState === 'loading' || recordingState === 'none'}
+                    className="px-3 py-1.5 text-xs font-medium transition-all hover:opacity-90 disabled:opacity-50 flex items-center gap-1.5"
                     style={{
                       background: recordingState === 'none' ? 'var(--surface-hover)' : recordingState === 'error' ? 'var(--danger)' : 'var(--accent)',
                       color: recordingState === 'none' ? 'var(--text-muted)' : 'var(--selected-text)',
                     }}
                   >
-                    {recordingState === 'loading' ? '...'
+                    {recordingState === 'loading' && <span className="spinner-sm" />}
+                    {recordingState === 'loading'
+                      ? (downloadingType === 'audio'
+                          ? (locale === 'ja' ? '音声を変換中...' : 'Extracting audio...')
+                          : (locale === 'ja' ? 'ダウンロード中...' : 'Downloading...'))
                       : recordingState === 'none' ? (locale === 'ja' ? '録画なし' : 'No recording')
                       : recordingState === 'error' ? (locale === 'ja' ? '再試行' : 'Retry')
-                      : (locale === 'ja' ? '録画' : 'Watch')}
+                      : (locale === 'ja' ? 'ダウンロード' : 'Download')}
                   </button>
                 </Squircle>
               </>
@@ -838,12 +844,47 @@ function HistoryLessonCard({
           )}
         </AnimatePresence>
       </SquircleBox>
-      {showPlayer && accessLink && (
-        <VideoPlayerModal
-          accessLink={accessLink}
-          onClose={() => setShowPlayer(false)}
-          locale={locale}
-        />
+      {downloadOpen && downloadBtnRef.current && createPortal(
+        <div
+          ref={dropdownRef}
+          className="fixed z-50"
+          style={{
+            width: 'fit-content',
+            top: downloadBtnRef.current.getBoundingClientRect().bottom + 4,
+            right: window.innerWidth - downloadBtnRef.current.getBoundingClientRect().right,
+          }}
+        >
+          <Squircle asChild cornerRadius={16} cornerSmoothing={0.8}>
+            <div
+              className="p-2 flex flex-col gap-0.5"
+              style={{ background: 'var(--card-white)', border: '1px solid var(--border)', boxShadow: '0 8px 40px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.1)' }}
+            >
+              <Squircle asChild cornerRadius={10} cornerSmoothing={0.8}>
+                <button
+                  onClick={downloadVideo}
+                  className="w-full text-left px-3 py-2.5 text-sm whitespace-nowrap transition-colors"
+                  style={{ color: 'var(--text-secondary)' }}
+                  onMouseEnter={(e) => e.currentTarget.style.background = 'var(--surface-hover)'}
+                  onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                >
+                  {locale === 'ja' ? '動画をダウンロード' : 'Download video'}
+                </button>
+              </Squircle>
+              <Squircle asChild cornerRadius={10} cornerSmoothing={0.8}>
+                <button
+                  onClick={downloadAudio}
+                  className="w-full text-left px-3 py-2.5 text-sm whitespace-nowrap transition-colors"
+                  style={{ color: 'var(--text-secondary)' }}
+                  onMouseEnter={(e) => e.currentTarget.style.background = 'var(--surface-hover)'}
+                  onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                >
+                  {locale === 'ja' ? '音声をダウンロード' : 'Download audio'}
+                </button>
+              </Squircle>
+            </div>
+          </Squircle>
+        </div>,
+        document.body,
       )}
     </>
   )
@@ -1926,7 +1967,7 @@ function DashboardContent() {
                           className="text-sm font-medium transition-colors hover:opacity-80 disabled:opacity-30"
                           style={{ color: 'var(--text-secondary)' }}
                         >
-                          ← {locale === 'ja' ? '前へ' : 'Previous'}
+                          {locale === 'ja' ? '前へ' : 'Previous'}
                         </button>
                         <span className="text-sm" style={{ color: 'var(--text-muted)' }}>
                           {historyPage + 1} / {Math.ceil(historyLessons.length / HISTORY_PER_PAGE)}
@@ -1937,7 +1978,7 @@ function DashboardContent() {
                           className="text-sm font-medium transition-colors hover:opacity-80 disabled:opacity-30"
                           style={{ color: 'var(--text-secondary)' }}
                         >
-                          {locale === 'ja' ? '次へ' : 'Next'} →
+                          {locale === 'ja' ? '次へ' : 'Next'}
                         </button>
                       </div>
                     )}
