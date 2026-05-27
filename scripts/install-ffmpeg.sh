@@ -25,10 +25,25 @@ fi
 echo "[install-ffmpeg] Downloading static FFmpeg for Linux x64..."
 mkdir -p bin
 
-# Use John Van Sickle's widely-trusted static builds.
-# Download the tarball and extract just the ffmpeg binary.
+# Download and extract to a temp directory, then find the ffmpeg binary.
+# The archive structure varies between releases so we search for it
+# rather than assuming a specific path depth.
+TMPDIR=$(mktemp -d)
 URL="https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz"
-curl -sL "$URL" | tar -xJ --wildcards '*/ffmpeg' --strip-components=1 -C bin
+curl -sL "$URL" | tar -xJ -C "$TMPDIR"
 
+# Find the ffmpeg binary (not ffprobe, not directories)
+FOUND=$(find "$TMPDIR" -name 'ffmpeg' -type f ! -name 'ffprobe' | head -1)
+
+if [ -z "$FOUND" ]; then
+  echo "[install-ffmpeg] ERROR: ffmpeg binary not found in archive"
+  ls -R "$TMPDIR"
+  rm -rf "$TMPDIR"
+  exit 1
+fi
+
+mv "$FOUND" "$DEST"
 chmod +x "$DEST"
+rm -rf "$TMPDIR"
+
 echo "[install-ffmpeg] FFmpeg installed at $DEST ($(du -h "$DEST" | cut -f1))"
