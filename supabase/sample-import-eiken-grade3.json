@@ -1,0 +1,106 @@
+{
+  "_comment": "Sample body for POST /api/admin/tests/import — a tiny EIKEN Grade 3 practice form. Demonstrates the import shape: objective auto-graded reading items (note answer data lives under reserved payload keys 'accepted', and is_correct on options) plus one AI-graded writing task. Set rubric_id to a real rubrics.id (skill='writing') to attach the EIKEN Writing rubric; null falls back to a generic rubric.",
+  "trackSlug": "eiken-grade-3",
+  "form": {
+    "slug": "eiken-g3-practice-01",
+    "title": "EIKEN Grade 3 — Practice Test 1",
+    "title_ja": "英検3級 模擬テスト1",
+    "mode": "full_mock",
+    "time_limit_seconds": 3000,
+    "published": true,
+    "sections": [
+      {
+        "skill": "reading",
+        "part_label": "Part 1",
+        "title": "Vocabulary & Grammar",
+        "instructions": "Choose the best word or phrase to complete each sentence.",
+        "groups": [
+          {
+            "stimulus_type": "none",
+            "questions": [
+              {
+                "question_type": "single_choice",
+                "scoring_method": "auto_choice",
+                "prompt": "My brother is good ( ) playing the guitar.",
+                "max_score": 1,
+                "options": [
+                  { "label": "A", "content": "at", "is_correct": true },
+                  { "label": "B", "content": "in", "is_correct": false },
+                  { "label": "C", "content": "on", "is_correct": false },
+                  { "label": "D", "content": "for", "is_correct": false }
+                ]
+              },
+              {
+                "question_type": "single_choice",
+                "scoring_method": "auto_choice",
+                "prompt": "A: How ( ) is it from here to the station?  B: About ten minutes on foot.",
+                "max_score": 1,
+                "options": [
+                  { "label": "A", "content": "long", "is_correct": false },
+                  { "label": "B", "content": "far", "is_correct": true },
+                  { "label": "C", "content": "many", "is_correct": false },
+                  { "label": "D", "content": "much", "is_correct": false }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "skill": "reading",
+        "part_label": "Part 2",
+        "title": "Reading Comprehension",
+        "instructions": "Read the passage and answer the question.",
+        "groups": [
+          {
+            "stimulus_type": "passage",
+            "passage_text": "Yuki likes animals very much. Every Saturday she goes to a small animal shelter near her house. She helps the staff by feeding the cats and cleaning their cages. She wants to be a vet in the future.",
+            "questions": [
+              {
+                "question_type": "single_choice",
+                "scoring_method": "auto_choice",
+                "prompt": "What does Yuki do every Saturday?",
+                "max_score": 1,
+                "options": [
+                  { "label": "A", "content": "She visits her grandmother.", "is_correct": false },
+                  { "label": "B", "content": "She helps at an animal shelter.", "is_correct": true },
+                  { "label": "C", "content": "She studies to be a doctor.", "is_correct": false },
+                  { "label": "D", "content": "She buys a new cat.", "is_correct": false }
+                ]
+              },
+              {
+                "question_type": "gap_fill",
+                "scoring_method": "auto_text",
+                "prompt": "In the future, Yuki wants to be a ______.",
+                "max_score": 1,
+                "payload": { "accepted": ["vet", "veterinarian"], "case_sensitive": false }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "skill": "writing",
+        "part_label": "Writing",
+        "title": "Email Response",
+        "instructions": "Write a reply of 15-25 words.",
+        "groups": [
+          {
+            "stimulus_type": "prompt",
+            "prompt": "Your friend asks: 'What did you do during summer vacation?' Write a reply.",
+            "questions": [
+              {
+                "question_type": "email_response",
+                "scoring_method": "ai_rubric",
+                "prompt": "Write your reply (15-25 words).",
+                "max_score": 16,
+                "rubric_id": null,
+                "payload": { "min_words": 15, "max_words": 25 }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
