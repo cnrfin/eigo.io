@@ -22,8 +22,10 @@ function getOpenAI(): OpenAI {
   return _openai
 }
 
-// Audio-capable chat model. Override per your account (e.g. a gpt-5.4 audio model).
-const AUDIO_MODEL = process.env.OPENAI_AUDIO_MODEL || 'gpt-4o-audio-preview'
+// Audio-capable chat model. `gpt-audio` is OpenAI's stable alias for the
+// current audio model (the old gpt-4o-audio-preview was retired and 404s).
+// Override with OPENAI_AUDIO_MODEL to pin a dated snapshot.
+const AUDIO_MODEL = process.env.OPENAI_AUDIO_MODEL || 'gpt-audio'
 
 function ffmpegPath(): string {
   const bundled = join(process.cwd(), 'bin', 'ffmpeg')
@@ -121,24 +123,54 @@ Listen to the attached audio and grade it.`
 
   // Note: audio models (e.g. gpt-audio) don't support response_format:json_object,
   // so we ask for raw JSON in the prompt and parse defensively.
-  const completion = await getOpenAI().chat.completions.create({
-    model: AUDIO_MODEL,
-    modalities: ['text'],
-    messages: [
-      { role: 'system', content: systemPrompt },
-      {
-        role: 'user',
-        content: [
-          { type: 'text', text: userText },
-          { type: 'input_audio', input_audio: { data: opts.mp3Base64, format: 'mp3' } },
-        ],
-      },
-    ],
-  } as Parameters<OpenAI['chat']['completions']['create']>[0]) as OpenAI.Chat.Completions.ChatCompletion
+  const messages: Array<Record<string, unknown>> = [
+    { role: 'system', content: systemPrompt },
+    {
+      role: 'user',
+      content: [
+        { type: 'text', text: userText },
+        { type: 'input_audio', input_audio: { data: opts.mp3Base64, format: 'mp3' } },
+      ],
+    },
+  ]
+  const ask = async (msgs: Array<Record<string, unknown>>) => {
+    const completion = await getOpenAI().chat.completions.create({
+      model: AUDIO_MODEL,
+      modalities: ['text'],
+      messages: msgs,
+    } as unknown as Parameters<OpenAI['chat']['completions']['create']>[0]) as OpenAI.Chat.Completions.ChatCompletion
+    return completion.choices[0]?.message?.content ?? ''
+  }
 
-  const raw = completion.choices[0]?.message?.content
+  const raw = await ask(messages)
   if (!raw) throw new Error('No response from audio grader')
-  const parsed = extractJson(raw)
+  let parsed: Record<string, unknown>
+  try {
+    parsed = extractJson(raw)
+  } catch {
+    // For very short / near-silent clips the model sometimes ignores the JSON
+    // instruction and replies in prose ("Please provide..."). One strict
+    // retry; if it still won't produce JSON, score 0 with the reply as the
+    // comment rather than throwing — an exception would leave the attempt
+    // stuck in review and re-graded by the cron forever.
+    const retryRaw = await ask([
+      ...messages,
+      { role: 'assistant', content: raw },
+      { role: 'user', content: 'Return ONLY the JSON object described in the system message — no other text. If the audio was empty, silent or unusable, still return the JSON with very low scores and explain in the feedback fields.' },
+    ])
+    try {
+      parsed = extractJson(retryRaw)
+    } catch {
+      parsed = {
+        overall_score: 0, band: null, criteria: [], manner_score: 0,
+        pronunciation: '',
+        strengths_en: '',
+        improvements_en: `The grader could not assess this recording (it may be too short or silent). Grader reply: ${raw.slice(0, 200)}`,
+        improvements_ja: '録音をうまく採点できませんでした。録音が短すぎるか、無音だった可能性があります。',
+        heard: '',
+      }
+    }
+  }
   const score = clamp(Number(parsed.overall_score) || 0, 0, max)
 
   return {
