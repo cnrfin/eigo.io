@@ -12,6 +12,7 @@ import {
   sendCancellationEmail,
   sendRescheduleEmail,
   sendReminderEmail,
+  sendTestResultsReadyEmail,
 } from '@/lib/email'
 
 import {
@@ -19,6 +20,7 @@ import {
   sendLineCancellationNotification,
   sendLineRescheduleNotification,
   sendLineReminderNotification,
+  sendLinePushMessage,
 } from '@/lib/line-notify'
 
 import { sendPushToUser } from '@/lib/expo-push'
@@ -143,6 +145,58 @@ export async function notifyBooking({
       durationMinutes,
       classroomUrl,
     })
+  }
+
+  if (tokens.length === 0) {
+    console.warn('No notification channel for user:', user.email)
+  }
+}
+
+// ── Practice test results ready (after tutor grading) ──
+
+export async function notifyTestResultsReady({
+  user,
+  formTitle,
+  attemptId,
+}: {
+  user: UserInfo
+  formTitle: string
+  attemptId: string
+}) {
+  const email = getNotificationEmail(user)
+  const studentName = user.displayName || 'Student'
+
+  // Push (no specific preference gate — this is a direct response to their submission).
+  const tokens = await getUserPushTokens(user.userId)
+  if (tokens.length > 0) {
+    await sendPushToUser(tokens, {
+      title: t(user, 'テスト結果が届きました ✅', 'Your test results are ready ✅'),
+      body: t(user, `「${formTitle}」の採点が完了しました。`, `"${formTitle}" has been graded.`),
+      data: { url: `/dashboard/tests/results/${attemptId}` },
+    }).catch((err) => console.error('[notify] Push error (test results):', err))
+  }
+
+  if (email) {
+    return sendTestResultsReadyEmail({
+      to: email,
+      studentName,
+      formTitle,
+      attemptId,
+      locale: user.locale,
+    })
+  }
+
+  if (user.lineUserId) {
+    return sendLinePushMessage(user.lineUserId, [
+      {
+        type: 'text',
+        text: t(
+          user,
+          `${studentName}さん、「${formTitle}」の採点が完了しました。\n結果はこちら: https://eigo.io/dashboard/tests/results/${attemptId}`,
+          `Hi ${studentName}, your "${formTitle}" has been graded.\nView your results: https://eigo.io/dashboard/tests/results/${attemptId}`,
+        ),
+      },
+    ])
   }
 
   if (tokens.length === 0) {

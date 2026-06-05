@@ -304,28 +304,28 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
         </SquircleBox>
       )}
 
-      {/* Teacher profile */}
-      <div className="flex flex-col items-center mb-6">
+      {/* Teacher profile — compact inline row (avatar beside the text) */}
+      <div className="flex items-center justify-center gap-2.5 mb-5" style={{ minHeight: '2.25rem' }}>
         {teacherAvatar ? (
           <img
             src={teacherAvatar}
             alt={teacherName}
-            className="w-16 h-16 rounded-full object-cover mb-3"
+            className="w-9 h-9 rounded-full object-cover"
             referrerPolicy="no-referrer"
           />
         ) : (
           <div
-            className="w-16 h-16 rounded-full mb-3"
+            className="w-9 h-9 rounded-full shrink-0"
             style={{ background: teacherName ? 'var(--accent)' : 'var(--surface-hover)' }}
           >
             {teacherName && (
-              <div className="w-full h-full rounded-full flex items-center justify-center text-lg font-bold" style={{ color: 'var(--selected-text)' }}>
+              <div className="w-full h-full rounded-full flex items-center justify-center text-sm font-bold" style={{ color: 'var(--selected-text)' }}>
                 {teacherName.charAt(0)}
               </div>
             )}
           </div>
         )}
-        <p className="text-sm" style={{ color: 'var(--text-muted)', minHeight: '1.25rem' }}>
+        <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
           {teacherName
             ? (locale === 'ja' ? `${teacherName.split(' ')[0]} とレッスンを予約` : `Book a lesson with ${teacherName.split(' ')[0]}`)
             : ''}
@@ -333,7 +333,7 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
       </div>
 
       {/* Duration selector */}
-      <div className="flex gap-2 mb-6 justify-center">
+      <div className="flex gap-2 mb-3 justify-center">
         {[15, 30, 45, 60].map((d) => {
           const locked = !hasSubscription && d !== 15
           return (
@@ -341,10 +341,12 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
               <button
                 onClick={() => { if (!locked) { setDuration(d); setSelectedBookings([]); setBookingResult(null) } }}
                 disabled={locked}
-                className="px-5 py-2.5 text-sm font-medium transition-colors"
+                className="px-5 py-2.5 text-sm font-medium transition-all duration-[120ms] ease-out hover:scale-[1.02] active:scale-[0.97] disabled:hover:scale-100 disabled:active:scale-100"
                 style={{
-                  background: duration === d ? 'var(--selected-bg)' : 'var(--surface)',
+                  background: duration === d ? 'var(--selected-bg)' : 'var(--panel)',
                   color: locked ? 'var(--text-disabled)' : duration === d ? 'var(--selected-text)' : 'var(--text-secondary)',
+                  border: duration === d ? '1px solid transparent' : '1px solid var(--hairline)',
+                  boxShadow: duration === d ? 'none' : 'var(--card-shadow)',
                   cursor: locked ? 'not-allowed' : 'pointer',
                   opacity: locked ? 0.5 : 1,
                 }}
@@ -358,7 +360,7 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
       </div>
 
       {/* Timezone indicator */}
-      <div className="text-center text-sm mb-4" style={{ color: 'var(--text-subtle)' }}>
+      <div className="text-center text-xs mb-5" style={{ color: 'var(--text-subtle)' }}>
         {shortTz}
       </div>
 
@@ -368,11 +370,11 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
         <div>
           {/* Calendar header */}
           <div className="flex items-center justify-between mb-4">
-            <button onClick={prevMonth} className="text-base transition-colors hover:opacity-80" style={{ color: 'var(--text-muted)' }}>
+            <button onClick={prevMonth} className="text-base transition-all duration-[120ms] ease-out hover:opacity-80 hover:scale-110 active:scale-90" style={{ color: 'var(--text-muted)' }}>
               ←
             </button>
             <span className="font-medium text-base" style={{ color: 'var(--text)' }}>{monthName}</span>
-            <button onClick={nextMonth} className="text-base transition-colors hover:opacity-80" style={{ color: 'var(--text-muted)' }}>
+            <button onClick={nextMonth} className="text-base transition-all duration-[120ms] ease-out hover:opacity-80 hover:scale-110 active:scale-90" style={{ color: 'var(--text-muted)' }}>
               →
             </button>
           </div>
@@ -393,7 +395,7 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
                   <button
                     disabled={day === null || isPast(day)}
                     onClick={() => handleSelectDay(day)}
-                    className="aspect-square flex items-center justify-center text-sm transition-all relative"
+                    className="aspect-square flex items-center justify-center text-sm transition-all duration-[120ms] ease-out relative hover:scale-105 active:scale-95 disabled:hover:scale-100 disabled:active:scale-100"
                     style={{
                       background: day !== null && selectedDay === day
                         ? 'var(--selected-bg)'
@@ -449,10 +451,12 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
                         <button
                           onClick={() => toggleSlot(time)}
                           disabled={blocked}
-                          className="px-2 py-2.5 text-sm transition-colors"
+                          className="px-2 py-2.5 text-sm transition-all duration-[120ms] ease-out hover:scale-[1.02] active:scale-[0.97] disabled:hover:scale-100 disabled:active:scale-100"
                           style={{
-                            background: selected ? 'var(--accent)' : blocked ? 'var(--surface)' : 'var(--surface)',
+                            background: selected ? 'var(--accent)' : 'var(--panel)',
                             color: selected ? 'var(--selected-text)' : blocked ? 'var(--text-disabled)' : 'var(--text-secondary)',
+                            border: selected ? '1px solid transparent' : '1px solid var(--hairline)',
+                            boxShadow: selected ? 'none' : 'var(--card-shadow)',
                             opacity: blocked ? 0.4 : 1,
                           }}
                         >
@@ -567,7 +571,7 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
               <button
                 onClick={handleConfirmBooking}
                 disabled={booking}
-                className="w-full py-3 font-medium transition-colors disabled:opacity-50 hover:opacity-90"
+                className="w-full py-3 font-medium transition-all duration-[120ms] ease-out disabled:opacity-50 hover:scale-[1.01] active:scale-[0.99] disabled:hover:scale-100 disabled:active:scale-100"
                 style={{ background: 'var(--accent)', color: 'var(--selected-text)' }}
               >
                 {booking

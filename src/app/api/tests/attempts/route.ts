@@ -41,6 +41,22 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Test form is not available' }, { status: 403 })
   }
 
+  // One attempt per form (like a real exam). If the user already has one,
+  // return it instead of creating a duplicate — enforced here so it holds even
+  // if the client is bypassed.
+  const { data: existing } = await supabase
+    .from('test_attempts')
+    .select('id, form_id, status, started_at, created_at')
+    .eq('user_id', user.id)
+    .eq('form_id', form.id)
+    .order('created_at', { ascending: true })
+    .limit(1)
+    .maybeSingle()
+
+  if (existing) {
+    return NextResponse.json({ attempt: existing, existing: true })
+  }
+
   // NOTE: subscription/quota gating can be enforced here before insert.
 
   const { data: attempt, error: insertError } = await supabase
@@ -54,7 +70,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Could not start the test' }, { status: 500 })
   }
 
-  return NextResponse.json({ attempt }, { status: 201 })
+  return NextResponse.json({ attempt, existing: false }, { status: 201 })
 }
 
 export async function GET(request: NextRequest) {

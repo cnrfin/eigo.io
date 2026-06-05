@@ -15,8 +15,11 @@ export const maxDuration = 300
  * 2. System PATH (local dev — brew install ffmpeg, etc.)
  */
 function getFfmpegPath(): string {
-  // Bundled binary (Vercel production)
-  const bundled = join(process.cwd(), 'bin', 'ffmpeg')
+  // Bundled binary (Vercel production). The binary is included explicitly via
+  // outputFileTracingIncludes in next.config.ts, so the tracer must NOT try to
+  // follow this lookup — doing so made it trace the entire project into this
+  // function's bundle (the "unexpected file in NFT list" build warning).
+  const bundled = join(/*turbopackIgnore: true*/ process.cwd(), 'bin', 'ffmpeg')
   if (existsSync(bundled)) return bundled
 
   // System PATH (local dev)

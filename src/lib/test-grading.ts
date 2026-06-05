@@ -88,6 +88,7 @@ export const TEST_ASSETS_BUCKET = 'test-assets'
  *   gap_fill / short_answer -> { accepted: ["colour","color"], case_sensitive: false }
  *   ordering                -> { answer: ["b","a","c","d"] }
  *   matching                -> { answer: { "item1": "optX", ... } }
+ *   speaking_response       -> { reference: "expected answer / verbatim sentence / passage" }
  */
 export const ANSWER_PAYLOAD_KEYS = [
   'accepted',
@@ -96,6 +97,10 @@ export const ANSWER_PAYLOAD_KEYS = [
   'correct',
   'solution',
   'key',
+  'reference',
+  'cefr', // ladder level tag — not an answer, but it telegraphs item difficulty
+  'explanation', // author explanations reveal the answer — review-only
+  'explanation_ja',
 ] as const
 
 // ---------------------------------------------------------------------------
@@ -256,8 +261,9 @@ export async function gradeWithRubric(opts: {
   taskPrompt: string
   studentText: string
   rubric: RubricRow | null
+  maxScore?: number // this question's point value; the rubric supplies the criteria
 }): Promise<AiGrade> {
-  const max = Number(opts.rubric?.max_score) || Number((opts.rubric?.criteria as Json)?.max_score) || 9
+  const max = Number(opts.maxScore) || Number(opts.rubric?.max_score) || Number((opts.rubric?.criteria as Json)?.max_score) || 9
   const criteria = opts.rubric?.criteria ?? {}
 
   const systemPrompt = `You are an experienced, calibrated examiner grading a ${opts.skill} response on an English proficiency practice test.
@@ -563,4 +569,267 @@ export function computeEikenResult(
   }
 
   return { model: 'eiken_cse', per_skill, stages, cse_total, passed }
+}
+
+// ---------------------------------------------------------------------------
+//  CEFR Level Check scoring (graded ladder + descriptor-graded performance)
+// ---------------------------------------------------------------------------
+//  Criterion-referenced, DIALANG-style "basket" scoring:
+//    - Objective items are tagged payload.cefr ('A1'..'C1'). For each level,
+//      compute the fraction correct; the receptive level is found by walking
+//      up from A1 while the basket clears pass_fraction. Partial progress
+//      into the next basket adds a fraction (so "solid A2 + half of B1"
+//      lands at high A2). A flat percentage is never used.
+//    - Writing/speaking are AI-graded straight onto the CEFR scale (score
+//      1=A1 .. 6=C2, halves allowed).
+//    - Overall = weighted fusion (objective 50 / writing 25 / speaking 25,
+//      renormalized over whatever is actually present/graded).
+//  Reported as: band label + strength (low/mid/high) + CEFR-J sub-level
+//  (hybrid display: the band is what we measured; CEFR-J is a translation).
+export interface CefrItem {
+  level: string | null      // payload.cefr for objective items
+  skill: Skill
+  objective: boolean        // auto-graded ladder item vs AI-graded performance
+  score: number | null      // null = ungraded (awaiting human)
+  max: number
+}
+
+export interface CefrResult {
+  model: 'cefr_level'
+  overall: string            // 'Pre-A1' | 'A1' .. 'C2'
+  strength: 'low' | 'mid' | 'high' | null
+  cefr_j: string | null      // e.g. 'A2.2'
+  numeric: number            // continuous 0..6 (1=A1 .. 6=C2)
+  receptive_numeric: number | null
+  writing_band: number | null
+  speaking_band: number | null
+  level_fractions: Record<string, number | null>
+  per_skill: { skill: Skill; label: string; numeric: number | null; raw: number; max: number }[]
+}
+
+const CEFR_BAND_LABELS = ['Pre-A1', 'A1', 'A2', 'B1', 'B2', 'C1', 'C2']
+
+export function cefrBandLabel(numeric: number | null | undefined): string {
+  if (numeric === null || numeric === undefined || !Number.isFinite(Number(numeric))) return '—'
+  const idx = Math.min(6, Math.max(0, Math.floor(Number(numeric))))
+  return CEFR_BAND_LABELS[idx]
+}
+
+function cefrJLabel(band: string, strength: 'low' | 'mid' | 'high' | null): string | null {
+  switch (band) {
+    case 'Pre-A1': return 'Pre-A1'
+    case 'A1': return strength === 'high' ? 'A1.3' : strength === 'mid' ? 'A1.2' : 'A1.1'
+    case 'A2': return strength === 'high' ? 'A2.2' : 'A2.1'
+    case 'B1': return strength === 'high' ? 'B1.2' : 'B1.1'
+    case 'B2': return strength === 'high' ? 'B2.2' : 'B2.1'
+    case 'C1': return 'C1'
+    case 'C2': return 'C2'
+    default: return null
+  }
+}
+
+export function computeCefrResult(config: Json, items: CefrItem[]): CefrResult {
+  const levels: string[] = Array.isArray(config.levels) ? config.levels : ['A1', 'A2', 'B1', 'B2', 'C1']
+  const pass = Number(config.pass_fraction) || 0.6
+  const w = config.weights ?? {}
+  const wObj = Number(w.objective) || 0.5
+  const wWri = Number(w.writing) || 0.25
+  const wSpk = Number(w.speaking) || 0.25
+
+  // Fraction correct per level basket (ungraded objective items count as 0 —
+  // they're auto-graded, so null only means unanswered).
+  const fractions = (filter?: (it: CefrItem) => boolean): Record<string, number | null> => {
+    const out: Record<string, number | null> = {}
+    for (const lv of levels) {
+      const pool = items.filter(it => it.objective && it.level === lv && (!filter || filter(it)))
+      const max = pool.reduce((s, it) => s + it.max, 0)
+      out[lv] = max > 0 ? pool.reduce((s, it) => s + (it.score ?? 0), 0) / max : null
+    }
+    return out
+  }
+
+  // Walk up the ladder: each cleared basket = +1; partial progress into the
+  // first uncleared basket adds a capped fraction. 1.0 = solid A1.
+  const walk = (fr: Record<string, number | null>): number | null => {
+    let any = false
+    let n = 0
+    for (const lv of levels) {
+      const f = fr[lv]
+      if (f === null) break // no evidence at this level -> can't climb further
+      any = true
+      if (f >= pass) { n += 1; continue }
+      n += Math.min(0.99, f / pass)
+      break
+    }
+    return any ? n : null
+  }
+
+  const allFractions = fractions()
+  const receptive = walk(allFractions)
+
+  const bandOf = (pool: CefrItem[]): number | null => {
+    const graded = pool.filter(it => it.score !== null)
+    if (graded.length === 0) return null
+    return graded.reduce((s, it) => s + (it.score as number), 0) / graded.length
+  }
+  const writing = bandOf(items.filter(it => !it.objective && it.skill === 'writing'))
+  const speaking = bandOf(items.filter(it => !it.objective && it.skill === 'speaking'))
+
+  // Fuse the components, renormalizing weights over what's present.
+  const parts = [
+    { value: receptive, weight: wObj },
+    { value: writing, weight: wWri },
+    { value: speaking, weight: wSpk },
+  ].filter((p): p is { value: number; weight: number } => p.value !== null)
+  const wSum = parts.reduce((s, p) => s + p.weight, 0)
+  const numeric = wSum > 0 ? Math.min(6, parts.reduce((s, p) => s + p.value * p.weight, 0) / wSum) : 0
+
+  const bandIdx = Math.min(6, Math.floor(numeric))
+  const overall = CEFR_BAND_LABELS[bandIdx]
+  const fracPart = numeric - bandIdx
+  const strength: CefrResult['strength'] =
+    bandIdx === 0 || bandIdx === 6 ? null : fracPart < 1 / 3 ? 'low' : fracPart < 2 / 3 ? 'mid' : 'high'
+
+  // Per-skill: reading/listening from their own ladder walks; writing/speaking
+  // from their graded bands.
+  const per_skill: CefrResult['per_skill'] = []
+  for (const skill of ['reading', 'listening'] as Skill[]) {
+    const pool = items.filter(it => it.objective && it.skill === skill)
+    if (pool.length === 0) continue
+    const n = walk(fractions(it => it.skill === skill))
+    per_skill.push({
+      skill,
+      label: cefrBandLabel(n),
+      numeric: n === null ? null : Math.round(n * 100) / 100,
+      raw: Math.round(pool.reduce((s, it) => s + (it.score ?? 0), 0) * 100) / 100,
+      max: pool.reduce((s, it) => s + it.max, 0),
+    })
+  }
+  for (const [skill, band] of [['writing', writing], ['speaking', speaking]] as [Skill, number | null][]) {
+    const pool = items.filter(it => !it.objective && it.skill === skill)
+    if (pool.length === 0) continue
+    per_skill.push({
+      skill,
+      label: cefrBandLabel(band),
+      numeric: band === null ? null : Math.round(band * 100) / 100,
+      raw: Math.round(pool.reduce((s, it) => s + (it.score ?? 0), 0) * 100) / 100,
+      max: pool.reduce((s, it) => s + it.max, 0),
+    })
+  }
+
+  return {
+    model: 'cefr_level',
+    overall,
+    strength,
+    cefr_j: cefrJLabel(overall, strength),
+    numeric: Math.round(numeric * 100) / 100,
+    receptive_numeric: receptive === null ? null : Math.round(receptive * 100) / 100,
+    writing_band: writing === null ? null : Math.round(writing * 100) / 100,
+    speaking_band: speaking === null ? null : Math.round(speaking * 100) / 100,
+    level_fractions: Object.fromEntries(
+      Object.entries(allFractions).map(([k, v]) => [k, v === null ? null : Math.round(v * 1000) / 1000])
+    ),
+    per_skill,
+  }
+}
+
+// ---------------------------------------------------------------------------
+//  Versant GSE scoring (English Speaking and Listening Test)
+// ---------------------------------------------------------------------------
+//  The real test reports an Overall score on Pearson's Global Scale of English
+//  (10-90) plus Listening, Speaking and Manner of Speaking subscores, where
+//  Listening = 50% of Overall and Speaking = 50% (half of which is Manner of
+//  Speaking) — i.e. content 75% / manner 25%. Pearson's IRT equating is
+//  proprietary, so we approximate each component linearly onto 10-90:
+//    componentGSE = 10 + fraction * 80
+//  Listening content comes from the listening sections' raw scores, speaking
+//  content from the speaking sections', and manner from the audio grader's
+//  per-item manner_score (0-5) averaged across all spoken responses.
+//
+//  Expected config (the track's overall score_scales row):
+//    { "model":"versant_gse", "min":10, "max":90,
+//      "weights":{"listening":0.5,"speaking_content":0.25,"manner":0.25},
+//      "cefr":[{"min":85,"level":"C2"}, ...] }
+export interface VersantResult {
+  model: 'versant_gse'
+  overall: number
+  cefr: string | null
+  listening: number | null
+  speaking: number | null
+  manner_of_speaking: number | null
+  per_skill: { skill: Skill; gse: number | null; raw: number; max: number }[]
+}
+
+export function computeVersantResult(
+  config: Json,
+  perSkill: Map<Skill, { raw: number; max: number }>,
+  /** average per-item manner_score normalized to 0..1, or null if none were produced */
+  manner01: number | null
+): VersantResult {
+  const min = Number(config.min) || 10
+  const max = Number(config.max) || 90
+  const w = config.weights ?? {}
+  const wL = Number(w.listening) || 0.5
+  const wC = Number(w.speaking_content) || 0.25
+  const wM = Number(w.manner) || 0.25
+
+  const toGse = (fraction: number | null): number | null =>
+    fraction === null ? null : Math.round(clamp(min + fraction * (max - min), min, max))
+
+  const frac = (skill: Skill): number | null => {
+    const agg = perSkill.get(skill)
+    return agg && agg.max > 0 ? agg.raw / agg.max : null
+  }
+
+  const listenFrac = frac('listening')
+  const speakFrac = frac('speaking')
+  // If the grader produced no manner data (e.g. an all-human-graded attempt),
+  // fall back to the speaking content fraction so the weights still sum.
+  const mannerFrac = manner01 ?? speakFrac
+
+  const listening = toGse(listenFrac)
+  const manner = toGse(mannerFrac)
+  const speakingContent = toGse(speakFrac)
+  const speaking = speakFrac === null && mannerFrac === null
+    ? null
+    : toGse(((speakFrac ?? mannerFrac ?? 0) + (mannerFrac ?? speakFrac ?? 0)) / 2)
+
+  // Overall: renormalize weights over the components actually present.
+  const parts: { value: number | null; weight: number }[] = [
+    { value: listenFrac, weight: wL },
+    { value: speakFrac, weight: wC },
+    { value: mannerFrac, weight: wM },
+  ].filter(p => p.value !== null) as { value: number; weight: number }[]
+  const wSum = parts.reduce((s, p) => s + p.weight, 0)
+  const overallFrac = wSum > 0 ? parts.reduce((s, p) => s + (p.value as number) * p.weight, 0) / wSum : 0
+  const overall = toGse(overallFrac) ?? min
+
+  let cefr: string | null = null
+  if (Array.isArray(config.cefr)) {
+    const sorted = [...config.cefr].sort((a, b) => Number(b.min) - Number(a.min))
+    const hit = sorted.find(b => overall >= Number(b.min))
+    if (hit) cefr = String(hit.level)
+  }
+
+  const per_skill = (['listening', 'speaking'] as Skill[])
+    .filter(s => perSkill.has(s))
+    .map(s => {
+      const agg = perSkill.get(s)!
+      return {
+        skill: s,
+        gse: s === 'listening' ? listening : speaking,
+        raw: Math.round(agg.raw * 100) / 100,
+        max: agg.max,
+      }
+    })
+
+  return {
+    model: 'versant_gse',
+    overall,
+    cefr,
+    listening,
+    speaking,
+    manner_of_speaking: manner,
+    per_skill,
+  }
 }

@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
       const configId = await getPortalConfigId()
       session = await stripe.billingPortal.sessions.create({
         customer: sub.stripe_customer_id,
-        return_url: `${baseUrl}/settings`,
+        return_url: `${baseUrl}/dashboard/settings`,
         configuration: configId,
       })
     } catch {
@@ -98,7 +98,7 @@ export async function POST(request: NextRequest) {
       cachedPortalConfigId = null
       session = await stripe.billingPortal.sessions.create({
         customer: sub.stripe_customer_id,
-        return_url: `${baseUrl}/settings`,
+        return_url: `${baseUrl}/dashboard/settings`,
       })
     }
 

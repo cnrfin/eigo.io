@@ -2,18 +2,20 @@
 
 import { Suspense, useEffect, useState, useCallback, useMemo, useRef } from 'react'
 import { createPortal } from 'react-dom'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 import { useLanguage } from '@/context/LanguageContext'
 import { isAdminEmail } from '@/lib/admin-redirect'
 import { renderMarkdown } from '@/lib/markdown'
 import { Squircle } from '@squircle-js/react'
 import SquircleBox from '@/components/ui/SquircleBox'
-import Header from '@/components/Header'
+import SquircleCard from '@/components/ui/SquircleCard'
+import SkeletonCard from '@/components/ui/SkeletonCard'
 import BookingCalendar, { type BookingResult } from '@/components/BookingCalendar'
 import { motion, AnimatePresence } from 'framer-motion'
 import { formatNextReview, previewIntervals, type ReviewRating } from '@/lib/srs'
-import AudioPlayer from '@/components/AudioPlayer'
+import HomeView from '@/components/dashboard/HomeView'
+import { useDashboardNav } from '@/context/DashboardNavContext'
 
 type Lesson = {
   id: string
@@ -25,9 +27,10 @@ type Lesson = {
   wherebyRoomUrl: string | null
   wherebyMeetingId: string | null
   hasSummary?: boolean
+  keyTopics?: string[]
+  phrases?: string[]
 }
 
-type Tab = 'home' | 'booking' | 'history' | 'vocab'
 
 type VocabCard = {
   id: string
@@ -59,6 +62,8 @@ type NewsItem = {
   poster_name?: string
   poster_avatar_url?: string
 }
+
+type NewsCard = NewsItem & { title: string; body: string; posterName: string; posterAvatar: string }
 
 // ─── Cancel Modal ───
 function CancelModal({
@@ -124,170 +129,6 @@ function CancelModal({
   )
 }
 
-// ─── Next Lesson Card (hero-style, prominent) ───
-function NextLessonCard({
-  lesson, locale, wherebyUrl, onCancel, onReschedule, isAdmin = false,
-}: {
-  lesson: Lesson; locale: string; wherebyUrl: string; onCancel: (lesson: Lesson) => void; onReschedule: (lesson: Lesson) => void; isAdmin?: boolean
-}) {
-  const date = new Date(`${lesson.date}T${lesson.startTime}+09:00`)
-  const dateStr = date.toLocaleDateString(locale === 'ja' ? 'ja-JP' : 'en-GB', { weekday: 'long', month: 'long', day: 'numeric' })
-  const timeStr = date.toLocaleTimeString(locale === 'ja' ? 'ja-JP' : 'en-GB', { hour: '2-digit', minute: '2-digit' })
-
-  const now = new Date()
-  const lessonStart = new Date(`${lesson.date}T${lesson.startTime}+09:00`)
-  const minutesUntil = (lessonStart.getTime() - now.getTime()) / (1000 * 60)
-  const classroomActive = isAdmin || (minutesUntil <= 10 && minutesUntil > -lesson.durationMinutes)
-
-  const formatCountdown = (mins: number) => {
-    const days = Math.round(mins / (60 * 24))
-    const hours = Math.round(mins / 60)
-    const m = Math.floor(mins)
-    if (locale === 'ja') {
-      if (days >= 1) return `${days}日後`
-      if (hours >= 1) return `${hours}時間後`
-      return `${m}分後`
-    }
-    if (days >= 1) return `in ${days}d`
-    if (hours >= 1) return `in ${hours}h`
-    return `in ${m}m`
-  }
-
-  return (
-    <SquircleBox cornerRadius={16} className="px-8 py-6" style={{ background: 'var(--surface)' }}>
-      <div className="flex items-start justify-between mb-4">
-        <div>
-          <p className="text-xs uppercase tracking-wide mb-1" style={{ color: 'var(--text-subtle)' }}>
-            {locale === 'ja' ? '次のレッスン' : 'Next lesson'}
-          </p>
-          <p className="text-xl font-semibold" style={{ color: 'var(--text)' }}>{dateStr}</p>
-          <p className="text-lg" style={{ color: 'var(--text-secondary)' }}>{timeStr} · {lesson.durationMinutes} min</p>
-        </div>
-        <div className="text-right">
-          {minutesUntil > 0 && (
-            <span className="text-lg font-medium" style={{ color: 'var(--accent)' }}>
-              {formatCountdown(minutesUntil)}
-            </span>
-          )}
-        </div>
-      </div>
-
-      <div className="flex items-center gap-3">
-        {classroomActive ? (
-          <Squircle asChild cornerRadius={10} cornerSmoothing={0.8}>
-            <a
-              href={lesson.wherebyRoomUrl || wherebyUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex-1 py-3 text-center font-medium transition-all hover:opacity-90 animate-pulse"
-              style={{ background: 'var(--accent)', color: 'var(--selected-text)' }}
-            >
-              {locale === 'ja' ? '入室する →' : 'Enter →'}
-            </a>
-          </Squircle>
-        ) : (
-          <p className="flex-1 text-sm" style={{ color: 'var(--text-subtle)' }}>
-            {locale === 'ja' ? '10分前から入室できます' : 'Opens 10 min before'}
-          </p>
-        )}
-        <Squircle asChild cornerRadius={10} cornerSmoothing={0.8}>
-          <button
-            onClick={() => onReschedule(lesson)}
-            className="px-4 py-3 text-sm font-medium transition-colors hover:opacity-80"
-            style={{ color: 'var(--text-muted)' }}
-          >
-            {locale === 'ja' ? '変更' : 'Reschedule'}
-          </button>
-        </Squircle>
-        <Squircle asChild cornerRadius={10} cornerSmoothing={0.8}>
-          <button
-            onClick={() => onCancel(lesson)}
-            className="px-4 py-3 text-sm font-medium transition-colors hover:opacity-80"
-            style={{ background: 'var(--surface-hover)', color: 'var(--text-muted)' }}
-          >
-            {locale === 'ja' ? 'キャンセル' : 'Cancel'}
-          </button>
-        </Squircle>
-      </div>
-    </SquircleBox>
-  )
-}
-
-// ─── Lesson Card (compact, for remaining lessons) ───
-function LessonCard({
-  lesson, locale, wherebyUrl, onCancel, onReschedule, isAdmin = false,
-}: {
-  lesson: Lesson; locale: string; wherebyUrl: string; onCancel: (lesson: Lesson) => void; onReschedule: (lesson: Lesson) => void; isAdmin?: boolean
-}) {
-  const date = new Date(`${lesson.date}T${lesson.startTime}+09:00`)
-  const dateStr = date.toLocaleDateString(locale === 'ja' ? 'ja-JP' : 'en-GB', { weekday: 'short', month: 'short', day: 'numeric' })
-  const timeStr = date.toLocaleTimeString(locale === 'ja' ? 'ja-JP' : 'en-GB', { hour: '2-digit', minute: '2-digit' })
-
-  const now = new Date()
-  const lessonStart = new Date(`${lesson.date}T${lesson.startTime}+09:00`)
-  const minutesUntil = (lessonStart.getTime() - now.getTime()) / (1000 * 60)
-
-  const formatCountdown = (mins: number) => {
-    const days = Math.round(mins / (60 * 24))
-    const hours = Math.round(mins / 60)
-    const m = Math.floor(mins)
-    if (locale === 'ja') {
-      if (days >= 1) return `${days}日後`
-      if (hours >= 1) return `${hours}時間後`
-      return `${m}分後`
-    }
-    if (days >= 1) return `in ${days}d`
-    if (hours >= 1) return `in ${hours}h`
-    return `in ${m}m`
-  }
-
-  return (
-    <SquircleBox cornerRadius={12} className="flex items-center justify-between px-6 py-4" style={{ background: 'var(--surface)' }}>
-      <div className="flex-1">
-        <p className="font-medium" style={{ color: 'var(--text)' }}>{dateStr}</p>
-        <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{timeStr} · {lesson.durationMinutes} min</p>
-      </div>
-      <div className="flex items-center gap-3">
-        {minutesUntil > 0 && (
-          <span className="text-sm" style={{ color: 'var(--text-subtle)' }}>
-            {formatCountdown(minutesUntil)}
-          </span>
-        )}
-        {isAdmin && (
-          <Squircle asChild cornerRadius={8} cornerSmoothing={0.8}>
-            <a
-              href={lesson.wherebyRoomUrl || wherebyUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-3 py-1.5 text-xs font-medium transition-colors hover:opacity-90"
-              style={{ background: 'var(--accent)', color: 'var(--selected-text)' }}
-            >
-              {locale === 'ja' ? '入室 →' : 'Enter →'}
-            </a>
-          </Squircle>
-        )}
-        <Squircle asChild cornerRadius={8} cornerSmoothing={0.8}>
-          <button
-            onClick={() => onReschedule(lesson)}
-            className="px-3 py-1.5 text-xs font-medium transition-colors hover:opacity-80"
-            style={{ color: 'var(--text-muted)' }}
-          >
-            {locale === 'ja' ? '変更' : 'Reschedule'}
-          </button>
-        </Squircle>
-        <Squircle asChild cornerRadius={8} cornerSmoothing={0.8}>
-          <button
-            onClick={() => onCancel(lesson)}
-            className="px-3 py-1.5 text-xs font-medium transition-colors hover:opacity-80"
-            style={{ background: 'var(--surface-hover)', color: 'var(--text-muted)' }}
-          >
-            {locale === 'ja' ? 'キャンセル' : 'Cancel'}
-          </button>
-        </Squircle>
-      </div>
-    </SquircleBox>
-  )
-}
 
 // ─── Transcript Modal ───
 // ─── Types for lesson analysis ───
@@ -313,6 +154,95 @@ type VocabPhrase = {
   explanation_ja: string
   explanation_en: string
   category: string
+}
+
+// ─── Export phrases (CSV / Anki TSV) ───
+function ExportPhrasesButton({ cards, locale }: { cards: VocabCard[]; locale: string }) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!open) return
+    const onDown = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', onDown)
+    return () => document.removeEventListener('mousedown', onDown)
+  }, [open])
+
+  const download = (content: string, filename: string, mime: string) => {
+    const blob = new Blob([content], { type: mime })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = filename
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  const exportCsv = () => {
+    const esc = (v: string | number | null | undefined) => {
+      const s = String(v ?? '')
+      return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s
+    }
+    const header = ['Phrase (EN)', 'Example (EN)', 'Translation (JA)', 'Explanation (EN)', 'Explanation (JA)', 'Category', 'Comfort level', 'Review count', 'Interval (days)', 'Next review']
+    const rows = cards.map((c) => [
+      c.phrase?.phrase_en, c.phrase?.example_en, c.phrase?.translation_ja,
+      c.phrase?.explanation_en, c.phrase?.explanation_ja, c.phrase?.category,
+      c.comfort_level, c.review_count, c.interval_days, (c.next_review_at || '').slice(0, 10),
+    ].map(esc).join(','))
+    // Leading BOM so Excel decodes the Japanese text as UTF-8
+    download('\uFEFF' + [header.map(esc).join(','), ...rows].join('\n'), 'eigo-phrases.csv', 'text/csv;charset=utf-8')
+    setOpen(false)
+  }
+
+  const exportAnki = () => {
+    const clean = (s?: string | null) => (s ?? '').replace(/\t/g, ' ').replace(/\r?\n/g, '<br>')
+    const rows = cards.map((c) => {
+      const front = clean(c.phrase?.phrase_en)
+      const backParts = [clean(c.phrase?.translation_ja)]
+      if (c.phrase?.example_en) backParts.push(`<i>${clean(c.phrase.example_en)}</i>`)
+      if (c.phrase?.explanation_ja) backParts.push(clean(c.phrase.explanation_ja))
+      const tag = (c.phrase?.category || '').trim().replace(/\s+/g, '-')
+      return [front, backParts.join('<br><br>'), tag].join('\t')
+    })
+    // File header directives understood by Anki's import dialog
+    const directives = ['#separator:tab', '#html:true', '#columns:Front\tBack\tTags', '#tags column:3']
+    download([...directives, ...rows].join('\n'), 'eigo-phrases-anki.txt', 'text/plain;charset=utf-8')
+    setOpen(false)
+  }
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        onClick={() => setOpen((v) => !v)}
+        disabled={cards.length === 0}
+        className="flex items-center gap-1.5 px-3.5 py-2 text-sm font-medium rounded-xl transition-all duration-[120ms] ease-out hover:scale-[1.02] active:scale-[0.95] disabled:opacity-40 disabled:hover:scale-100 disabled:active:scale-100"
+        style={{ background: 'var(--panel)', color: 'var(--text)', border: '1px solid var(--hairline)', boxShadow: 'var(--card-shadow)' }}
+        aria-expanded={open}
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M12 3v12m0 0-4-4m4 4 4-4" /><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" />
+        </svg>
+        {locale === 'ja' ? 'エクスポート' : 'Export as…'}
+      </button>
+      {open && (
+        <div
+          className="modal-card absolute right-0 top-full mt-2 z-50 p-1.5 rounded-2xl"
+          style={{ minWidth: 190, background: 'var(--card)', border: '1px solid var(--hairline)', boxShadow: 'var(--card-shadow)' }}
+        >
+          <button onClick={exportCsv} className="sidebar-item w-full text-left px-3 py-2 text-sm rounded-xl" style={{ color: 'var(--text)' }}>
+            CSV
+            <span className="block text-xs" style={{ color: 'var(--text-subtle)' }}>{locale === 'ja' ? 'Excel・スプレッドシート用' : 'For Excel / Sheets'}</span>
+          </button>
+          <button onClick={exportAnki} className="sidebar-item w-full text-left px-3 py-2 text-sm rounded-xl" style={{ color: 'var(--text)' }}>
+            Anki
+            <span className="block text-xs" style={{ color: 'var(--text-subtle)' }}>{locale === 'ja' ? 'Ankiにインポートできるファイル' : 'Importable flashcard file'}</span>
+          </button>
+        </div>
+      )}
+    </div>
+  )
 }
 
 // ─── History Lesson Card (with accordion summary + phrases) ───
@@ -627,8 +557,8 @@ function HistoryLessonCard({
   return (
     <>
       <SquircleBox
-        cornerRadius={12}
-        style={{ background: 'var(--surface)' }}
+        cornerRadius={16}
+        style={{ background: 'var(--panel)', border: '1px solid var(--hairline)', boxShadow: 'var(--card-shadow)' }}
         onMouseEnter={handlePrefetch}
         onTouchStart={handlePrefetch}
         onFocus={handlePrefetch}
@@ -647,10 +577,12 @@ function HistoryLessonCard({
                   <button
                     onClick={fetchTranscript}
                     disabled={transcriptState === 'loading' || transcriptState === 'cleaning' || transcriptState === 'processing' || transcriptState === 'none'}
-                    className="px-3 py-1.5 text-xs font-medium transition-all hover:opacity-90 disabled:opacity-50 flex items-center gap-1.5"
+                    className="px-3 py-1.5 text-xs font-medium transition-all duration-[120ms] ease-out hover:scale-[1.03] active:scale-95 disabled:opacity-50 disabled:hover:scale-100 disabled:active:scale-100 flex items-center gap-1.5"
                     style={{
-                      background: 'var(--surface-hover)',
+                      background: 'var(--panel)',
                       color: 'var(--text-muted)',
+                      border: '1px solid var(--edge)',
+                      boxShadow: 'var(--card-shadow)',
                     }}
                   >
                     {(transcriptState === 'loading' || transcriptState === 'cleaning' || transcriptState === 'processing') && (
@@ -666,10 +598,12 @@ function HistoryLessonCard({
                     <button
                       onClick={analysisState === 'ready' ? () => setExpanded(!expanded) : generateAnalysis}
                       disabled={analysisState === 'loading'}
-                      className="px-3 py-1.5 text-xs font-medium transition-all hover:opacity-90 disabled:opacity-50 flex items-center gap-1.5"
+                      className="px-3 py-1.5 text-xs font-medium transition-all duration-[120ms] ease-out hover:scale-[1.03] active:scale-95 disabled:opacity-50 disabled:hover:scale-100 disabled:active:scale-100 flex items-center gap-1.5"
                       style={{
-                        background: analysisState === 'ready' ? 'var(--accent)' : 'var(--surface-hover)',
+                        background: analysisState === 'ready' ? 'var(--accent)' : 'var(--panel)',
                         color: analysisState === 'ready' ? 'var(--selected-text)' : 'var(--text-muted)',
+                        border: analysisState === 'ready' ? '1px solid transparent' : '1px solid var(--edge)',
+                        boxShadow: analysisState === 'ready' ? 'none' : 'var(--card-shadow)',
                       }}
                     >
                       {analysisState === 'loading' && <span className="spinner-sm" />}
@@ -690,10 +624,12 @@ function HistoryLessonCard({
                       setDownloadOpen(!downloadOpen)
                     }}
                     disabled={recordingState === 'loading' || recordingState === 'none'}
-                    className="px-3 py-1.5 text-xs font-medium transition-all hover:opacity-90 disabled:opacity-50 flex items-center gap-1.5"
+                    className="px-3 py-1.5 text-xs font-medium transition-all duration-[120ms] ease-out hover:scale-[1.03] active:scale-95 disabled:opacity-50 disabled:hover:scale-100 disabled:active:scale-100 flex items-center gap-1.5"
                     style={{
-                      background: recordingState === 'none' ? 'var(--surface-hover)' : recordingState === 'error' ? 'var(--danger)' : 'var(--accent)',
-                      color: recordingState === 'none' ? 'var(--text-muted)' : 'var(--selected-text)',
+                      background: recordingState === 'error' ? 'var(--danger)' : 'var(--panel)',
+                      color: recordingState === 'error' ? 'var(--selected-text)' : recordingState === 'none' ? 'var(--text-muted)' : 'var(--text)',
+                      border: recordingState === 'error' ? '1px solid transparent' : '1px solid var(--edge)',
+                      boxShadow: recordingState === 'error' ? 'none' : 'var(--card-shadow)',
                     }}
                   >
                     {recordingState === 'loading' && <span className="spinner-sm" />}
@@ -728,8 +664,8 @@ function HistoryLessonCard({
                     {summary.key_topics.map((topic, i) => (
                       <span
                         key={i}
-                        className="px-2 py-0.5 text-xs rounded-full"
-                        style={{ background: 'var(--surface-hover)', color: 'var(--text-muted)' }}
+                        className="px-2.5 py-0.5 text-xs font-medium rounded-full"
+                        style={{ background: 'var(--accent-bg)', color: 'var(--accent)' }}
                       >
                         {topic}
                       </span>
@@ -750,7 +686,7 @@ function HistoryLessonCard({
                     </p>
                     <div className="space-y-2">
                       {summary.mistake_patterns.map((m, i) => (
-                        <div key={i} className="text-sm rounded-lg p-3" style={{ background: 'var(--surface-hover)' }}>
+                        <div key={i} className="text-sm rounded-xl p-3" style={{ background: 'var(--card-inset)' }}>
                           <div className="flex items-start gap-2 mb-1">
                             <span className="shrink-0 flex items-center justify-center" style={{ width: '22px', height: '22px', fontSize: '14px', lineHeight: '22px' }}>❌</span>
                             <span className="pt-0.5" style={{ color: 'var(--text-muted)', textDecoration: 'line-through' }}>{m.example_student}</span>
@@ -780,11 +716,11 @@ function HistoryLessonCard({
                           <div
                             onClick={() => setSelectedPhrase(selectedPhrase?.id === phrase.id ? null : phrase)}
                             className="w-full text-left flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors hover:opacity-80 cursor-pointer"
-                            style={{ background: selectedPhrase?.id === phrase.id ? 'var(--surface-hover)' : 'transparent' }}
+                            style={{ background: selectedPhrase?.id === phrase.id ? 'var(--inset)' : 'transparent' }}
                           >
                             <div className="flex items-center gap-2 min-w-0">
                               <span className="font-medium truncate" style={{ color: 'var(--text)' }}>{phrase.phrase_en}</span>
-                              <span className="text-xs shrink-0 px-1.5 py-0.5 rounded-full" style={{ background: 'var(--surface-hover)', color: 'var(--text-subtle)' }}>
+                              <span className="text-xs font-medium shrink-0 px-2 py-0.5 rounded-full" style={{ background: 'var(--accent-bg)', color: 'var(--accent)' }}>
                                 {phrase.category}
                               </span>
                             </div>
@@ -794,9 +730,9 @@ function HistoryLessonCard({
                                   <button
                                     onClick={(e) => { e.stopPropagation(); onAddToDeck(phrase.id) }}
                                     disabled={deckPhraseIds?.has(phrase.id)}
-                                    className="px-2 py-1 text-xs font-medium transition-all hover:opacity-90 disabled:opacity-40"
+                                    className="px-2 py-1 text-xs font-medium transition-all duration-[120ms] ease-out hover:scale-105 active:scale-95 disabled:opacity-50 disabled:hover:scale-100 disabled:active:scale-100"
                                     style={{
-                                      background: deckPhraseIds?.has(phrase.id) ? 'var(--surface-hover)' : 'var(--accent)',
+                                      background: deckPhraseIds?.has(phrase.id) ? 'var(--inset)' : 'var(--accent)',
                                       color: deckPhraseIds?.has(phrase.id) ? 'var(--text-muted)' : 'var(--selected-text)',
                                     }}
                                   >
@@ -854,35 +790,19 @@ function HistoryLessonCard({
             right: window.innerWidth - downloadBtnRef.current.getBoundingClientRect().right,
           }}
         >
-          <Squircle asChild cornerRadius={16} cornerSmoothing={0.8}>
-            <div
-              className="p-2 flex flex-col gap-0.5"
-              style={{ background: 'var(--card-white)', border: '1px solid var(--border)', boxShadow: '0 8px 40px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.1)' }}
-            >
-              <Squircle asChild cornerRadius={10} cornerSmoothing={0.8}>
-                <button
-                  onClick={downloadVideo}
-                  className="w-full text-left px-3 py-2.5 text-sm whitespace-nowrap transition-colors"
-                  style={{ color: 'var(--text-secondary)' }}
-                  onMouseEnter={(e) => e.currentTarget.style.background = 'var(--surface-hover)'}
-                  onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-                >
-                  {locale === 'ja' ? '動画をダウンロード' : 'Download video'}
-                </button>
-              </Squircle>
-              <Squircle asChild cornerRadius={10} cornerSmoothing={0.8}>
-                <button
-                  onClick={downloadAudio}
-                  className="w-full text-left px-3 py-2.5 text-sm whitespace-nowrap transition-colors"
-                  style={{ color: 'var(--text-secondary)' }}
-                  onMouseEnter={(e) => e.currentTarget.style.background = 'var(--surface-hover)'}
-                  onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-                >
-                  {locale === 'ja' ? '音声をダウンロード' : 'Download audio'}
-                </button>
-              </Squircle>
-            </div>
-          </Squircle>
+          <div
+            className="modal-card p-1.5 rounded-2xl"
+            style={{ minWidth: 190, background: 'var(--card)', border: '1px solid var(--hairline)', boxShadow: 'var(--card-shadow)' }}
+          >
+            <button onClick={downloadAudio} className="sidebar-item w-full text-left px-3 py-2 text-sm rounded-xl" style={{ color: 'var(--text)' }}>
+              MP3
+              <span className="block text-xs" style={{ color: 'var(--text-subtle)' }}>{locale === 'ja' ? '音声ファイル' : 'Audio file'}</span>
+            </button>
+            <button onClick={downloadVideo} className="sidebar-item w-full text-left px-3 py-2 text-sm rounded-xl" style={{ color: 'var(--text)' }}>
+              MP4
+              <span className="block text-xs" style={{ color: 'var(--text-subtle)' }}>{locale === 'ja' ? '動画ファイル' : 'Video file'}</span>
+            </button>
+          </div>
         </div>,
         document.body,
       )}
@@ -898,7 +818,8 @@ function DashboardContent() {
   const durationParam = searchParams.get('duration')
 
   const isAdmin = isAdminEmail(user?.email)
-  const [activeTab, setActiveTab] = useState<Tab>('home')
+  const router = useRouter()
+  const { activeTab, setActiveTab, setIndicators } = useDashboardNav()
   const [lessons, setLessons] = useState<Lesson[]>([])
   const [historyLessons, setHistoryLessons] = useState<Lesson[]>([])
   const [loadingLessons, setLoadingLessons] = useState(true)
@@ -906,19 +827,19 @@ function DashboardContent() {
   const [cancellingId, setCancellingId] = useState<string | null>(null)
   const [lessonToCancel, setLessonToCancel] = useState<Lesson | null>(null)
   const [cancelAllFuture, setCancelAllFuture] = useState(false)
-  const [showAllLessons, setShowAllLessons] = useState(false)
-  const [showAllNews, setShowAllNews] = useState(false)
+  const [news, setNews] = useState<NewsCard[]>([])
+  const [loadingNews, setLoadingNews] = useState(true)
   const [selectedNewsId, setSelectedNewsId] = useState<string | null>(null)
   const [readNewsIds, setReadNewsIds] = useState<Set<string>>(new Set())
   const [historyPage, setHistoryPage] = useState(0)
+  const [historySearch, setHistorySearch] = useState('')
+  const [historySort, setHistorySort] = useState<'newest' | 'oldest'>('newest')
   const [lessonToReschedule, setLessonToReschedule] = useState<Lesson | null>(null)
   const [selectedTranscript, setSelectedTranscript] = useState<{ lesson: Lesson; content: string; cleanedContent?: string } | null>(null)
   const [transcriptView, setTranscriptView] = useState<'clean' | 'original'>('clean')
   const [cleaningTranscript, setCleaningTranscript] = useState(false)
   const [copiedTranscript, setCopiedTranscript] = useState(false)
   const [bookingResultModal, setBookingResultModal] = useState<BookingResult | null>(null)
-  const [audioPlayer, setAudioPlayer] = useState<{ src: string } | null>(null)
-  const [loadingAudio, setLoadingAudio] = useState(false)
   const [vocabCards, setVocabCards] = useState<VocabCard[]>([])
   const [loadingVocab, setLoadingVocab] = useState(false)
   const [vocabFilter, setVocabFilter] = useState<'all' | 'learning' | 'reviewing' | 'mastered'>('all')
@@ -932,34 +853,10 @@ function DashboardContent() {
   const [dueCount, setDueCount] = useState(0)
   const [subStatus, setSubStatus] = useState<'loading' | 'none' | 'active' | 'past_due'>('loading')
   const [minutesRemaining, setMinutesRemaining] = useState<number | null>(null)
-  const [minutesPerMonth, setMinutesPerMonth] = useState<number | null>(null)
   const [trialCompleted, setTrialCompleted] = useState<boolean | null>(null) // null = loading
-  const LESSONS_VISIBLE = 4 // 1 hero + 3 compact
-  const NEWS_VISIBLE = 3
   const HISTORY_PER_PAGE = 10
 
   const wherebyUrl = process.env.NEXT_PUBLIC_WHEREBY_ROOM_URL || ''
-
-  // Load read news IDs from localStorage
-  const readNewsKey = user?.id ? `eigo_read_news_${user.id}` : null
-  useEffect(() => {
-    if (!readNewsKey) return
-    try {
-      const stored = localStorage.getItem(readNewsKey)
-      if (stored) setReadNewsIds(new Set(JSON.parse(stored)))
-    } catch { /* ignore */ }
-  }, [readNewsKey])
-
-  const markNewsRead = useCallback((id: string) => {
-    setReadNewsIds(prev => {
-      const next = new Set(prev)
-      next.add(id)
-      if (readNewsKey) {
-        try { localStorage.setItem(readNewsKey, JSON.stringify([...next])) } catch { /* ignore */ }
-      }
-      return next
-    })
-  }, [readNewsKey])
 
   // If user navigated with ?duration= or ?tab=booking, jump to booking tab
   useEffect(() => {
@@ -970,6 +867,24 @@ function DashboardContent() {
     }
   }, [durationParam])
 
+  // Stale-while-revalidate: hydrate the last known lessons/news from
+  // localStorage as soon as we know who the user is, so the home view shows
+  // content immediately while the live fetches (calendar API is slow) run in
+  // the background. Keys are per-user so shared browsers never leak data.
+  const hydratedFromCache = useRef(false)
+  useEffect(() => {
+    if (!user?.id || hydratedFromCache.current) return
+    hydratedFromCache.current = true
+    /* eslint-disable react-hooks/set-state-in-effect -- one-time cache hydration on mount */
+    try {
+      const cachedLessons = localStorage.getItem(`eigo_cache_lessons_${user.id}`)
+      if (cachedLessons) setLessons(JSON.parse(cachedLessons))
+      const cachedNews = localStorage.getItem(`eigo_cache_news_${locale}`)
+      if (cachedNews) setNews(JSON.parse(cachedNews))
+    } catch { /* ignore corrupt cache */ }
+    /* eslint-enable react-hooks/set-state-in-effect */
+  }, [user?.id, locale])
+
   const fetchLessons = useCallback(async () => {
     if (!session?.access_token) return
     setLoadingLessons(true)
@@ -979,12 +894,15 @@ function DashboardContent() {
       })
       const data = await res.json()
       setLessons(data.lessons || [])
+      if (user?.id) {
+        try { localStorage.setItem(`eigo_cache_lessons_${user.id}`, JSON.stringify(data.lessons || [])) } catch { /* ignore */ }
+      }
     } catch {
       setLessons([])
     } finally {
       setLoadingLessons(false)
     }
-  }, [session?.access_token])
+  }, [session?.access_token, user?.id])
 
   const fetchHistory = useCallback(async () => {
     if (!session?.access_token) return
@@ -1021,6 +939,52 @@ function DashboardContent() {
   }, [session?.access_token])
 
   const deckPhraseIds = useMemo(() => new Set(vocabCards.map(c => c.phrase?.id).filter(Boolean)), [vocabCards])
+
+  // History stats (always from the full set, not the filtered view)
+  const historyStats = useMemo(() => {
+    const minutes = historyLessons.reduce((sum, l) => sum + (l.durationMinutes || 0), 0)
+    const counts = new Map<string, number>()
+    for (const l of historyLessons) {
+      for (const raw of l.keyTopics || []) {
+        const topic = raw.trim()
+        if (topic) counts.set(topic, (counts.get(topic) || 0) + 1)
+      }
+    }
+    const topTopics = [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 3).map(([topic]) => topic)
+    return { count: historyLessons.length, minutes, topTopics }
+  }, [historyLessons])
+
+  // Searchable text per lesson: topics, phrases, and the date in several
+  // forms — ISO (2026-03-24), the card's display format (Tue 24 Mar), and a
+  // long form (24 March 2026) — so users can search what they see.
+  const historySearchIndex = useMemo(() => {
+    const loc = locale === 'ja' ? 'ja-JP' : 'en-GB'
+    const map = new Map<string, string>()
+    for (const l of historyLessons) {
+      const d = new Date(`${l.date}T${l.startTime}+09:00`)
+      const parts = [
+        l.date,
+        d.toLocaleDateString(loc, { weekday: 'short', month: 'short', day: 'numeric' }),
+        d.toLocaleDateString(loc, { day: 'numeric', month: 'long', year: 'numeric' }),
+        ...(l.keyTopics || []),
+        ...(l.phrases || []),
+      ]
+      map.set(l.id, parts.join(' ').toLowerCase())
+    }
+    return map
+  }, [historyLessons, locale])
+
+  // Search and newest/oldest sort, applied before pagination
+  const filteredHistory = useMemo(() => {
+    const q = historySearch.trim().toLowerCase()
+    const filtered = q
+      ? historyLessons.filter((l) => (historySearchIndex.get(l.id) || '').includes(q))
+      : historyLessons
+    return [...filtered].sort((a, b) => {
+      const cmp = `${a.date}T${a.startTime}`.localeCompare(`${b.date}T${b.startTime}`)
+      return historySort === 'newest' ? -cmp : cmp
+    })
+  }, [historyLessons, historySearch, historySort, historySearchIndex])
 
   const addToDeck = async (phraseId: string) => {
     if (!session?.access_token) return
@@ -1230,7 +1194,6 @@ function DashboardContent() {
           }
           if (data.balance) {
             setMinutesRemaining(data.balance.minutesRemaining)
-            setMinutesPerMonth(data.balance.minutesPerMonth)
           }
         } else {
           setSubStatus('none')
@@ -1254,14 +1217,18 @@ function DashboardContent() {
     }
   }, [session?.access_token, fetchHistory, fetchVocab])
 
-  const [news, setNews] = useState<(NewsItem & { title: string; body: string; posterName: string; posterAvatar: string })[]>([])
+  // Surface tab indicators (phrases due, lessons awaiting a summary) to the sidebar.
+  useEffect(() => {
+    const unsummarized = historyLessons.filter(l => l.hasSummary === false).length
+    setIndicators({ vocabDue: dueCount, historyUnsummarized: unsummarized })
+  }, [dueCount, historyLessons, setIndicators])
 
-  // Fetch news from Supabase
+  // News (shown on the home view, below upcoming lessons)
   useEffect(() => {
     fetch('/api/news')
       .then((res) => res.json())
       .then((data) => {
-        const items = (data.news || []).map((n: NewsItem) => ({
+        const items: NewsCard[] = (data.news || []).map((n: NewsItem) => ({
           ...n,
           title: locale === 'ja' ? (n.title_ja || n.title_en) : (n.title_en || n.title_ja),
           body: locale === 'ja' ? n.content_ja : n.content_en,
@@ -1269,9 +1236,33 @@ function DashboardContent() {
           posterAvatar: n.poster_avatar_url || '',
         }))
         setNews(items)
+        try { localStorage.setItem(`eigo_cache_news_${locale}`, JSON.stringify(items)) } catch { /* ignore */ }
       })
-      .catch(() => setNews([]))
+      .catch(() => { /* keep whatever is shown (cached or empty) */ })
+      .finally(() => setLoadingNews(false))
   }, [locale])
+
+  const readNewsKey = user?.id ? `eigo_read_news_${user.id}` : null
+  useEffect(() => {
+    if (!readNewsKey) return
+    try {
+      const stored = localStorage.getItem(readNewsKey)
+      if (stored) setReadNewsIds(new Set(JSON.parse(stored)))
+    } catch { /* ignore */ }
+  }, [readNewsKey])
+
+  const markNewsRead = useCallback((id: string) => {
+    setReadNewsIds((prev) => {
+      const next = new Set(prev)
+      next.add(id)
+      if (readNewsKey) {
+        try { localStorage.setItem(readNewsKey, JSON.stringify([...next])) } catch { /* ignore */ }
+      }
+      return next
+    })
+  }, [readNewsKey])
+
+  const selectedNews = news.find((n) => n.id === selectedNewsId) || null
 
   const greeting = useMemo(() => {
     const hour = new Date().getHours()
@@ -1300,71 +1291,29 @@ function DashboardContent() {
 
   if (loading) {
     return (
-      <main className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg)' }}>
+      <div className="min-h-[60vh] flex items-center justify-center">
         <div style={{ color: 'var(--text-muted)' }}>Loading...</div>
-      </main>
+      </div>
     )
   }
   if (!user) return null
 
-  // Lessons in history that don't yet have a summary — shown as a pulsing dot on the tab
-  const unsummarizedCount = historyLessons.filter(l => l.hasSummary === false).length
-
-  const tabs: { key: Tab; label: string; showDot?: boolean }[] = [
-    { key: 'home', label: t('tabHome') },
-    { key: 'booking', label: t('tabBooking') },
-    { key: 'history', label: t('tabHistory'), showDot: unsummarizedCount > 0 },
-    { key: 'vocab', label: locale === 'ja' ? 'フレーズ' : 'Phrases', showDot: dueCount > 0 },
-  ]
-
-  const nextLesson = lessons[0] || null
-  const laterLessons = lessons.slice(1)
-  const selectedNews = news.find(n => n.id === selectedNewsId) || null
+  const firstName = (user.user_metadata?.full_name?.split(' ')[0] || user.user_metadata?.name?.split(' ')[0] || (user.email && !user.email.endsWith('@line.eigo.io') ? user.email.split('@')[0] : '') || '')
+  const tabTitle = activeTab === 'history'
+    ? (locale === 'ja' ? '履歴' : 'History')
+    : activeTab === 'vocab'
+      ? (locale === 'ja' ? 'フレーズ' : 'Phrases')
+      : ''
 
   return (
     <>
-      <main className="min-h-screen" style={{ background: 'var(--bg)' }}>
-        <div className="max-w-4xl mx-auto">
-          <Header />
-
-          <section className="py-8 px-6">
-            {/* Welcome */}
-            <h1 className="text-2xl sm:text-4xl font-bold mb-8" style={{ color: 'var(--text)' }}>
-              {greeting}
-              {user && <span className="font-normal text-base sm:text-xl ml-2 sm:ml-3" style={{ color: 'var(--text-muted)' }}>{(user.user_metadata?.full_name?.split(' ')[0] || user.user_metadata?.name?.split(' ')[0] || (user.email && !user.email.endsWith('@line.eigo.io') ? user.email.split('@')[0] : '') || '')}{locale === 'ja' ? 'さん' : ''}</span>}
-            </h1>
-
-            {/* Tab navigation */}
-            <div className="flex gap-1 mb-8 overflow-x-auto" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
-              {tabs.map(({ key, label, showDot }) => (
-                <button
-                  key={key}
-                  onClick={() => { setActiveTab(key); if (key !== 'history') { setSelectedTranscript(null); setAudioPlayer(null) } }}
-                  className="px-3 sm:px-5 py-3 font-medium transition-colors relative text-sm sm:text-base whitespace-nowrap"
-                  style={{
-                    color: activeTab === key ? 'var(--text)' : 'var(--text-muted)',
-                  }}
-                >
-                  {label}
-                  {showDot && (
-                    <span
-                      className="news-unread-dot absolute rounded-full"
-                      style={{ top: 8, right: 8, width: 8, height: 8, background: 'var(--accent)' }}
-                      aria-hidden="true"
-                    />
-                  )}
-                  {activeTab === key && (
-                    <motion.span
-                      layoutId="tab-underline"
-                      className="absolute bottom-0 left-0 right-0 h-0.5"
-                      style={{ background: 'var(--accent)' }}
-                      transition={{ type: 'spring', stiffness: 500, damping: 35 }}
-                    />
-                  )}
-                </button>
-              ))}
-            </div>
-
+      <section className="pt-12 pb-8">
+        {/* Shared content container — same width/padding as the tests page
+            (max-w-3xl mx-auto px-4) so every tab lines up consistently. */}
+        <div className="max-w-3xl mx-auto w-full px-4">
+            {/* Each tab renders its own heading inside its animated block so the
+                page (including the title) fades in/out together — Home has its
+                centered welcome, History/Phrases their title, Book none. */}
             <AnimatePresence mode="wait">
             {/* ═══ HOME TAB ═══ */}
             {activeTab === 'home' && (
@@ -1375,257 +1324,27 @@ function DashboardContent() {
                 exit={{ opacity: 0, y: -8 }}
                 transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
               >
-              <AnimatePresence mode="wait">
-                {selectedNews ? (
-                  /* ── News Detail View ── */
-                  <motion.div
-                    key={`news-${selectedNews.id}`}
-                    initial={{ opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -12 }}
-                    transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
-                  >
-                    {/* Back button */}
-                    <button
-                      onClick={() => setSelectedNewsId(null)}
-                      className="flex items-center gap-2 mb-6 text-sm font-medium transition-colors hover:opacity-80"
-                      style={{ color: 'var(--text-muted)' }}
-                    >
-                      <span>←</span>
-                      <span>{locale === 'ja' ? '戻る' : 'Back'}</span>
-                    </button>
-
-                    <SquircleBox cornerRadius={16} className="p-6 sm:p-8" style={{ background: 'var(--surface)' }}>
-                      {/* Header: avatar + author + date */}
-                      <div className="flex items-center gap-3 mb-5">
-                        {selectedNews.posterAvatar ? (
-                          <img
-                            src={selectedNews.posterAvatar}
-                            alt=""
-                            className="w-9 h-9 rounded-full object-cover shrink-0"
-                          />
-                        ) : (
-                          <div
-                            className="w-9 h-9 rounded-full shrink-0 flex items-center justify-center text-xs font-bold"
-                            style={{ background: 'var(--accent)', color: 'var(--selected-text)' }}
-                          >
-                            E
-                          </div>
-                        )}
-                        <div className="min-w-0">
-                          <p className="text-sm font-medium truncate" style={{ color: 'var(--text)' }}>{selectedNews.posterName || 'eigo.io'}</p>
-                          <p className="text-xs" style={{ color: 'var(--text-subtle)' }}>{selectedNews.date}</p>
-                        </div>
-                      </div>
-
-                      {/* Title */}
-                      {selectedNews.title && (
-                        <h2
-                          className={`text-lg mb-4 ${locale === 'ja' ? 'font-bold' : 'font-semibold'}`}
-                          style={{ color: 'var(--text)' }}
-                        >
-                          {selectedNews.title}
-                        </h2>
-                      )}
-
-                      {/* Body */}
-                      {selectedNews.body && (
-                        <div
-                          className="text-base news-body leading-relaxed"
-                          style={{ color: 'var(--text-secondary)' }}
-                          dangerouslySetInnerHTML={{ __html: renderMarkdown(selectedNews.body) }}
-                        />
-                      )}
-                    </SquircleBox>
-                  </motion.div>
-                ) : (
-                  /* ── Default Home View (lessons + news list) ── */
-                  <motion.div
-                    key="home-default"
-                    initial={{ opacity: 0, y: -12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 12 }}
-                    transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
-                    className="space-y-8"
-                  >
-                    {/* Subscription / trial banner */}
-                    {subStatus === 'none' && trialCompleted !== null && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
-                      >
-                      <div
-                        className="rounded-xl px-5 py-4"
-                        style={{
-                          background: 'var(--surface)',
-                          border: '1px solid var(--border-subtle)',
-                        }}
-                      >
-                        {!trialCompleted ? (
-                          /* User hasn't done trial yet */
-                          <div className="flex items-center justify-between gap-4">
-                            <div>
-                              <p className="text-sm font-medium mb-0.5" style={{ color: 'var(--text)' }}>
-                                {locale === 'ja' ? '無料体験レッスンを予約しよう' : 'Book your free trial lesson'}
-                              </p>
-                              <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                                {locale === 'ja'
-                                  ? '15分の体験後、48時間以内の入会で最大45%オフ'
-                                  : 'Get up to 45% off when you subscribe within 48h of your trial'}
-                              </p>
-                            </div>
-                            <Squircle asChild cornerRadius={10} cornerSmoothing={0.8}>
-                              <button
-                                onClick={() => { setActiveTab('booking') }}
-                                className="btn-trial shrink-0 px-4 py-2.5 text-sm font-medium transition-colors hover:opacity-90"
-                              >
-                                {locale === 'ja' ? '体験予約' : 'Book trial'}
-                              </button>
-                            </Squircle>
-                          </div>
-                        ) : (
-                          /* Trial done but no subscription */
-                          <div className="flex items-center justify-between gap-4">
-                            <div>
-                              <p className="text-sm font-medium mb-0.5" style={{ color: 'var(--text)' }}>
-                                {locale === 'ja' ? 'プランを選んでレッスンを始めよう' : 'Choose a plan to start booking'}
-                              </p>
-                              <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                                {locale === 'ja'
-                                  ? 'レッスンの予約にはプランの登録が必要です'
-                                  : 'A subscription is required to book lessons'}
-                              </p>
-                            </div>
-                            <Squircle asChild cornerRadius={10} cornerSmoothing={0.8}>
-                              <button
-                                onClick={() => (window.location.href = '/plans')}
-                                className="shrink-0 px-4 py-2.5 text-sm font-medium transition-colors hover:opacity-90"
-                                style={{ background: 'var(--accent)', color: 'var(--selected-text)' }}
-                              >
-                                {locale === 'ja' ? 'プランを見る' : 'View plans'}
-                              </button>
-                            </Squircle>
-                          </div>
-                        )}
-                      </div>
-                      </motion.div>
-                    )}
-
-
-                    {/* Upcoming lessons — next lesson is hero, rest are compact */}
-                    {loadingLessons ? (
-                      <SquircleBox cornerRadius={12} className="p-8 text-center" style={{ background: 'var(--surface)' }}>
-                        <p style={{ color: 'var(--text-muted)' }}>Loading...</p>
-                      </SquircleBox>
-                    ) : lessons.length === 0 ? (
-                      <SquircleBox cornerRadius={16} className="p-8 text-center" style={{ background: 'var(--surface)' }}>
-                        <p className="text-lg mb-2" style={{ color: 'var(--text-muted)' }}>{t('noUpcoming')}</p>
-                        <button
-                          onClick={() => setActiveTab('booking')}
-                          className="text-sm font-medium transition-colors hover:opacity-80"
-                          style={{ color: 'var(--accent)' }}
-                        >
-                          {locale === 'ja' ? '予約する →' : 'Book one →'}
-                        </button>
-                      </SquircleBox>
-                    ) : (
-                      <div className="space-y-3">
-                        {nextLesson && (
-                          <NextLessonCard
-                            lesson={nextLesson}
-                            locale={locale}
-                            wherebyUrl={nextLesson.wherebyRoomUrl || wherebyUrl}
-                            onCancel={setLessonToCancel}
-                            onReschedule={rescheduleLesson}
-                            isAdmin={isAdmin}
-                          />
-                        )}
-                        {laterLessons.length > 0 && (
-                          <>
-                            {(showAllLessons ? laterLessons : laterLessons.slice(0, LESSONS_VISIBLE - 1)).map((lesson) => (
-                              <LessonCard
-                                key={lesson.id}
-                                lesson={lesson}
-                                locale={locale}
-                                wherebyUrl={lesson.wherebyRoomUrl || wherebyUrl}
-                                onCancel={setLessonToCancel}
-                                onReschedule={rescheduleLesson}
-                                isAdmin={isAdmin}
-                              />
-                            ))}
-                            {!showAllLessons && laterLessons.length > LESSONS_VISIBLE - 1 && (
-                              <button
-                                onClick={() => setShowAllLessons(true)}
-                                className="w-full py-3 text-sm font-medium transition-colors hover:opacity-80"
-                                style={{ color: 'var(--accent)' }}
-                              >
-                                {locale === 'ja'
-                                  ? `すべて表示（${lessons.length}件）`
-                                  : `See all ${lessons.length} lessons`}
-                              </button>
-                            )}
-                          </>
-                        )}
-                      </div>
-                    )}
-
-                    {/* News BBS — collapsed rows, click to expand */}
-                    {news.length > 0 && (
-                      <div>
-                        <h2 className="text-sm font-medium mb-3" style={{ color: 'var(--text-muted)' }}>{t('news')}</h2>
-                        <div>
-                          {(showAllNews ? news : news.slice(0, NEWS_VISIBLE)).map((item) => (
-                            <button
-                              key={item.id}
-                              onClick={() => { markNewsRead(item.id); setSelectedNewsId(item.id) }}
-                              className="w-full flex items-center gap-3 py-3 px-3 -mx-3 rounded-lg text-left transition-colors news-bbs-row"
-                              style={{ borderBottom: '1px solid var(--border-subtle)' }}
-                            >
-                              {item.posterAvatar ? (
-                                <img
-                                  src={item.posterAvatar}
-                                  alt=""
-                                  className="w-6 h-6 rounded-full object-cover shrink-0"
-                                />
-                              ) : (
-                                <div
-                                  className="w-6 h-6 rounded-full shrink-0 flex items-center justify-center text-[10px] font-bold"
-                                  style={{ background: 'var(--accent)', color: 'var(--selected-text)' }}
-                                >
-                                  E
-                                </div>
-                              )}
-                              <span className="text-xs shrink-0" style={{ color: 'var(--text-subtle)' }}>{item.date}</span>
-                              {item.title && (
-                                <span
-                                  className={`text-sm truncate ${locale === 'ja' ? 'font-semibold' : 'font-medium'}`}
-                                  style={{ color: 'var(--text)' }}
-                                >
-                                  {item.title}
-                                </span>
-                              )}
-                              <span
-                                className={`ml-auto shrink-0 w-2 h-2 rounded-full ${readNewsIds.has(item.id) ? '' : 'news-unread-dot'}`}
-                                style={{ background: readNewsIds.has(item.id) ? 'var(--text-disabled)' : 'var(--accent)' }}
-                              />
-                            </button>
-                          ))}
-                        </div>
-                        {!showAllNews && news.length > NEWS_VISIBLE && (
-                          <button
-                            onClick={() => setShowAllNews(true)}
-                            className="mt-3 text-sm font-medium transition-colors hover:opacity-80"
-                            style={{ color: 'var(--accent)' }}
-                          >
-                            {locale === 'ja' ? 'もっと見る' : 'See more'}
-                          </button>
-                        )}
-                      </div>
-                    )}
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                <HomeView
+                  locale={locale}
+                  greeting={greeting}
+                  firstName={firstName}
+                  subStatus={subStatus}
+                  trialCompleted={trialCompleted}
+                  lessons={lessons}
+                  loadingLessons={loadingLessons}
+                  wherebyUrl={wherebyUrl}
+                  isAdmin={isAdmin}
+                  onBook={() => setActiveTab('booking')}
+                  onReviewPhrases={() => setActiveTab('vocab')}
+                  onTakeTests={() => router.push('/dashboard/tests')}
+                  onViewPlans={() => (window.location.href = '/plans')}
+                  onCancelLesson={setLessonToCancel}
+                  onRescheduleLesson={rescheduleLesson}
+                  news={news}
+                  loadingNews={loadingNews}
+                  readNewsIds={readNewsIds}
+                  onOpenNews={(id) => { markNewsRead(id); setSelectedNewsId(id) }}
+                />
               </motion.div>
             )}
 
@@ -1638,28 +1357,33 @@ function DashboardContent() {
                 exit={{ opacity: 0, y: -8 }}
                 transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
               >
-              {/* Minutes remaining badge */}
-              {subStatus === 'active' && minutesRemaining !== null && (
-                <div className="flex justify-end mb-3">
-                  <span
-                    className="text-xs font-medium px-3 py-1.5 rounded-full"
-                    style={{
-                      background: minutesRemaining < 30 ? 'rgba(240, 96, 96, 0.1)' : 'rgba(0, 194, 184, 0.1)',
-                      color: minutesRemaining < 30 ? 'var(--danger)' : 'var(--accent)',
-                    }}
-                  >
-                    {locale === 'ja'
-                      ? `${minutesRemaining}分残り`
-                      : `${minutesRemaining} min left`}
-                  </span>
+              <div className="w-full">
+                {/* Title row — title left, minutes-remaining badge right */}
+                <div className="flex items-center justify-between mb-8">
+                  <h1 className="text-2xl sm:text-4xl font-bold" style={{ color: 'var(--text)' }}>
+                    {locale === 'ja' ? '予約' : 'Book'}
+                  </h1>
+                  {subStatus === 'active' && minutesRemaining !== null && (
+                    <span
+                      className="text-xs font-medium px-3 py-1.5 rounded-full"
+                      style={{
+                        background: minutesRemaining < 30 ? 'rgba(240, 96, 96, 0.1)' : 'rgba(0, 194, 184, 0.1)',
+                        color: minutesRemaining < 30 ? 'var(--danger)' : 'var(--accent)',
+                      }}
+                    >
+                      {locale === 'ja'
+                        ? `${minutesRemaining}分残り`
+                        : `${minutesRemaining} min left`}
+                    </span>
+                  )}
                 </div>
-              )}
-              <BookingCalendar
-                selectedDuration={durationParam ? parseInt(durationParam) : undefined}
-                onBookingComplete={(result) => { fetchLessons(); setLessonToReschedule(null); setActiveTab('home'); if (result) setBookingResultModal(result) }}
-                rescheduleLesson={lessonToReschedule ? { id: lessonToReschedule.id, googleEventId: lessonToReschedule.googleEventId } : undefined}
-                hasSubscription={subStatus === 'active'}
-              />
+                <BookingCalendar
+                  selectedDuration={durationParam ? parseInt(durationParam) : undefined}
+                  onBookingComplete={(result) => { fetchLessons(); setLessonToReschedule(null); setActiveTab('home'); if (result) setBookingResultModal(result) }}
+                  rescheduleLesson={lessonToReschedule ? { id: lessonToReschedule.id, googleEventId: lessonToReschedule.googleEventId } : undefined}
+                  hasSubscription={subStatus === 'active'}
+                />
+              </div>
               </motion.div>
             )}
 
@@ -1672,6 +1396,7 @@ function DashboardContent() {
                 exit={{ opacity: 0, y: -8 }}
                 transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
               >
+              <h1 className="text-2xl sm:text-4xl font-bold mb-8" style={{ color: 'var(--text)' }}>{tabTitle}</h1>
               <AnimatePresence mode="wait">
                 {selectedTranscript ? (
                   /* ── Transcript Detail View ── */
@@ -1684,7 +1409,7 @@ function DashboardContent() {
                   >
                     {/* Back button */}
                     <button
-                      onClick={() => { setSelectedTranscript(null); setAudioPlayer(null) }}
+                      onClick={() => setSelectedTranscript(null)}
                       className="flex items-center gap-2 mb-6 text-sm font-medium transition-colors hover:opacity-80"
                       style={{ color: 'var(--text-muted)' }}
                     >
@@ -1692,7 +1417,7 @@ function DashboardContent() {
                       <span>{locale === 'ja' ? '戻る' : 'Back'}</span>
                     </button>
 
-                    <SquircleBox cornerRadius={16} className="p-6 sm:p-8" style={{ background: 'var(--surface)' }}>
+                    <SquircleCard radius={20} className="p-6 sm:p-8">
                       {/* Header with lesson date/time */}
                       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
                         {/* Top row: title + info */}
@@ -1729,7 +1454,7 @@ function DashboardContent() {
                         </div>
 
                         {/* Action buttons row */}
-                        <div className="flex items-center gap-1 flex-wrap">
+                        <div className="flex items-center gap-1.5 flex-wrap">
                           {/* Copy */}
                           <Squircle asChild cornerRadius={8} cornerSmoothing={0.8}>
                             <button
@@ -1741,8 +1466,8 @@ function DashboardContent() {
                                 setCopiedTranscript(true)
                                 setTimeout(() => setCopiedTranscript(false), 1500)
                               }}
-                              className="w-8 h-8 flex items-center justify-center transition-all hover:opacity-80"
-                              style={{ background: 'var(--surface-hover)', color: copiedTranscript ? 'var(--accent)' : 'var(--text-muted)' }}
+                              className="w-8 h-8 flex items-center justify-center transition-all duration-[120ms] ease-out hover:scale-[1.03] active:scale-95"
+                              style={{ background: 'var(--panel)', border: '1px solid var(--edge)', boxShadow: 'var(--card-shadow)', color: copiedTranscript ? 'var(--accent)' : 'var(--text-muted)' }}
                               title={locale === 'ja' ? 'コピー' : 'Copy'}
                             >
                               {copiedTranscript ? (
@@ -1773,8 +1498,8 @@ function DashboardContent() {
                                 a.click()
                                 URL.revokeObjectURL(url)
                               }}
-                              className="w-8 h-8 flex items-center justify-center transition-all hover:opacity-80"
-                              style={{ background: 'var(--surface-hover)', color: 'var(--text-muted)' }}
+                              className="w-8 h-8 flex items-center justify-center transition-all duration-[120ms] ease-out hover:scale-[1.03] active:scale-95"
+                              style={{ background: 'var(--panel)', border: '1px solid var(--edge)', boxShadow: 'var(--card-shadow)', color: 'var(--text-muted)' }}
                               title={locale === 'ja' ? 'ダウンロード' : 'Download'}
                             >
                               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -1784,77 +1509,40 @@ function DashboardContent() {
                               </svg>
                             </button>
                           </Squircle>
-                          {/* Listen */}
-                          <Squircle asChild cornerRadius={8} cornerSmoothing={0.8}>
-                            <button
-                              onClick={async () => {
-                                if (!session?.access_token || !selectedTranscript) return
-                                if (audioPlayer) { setAudioPlayer(null); return }
-                                setLoadingAudio(true)
-                                try {
-                                  const res = await fetch(`/api/recordings/audio?bookingId=${selectedTranscript.lesson.id}`, {
-                                    headers: { Authorization: `Bearer ${session.access_token}` },
-                                  })
-                                  const data = await res.json()
-                                  if (data.accessLink) {
-                                    setAudioPlayer({ src: data.accessLink })
-                                  }
-                                } catch { /* ignore */ }
-                                setLoadingAudio(false)
-                              }}
-                              disabled={loadingAudio}
-                              className="w-8 h-8 flex items-center justify-center transition-all hover:opacity-80 disabled:opacity-40"
-                              style={{ background: audioPlayer ? 'var(--accent)' : 'var(--surface-hover)', color: audioPlayer ? 'var(--selected-text)' : 'var(--text-muted)' }}
-                              title={locale === 'ja' ? '録音を聴く' : 'Listen'}
-                            >
-                              {loadingAudio ? (
-                                <span className="spinner-sm" />
-                              ) : (
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                  <path d="M3 18v-6a9 9 0 0 1 18 0v6" />
-                                  <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z" />
-                                </svg>
-                              )}
-                            </button>
-                          </Squircle>
                           {/* Clean / Original toggle or Clean up button */}
                           {selectedTranscript.cleanedContent ? (
-                            <Squircle asChild cornerRadius={8} cornerSmoothing={0.8}>
-                              <div
-                                className="flex h-8 p-0.5 ml-1 items-center"
-                                style={{ background: 'var(--surface-hover)' }}
+                            <div
+                              className="flex h-8 p-0.5 ml-1 items-center rounded-lg"
+                              style={{ background: 'var(--inset)', border: '1px solid var(--edge)' }}
+                            >
+                              <button
+                                onClick={() => setTranscriptView('clean')}
+                                className="h-full px-3 text-xs font-medium flex items-center rounded-md"
+                                style={{
+                                  background: transcriptView === 'clean' ? 'var(--card)' : 'transparent',
+                                  boxShadow: transcriptView === 'clean' ? 'var(--card-shadow)' : 'none',
+                                  color: transcriptView === 'clean' ? 'var(--text)' : 'var(--text-muted)',
+                                }}
                               >
-                                <Squircle asChild cornerRadius={6} cornerSmoothing={0.8}>
-                                  <button
-                                    onClick={() => setTranscriptView('clean')}
-                                    className="h-full px-3 text-xs font-medium transition-all flex items-center"
-                                    style={{
-                                      background: transcriptView === 'clean' ? 'var(--accent)' : 'transparent',
-                                      color: transcriptView === 'clean' ? 'var(--selected-text)' : 'var(--text-muted)',
-                                    }}
-                                  >
-                                    {locale === 'ja' ? '整理済み' : 'Clean'}
-                                  </button>
-                                </Squircle>
-                                <Squircle asChild cornerRadius={6} cornerSmoothing={0.8}>
-                                  <button
-                                    onClick={() => setTranscriptView('original')}
-                                    className="h-full px-3 text-xs font-medium transition-all flex items-center"
-                                    style={{
-                                      background: transcriptView === 'original' ? 'var(--accent)' : 'transparent',
-                                      color: transcriptView === 'original' ? 'var(--selected-text)' : 'var(--text-muted)',
-                                    }}
-                                  >
-                                    {locale === 'ja' ? 'オリジナル' : 'Original'}
-                                  </button>
-                                </Squircle>
-                              </div>
-                            </Squircle>
+                                {locale === 'ja' ? '整理済み' : 'Clean'}
+                              </button>
+                              <button
+                                onClick={() => setTranscriptView('original')}
+                                className="h-full px-3 text-xs font-medium flex items-center rounded-md"
+                                style={{
+                                  background: transcriptView === 'original' ? 'var(--card)' : 'transparent',
+                                  boxShadow: transcriptView === 'original' ? 'var(--card-shadow)' : 'none',
+                                  color: transcriptView === 'original' ? 'var(--text)' : 'var(--text-muted)',
+                                }}
+                              >
+                                {locale === 'ja' ? 'オリジナル' : 'Original'}
+                              </button>
+                            </div>
                           ) : cleaningTranscript ? (
                             <Squircle asChild cornerRadius={8} cornerSmoothing={0.8}>
                               <span
                                 className="h-8 px-3 text-xs font-medium flex items-center gap-1.5 shrink-0"
-                                style={{ background: 'var(--surface-hover)', color: 'var(--text-muted)' }}
+                                style={{ background: 'var(--panel)', border: '1px solid var(--edge)', boxShadow: 'var(--card-shadow)', color: 'var(--text-muted)' }}
                               >
                                 <span className="spinner-sm" />
                                 {locale === 'ja' ? '整理中...' : 'Cleaning...'}
@@ -1883,8 +1571,8 @@ function DashboardContent() {
                                   } catch { /* ignore */ }
                                   setCleaningTranscript(false)
                                 }}
-                                className="h-8 px-3 text-xs font-medium transition-all hover:opacity-90 shrink-0 flex items-center gap-1.5"
-                                style={{ background: 'var(--surface-hover)', color: 'var(--text-muted)' }}
+                                className="h-8 px-3 text-xs font-medium transition-all duration-[120ms] ease-out hover:scale-[1.03] active:scale-95 shrink-0 flex items-center gap-1.5"
+                                style={{ background: 'var(--panel)', border: '1px solid var(--edge)', boxShadow: 'var(--card-shadow)', color: 'var(--text-muted)' }}
                               >
                                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
                                   <path d="M12 3l1.912 5.813a2 2 0 0 0 1.275 1.275L21 12l-5.813 1.912a2 2 0 0 0-1.275 1.275L12 21l-1.912-5.813a2 2 0 0 0-1.275-1.275L3 12l5.813-1.912a2 2 0 0 0 1.275-1.275L12 3z" />
@@ -1897,7 +1585,7 @@ function DashboardContent() {
                       </div>
 
                       {/* Transcript content */}
-                      <div className="space-y-4" style={{ paddingBottom: audioPlayer ? '140px' : undefined }}>
+                      <div className="space-y-4">
                         {(transcriptView === 'clean' && selectedTranscript.cleanedContent
                           ? selectedTranscript.cleanedContent
                           : selectedTranscript.content
@@ -1923,7 +1611,7 @@ function DashboardContent() {
                           )
                         })}
                       </div>
-                    </SquircleBox>
+                    </SquircleCard>
                   </motion.div>
                 ) : (
                   /* ── History List View ── */
@@ -1934,18 +1622,111 @@ function DashboardContent() {
                     exit={{ opacity: 0, y: 12 }}
                     transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
                   >
+                {/* Stats cards — equal height, title pinned top, data pinned bottom */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
+                  <SquircleCard radius={16} fullHeight className="p-4 flex flex-col justify-between gap-4">
+                    <p className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>
+                      {locale === 'ja' ? '完了したレッスン' : 'Lessons completed'}
+                    </p>
+                    <p className="text-3xl sm:text-4xl font-bold" style={{ color: 'var(--text)' }}>
+                      {loadingHistory ? '—' : historyStats.count}
+                    </p>
+                  </SquircleCard>
+                  <SquircleCard radius={16} fullHeight className="p-4 flex flex-col justify-between gap-4">
+                    <p className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>
+                      {locale === 'ja' ? '話した時間' : 'Minutes talked'}
+                    </p>
+                    <p className="text-3xl sm:text-4xl font-bold" style={{ color: 'var(--text)' }}>
+                      {loadingHistory ? '—' : historyStats.minutes}
+                      {!loadingHistory && (
+                        <span className="text-sm font-medium ml-1" style={{ color: 'var(--text-muted)' }}>
+                          {locale === 'ja' ? '分' : 'min'}
+                        </span>
+                      )}
+                    </p>
+                  </SquircleCard>
+                  <SquircleCard radius={16} fullHeight className="p-4 flex flex-col justify-between gap-4">
+                    <p className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>
+                      {locale === 'ja' ? 'よく話したトピック' : 'Most discussed'}
+                    </p>
+                    {!loadingHistory && historyStats.topTopics.length > 0 ? (
+                      <div className="flex flex-col items-start gap-1">
+                        {historyStats.topTopics.map((topic, i) => (
+                          <span key={topic} className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'var(--inset)', color: 'var(--text-secondary)' }}>
+                            <span className="font-semibold mr-1" style={{ color: 'var(--text-subtle)' }}>#{i + 1}</span>
+                            {topic}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-2xl font-bold" style={{ color: 'var(--text-subtle)' }}>—</p>
+                    )}
+                  </SquircleCard>
+                </div>
+
+                {/* Search + sort */}
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="relative flex-1">
+                    <svg
+                      width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"
+                      className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: 'var(--text-subtle)' }} aria-hidden="true"
+                    >
+                      <circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" />
+                    </svg>
+                    <input
+                      type="search"
+                      value={historySearch}
+                      onChange={(e) => { setHistorySearch(e.target.value); setHistoryPage(0) }}
+                      placeholder={locale === 'ja' ? 'トピック・日付・フレーズで検索' : 'Search topics, dates or phrases'}
+                      className="w-full pl-9 pr-10 py-2.5 text-sm rounded-full"
+                      style={{ background: 'var(--inset)', color: 'var(--text)', border: '1px solid var(--hairline)' }}
+                    />
+                    {historySearch && (
+                      <button
+                        onClick={() => { setHistorySearch(''); setHistoryPage(0) }}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center transition-opacity hover:opacity-70"
+                        style={{ color: 'var(--text-subtle)' }}
+                        aria-label={locale === 'ja' ? '検索をクリア' : 'Clear search'}
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                          <path d="M5 5l14 14M19 5L5 19" />
+                        </svg>
+                      </button>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => { setHistorySort((s) => (s === 'newest' ? 'oldest' : 'newest')); setHistoryPage(0) }}
+                    className="shrink-0 flex items-center gap-1.5 px-3 py-2.5 text-sm font-medium rounded-full transition-opacity hover:opacity-70"
+                    style={{ color: 'var(--text-secondary)' }}
+                    aria-label={locale === 'ja' ? '並び順を切り替え' : 'Toggle sort order'}
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      {historySort === 'newest' ? <path d="M12 5v14m0 0-5-5m5 5 5-5" /> : <path d="M12 19V5m0 0-5 5m5-5 5 5" />}
+                    </svg>
+                    {historySort === 'newest'
+                      ? (locale === 'ja' ? '新しい順' : 'Newest')
+                      : (locale === 'ja' ? '古い順' : 'Oldest')}
+                  </button>
+                </div>
+
                 {loadingHistory ? (
+                  <div className="space-y-3">
+                    <SkeletonCard rows={2} />
+                    <SkeletonCard rows={2} />
+                    <SkeletonCard rows={2} />
+                  </div>
+                ) : filteredHistory.length === 0 ? (
                   <SquircleBox cornerRadius={12} className="p-8 text-center" style={{ background: 'var(--surface)' }}>
-                    <p style={{ color: 'var(--text-muted)' }}>Loading...</p>
-                  </SquircleBox>
-                ) : historyLessons.length === 0 ? (
-                  <SquircleBox cornerRadius={12} className="p-8 text-center" style={{ background: 'var(--surface)' }}>
-                    <p style={{ color: 'var(--text-muted)' }}>{t('noHistory')}</p>
+                    <p style={{ color: 'var(--text-muted)' }}>
+                      {historySearch.trim()
+                        ? (locale === 'ja' ? '検索に一致するレッスンはありません' : 'No lessons match your search')
+                        : t('noHistory')}
+                    </p>
                   </SquircleBox>
                 ) : (
                   <>
                     <div className="space-y-3">
-                      {historyLessons
+                      {filteredHistory
                         .slice(historyPage * HISTORY_PER_PAGE, (historyPage + 1) * HISTORY_PER_PAGE)
                         .map((lesson) => (
                           <HistoryLessonCard
@@ -1959,7 +1740,7 @@ function DashboardContent() {
                           />
                         ))}
                     </div>
-                    {historyLessons.length > HISTORY_PER_PAGE && (
+                    {filteredHistory.length > HISTORY_PER_PAGE && (
                       <div className="flex items-center justify-between mt-6">
                         <button
                           onClick={() => setHistoryPage((p) => p - 1)}
@@ -1970,11 +1751,11 @@ function DashboardContent() {
                           {locale === 'ja' ? '前へ' : 'Previous'}
                         </button>
                         <span className="text-sm" style={{ color: 'var(--text-muted)' }}>
-                          {historyPage + 1} / {Math.ceil(historyLessons.length / HISTORY_PER_PAGE)}
+                          {historyPage + 1} / {Math.ceil(filteredHistory.length / HISTORY_PER_PAGE)}
                         </span>
                         <button
                           onClick={() => setHistoryPage((p) => p + 1)}
-                          disabled={(historyPage + 1) * HISTORY_PER_PAGE >= historyLessons.length}
+                          disabled={(historyPage + 1) * HISTORY_PER_PAGE >= filteredHistory.length}
                           className="text-sm font-medium transition-colors hover:opacity-80 disabled:opacity-30"
                           style={{ color: 'var(--text-secondary)' }}
                         >
@@ -1999,12 +1780,14 @@ function DashboardContent() {
                 exit={{ opacity: 0, y: -8 }}
                 transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
               >
+                <div className="flex items-center justify-between mb-8">
+                  <h1 className="text-2xl sm:text-4xl font-bold" style={{ color: 'var(--text)' }}>{tabTitle}</h1>
+                  <ExportPhrasesButton cards={vocabCards} locale={locale} />
+                </div>
                 {loadingVocab ? (
-                  <SquircleBox cornerRadius={12} className="p-8 text-center" style={{ background: 'var(--surface)' }}>
-                    <p style={{ color: 'var(--text-muted)' }}>Loading...</p>
-                  </SquircleBox>
+                  <SkeletonCard rows={6} />
                 ) : vocabCards.length === 0 ? (
-                  <SquircleBox cornerRadius={16} className="p-8 text-center" style={{ background: 'var(--surface)' }}>
+                  <SquircleBox cornerRadius={16} className="p-8 text-center" style={{ background: 'var(--panel)', border: '1px solid var(--hairline)', boxShadow: 'var(--card-shadow)' }}>
                     <p className="text-lg mb-2" style={{ color: 'var(--text-muted)' }}>
                       {locale === 'ja' ? 'まだフレーズがありません' : 'No phrases yet'}
                     </p>
@@ -2056,7 +1839,7 @@ function DashboardContent() {
                         exit={{ opacity: 0, x: -30 }}
                         transition={{ duration: 0.25 }}
                       >
-                        <SquircleBox cornerRadius={16} className="overflow-hidden" style={{ background: 'var(--surface)' }}>
+                        <SquircleBox cornerRadius={16} className="overflow-hidden" style={{ background: 'var(--panel)', border: '1px solid var(--hairline)', boxShadow: 'var(--card-shadow)' }}>
                           {(() => {
                             const card = reviewQueue[reviewIndex]
                             if (!card?.phrase) return null
@@ -2149,16 +1932,16 @@ function DashboardContent() {
                   <>
                     {/* Review banner */}
                     {dueCount > 0 && (
-                      <SquircleBox cornerRadius={12} className="p-4 mb-4 flex items-center justify-between" style={{ background: 'var(--surface)', border: '1px solid var(--border-subtle)' }}>
+                      <SquircleBox cornerRadius={16} className="p-4 mb-4 flex items-center justify-between" style={{ background: 'var(--panel)', border: '1px solid var(--hairline)', boxShadow: 'var(--card-shadow)' }}>
                         <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>
                           {locale === 'ja'
                             ? `${dueCount}件のフレーズが復習可能です`
                             : `${dueCount} phrase${dueCount !== 1 ? 's' : ''} due for review`}
                         </p>
-                        <Squircle asChild cornerRadius={8} cornerSmoothing={0.8}>
+                        <Squircle asChild cornerRadius={10} cornerSmoothing={0.8}>
                           <button
                             onClick={startReview}
-                            className="px-4 py-2 text-sm font-semibold shrink-0 transition-all hover:opacity-90"
+                            className="px-4 py-2 text-sm font-semibold shrink-0 transition-all duration-[120ms] ease-out hover:scale-[1.03] active:scale-95"
                             style={{ background: 'var(--accent)', color: 'var(--selected-text)' }}
                           >
                             {locale === 'ja' ? '復習する' : 'Review'}
@@ -2177,10 +1960,12 @@ function DashboardContent() {
                           <button
                             key={f}
                             onClick={() => { setVocabFilter(f); setVocabVisible(20) }}
-                            className="px-2.5 py-1 text-xs font-medium rounded-full transition-all"
+                            className="px-2.5 py-1 text-xs font-medium rounded-full transition-all duration-[120ms] ease-out hover:scale-105 active:scale-95"
                             style={{
-                              background: vocabFilter === f ? 'var(--accent)' : 'var(--surface)',
+                              background: vocabFilter === f ? 'var(--accent)' : 'var(--panel)',
                               color: vocabFilter === f ? 'var(--selected-text)' : 'var(--text-muted)',
+                              border: vocabFilter === f ? '1px solid transparent' : '1px solid var(--hairline)',
+                              boxShadow: vocabFilter === f ? 'none' : 'var(--card-shadow)',
                             }}
                           >
                             {f === 'all' ? (locale === 'ja' ? 'すべて' : 'All')
@@ -2198,7 +1983,7 @@ function DashboardContent() {
                         .filter(c => vocabFilter === 'all' || c.comfort_level === vocabFilter)
                         .slice(0, vocabVisible)
                         .map(card => (
-                          <SquircleBox key={card.id} cornerRadius={12} className="overflow-hidden" style={{ background: 'var(--surface)' }}>
+                          <SquircleBox key={card.id} cornerRadius={16} className="overflow-hidden" style={{ background: 'var(--panel)', border: '1px solid var(--hairline)', boxShadow: 'var(--card-shadow)' }}>
                             {/* Card front — tap to flip */}
                             <button
                               onClick={() => setFlippedCardId(flippedCardId === card.id ? null : card.id)}
@@ -2218,10 +2003,10 @@ function DashboardContent() {
                                   </div>
                                 </div>
                                 <div className="flex items-center gap-2 shrink-0 ml-3">
-                                  <span className="text-xs px-1.5 py-0.5 rounded-full" style={{ background: 'var(--surface-hover)', color: 'var(--text-subtle)' }}>
+                                  <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'var(--inset)', color: 'var(--text-subtle)' }}>
                                     {formatNextReview(card.next_review_at, locale)}
                                   </span>
-                                  <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'var(--surface-hover)', color: 'var(--text-subtle)' }}>
+                                  <span className="text-xs font-medium px-2 py-0.5 rounded-full" style={{ background: 'var(--accent-bg)', color: 'var(--accent)' }}>
                                     {card.phrase?.category}
                                   </span>
                                   <span
@@ -2317,16 +2102,8 @@ function DashboardContent() {
               </motion.div>
             )}
             </AnimatePresence>
-          </section>
         </div>
-      </main>
-
-      {audioPlayer && (
-        <AudioPlayer
-          src={audioPlayer.src}
-          onClose={() => setAudioPlayer(null)}
-        />
-      )}
+      </section>
 
       {lessonToCancel && (
         <CancelModal
@@ -2404,6 +2181,44 @@ function DashboardContent() {
           </div>
         </div>
       )}
+
+      {/* News detail modal */}
+      {selectedNews && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setSelectedNewsId(null)}>
+          <div className="modal-backdrop absolute inset-0" style={{ background: 'rgba(0,0,0,0.5)' }} />
+          <div
+            className="modal-card relative w-full max-w-lg max-h-[80vh] overflow-y-auto rounded-2xl p-6 sm:p-8"
+            style={{ background: 'var(--card)', border: '1px solid var(--hairline)', boxShadow: 'var(--card-shadow)' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setSelectedNewsId(null)}
+              className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-lg transition-opacity hover:opacity-70"
+              style={{ color: 'var(--text-muted)' }}
+              aria-label={locale === 'ja' ? '閉じる' : 'Close'}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M5 5l14 14M19 5L5 19" /></svg>
+            </button>
+            <div className="flex items-center gap-3 mb-5">
+              {selectedNews.posterAvatar ? (
+                <img src={selectedNews.posterAvatar} alt="" className="w-9 h-9 rounded-full object-cover shrink-0" referrerPolicy="no-referrer" />
+              ) : (
+                <div className="w-9 h-9 rounded-full shrink-0 flex items-center justify-center text-xs font-bold" style={{ background: 'var(--accent)', color: '#fff' }}>E</div>
+              )}
+              <div className="min-w-0">
+                <p className="text-sm font-medium truncate" style={{ color: 'var(--text)' }}>{selectedNews.posterName || 'eigo.io'}</p>
+                <p className="text-xs" style={{ color: 'var(--text-subtle)' }}>{selectedNews.date}</p>
+              </div>
+            </div>
+            {selectedNews.title && (
+              <h2 className={`text-lg mb-4 ${locale === 'ja' ? 'font-bold' : 'font-semibold'}`} style={{ color: 'var(--text)' }}>{selectedNews.title}</h2>
+            )}
+            {selectedNews.body && (
+              <div className="text-base news-body leading-relaxed" style={{ color: 'var(--text-secondary)' }} dangerouslySetInnerHTML={{ __html: renderMarkdown(selectedNews.body) }} />
+            )}
+          </div>
+        </div>
+      )}
     </>
   )
 }
@@ -2411,9 +2226,9 @@ function DashboardContent() {
 export default function Dashboard() {
   return (
     <Suspense fallback={
-      <main className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg)' }}>
+      <div className="min-h-[60vh] flex items-center justify-center">
         <div style={{ color: 'var(--text-muted)' }}>Loading...</div>
-      </main>
+      </div>
     }>
       <DashboardContent />
     </Suspense>

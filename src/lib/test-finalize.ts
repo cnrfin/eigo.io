@@ -1,8 +1,12 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { saveExamScore } from '@/lib/profile-scores'
 import {
   applyScale,
+  computeCefrResult,
   computeEikenResult,
   computeIeltsResult,
+  computeVersantResult,
+  type CefrItem,
   type Skill,
 } from '@/lib/test-grading'
 
@@ -67,7 +71,7 @@ export async function finalizeAttempt(
 
   const { data: responses } = await supabase
     .from('responses')
-    .select('question_id, score, graded_by')
+    .select('question_id, score, graded_by, ai_feedback')
     .eq('attempt_id', attemptId)
   const responseMap = new Map((responses ?? []).map(r => [r.question_id, r]))
 
@@ -106,6 +110,20 @@ export async function finalizeAttempt(
   }
   const eikenConfig =
     overallScale && (overallScale as { model?: string }).model === 'eiken_cse' ? overallScale : null
+  const versantConfig =
+    overallScale && (overallScale as { model?: string }).model === 'versant_gse' ? overallScale : null
+  const cefrConfig =
+    overallScale && (overallScale as { model?: string }).model === 'cefr_level' ? overallScale : null
+
+  // Versant: the audio grader rates each spoken response's delivery (manner_score
+  // 0-5) alongside its content score; Manner of Speaking is their average.
+  const mannerScores = (responses ?? [])
+    .map(r => (r.ai_feedback as { manner_score?: number | null } | null)?.manner_score)
+    .filter((v): v is number => v !== null && v !== undefined && Number.isFinite(Number(v)))
+    .map(Number)
+  const manner01 = mannerScores.length > 0
+    ? mannerScores.reduce((a, b) => a + b, 0) / mannerScores.length / 5
+    : null
 
   const rawAgg = {
     raw: Math.round(rawTotal * 100) / 100,
@@ -141,6 +159,44 @@ export async function finalizeAttempt(
       model: 'eiken_cse', official_score_available: true,
       cse_total: eiken.cse_total, passed: eiken.passed, stages: eiken.stages,
       per_skill: eiken.per_skill, ...rawAgg,
+    }
+  } else if (cefrConfig) {
+    const cefrItems: CefrItem[] = questionRows.map(q => {
+      const sectionId = groupSection.get(q.group_id)
+      const skill = (sectionId ? sectionSkill.get(sectionId) : undefined) ?? 'reading'
+      const r = responseMap.get(q.id)
+      return {
+        level: String((q.payload as { cefr?: string } | null)?.cefr ?? '') || null,
+        skill,
+        objective: q.scoring_method === 'auto_choice' || q.scoring_method === 'auto_text',
+        score: r && r.score !== null && r.score !== undefined ? Number(r.score) : null,
+        max: Number(q.max_score) || 1,
+      }
+    })
+    const cefr = computeCefrResult(cefrConfig, cefrItems)
+    skillScoreRows = cefr.per_skill.map(p => ({
+      attempt_id: attemptId, user_id: attempt.user_id, skill: p.skill,
+      raw_score: p.raw, scaled_score: p.numeric, max_score: p.max,
+    }))
+    overallScore = {
+      model: 'cefr_level', official_score_available: true, estimate: true,
+      level: cefr.overall, strength: cefr.strength, cefr_j: cefr.cefr_j,
+      numeric: cefr.numeric, receptive_numeric: cefr.receptive_numeric,
+      writing_band: cefr.writing_band, speaking_band: cefr.speaking_band,
+      level_fractions: cefr.level_fractions, per_skill: cefr.per_skill, ...rawAgg,
+    }
+  } else if (versantConfig) {
+    const versant = computeVersantResult(versantConfig, perSkill, manner01)
+    skillScoreRows = versant.per_skill.map(p => ({
+      attempt_id: attemptId, user_id: attempt.user_id, skill: p.skill,
+      raw_score: p.raw, scaled_score: p.gse, max_score: p.max,
+    }))
+    overallScore = {
+      model: 'versant_gse', official_score_available: true,
+      overall: versant.overall, cefr: versant.cefr,
+      listening: versant.listening, speaking: versant.speaking,
+      manner_of_speaking: versant.manner_of_speaking,
+      per_skill: versant.per_skill, ...rawAgg,
     }
   } else if (scoringModel === 'band') {
     const ielts = computeIeltsResult({
@@ -202,6 +258,30 @@ export async function finalizeAttempt(
       updated_at: now,
     })
     .eq('id', attemptId)
+
+  // Single-form exams: attach the result to the student's profile (latest
+  // scored attempt wins). Multi-section sets (IELTS, TOEIC) are written by the
+  // set-results API once every section is scored. Never blocks finalization.
+  if (status === 'scored') {
+    const o = overallScore as { model?: string; level?: unknown; cefr_j?: unknown; overall?: unknown; cefr?: unknown; listening?: unknown; speaking?: unknown }
+    if (o.model === 'cefr_level' && o.level) {
+      try {
+        await supabase
+          .from('profiles')
+          .update({ cefr_level: String(o.level), cefr_level_updated_at: now })
+          .eq('id', attempt.user_id)
+      } catch (err) {
+        console.error('Could not save CEFR level to profile:', err)
+      }
+      await saveExamScore(supabase, attempt.user_id, 'cefr', {
+        level: o.level, cefr_j: o.cefr_j ?? null,
+      })
+    } else if (o.model === 'versant_gse' && o.overall != null) {
+      await saveExamScore(supabase, attempt.user_id, 'versant', {
+        gse: o.overall, cefr: o.cefr ?? null, listening: o.listening ?? null, speaking: o.speaking ?? null,
+      })
+    }
+  }
 
   return { status, overall_score: overallScore }
 }

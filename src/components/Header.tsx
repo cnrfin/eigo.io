@@ -5,9 +5,10 @@ import { useAuth } from '@/context/AuthContext'
 import { useTheme } from '@/context/ThemeContext'
 import { useState, useRef, useEffect } from 'react'
 import { Squircle } from '@squircle-js/react'
+import Link from 'next/link'
 import AuthModal from './AuthModal'
 
-export default function Header({ hideLogin = false }: { hideLogin?: boolean }) {
+export default function Header({ hideLogin = false, wide = false }: { hideLogin?: boolean; wide?: boolean }) {
   const { t, locale, toggleLocale } = useLanguage()
   const { user, signOut, loading, avatarUrl: profileAvatarUrl } = useAuth()
   const { theme, toggleTheme } = useTheme()
@@ -39,7 +40,7 @@ export default function Header({ hideLogin = false }: { hideLogin?: boolean }) {
           borderBottom: '1px solid var(--border-subtle)',
         }}
       >
-        <div className={`max-w-5xl mx-auto flex items-center px-6 h-14 ${!loading && !user ? 'grid grid-cols-3' : 'justify-between'}`}>
+        <div className={`${wide ? 'max-w-6xl px-4 sm:px-6' : 'max-w-5xl px-6'} mx-auto flex items-center h-14 ${!loading && !user ? 'grid grid-cols-3' : 'justify-between'}`}>
           {/* Left — Logo (dashboard) or Lang+Theme (landing) */}
           {!loading && !user ? (
             <>
@@ -79,9 +80,9 @@ export default function Header({ hideLogin = false }: { hideLogin?: boolean }) {
                 </button>
               </div>
 
-              <a href="/" className="text-xl font-bold tracking-tight text-center" style={{ color: 'var(--text)' }}>
+              <Link href="/" className="text-xl font-bold tracking-tight text-center" style={{ color: 'var(--text)' }}>
                 eigo.io
-              </a>
+              </Link>
 
               <div className="flex items-center justify-end">
                 {!hideLogin && (
@@ -100,9 +101,9 @@ export default function Header({ hideLogin = false }: { hideLogin?: boolean }) {
           ) : (
             <>
               {/* Dashboard: logo left, controls right */}
-              <a href="/" className="text-xl font-bold tracking-tight" style={{ color: 'var(--text)' }}>
+              <Link href="/" className="text-xl font-bold tracking-tight" style={{ color: 'var(--text)' }}>
                 eigo.io
-              </a>
+              </Link>
 
               <div className="flex items-center gap-2">
                 {!loading && user && (
@@ -186,7 +187,7 @@ export default function Header({ hideLogin = false }: { hideLogin?: boolean }) {
                             </Squircle>
                             <Squircle asChild cornerRadius={10} cornerSmoothing={0.8}>
                               <a
-                                href="/settings"
+                                href="/dashboard/settings"
                                 className="block px-3 py-2.5 text-sm transition-colors"
                                 style={{ color: 'var(--text-secondary)' }}
                                 onMouseEnter={(e) => e.currentTarget.style.background = 'var(--surface-hover)'}

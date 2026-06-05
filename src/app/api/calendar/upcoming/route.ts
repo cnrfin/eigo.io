@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { verifySupabaseToken } from '@/lib/supabase-jwt'
 import { createClient } from '@supabase/supabase-js'
 
 // GET /api/calendar/upcoming
@@ -17,8 +18,8 @@ export async function GET(request: NextRequest) {
     global: { headers: { Authorization: `Bearer ${token}` } },
   })
 
-  const { data: { user }, error: authError } = await supabase.auth.getUser(token)
-  if (authError || !user) {
+  const verified = await verifySupabaseToken(token)
+  if (!verified.ok) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

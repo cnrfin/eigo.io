@@ -10,7 +10,30 @@ import { motion, AnimatePresence } from 'framer-motion'
 
 const ADMIN_EMAILS = ['cnrfin93@gmail.com']
 
-type Tab = 'overview' | 'students' | 'news' | 'settings' | 'ai-test'
+type Tab = 'overview' | 'students' | 'news' | 'grading' | 'settings' | 'ai-test'
+
+// One pending response in the tutor grading queue.
+type GradingItem = {
+  response_id: string
+  attempt_id: string
+  student: { id: string; name: string | null } | null
+  form: { id: string; title: string; track: unknown } | null
+  question: {
+    id: string
+    prompt: string
+    type: string
+    skill?: string
+    scoring_method: string
+    max_score: number
+    rubric: { name: string; criteria: unknown; max_score: number | null } | null
+    passage_text: string | null
+    stimulus_audio_url: string | null
+    stimulus_transcript: string | null
+    reference: string | null
+  } | null
+  submission: { text_response: string | null; transcript: string | null; audio_url: string | null }
+  provisional: { score: number | null; max_score: number | null; graded_by: string | null; ai_feedback: Record<string, unknown> | null }
+}
 
 type StudentProfile = {
   id: string
@@ -304,6 +327,15 @@ function AdminContent() {
   const [expandedInsightId, setExpandedInsightId] = useState<string | null>(null)
   const [impersonating, setImpersonating] = useState(false)
 
+  // Tutor grading queue
+  const [gradingItems, setGradingItems] = useState<GradingItem[]>([])
+  const [loadingGrading, setLoadingGrading] = useState(false)
+  const [gradingFetched, setGradingFetched] = useState(false)
+  const [gradeInputs, setGradeInputs] = useState<Record<string, { score: string; comment: string }>>({})
+  const [savingAttempt, setSavingAttempt] = useState<string | null>(null)
+  const [gradingMsg, setGradingMsg] = useState('')
+  const [expandedAttempts, setExpandedAttempts] = useState<Set<string>>(new Set())
+
   // Settings
   const [settings, setSettings] = useState<Settings | null>(null)
   const [loadingSettings, setLoadingSettings] = useState(true)
@@ -374,6 +406,51 @@ function AdminContent() {
     if (!loading && !user) window.location.href = '/'
     if (!loading && user && !ADMIN_EMAILS.includes(user.email || '')) window.location.href = '/dashboard'
   }, [user, loading])
+
+  // Fetch the tutor grading queue
+  const fetchGrading = useCallback(async () => {
+    if (!session?.access_token) return
+    setLoadingGrading(true)
+    try {
+      const res = await fetch('/api/admin/tests/grading', { headers: headers() })
+      if (res.ok) {
+        const data = await res.json()
+        setGradingItems(data.items || [])
+      }
+    } catch { /* */ }
+    setLoadingGrading(false)
+    setGradingFetched(true)
+  }, [session?.access_token, headers])
+
+  useEffect(() => {
+    if (activeTab === 'grading' && !gradingFetched && !loadingGrading) fetchGrading()
+  }, [activeTab, gradingFetched, loadingGrading, fetchGrading])
+
+  // Save tutor grades for one attempt (all of its queued responses must be scored).
+  const saveAttemptGrades = useCallback(async (attemptId: string) => {
+    const items = gradingItems.filter(it => it.attempt_id === attemptId)
+    const grades = items.map(it => ({
+      responseId: it.response_id,
+      score: Number(gradeInputs[it.response_id]?.score),
+      comment: gradeInputs[it.response_id]?.comment || undefined,
+    }))
+    if (grades.some(g => !Number.isFinite(g.score))) return
+    setSavingAttempt(attemptId)
+    setGradingMsg('')
+    try {
+      const res = await fetch('/api/admin/tests/grading', {
+        method: 'POST',
+        headers: headers(),
+        body: JSON.stringify({ grades }),
+      })
+      if (!res.ok) throw new Error('failed')
+      setGradingItems(prev => prev.filter(it => it.attempt_id !== attemptId))
+      setGradingMsg('Graded — the student has been notified.')
+    } catch {
+      setGradingMsg('Saving grades failed — please try again.')
+    }
+    setSavingAttempt(null)
+  }, [gradingItems, gradeInputs, headers])
 
   // Fetch student list
   const fetchStudents = useCallback(async () => {
@@ -511,6 +588,7 @@ function AdminContent() {
     { key: 'overview', label: 'Overview' },
     { key: 'students', label: 'Students' },
     { key: 'news', label: 'News' },
+    { key: 'grading', label: 'Grading' },
     { key: 'settings', label: 'Settings' },
     { key: 'ai-test', label: 'AI Test' },
   ]
@@ -702,6 +780,171 @@ function AdminContent() {
           )}
 
           {/* ═══ SETTINGS ═══ */}
+          {/* ═══ GRADING (tutor review queue) ═══ */}
+          {activeTab === 'grading' && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+                  {gradingItems.length > 0
+                    ? `${gradingItems.length} answer${gradingItems.length === 1 ? '' : 's'} awaiting review`
+                    : 'Tests submitted for teacher review appear here.'}
+                </p>
+                <button onClick={fetchGrading} disabled={loadingGrading}
+                  className="text-sm px-3 py-1.5 rounded-lg transition-colors hover:opacity-80 disabled:opacity-50"
+                  style={{ color: 'var(--text-secondary)', boxShadow: '0 0 0 1px var(--border)' }}>
+                  {loadingGrading ? 'Loading…' : 'Refresh'}
+                </button>
+              </div>
+
+              {gradingMsg && <p className="text-sm" style={{ color: 'var(--accent)' }}>{gradingMsg}</p>}
+
+              {loadingGrading && gradingItems.length === 0 ? (
+                <p style={{ color: 'var(--text-muted)' }}>Loading...</p>
+              ) : gradingItems.length === 0 ? (
+                <SquircleBox cornerRadius={12} className="p-6 text-center" style={{ background: 'var(--surface)' }}>
+                  <p style={{ color: 'var(--text-muted)' }}>Nothing to grade 🎉</p>
+                </SquircleBox>
+              ) : (
+                (() => {
+                  // Group queue items by attempt: one card per student submission.
+                  const byAttempt = new Map<string, GradingItem[]>()
+                  for (const it of gradingItems) {
+                    const arr = byAttempt.get(it.attempt_id) ?? []
+                    arr.push(it)
+                    byAttempt.set(it.attempt_id, arr)
+                  }
+                  return [...byAttempt.entries()].map(([attemptId, items]) => {
+                    const first = items[0]
+                    const expanded = expandedAttempts.has(attemptId)
+                    const scoredCount = items.filter(it => Number.isFinite(Number(gradeInputs[it.response_id]?.score))).length
+                    const allScored = scoredCount === items.length
+                    return (
+                      <SquircleBox key={attemptId} cornerRadius={14} className="overflow-hidden" style={{ background: 'var(--surface)' }}>
+                        {/* Collapsible header (lesson-history style) */}
+                        <button
+                          onClick={() => setExpandedAttempts(prev => {
+                            const next = new Set(prev)
+                            if (next.has(attemptId)) next.delete(attemptId); else next.add(attemptId)
+                            return next
+                          })}
+                          className="w-full flex items-center justify-between gap-3 px-5 py-4 text-left transition-colors hover:opacity-80"
+                        >
+                          <div className="min-w-0">
+                            <p className="font-semibold truncate" style={{ color: 'var(--text)' }}>{first.student?.name || 'Student'}</p>
+                            <p className="text-xs truncate" style={{ color: 'var(--text-muted)' }}>
+                              {first.form?.title || 'Practice test'} · {items.length} answer{items.length === 1 ? '' : 's'}
+                              {scoredCount > 0 && !allScored ? ` · ${scoredCount}/${items.length} scored` : ''}
+                            </p>
+                          </div>
+                          <span style={{ transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s', display: 'inline-block', color: 'var(--text-subtle)' }}>▾</span>
+                        </button>
+
+                        {expanded && (
+                          <div className="px-5 pb-5 space-y-4">
+                            {items.map(it => {
+                              const inp = gradeInputs[it.response_id] ?? { score: '', comment: '' }
+                              const max = it.question?.max_score || it.provisional.max_score || 0
+                              const ai = it.provisional.ai_feedback
+                              return (
+                                <div key={it.response_id} className="pt-3 space-y-2" style={{ borderTop: '1px solid var(--border)' }}>
+                                  <p className="text-sm font-medium" style={{ color: 'var(--text)' }}>
+                                    <span className="uppercase text-[10px] tracking-wide mr-2 px-1.5 py-0.5 rounded" style={{ background: 'var(--surface-hover)', color: 'var(--text-muted)' }}>
+                                      {it.question?.skill || it.question?.type || '?'}
+                                    </span>
+                                    {it.question?.prompt}
+                                  </p>
+
+                                  {/* What the student saw/heard */}
+                                  {it.question?.stimulus_audio_url && (
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-xs shrink-0" style={{ color: 'var(--text-muted)' }}>Question audio</span>
+                                      <audio controls src={it.question.stimulus_audio_url} className="w-full h-8" preload="none" />
+                                    </div>
+                                  )}
+                                  {it.question?.passage_text && (
+                                    <details className="text-xs">
+                                      <summary className="cursor-pointer" style={{ color: 'var(--text-muted)' }}>Show passage</summary>
+                                      <p className="mt-1 whitespace-pre-line p-2 rounded" style={{ background: 'var(--surface-hover)', color: 'var(--text-secondary)' }}>{it.question.passage_text}</p>
+                                    </details>
+                                  )}
+                                  {(it.question?.reference || it.question?.stimulus_transcript) && (
+                                    <details className="text-xs">
+                                      <summary className="cursor-pointer" style={{ color: 'var(--text-muted)' }}>Grading key / transcript</summary>
+                                      {it.question?.reference && (
+                                        <p className="mt-1 whitespace-pre-line p-2 rounded" style={{ background: 'var(--surface-hover)', color: 'var(--text-secondary)' }}>{it.question.reference}</p>
+                                      )}
+                                      {it.question?.stimulus_transcript && (
+                                        <p className="mt-1 whitespace-pre-line p-2 rounded" style={{ background: 'var(--surface-hover)', color: 'var(--text-secondary)' }}>{it.question.stimulus_transcript}</p>
+                                      )}
+                                    </details>
+                                  )}
+
+                                  {/* The student's answer */}
+                                  {it.submission.audio_url ? (
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-xs shrink-0 font-medium" style={{ color: 'var(--text-secondary)' }}>Student answer</span>
+                                      <audio controls src={it.submission.audio_url} className="w-full h-8" preload="none" />
+                                    </div>
+                                  ) : (
+                                    <p className="text-sm whitespace-pre-wrap p-3 rounded-lg" style={{ background: 'var(--surface-hover)', color: 'var(--text-secondary)' }}>
+                                      {it.submission.text_response || <em>(no answer)</em>}
+                                    </p>
+                                  )}
+
+                                  {!!(it.provisional.score != null || (ai && (ai.heard || ai.pronunciation))) && (
+                                    <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                                      {it.provisional.score != null && <>AI provisional: <strong>{it.provisional.score}/{max}</strong>. </>}
+                                      {typeof ai?.heard === 'string' && ai.heard ? <>Heard: “{String(ai.heard)}”</> : null}
+                                    </p>
+                                  )}
+
+                                  <div className="flex items-center gap-2">
+                                    <input
+                                      type="number" min={0} max={max} step={0.5} value={inp.score}
+                                      onChange={e => setGradeInputs(prev => ({ ...prev, [it.response_id]: { ...inp, score: e.target.value } }))}
+                                      placeholder={`0–${max}`}
+                                      className="w-24 px-3 py-2 rounded-lg text-sm outline-none"
+                                      style={{ background: 'var(--surface-hover)', color: 'var(--text)' }}
+                                    />
+                                    <span className="text-xs shrink-0" style={{ color: 'var(--text-muted)' }}>/ {max}</span>
+                                    <input
+                                      type="text" value={inp.comment}
+                                      onChange={e => setGradeInputs(prev => ({ ...prev, [it.response_id]: { ...inp, comment: e.target.value } }))}
+                                      placeholder="Comment for the student (optional)"
+                                      className="flex-1 px-3 py-2 rounded-lg text-sm outline-none"
+                                      style={{ background: 'var(--surface-hover)', color: 'var(--text)' }}
+                                    />
+                                  </div>
+                                </div>
+                              )
+                            })}
+
+                            <div className="flex justify-end pt-2" style={{ borderTop: '1px solid var(--border)' }}>
+                              <Squircle asChild cornerRadius={10} cornerSmoothing={0.8}>
+                                <button
+                                  onClick={() => saveAttemptGrades(attemptId)}
+                                  disabled={!allScored || savingAttempt === attemptId}
+                                  className="px-4 py-2 text-sm font-medium transition-colors hover:opacity-90 disabled:opacity-40"
+                                  style={{ background: 'var(--accent)', color: 'var(--selected-text)' }}
+                                >
+                                  {savingAttempt === attemptId
+                                    ? 'Saving…'
+                                    : allScored
+                                      ? `Save grades (${items.length})`
+                                      : `Score all answers to save (${scoredCount}/${items.length})`}
+                                </button>
+                              </Squircle>
+                            </div>
+                          </div>
+                        )}
+                      </SquircleBox>
+                    )
+                  })
+                })()
+              )}
+            </div>
+          )}
+
           {activeTab === 'settings' && (
             <div>
               {loadingSettings ? (

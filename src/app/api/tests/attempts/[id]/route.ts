@@ -223,7 +223,7 @@ export async function PATCH(
 
   const { data: attempt, error } = await supabase
     .from('test_attempts')
-    .select('id, user_id, status')
+    .select('id, user_id, status, time_spent_seconds')
     .eq('id', attemptId)
     .single()
 
@@ -253,7 +253,11 @@ export async function PATCH(
 
   const update: Record<string, unknown> = { updated_at: new Date().toISOString() }
   if (body.progress !== undefined) update.progress = body.progress
-  if (typeof body.timeSpentSeconds === 'number') update.time_spent_seconds = body.timeSpentSeconds
+  if (typeof body.timeSpentSeconds === 'number') {
+    // The clock only moves forward — never accept a smaller value than what's
+    // stored (resetting the timer by replaying a stale save would be cheating).
+    update.time_spent_seconds = Math.max(attempt.time_spent_seconds ?? 0, Math.floor(body.timeSpentSeconds))
+  }
 
   if (Object.keys(update).length > 1) {
     await supabase.from('test_attempts').update(update).eq('id', attemptId)

@@ -24,7 +24,7 @@ export async function GET(
 
   const { data: attempt, error: attemptError } = await supabase
     .from('test_attempts')
-    .select('id, user_id, form_id, status, time_spent_seconds, raw_score, overall_score, submitted_at, scored_at')
+    .select('id, user_id, form_id, status, review_mode, time_spent_seconds, raw_score, overall_score, submitted_at, scored_at')
     .eq('id', attemptId)
     .single()
 
@@ -115,6 +115,17 @@ export async function GET(
     .eq('attempt_id', attemptId)
   const responseMap = new Map((responses ?? []).map(r => [r.question_id, r]))
 
+  // Sign the student's own recordings (speaking responses) so they're playable in review.
+  const respAudioIds = Array.from(new Set((responses ?? []).map(r => r.audio_asset_id).filter(Boolean) as string[]))
+  const respAudioUrl = new Map<string, string | null>()
+  if (respAudioIds.length) {
+    const { data: respAssets } = await supabase.from('assets').select('id, storage_path').in('id', respAudioIds)
+    for (const a of respAssets ?? []) {
+      const { data: signed } = await supabase.storage.from(TEST_ASSETS_BUCKET).createSignedUrl(a.storage_path, 60 * 60)
+      respAudioUrl.set(a.id, signed?.signedUrl ?? null)
+    }
+  }
+
   const questionsByGroup = new Map<string, typeof questionRows>()
   for (const q of questionRows) {
     const arr = questionsByGroup.get(q.group_id) ?? []
@@ -162,6 +173,7 @@ export async function GET(
                 selected_option_ids: saved.selected_option_ids ?? [],
                 text_response: saved.text_response ?? '',
                 audio_asset_id: saved.audio_asset_id ?? null,
+                audio_url: saved.audio_asset_id ? respAudioUrl.get(saved.audio_asset_id) ?? null : null,
                 transcript: saved.transcript ?? '',
                 is_correct: saved.is_correct,
                 score: saved.score,

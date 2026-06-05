@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="48" height="48">
+  <path fill="none" stroke="#E8E8ED" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" transform="matrix(0.132583 -0.132583 0.132583 0.132583 24 24)" d="M0 -56C30.9279 -56 56 -30.928 56 -1.52588e-05C56 30.9279 30.9279 56 0 56C-30.9279 56 -56 30.9279 -56 -1.52588e-05C-56 -30.928 -30.9279 -56 0 -56Z"></path>
+  <path fill="none" stroke="#E8E8ED" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" transform="matrix(0.1875 0 0 0.1875 24 5.25)" d="M0 12L0 -12"></path>
+  <path fill="none" stroke="#E8E8ED" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" transform="matrix(0.1875 0 0 0.1875 10.5 10.5)" d="M8 8L-8 -8"></path>
+  <path fill="none" stroke="#E8E8ED" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" transform="matrix(0.1875 0 0 0.1875 10.5 37.5)" d="M8 -8L-8 8"></path>
+  <path fill="none" stroke="#E8E8ED" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" transform="matrix(0.1875 0 0 0.1875 37.5 10.5)" d="M-8 8L8 -8"></path>
+  <path fill="none" stroke="#E8E8ED" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" transform="matrix(0.1875 0 0 0.1875 37.5 37.5)" d="M-8 -8L8 8"></path>
+  <path fill="none" stroke="#E8E8ED" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" transform="matrix(0.1875 0 0 0.1875 5.25 24)" d="M12 0L-12 0"></path>
+  <path fill="none" stroke="#E8E8ED" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" transform="matrix(0.1875 0 0 0.1875 24 42.75)" d="M0 -12L0 12"></path>
+  <path fill="none" stroke="#E8E8ED" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" transform="matrix(0.1875 0 0 0.1875 42.75 24)" d="M-12 0L12 0"></path>
+</svg>

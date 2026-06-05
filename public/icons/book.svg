@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="48" height="48">
+  <path fill="none" stroke="#E8E8ED" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" transform="matrix(0.1875 0 0 0.1875 24 24)" d="M-88 -80C-88 -84.4183 -84.4183 -88 -80 -88L80 -88C84.4183 -88 88 -84.4183 88 -80L88 80C88 84.4183 84.4183 88 80 88L-80 88C-84.4183 88 -88 84.4183 -88 80L-88 -80Z"></path>
+  <path fill="none" stroke="#E8E8ED" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" transform="matrix(0.1875 0 0 0.1875 33 7.5)" d="M0 -16L0 16"></path>
+  <path fill="none" stroke="#E8E8ED" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" transform="matrix(0.1875 0 0 0.1875 15 7.5)" d="M0 -16L0 16"></path>
+  <path fill="none" stroke="#E8E8ED" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" transform="matrix(0.1875 0 0 0.1875 24 16.5)" d="M-88 0L88 0"></path>
+  <path fill="none" stroke="#E8E8ED" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" transform="matrix(0.1875 0 0 0.1875 24 28.5)" d=""></path>
+</svg>

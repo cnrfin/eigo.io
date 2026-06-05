@@ -1,38 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
 import { getUserSubscription, getMinuteBalance } from '@/lib/subscription'
+import { verifySupabaseToken } from '@/lib/supabase-jwt'
 
 // GET /api/subscription
 // Returns user's subscription details + remaining minutes
 export async function GET(request: NextRequest) {
   try {
-    // Authenticate user
+    // Authenticate user (local JWT verification — no auth-server roundtrip)
     const authHeader = request.headers.get('Authorization')
     if (!authHeader?.startsWith('Bearer ')) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-
-    const token = authHeader.replace('Bearer ', '')
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      { global: { headers: { Authorization: `Bearer ${token}` } } },
-    )
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser(token)
-
-    if (authError || !user) {
+    const verified = await verifySupabaseToken(authHeader.replace('Bearer ', ''))
+    if (!verified.ok) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
+    const user = verified.user
 
-    const subscription = await getUserSubscription(user.id)
+    // Independent lookups — run them in parallel
+    const [subscription, balance] = await Promise.all([
+      getUserSubscription(user.id),
+      getMinuteBalance(user.id),
+    ])
     if (!subscription) {
       return NextResponse.json({ subscription: null, balance: null })
     }
-
-    const balance = await getMinuteBalance(user.id)
 
     return NextResponse.json({
       subscription: {

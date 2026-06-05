@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="48" height="48">
+  <path fill="none" stroke="#E8E8ED" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" transform="matrix(0.1875 0 0 0.1875 30 18)" d="M-32 64L-64 64L-64 32L32 -64L64 -32L-32 64Z"></path>
+  <path fill="none" stroke="#E8E8ED" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" transform="matrix(0.1875 0 0 0.1875 24 24)" d="M88 0C88 0 88 80 88 80C88 84.4183 84.4183 88 80 88C80 88 -80 88 -80 88C-84.4183 88 -88 84.4183 -88 80C-88 80 -88 -80 -88 -80C-88 -84.4183 -84.4183 -88 -80 -88C-80 -88 0 -88 0 -88"></path>
+</svg>

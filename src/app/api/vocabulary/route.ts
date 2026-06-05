@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { verifySupabaseToken } from '@/lib/supabase-jwt'
 import { createClient } from '@supabase/supabase-js'
 import { calculateNextReview, type ReviewRating } from '@/lib/srs'
 
@@ -17,13 +18,11 @@ export async function GET(request: NextRequest) {
   }
 
   const token = authHeader.replace('Bearer ', '')
-  const supabaseAnon = createClient(supabaseUrl, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
-    global: { headers: { Authorization: `Bearer ${token}` } },
-  })
-  const { data: { user }, error: authError } = await supabaseAnon.auth.getUser(token)
-  if (authError || !user) {
+  const verified = await verifySupabaseToken(token)
+  if (!verified.ok) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
+  const user = verified.user
 
   const supabase = createClient(supabaseUrl, supabaseServiceKey)
   const dueOnly = new URL(request.url).searchParams.get('due') === 'true'
@@ -95,13 +94,11 @@ export async function POST(request: NextRequest) {
   }
 
   const token = authHeader.replace('Bearer ', '')
-  const supabaseAnon = createClient(supabaseUrl, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
-    global: { headers: { Authorization: `Bearer ${token}` } },
-  })
-  const { data: { user }, error: authError } = await supabaseAnon.auth.getUser(token)
-  if (authError || !user) {
+  const verified = await verifySupabaseToken(token)
+  if (!verified.ok) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
+  const user = verified.user
 
   const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
@@ -294,13 +291,11 @@ export async function PATCH(request: NextRequest) {
   }
 
   const token = authHeader.replace('Bearer ', '')
-  const supabaseAnon = createClient(supabaseUrl, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
-    global: { headers: { Authorization: `Bearer ${token}` } },
-  })
-  const { data: { user }, error: authError } = await supabaseAnon.auth.getUser(token)
-  if (authError || !user) {
+  const verified = await verifySupabaseToken(token)
+  if (!verified.ok) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
+  const user = verified.user
 
   let body: {
     cardId?: string
@@ -376,13 +371,11 @@ export async function DELETE(request: NextRequest) {
   }
 
   const token = authHeader.replace('Bearer ', '')
-  const supabaseAnon = createClient(supabaseUrl, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
-    global: { headers: { Authorization: `Bearer ${token}` } },
-  })
-  const { data: { user }, error: authError } = await supabaseAnon.auth.getUser(token)
-  if (authError || !user) {
+  const verified = await verifySupabaseToken(token)
+  if (!verified.ok) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
+  const user = verified.user
 
   const cardId = new URL(request.url).searchParams.get('cardId')
   if (!cardId) {

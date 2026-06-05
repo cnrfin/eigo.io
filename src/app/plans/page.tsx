@@ -125,7 +125,7 @@ export default function PlansPage() {
       const data = await res.json()
       if (!res.ok) {
         if (data.error?.includes('already have an active subscription')) {
-          window.location.href = '/settings'
+          window.location.href = '/dashboard/settings'
           return
         }
         setError(data.error || 'Something went wrong')

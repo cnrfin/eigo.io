@@ -860,6 +860,105 @@ export async function sendAdminSupportTicketNotification({
   return data
 }
 
+// ── Practice tests: tutor grading ──
+
+/** To the admin: a student submitted a test for teacher review. */
+export async function sendAdminTestGradingNotification({
+  studentName,
+  studentEmail,
+  formTitle,
+  attemptId,
+  pendingCount,
+}: {
+  studentName: string
+  studentEmail: string
+  formTitle: string
+  attemptId: string
+  pendingCount?: number
+}) {
+  const adminEmail = process.env.ADMIN_EMAIL || 'cnrfin93@gmail.com'
+
+  const content = `
+      <p class="greeting">
+        New test submitted for teacher review
+      </p>
+
+      <div class="student-info">
+        <div class="student-info-label">Student</div>
+        <div class="student-info-row"><strong>Name:</strong> ${studentName}</div>
+        <div class="student-info-row"><strong>Email:</strong> ${studentEmail}</div>
+
+        <div class="student-info-label" style="margin-top: 16px;">Test</div>
+        <div class="student-info-row"><strong>Form:</strong> ${formTitle}</div>
+        ${pendingCount ? `<div class="student-info-row"><strong>Answers to grade:</strong> ${pendingCount}</div>` : ''}
+      </div>
+
+      <a href="https://eigo.io/admin" class="button">Open Grading Queue</a>
+
+      <p class="note">
+        Attempt ID: ${attemptId}
+      </p>
+  `
+
+  const html = emailLayout(content, 'eigo.io — Test Grading Notification')
+  const fromEmail = process.env.RESEND_FROM_EMAIL || 'eigo.io <noreply@eigo.io>'
+  const { data, error } = await getResend().emails.send({
+    from: fromEmail,
+    to: adminEmail,
+    subject: `📝 Test to grade: ${studentName} — ${formTitle}`,
+    html,
+  })
+  if (error) {
+    console.error('Failed to send admin grading notification:', error)
+    throw error
+  }
+  return data
+}
+
+/** To the student: their test has been graded and results are ready. */
+export async function sendTestResultsReadyEmail({
+  to,
+  studentName,
+  formTitle,
+  attemptId,
+  locale,
+}: {
+  to: string
+  studentName: string
+  formTitle: string
+  attemptId: string
+  locale?: 'ja' | 'en' | null
+}) {
+  const ja = locale !== 'en'
+  const content = `
+      <p class="greeting">
+        ${ja ? `${studentName}さん、` : `Hi ${studentName},`}
+      </p>
+      <p class="greeting">
+        ${ja
+          ? `「${formTitle}」の採点が完了しました。結果とフィードバックをダッシュボードで確認できます。`
+          : `Your "${formTitle}" has been graded. Your results and feedback are ready in your dashboard.`}
+      </p>
+
+      <a href="https://eigo.io/dashboard/tests/results/${attemptId}" class="button">
+        ${ja ? '結果を見る' : 'View results'}
+      </a>
+  `
+  const html = emailLayout(content)
+  const fromEmail = process.env.RESEND_FROM_EMAIL || 'eigo.io <noreply@eigo.io>'
+  const { data, error } = await getResend().emails.send({
+    from: fromEmail,
+    to,
+    subject: ja ? `テスト結果が届きました — ${formTitle}` : `Your test results are ready — ${formTitle}`,
+    html,
+  })
+  if (error) {
+    console.error('Failed to send results-ready email:', error)
+    throw error
+  }
+  return data
+}
+
 // Custom-branded email verification
 export async function sendVerificationEmail({
   to,
