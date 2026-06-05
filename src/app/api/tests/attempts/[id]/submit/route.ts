@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { authenticate } from '@/lib/test-auth'
 import { gradeAndFinalize } from '@/lib/test-grade-attempt'
 import { sendAdminTestGradingNotification } from '@/lib/email'
+import { waitUntil } from '@vercel/functions'
 
 export const maxDuration = 120
 
@@ -83,15 +84,17 @@ export async function POST(
     return NextResponse.json({ ...result, review_mode: 'human' })
   }
 
-  // AI review: mark submitted + claim, return immediately; grading runs in the
-  // background (kicked off here for local dev, finalized by the cron worker in
-  // production so the student can leave and return to their results).
+  // AI review: respond immediately, then grade in the background. waitUntil()
+  // keeps the serverless function alive after the response is sent — without it
+  // Vercel kills the task and the student waits for the cron's stale sweep.
+  // grading_started_at acts as a claim so the cron won't race this inline pass;
+  // if this task crashes, the cron re-grades once the claim goes stale.
   if (body.reviewMode === 'ai') {
     const now = new Date().toISOString()
     await supabase.from('test_attempts')
       .update({ status: 'submitted', review_mode: 'ai', submitted_at: now, grading_started_at: now })
       .eq('id', attemptId)
-    gradeAndFinalize(supabase, attemptId).catch(err => console.error('Background grading failed:', err))
+    waitUntil(gradeAndFinalize(supabase, attemptId).catch(err => console.error('Background grading failed:', err)))
     return NextResponse.json({ status: 'submitted', review_mode: 'ai', processing: true })
   }
 

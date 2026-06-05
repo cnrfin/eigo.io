@@ -24,7 +24,11 @@ export async function GET(request: NextRequest) {
   if (!ok) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
-  const staleBefore = new Date(Date.now() - 3 * 60 * 1000).toISOString()
+  // Submit now grades inline via waitUntil() (~30-60s) and claims the attempt
+  // with grading_started_at. This cron only sweeps up attempts whose inline
+  // grading crashed — a 2-minute stale window recovers them fast without
+  // racing an inline pass that's still finishing.
+  const staleBefore = new Date(Date.now() - 2 * 60 * 1000).toISOString()
 
   const { data: pending } = await supabase
     .from('test_attempts')
