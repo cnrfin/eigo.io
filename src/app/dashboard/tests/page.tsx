@@ -16,6 +16,7 @@ type Form = {
   title_ja: string
   mode: 'full_mock' | 'skill_practice'
   time_limit_seconds: number | null
+  published?: boolean
   set_slug: string | null
   set_title: string
   set_title_ja: string
@@ -82,7 +83,7 @@ const CATEGORIES: {
 ]
 
 export default function TestsPage() {
-  const { session } = useAuth()
+  const { session, user } = useAuth()
   const { locale } = useLanguage()
   const router = useRouter()
   const t = (ja: string, en: string) => (locale === 'ja' ? ja : en)
@@ -121,6 +122,42 @@ export default function TestsPage() {
       .catch(() => setError(locale === 'ja' ? 'テストを読み込めませんでした' : 'Could not load tests'))
       .finally(() => setLoading(false))
   }, [session?.access_token, locale])
+
+  // The user's latest result per exam (profiles.exam_scores — written when a
+  // mock/check is fully scored). Powers the scoreboard at the top of the page.
+  type ExamScore = Record<string, unknown> & { updated_at?: string }
+  const [examScores, setExamScores] = useState<Record<string, ExamScore>>({})
+  useEffect(() => {
+    if (!user?.id) return
+    const load = async () => {
+      try {
+        const { supabase } = await import('@/lib/supabase')
+        const { data } = await supabase.from('profiles').select('exam_scores').eq('id', user.id).single()
+        if (data?.exam_scores) setExamScores(data.exam_scores)
+      } catch { /* ignore */ }
+    }
+    load()
+  }, [user?.id])
+
+  // One column per exam category. IELTS/EIKEN can have multiple tracked keys
+  // (academic/general, per grade) — show the most recent.
+  const scoreCols = useMemo(() => {
+    const latest = (keys: string[]): ExamScore | undefined =>
+      keys.map(k => examScores[k]).filter(Boolean)
+        .sort((a, b) => String(b.updated_at ?? '').localeCompare(String(a.updated_at ?? '')))[0]
+    const cefr = examScores['cefr']
+    const toeic = examScores['toeic-lr']
+    const ielts = latest(['ielts-academic', 'ielts-general'])
+    const eiken = latest(Object.keys(examScores).filter(k => k.startsWith('eiken')))
+    const versant = examScores['versant']
+    return [
+      { key: 'cefr', label: 'CEFR', value: cefr?.level != null ? String(cefr.level) : null, sub: cefr?.cefr_j ? `CEFR-J ${cefr.cefr_j}` : null },
+      { key: 'toeic', label: 'TOEIC', value: toeic?.total != null ? String(toeic.total) : null, sub: toeic ? '/ 990' : null },
+      { key: 'ielts', label: 'IELTS', value: ielts?.overall_band != null ? String(ielts.overall_band) : null, sub: ielts ? t('バンド', 'Band') : null },
+      { key: 'eiken', label: t('英検', 'EIKEN'), value: eiken ? (eiken.passed === true ? t('合格', 'Pass') : eiken.cse_total != null ? String(eiken.cse_total) : null) : null, sub: eiken && eiken.passed !== true ? 'CSE' : null },
+      { key: 'versant', label: 'Versant', value: versant?.gse != null ? String(versant.gse) : null, sub: versant ? 'GSE' : null },
+    ]
+  }, [examScores, locale]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const routeForAttempt = useCallback((id: string, status: string) => {
     router.push(status === 'in_progress' ? `/dashboard/tests/take/${id}` : `/dashboard/tests/results/${id}`)
@@ -196,6 +233,29 @@ export default function TestsPage() {
           <h1 className="text-2xl sm:text-4xl font-bold mb-8" style={{ color: 'var(--text)' }}>
             {t('テスト', 'Tests')}
           </h1>
+
+          {/* Scoreboard — the user's latest result for each exam. Empty slots
+              show a dash: an invitation to collect the rest. */}
+          <SquircleBox cornerRadius={16} className="p-5 mb-8"
+            style={{ background: 'var(--panel)', border: '1px solid var(--hairline)', boxShadow: 'var(--card-shadow)' }}>
+            <p className="text-[11px] font-semibold uppercase tracking-wider mb-4" style={{ color: 'var(--text-subtle)' }}>
+              {t('マイスコア', 'My scores')}
+            </p>
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-y-5">
+              {scoreCols.map(c => (
+                <div key={c.key} className="flex flex-col items-center gap-0.5 text-center">
+                  <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{c.label}</span>
+                  <span className="text-2xl font-bold" style={{ color: c.value ? 'var(--accent)' : 'var(--text-disabled)' }}>
+                    {c.value ?? '—'}
+                  </span>
+                  <span className="text-[11px]" style={{ color: 'var(--text-subtle)', minHeight: '1em' }}>{c.sub ?? ''}</span>
+                </div>
+              ))}
+            </div>
+          </SquircleBox>
+
+          {/* Small decorative divider between the scoreboard and the tests */}
+          <div aria-hidden className="mx-auto mb-8 h-px w-16 rounded-full" style={{ background: 'var(--divider)' }} />
 
           {loading ? (
             // Skeletons in the category cards' shape so the layout doesn't jump.
@@ -290,6 +350,12 @@ export default function TestsPage() {
                     <p className="font-semibold truncate" style={{ color: 'var(--text)' }}>
                       {locale === 'ja' ? ordered[0].set_title_ja || ordered[0].set_title : ordered[0].set_title}
                     </p>
+                    {ordered.some(f => f.published === false) && (
+                      <span className="text-xs shrink-0 px-2 py-0.5 rounded-full font-medium"
+                        style={{ background: 'var(--warning)', color: '#fff' }}>
+                        {t('下書き', 'Draft')}
+                      </span>
+                    )}
                     <span className="text-xs shrink-0 px-2.5 py-1 rounded-full font-medium"
                       style={{ background: allScored ? 'var(--accent)' : 'var(--card-inset)', color: allScored ? '#fff' : 'var(--text-muted)' }}>
                       {allScored ? t('完了 ✓', 'Complete ✓') : `${scoredCount} / ${ordered.length}`}
@@ -340,8 +406,14 @@ export default function TestsPage() {
                 <SquircleBox key={f.id} cornerRadius={16} className="p-5 flex flex-col gap-3"
                   style={{ background: 'var(--panel)', border: '1px solid var(--hairline)', boxShadow: 'var(--card-shadow)' }}>
                   <div className="min-w-0 flex-1">
-                    <p className="font-semibold" style={{ color: 'var(--text)' }}>
+                    <p className="font-semibold flex items-center gap-2" style={{ color: 'var(--text)' }}>
                       {locale === 'ja' ? f.title_ja || f.title : f.title}
+                      {f.published === false && (
+                        <span className="text-xs shrink-0 px-2 py-0.5 rounded-full font-medium"
+                          style={{ background: 'var(--warning)', color: '#fff' }}>
+                          {t('下書き', 'Draft')}
+                        </span>
+                      )}
                     </p>
                     <p className="text-sm mt-0.5" style={{ color: 'var(--text-secondary)' }}>
                       {f.track ? (locale === 'ja' ? f.track.name_ja || f.track.name : f.track.name) : ''}

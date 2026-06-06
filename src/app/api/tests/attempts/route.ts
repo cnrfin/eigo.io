@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { authenticate } from '@/lib/test-auth'
+import { authenticate, isAdminTestUser } from '@/lib/test-auth'
 
 /**
  * POST /api/tests/attempts
@@ -38,7 +38,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Test form not found' }, { status: 404 })
   }
   if (!form.published) {
-    return NextResponse.json({ error: 'Test form is not available' }, { status: 403 })
+    // Draft preview: admins may take unpublished forms to test the full flow
+    // in production before students can see them.
+    const admin = isAdminTestUser(user)
+    if (!admin) {
+      return NextResponse.json({ error: 'Test form is not available' }, { status: 403 })
+    }
   }
 
   // One attempt per form (like a real exam). If the user already has one,

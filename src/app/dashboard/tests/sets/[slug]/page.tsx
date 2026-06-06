@@ -316,8 +316,14 @@ export default function SetPage() {
                     style={{ background: 'var(--panel)', border: '1px solid var(--hairline)', boxShadow: 'var(--card-shadow)' }}>
                     <div className="flex items-center justify-between gap-3">
                       <div className="min-w-0">
-                        <p className="text-sm font-semibold truncate" style={{ color: 'var(--text)' }}>
+                        <p className="text-sm font-semibold truncate flex items-center gap-2" style={{ color: 'var(--text)' }}>
                           {single ? (locale === 'ja' ? s.form.title_ja || s.form.title : s.form.title) : name}
+                          {s.form.published === false && (
+                            <span className="text-xs shrink-0 px-2 py-0.5 rounded-full font-medium"
+                              style={{ background: 'var(--warning)', color: '#fff' }}>
+                              {t('下書き', 'Draft')}
+                            </span>
+                          )}
                         </p>
                         <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
                           {s.form.time_limit_seconds ? `${Math.round(s.form.time_limit_seconds / 60)} min` : t('時間制限なし', 'No time limit')}

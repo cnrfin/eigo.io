@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
 import { verifySupabaseToken, type JwtUser } from '@/lib/supabase-jwt'
+import { isAdminEmail } from '@/lib/admin-redirect'
 
 /**
  * Shared bearer-token authentication for the practice-test API routes.
@@ -29,4 +30,14 @@ export async function authenticate(request: NextRequest): Promise<AuthResult> {
 
   const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
   return { ok: true, user: verified.user, supabase }
+}
+
+/**
+ * Whether this user is an admin (email allowlist — the same source of truth
+ * the dashboard uses; profiles has no role column). Admins can see and take
+ * UNPUBLISHED (draft) test forms, to test new exams end-to-end in production
+ * without exposing them to students.
+ */
+export function isAdminTestUser(user: JwtUser): boolean {
+  return isAdminEmail(user.email)
 }

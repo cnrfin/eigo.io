@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { authenticate } from '@/lib/test-auth'
+import { authenticate, isAdminTestUser } from '@/lib/test-auth'
 import { computeEikenResult, roundToHalf, type Skill } from '@/lib/test-grading'
 import { saveExamScore } from '@/lib/profile-scores'
 
@@ -25,12 +25,15 @@ export async function GET(
   const { user, supabase } = auth
   const { slug } = await params
 
-  const { data: forms, error } = await supabase
+  // Admins also see sets whose forms are still unpublished (draft preview).
+  const admin = isAdminTestUser(user)
+  let formsQuery = supabase
     .from('test_forms')
-    .select('id, slug, title, title_ja, mode, time_limit_seconds, set_slug, set_title, set_title_ja, set_order, track_id, track:exam_tracks ( id, slug, name, name_ja, scoring_model )')
+    .select('id, slug, title, title_ja, mode, time_limit_seconds, published, set_slug, set_title, set_title_ja, set_order, track_id, track:exam_tracks ( id, slug, name, name_ja, scoring_model )')
     .eq('set_slug', slug)
-    .eq('published', true)
     .order('set_order', { ascending: true })
+  if (!admin) formsQuery = formsQuery.eq('published', true)
+  const { data: forms, error } = await formsQuery
 
   if (error || !forms || forms.length === 0) {
     return NextResponse.json({ error: 'Set not found' }, { status: 404 })
@@ -107,7 +110,7 @@ export async function GET(
     const a = attemptByForm.get(f.id)
     const total = totalByForm.get(f.id) ?? 0
     return {
-      form: { id: f.id, slug: f.slug, title: f.title, title_ja: f.title_ja, mode: f.mode, time_limit_seconds: f.time_limit_seconds, set_order: f.set_order, form_skills: skillsByForm.get(f.id) ?? [] },
+      form: { id: f.id, slug: f.slug, title: f.title, title_ja: f.title_ja, mode: f.mode, time_limit_seconds: f.time_limit_seconds, set_order: f.set_order, published: f.published, form_skills: skillsByForm.get(f.id) ?? [] },
       attempt: a ? { id: a.id, status: a.status, review_mode: a.review_mode, scored_at: a.scored_at } : null,
       // How far through the section the student is (for the progress ring).
       progress: {
