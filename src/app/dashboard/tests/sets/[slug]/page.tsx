@@ -140,6 +140,8 @@ export default function SetPage() {
       return
     }
     if (!session?.access_token) return
+    // Paywalled exam without a plan → plans page (server enforces this too)
+    if (data?.locked) { router.push('/plans'); return }
     setStarting(formId)
     try {
       const res = await fetch('/api/tests/attempts', {
@@ -155,7 +157,7 @@ export default function SetPage() {
       setStarting(null)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [session?.access_token, router])
+  }, [session?.access_token, router, data?.locked])
 
   const combined = data?.combined
 
@@ -253,6 +255,37 @@ export default function SetPage() {
             {locale === 'ja' ? data.set?.title_ja || data.set?.title : data.set?.title}
           </h1>
 
+          {/* ── Paywall: this exam needs a plan (Exam Pass or a student plan) ── */}
+          {data.locked && (
+            <SquircleBox cornerRadius={16} className="p-5 mb-6 flex flex-col sm:flex-row sm:items-center gap-4"
+              style={{ background: 'var(--panel)', border: '1px solid var(--hairline)', boxShadow: 'var(--card-shadow)' }}>
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                <span className="shrink-0 w-10 h-10 rounded-full flex items-center justify-center"
+                  style={{ background: 'var(--card-inset)', color: 'var(--text-muted)' }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                    <rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                  </svg>
+                </span>
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>
+                    {t('この模試は模試パスの対象です', 'This mock test requires a plan')}
+                  </p>
+                  <p className="text-xs mt-0.5" style={{ color: 'var(--text-secondary)' }}>
+                    {t('模試パス（月額¥2,000）ですべての模試が受け放題。レッスンプランにも模試が含まれています。',
+                       'Get unlimited mock tests with Exam Pass (¥2,000/month) — or any lesson plan, tests included.')}
+                  </p>
+                </div>
+              </div>
+              <Squircle asChild cornerRadius={10} cornerSmoothing={0.8}>
+                <button onClick={() => router.push('/plans')}
+                  className="px-4 py-2 text-sm font-medium self-start sm:self-center shrink-0 transition-all duration-[120ms] ease-out hover:scale-[1.03] active:scale-95"
+                  style={{ background: 'var(--accent)', color: '#fff' }}>
+                  {t('プランを見る', 'See plans')}
+                </button>
+              </Squircle>
+            </SquircleBox>
+          )}
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
             {/* ── Left: overall score + about this mock (transparent, divider-separated) ── */}
             <div className="flex flex-col">
@@ -310,6 +343,7 @@ export default function SetPage() {
                   ? t('テスト', 'the test')
                   : skill ? skillLabel(skill) : (locale === 'ja' ? s.form.title_ja || s.form.title : s.form.title)
                 const label = starting === s.form.id ? '...'
+                  : !s.attempt && data.locked ? t('プランを見る', 'See plans')
                   : !s.attempt ? (single ? t('テストを開始', 'Start the test') : t(`${name}を開始`, `Start ${name}`))
                   : status === 'in_progress' ? (single ? t('続きから再開', 'Resume the test') : t(`${name}を再開`, `Resume ${name}`))
                   : status === 'submitted' ? t('採点中', 'In review')

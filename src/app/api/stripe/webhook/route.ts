@@ -207,7 +207,7 @@ async function handleSubscriptionUpdated(
   }
 
   // Update plan details if present in metadata (e.g. after an upgrade)
-  if (plan && ['light', 'standard'].includes(plan)) {
+  if (plan && ['light', 'standard', 'test'].includes(plan)) {
     updateData.plan = plan
     updateData.minutes_per_month = PLAN_MINUTES[plan]
   }

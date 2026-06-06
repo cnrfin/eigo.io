@@ -8,6 +8,10 @@
  *
  *   node --env-file=.env.local scripts/seed-ielts-listening-full.mjs
  * Re-running REFRESHES the form. (Map/diagram-labelling is omitted — no UI yet.)
+ *
+ * To redo ONLY the audio for some sections (form, questions and attempts
+ * untouched — same storage path, transcript updated in place):
+ *   node --env-file=.env.local scripts/seed-ielts-listening-full.mjs --audio-only s1
  */
 import { createClient } from '@supabase/supabase-js'
 import { spawnSync } from 'node:child_process'
@@ -30,13 +34,19 @@ const LABEL = { narrator: 'Narrator', officer: 'Officer', caller: 'Caller', pres
 
 const G = 0.4 // default gap between turns
 
+// --audio-only s1,s4  → regenerate just those sections' recordings
+const ONLY = (() => {
+  const i = process.argv.indexOf('--audio-only')
+  return i === -1 ? null : (process.argv[i + 1] || '').split(',').map(s => s.trim()).filter(Boolean)
+})()
+
 const SETS = [
   {
     part_label: 'Section 1', title: 'Joining a sports centre', audio: `listening/${FORM_SLUG}-s1.mp3`,
     instructions: 'Complete the form. Write ONE WORD AND/OR A NUMBER for each answer.',
     lines: [
       { speaker: 'narrator', text: 'Section 1. You will hear a conversation between a man at a sports centre and a woman who wants to join. You will hear it once.', gap: 0.9 },
-      { speaker: 'officer', text: 'Good morning, Parkside Sports Centre. How can I help?' },
+      { speaker: 'officer', text: 'Good morning, thank you for calling Parkside Sports Centre. How can I help?' },
       { speaker: 'caller', text: "Hi, I'd like to become a member." },
       { speaker: 'officer', text: 'Great. Could I take your surname?' },
       { speaker: 'caller', text: "Yes, it's Hill. H-I-L-L." },
@@ -149,10 +159,10 @@ function requireEnv() {
   if (missing.length) { console.error('Missing env vars:', missing.join(', ')); process.exit(1) }
 }
 
-async function tts(text, voiceId) {
+async function tts(text, voiceId, stability = 0.5) {
   const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
     method: 'POST', headers: { 'xi-api-key': ELEVENLABS_API_KEY, 'Content-Type': 'application/json', Accept: 'audio/mpeg' },
-    body: JSON.stringify({ text, model_id: MODEL, voice_settings: { stability: 0.5, similarity_boost: 0.75 } }),
+    body: JSON.stringify({ text, model_id: MODEL, voice_settings: { stability, similarity_boost: 0.75 } }),
   })
   if (!res.ok) throw new Error(`ElevenLabs ${res.status}: ${await res.text().catch(() => '')}`)
   return Buffer.from(await res.arrayBuffer())
@@ -213,9 +223,39 @@ async function insertQuestion(supabase, groupId, order, q) {
   if (error) throw new Error(`options: ${error.message}`)
 }
 
+async function buildAudio(set) {
+  const segs = []
+  for (const line of set.lines) {
+    segs.push({ buffer: await tts(line.text, VOICE[line.speaker], line.stability ?? set.stability ?? 0.5), gapAfter: line.gap ?? G })
+  }
+  return joinSegments(segs)
+}
+
+function transcriptFor(set) {
+  return set.lines.map(l => `${LABEL[l.speaker]}: ${l.text}`).join('\n')
+}
+
+// Regenerate audio in place for the sections named in --audio-only.
+async function regenAudio(supabase) {
+  const wanted = new Set(ONLY.map(s => s.toLowerCase()))
+  const targets = SETS.filter(s => wanted.has(s.part_label.toLowerCase().replace('section ', 's')))
+  if (targets.length !== wanted.size) throw new Error(`--audio-only expects sections like s1,s4 (got: ${ONLY.join(',')})`)
+  for (const set of targets) {
+    process.stdout.write(`${set.part_label}: regenerating audio… `)
+    const audio = await buildAudio(set)
+    const { error: upErr } = await supabase.storage.from(BUCKET).upload(set.audio, audio, { contentType: 'audio/mpeg', upsert: true })
+    if (upErr) throw new Error(`upload ${set.audio}: ${upErr.message}`)
+    const { error: trErr } = await supabase.from('assets').update({ transcript: transcriptFor(set) }).eq('storage_path', set.audio)
+    if (trErr) throw new Error(`transcript ${set.audio}: ${trErr.message}`)
+    console.log('done.')
+  }
+  console.log(`\n✓ Regenerated ${targets.map(s => s.part_label).join(', ')} (form, questions and attempts untouched).`)
+}
+
 async function main() {
   requireEnv()
   const supabase = createClient(SUPABASE_URL, SERVICE_KEY, { auth: { persistSession: false } })
+  if (ONLY) return regenAudio(supabase)
   const { data: track, error } = await supabase.from('exam_tracks').select('id').eq('slug', 'ielts-academic').single()
   if (error || !track) throw new Error('Track ielts-academic not found.')
 
@@ -229,13 +269,10 @@ async function main() {
   let marks = 0
   for (const [si, set] of SETS.entries()) {
     process.stdout.write(`${set.part_label}: generating audio… `)
-    const segs = []
-    for (const line of set.lines) segs.push({ buffer: await tts(line.text, VOICE[line.speaker]), gapAfter: line.gap ?? G })
-    const audio = joinSegments(segs)
+    const audio = await buildAudio(set)
     const { error: upErr } = await supabase.storage.from(BUCKET).upload(set.audio, audio, { contentType: 'audio/mpeg', upsert: true })
     if (upErr) throw new Error(`upload ${set.audio}: ${upErr.message}`)
-    const transcript = set.lines.map(l => `${LABEL[l.speaker]}: ${l.text}`).join('\n')
-    const assetId = await insertOne(supabase, 'assets', { type: 'audio', storage_path: set.audio, transcript, alt_text: '' })
+    const assetId = await insertOne(supabase, 'assets', { type: 'audio', storage_path: set.audio, transcript: transcriptFor(set), alt_text: '' })
 
     const sectionId = await insertOne(supabase, 'sections', { form_id: formId, skill: 'listening', part_label: set.part_label, title: set.title, instructions: set.instructions, order_index: si })
     const groupId = await insertOne(supabase, 'question_groups', { section_id: sectionId, order_index: 0, stimulus_type: 'audio', audio_asset_id: assetId })

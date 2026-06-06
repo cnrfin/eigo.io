@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { authenticate, isAdminTestUser } from '@/lib/test-auth'
 import { computeEikenResult, roundToHalf, type Skill } from '@/lib/test-grading'
 import { saveExamScore } from '@/lib/profile-scores'
+import { hasTestAccess, isFreeExam } from '@/lib/test-entitlement'
 
 /**
  * GET /api/tests/sets/[slug]
@@ -29,7 +30,7 @@ export async function GET(
   const admin = isAdminTestUser(user)
   let formsQuery = supabase
     .from('test_forms')
-    .select('id, slug, title, title_ja, mode, time_limit_seconds, published, set_slug, set_title, set_title_ja, set_order, track_id, track:exam_tracks ( id, slug, name, name_ja, scoring_model )')
+    .select('id, slug, title, title_ja, mode, time_limit_seconds, published, set_slug, set_title, set_title_ja, set_order, track_id, track:exam_tracks ( id, slug, name, name_ja, scoring_model, exam:exams ( slug ) )')
     .eq('set_slug', slug)
     .order('set_order', { ascending: true })
   if (!admin) formsQuery = formsQuery.eq('published', true)
@@ -207,6 +208,10 @@ export async function GET(
     }
   }
 
+  // Paywall flag for the UI (enforcement lives in POST /api/tests/attempts).
+  const examSlug = (forms[0].track as unknown as { exam?: { slug?: string } | null } | null)?.exam?.slug
+  const locked = !isFreeExam(examSlug) && !(await hasTestAccess(supabase, user))
+
   return NextResponse.json({
     set: {
       slug,
@@ -218,5 +223,6 @@ export async function GET(
     complete,
     remaining,
     combined,
+    locked,
   })
 }

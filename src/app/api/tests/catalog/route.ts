@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { authenticate, isAdminTestUser } from '@/lib/test-auth'
+import { hasTestAccess, isFreeExam } from '@/lib/test-entitlement'
 
 /**
  * GET /api/tests/catalog
@@ -25,12 +26,23 @@ export async function GET(request: NextRequest) {
         exam:exams ( slug, name, name_ja, order_index ) )
     `)
   if (!admin) query = query.eq('published', true)
-  const { data: forms, error } = await query
+  const [{ data: forms, error }, entitled] = await Promise.all([
+    query,
+    hasTestAccess(supabase, user),
+  ])
 
   if (error) {
     console.error('Failed to load catalog:', error)
     return NextResponse.json({ error: 'Could not load tests' }, { status: 500 })
   }
 
-  return NextResponse.json({ forms: forms ?? [] })
+  // Paywall: flag paid exams as locked for users without a subscription so
+  // the UI can show lock badges + the upgrade CTA. (Enforced server-side in
+  // POST /api/tests/attempts — this flag is presentation only.)
+  const withLock = (forms ?? []).map(f => {
+    const track = f.track as unknown as { exam?: { slug?: string } | null } | null
+    return { ...f, locked: !entitled && !isFreeExam(track?.exam?.slug) }
+  })
+
+  return NextResponse.json({ forms: withLock, testAccess: entitled })
 }

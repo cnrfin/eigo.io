@@ -9,12 +9,17 @@
  *
  *   node --env-file=.env.local scripts/seed-ielts-gt-listening-full.mjs
  * Re-running REFRESHES the form. Run AFTER supabase/add-test-sets.sql.
+ *
+ * To redo ONLY the audio for some sections (form, questions and attempts
+ * untouched — same storage path, transcript updated in place):
+ *   node --env-file=.env.local scripts/seed-ielts-gt-listening-full.mjs --audio-only s1,s4
  */
 import { createClient } from '@supabase/supabase-js'
 import { spawnSync } from 'node:child_process'
-import { existsSync, writeFileSync, readFileSync, rmSync, mkdtempSync } from 'node:fs'
+import { existsSync, writeFileSync, readFileSync, rmSync, mkdtempSync, mkdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { tmpdir } from 'node:os'
+import { createHash } from 'node:crypto'
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -32,9 +37,16 @@ const LABEL = { narrator: 'Narrator', agent: 'Agent', caller: 'Caller', manager:
 
 const G = 0.4 // default gap between turns
 
+// --audio-only s1,s4  → regenerate just those sections' recordings
+const ONLY = (() => {
+  const i = process.argv.indexOf('--audio-only')
+  return i === -1 ? null : (process.argv[i + 1] || '').split(',').map(s => s.trim()).filter(Boolean)
+})()
+
 const SETS = [
   {
     part_label: 'Section 1', title: 'Booking a removal company', audio: `listening/${FORM_SLUG}-s1.mp3`,
+    stability: 1, // Robust — keeps each voice's accent consistent across turns
     instructions: 'Complete the booking form. Write ONE WORD AND/OR A NUMBER for each answer.',
     lines: [
       { speaker: 'narrator', text: 'Section 1. You will hear a telephone conversation between a woman and a man who works for a removal company. You will hear it once.', gap: 0.9 },
@@ -129,11 +141,13 @@ const SETS = [
     instructions: 'Complete the notes. Write ONE WORD AND/OR A NUMBER for each answer.',
     lines: [
       { speaker: 'narrator', text: 'Section 4. You will hear a talk about keeping bees in cities.', gap: 0.9 },
-      { speaker: 'speaker', text: 'Urban beekeeping has grown enormously in the last decade. Most city hives are kept on rooftops, where the bees are out of the way of people and the hives catch plenty of sun.' },
-      { speaker: 'speaker', text: 'A single bee will fly up to five kilometres from its hive in search of flowers. Surprisingly, city honey often tastes more interesting than country honey, because city gardens and parks contain a far greater variety of flowers than farmland.' },
-      { speaker: 'speaker', text: 'There are challenges, of course. In early summer, usually in May, colonies may swarm — that is, half the bees leave with the old queen to find a new home. Beekeepers prevent this by giving the colony more space.' },
-      { speaker: 'speaker', text: 'A healthy hive is heavy: by late summer it can weigh around twenty-five kilograms, most of which is honey. A typical city hive produces about twelve jars of honey a year for its keeper.' },
-      { speaker: 'speaker', text: 'If you would like to try it, our beginners course runs for six weeks, starting in October. All equipment, including the protective suit and gloves, is provided. Places are limited, so please register by the thirtieth of September.', gap: 0.3 },
+      // One TTS call for the whole talk — stitching it line-by-line made the prosody choppy.
+      { speaker: 'speaker', gap: 0.3, text:
+        'Urban beekeeping has grown enormously in the last decade. Most city hives are kept on rooftops, where the bees are out of the way of people and the hives catch plenty of sun.\n\n' +
+        'A single bee will fly up to five kilometres from its hive in search of flowers. Surprisingly, city honey often tastes more interesting than country honey, because city gardens and parks contain a far greater variety of flowers than farmland.\n\n' +
+        'There are challenges, of course. In early summer, usually in May, colonies may swarm — that is, half the bees leave with the old queen to find a new home. Beekeepers prevent this by giving the colony more space.\n\n' +
+        'A healthy hive is heavy: by late summer it can weigh around twenty-five kilograms, most of which is honey. A typical city hive produces about twelve jars of honey a year for its keeper.\n\n' +
+        'If you would like to try it, our beginners course runs for six weeks, starting in October. All equipment, including the protective suit and gloves, is provided. Places are limited, so please register by the thirtieth of September.' },
     ],
     questions: [
       { type: 'gap_fill', prompt: 'Most city hives are kept on ______.', accepted: ['rooftops', 'roofs', 'the rooftops'] },
@@ -158,10 +172,10 @@ function requireEnv() {
   if (missing.length) { console.error('Missing env vars:', missing.join(', ')); process.exit(1) }
 }
 
-async function tts(text, voiceId) {
+async function tts(text, voiceId, stability = 0.5) {
   const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
     method: 'POST', headers: { 'xi-api-key': ELEVENLABS_API_KEY, 'Content-Type': 'application/json', Accept: 'audio/mpeg' },
-    body: JSON.stringify({ text, model_id: MODEL, voice_settings: { stability: 0.5, similarity_boost: 0.75 } }),
+    body: JSON.stringify({ text, model_id: MODEL, voice_settings: { stability, similarity_boost: 0.75 } }),
   })
   if (!res.ok) throw new Error(`ElevenLabs ${res.status}: ${await res.text().catch(() => '')}`)
   return Buffer.from(await res.arrayBuffer())
@@ -222,9 +236,53 @@ async function insertQuestion(supabase, groupId, order, q) {
   if (error) throw new Error(`options: ${error.message}`)
 }
 
+// Optional resumable segment cache: TTS_CACHE_DIR=… caches each generated
+// line so an interrupted run picks up where it left off.
+const CACHE_DIR = process.env.TTS_CACHE_DIR
+async function ttsCached(text, voiceId, stability) {
+  if (!CACHE_DIR) return tts(text, voiceId, stability)
+  const key = createHash('sha1').update(`${voiceId}|${stability}|${MODEL}|${text}`).digest('hex')
+  const p = join(CACHE_DIR, `${key}.mp3`)
+  if (existsSync(p)) return readFileSync(p)
+  const buf = await tts(text, voiceId, stability)
+  mkdirSync(CACHE_DIR, { recursive: true })
+  writeFileSync(p, buf)
+  return buf
+}
+
+async function buildAudio(set) {
+  const segs = []
+  for (const line of set.lines) {
+    segs.push({ buffer: await ttsCached(line.text, VOICE[line.speaker], line.stability ?? set.stability ?? 0.5), gapAfter: line.gap ?? G })
+  }
+  return joinSegments(segs)
+}
+
+function transcriptFor(set) {
+  return set.lines.map(l => `${LABEL[l.speaker]}: ${l.text}`).join('\n')
+}
+
+// Regenerate audio in place for the sections named in --audio-only.
+async function regenAudio(supabase) {
+  const wanted = new Set(ONLY.map(s => s.toLowerCase()))
+  const targets = SETS.filter(s => wanted.has(s.part_label.toLowerCase().replace('section ', 's')))
+  if (targets.length !== wanted.size) throw new Error(`--audio-only expects sections like s1,s4 (got: ${ONLY.join(',')})`)
+  for (const set of targets) {
+    process.stdout.write(`${set.part_label}: regenerating audio… `)
+    const audio = await buildAudio(set)
+    const { error: upErr } = await supabase.storage.from(BUCKET).upload(set.audio, audio, { contentType: 'audio/mpeg', upsert: true })
+    if (upErr) throw new Error(`upload ${set.audio}: ${upErr.message}`)
+    const { error: trErr } = await supabase.from('assets').update({ transcript: transcriptFor(set) }).eq('storage_path', set.audio)
+    if (trErr) throw new Error(`transcript ${set.audio}: ${trErr.message}`)
+    console.log('done.')
+  }
+  console.log(`\n✓ Regenerated ${targets.map(s => s.part_label).join(', ')} (form, questions and attempts untouched).`)
+}
+
 async function main() {
   requireEnv()
   const supabase = createClient(SUPABASE_URL, SERVICE_KEY, { auth: { persistSession: false } })
+  if (ONLY) return regenAudio(supabase)
   const { data: track, error } = await supabase.from('exam_tracks').select('id').eq('slug', 'ielts-general').single()
   if (error || !track) throw new Error('Track ielts-general not found.')
 
@@ -240,13 +298,10 @@ async function main() {
   let marks = 0
   for (const [si, set] of SETS.entries()) {
     process.stdout.write(`${set.part_label}: generating audio… `)
-    const segs = []
-    for (const line of set.lines) segs.push({ buffer: await tts(line.text, VOICE[line.speaker]), gapAfter: line.gap ?? G })
-    const audio = joinSegments(segs)
+    const audio = await buildAudio(set)
     const { error: upErr } = await supabase.storage.from(BUCKET).upload(set.audio, audio, { contentType: 'audio/mpeg', upsert: true })
     if (upErr) throw new Error(`upload ${set.audio}: ${upErr.message}`)
-    const transcript = set.lines.map(l => `${LABEL[l.speaker]}: ${l.text}`).join('\n')
-    const assetId = await insertOne(supabase, 'assets', { type: 'audio', storage_path: set.audio, transcript, alt_text: '' })
+    const assetId = await insertOne(supabase, 'assets', { type: 'audio', storage_path: set.audio, transcript: transcriptFor(set), alt_text: '' })
 
     const sectionId = await insertOne(supabase, 'sections', { form_id: formId, skill: 'listening', part_label: set.part_label, title: set.title, instructions: set.instructions, order_index: si })
     const groupId = await insertOne(supabase, 'question_groups', { section_id: sectionId, order_index: 0, stimulus_type: 'audio', audio_asset_id: assetId })

@@ -13,7 +13,7 @@ export function getStripe(): Stripe {
 
 // ---------- Price ID helpers ----------
 
-export type PlanName = 'light' | 'standard'
+export type PlanName = 'light' | 'standard' | 'test'
 export type BillingInterval = 'monthly' | 'yearly'
 export type PriceTier = 'trial' | 'full'
 
@@ -26,6 +26,9 @@ const PRICE_ENV_MAP: Record<string, string> = {
   'standard_monthly_full': 'STRIPE_PRICE_STANDARD_MONTHLY_FULL',
   'standard_yearly_trial': 'STRIPE_PRICE_STANDARD_YEARLY_TRIAL',
   'standard_yearly_full': 'STRIPE_PRICE_STANDARD_YEARLY_FULL',
+  // Exam Pass (模試パス): tests only, no lesson minutes. Monthly, no trial price.
+  'test_monthly_trial': 'STRIPE_PRICE_TEST_MONTHLY_FULL', // trial window doesn't discount tests
+  'test_monthly_full': 'STRIPE_PRICE_TEST_MONTHLY_FULL',
 }
 
 /**
@@ -49,6 +52,7 @@ export function getStripePriceId(
 export const PLAN_MINUTES: Record<PlanName, number> = {
   light: 120,    // 30 min/week ≈ 2 hr/month
   standard: 240, // 60 min/week ≈ 4 hr/month
+  test: 0,       // Exam Pass: tests only, no lesson minutes
 }
 
 // ---------- Display prices (JPY) ----------
@@ -57,6 +61,7 @@ export const PLAN_MINUTES: Record<PlanName, number> = {
 export const PLAN_DISPLAY_NAMES: Record<PlanName, string> = {
   light: 'Student Lite',
   standard: 'Student Standard',
+  test: 'Exam Pass',
 }
 
 export const PLAN_PRICES = {
@@ -67,5 +72,8 @@ export const PLAN_PRICES = {
   standard: {
     monthly: { trial: 12000, full: 20000 },
     yearly: { trial: 132000, full: 200000 },
+  },
+  test: {
+    monthly: { trial: 2000, full: 2000 }, // no trial discount
   },
 } as const

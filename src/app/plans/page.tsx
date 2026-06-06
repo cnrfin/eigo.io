@@ -107,7 +107,7 @@ export default function PlansPage() {
     return () => window.clearInterval(timer)
   }, [trialHoursLeft])
 
-  const handleCheckout = useCallback(async (plan: 'light' | 'standard') => {
+  const handleCheckout = useCallback(async (plan: 'light' | 'standard' | 'test') => {
     if (!session?.access_token) return
     setCheckingOut(plan)
     setError(null)
@@ -119,7 +119,8 @@ export default function PlansPage() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${session.access_token}`,
         },
-        body: JSON.stringify({ plan, billing_interval: interval }),
+        // Exam Pass is monthly only
+        body: JSON.stringify({ plan, billing_interval: plan === 'test' ? 'monthly' : interval }),
       })
 
       const data = await res.json()
@@ -169,6 +170,7 @@ export default function PlansPage() {
     locale === 'ja' ? `月${plan.minutesPerMonth}分のレッスン` : `${plan.minutesPerMonth} min/month`,
     locale === 'ja' ? '録画・文字起こし付き' : 'Recordings & transcripts',
     locale === 'ja' ? 'AI サマリー & フレーズ学習' : 'AI summaries & phrases',
+    locale === 'ja' ? '模試も受け放題（模試パスの全機能）' : 'All mock exams included (full Exam Pass)',
     locale === 'ja' ? 'いつでも変更・解約可能' : 'Change or cancel anytime',
   ]
 
@@ -432,6 +434,52 @@ export default function PlansPage() {
               )
             })}
           </div>
+
+          {/* ─── Exam Pass (模試パス): tests only, monthly, no lessons ─── */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.45, duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
+            className="mb-8"
+          >
+            <SquircleBox cornerRadius={20} className="glass-card p-7 flex flex-col sm:flex-row sm:items-center gap-5">
+              <div className="flex-1 min-w-0">
+                <h2 className="text-xl font-bold mb-1" style={{ color: 'var(--text)' }}>
+                  {locale === 'ja' ? '模試パス' : 'Exam Pass'}
+                </h2>
+                <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+                  {locale === 'ja'
+                    ? 'TOEIC・IELTS・英検・Versantの本格模試が受け放題。AI採点ですぐに結果が届きます。レッスンは含まれません。'
+                    : 'Unlimited full mock exams — TOEIC, IELTS, EIKEN and Versant — with instant AI grading. Lessons not included.'}
+                </p>
+              </div>
+              <div className="flex items-center gap-5 shrink-0">
+                <div className="text-right">
+                  <span className="text-3xl font-bold tracking-tight" style={{ color: 'var(--text)' }}>¥2,000</span>
+                  <span className="text-sm ml-1.5" style={{ color: 'var(--text-muted)' }}>
+                    {locale === 'ja' ? '/月' : '/mo'}
+                  </span>
+                </div>
+                <Squircle asChild cornerRadius={12} cornerSmoothing={0.8}>
+                  <button
+                    onClick={() => handleCheckout('test')}
+                    disabled={!!checkingOut}
+                    className="px-6 py-3.5 text-sm font-semibold transition-all disabled:opacity-50 hover:opacity-90"
+                    style={{ background: 'var(--surface-hover)', color: 'var(--text)' }}
+                  >
+                    {checkingOut === 'test' ? (
+                      <span className="inline-flex items-center gap-2">
+                        <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                        {locale === 'ja' ? '処理中...' : 'Loading...'}
+                      </span>
+                    ) : (
+                      locale === 'ja' ? 'このプランで始める' : 'Get started'
+                    )}
+                  </button>
+                </Squircle>
+              </div>
+            </SquircleBox>
+          </motion.div>
 
           {/* ─── Footer notes ─── */}
           <div className="text-center space-y-2">

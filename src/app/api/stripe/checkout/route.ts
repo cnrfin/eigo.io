@@ -26,11 +26,14 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    if (!['light', 'standard'].includes(plan)) {
+    if (!['light', 'standard', 'test'].includes(plan)) {
       return NextResponse.json({ error: 'Invalid plan' }, { status: 400 })
     }
     if (!['monthly', 'yearly'].includes(interval)) {
       return NextResponse.json({ error: 'Invalid interval' }, { status: 400 })
+    }
+    if (plan === 'test' && interval !== 'monthly') {
+      return NextResponse.json({ error: 'Exam Pass is monthly only' }, { status: 400 })
     }
 
     // Authenticate user

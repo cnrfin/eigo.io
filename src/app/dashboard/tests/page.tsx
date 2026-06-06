@@ -17,6 +17,7 @@ type Form = {
   mode: 'full_mock' | 'skill_practice'
   time_limit_seconds: number | null
   published?: boolean
+  locked?: boolean
   set_slug: string | null
   set_title: string
   set_title_ja: string
@@ -168,6 +169,8 @@ export default function TestsPage() {
     if (!session?.access_token) return
     const existing = attempts[formId]
     if (existing) { routeForAttempt(existing.id, existing.status); return }
+    // Paywalled test without a plan → plans page (server enforces this too)
+    if (forms.find(f => f.id === formId)?.locked) { router.push('/plans'); return }
     setStarting(formId)
     try {
       const res = await fetch('/api/tests/attempts', {
@@ -182,7 +185,7 @@ export default function TestsPage() {
       setError(locale === 'ja' ? 'テストを開始できませんでした' : 'Could not start the test')
       setStarting(null)
     }
-  }, [session?.access_token, locale, attempts, routeForAttempt])
+  }, [session?.access_token, locale, attempts, routeForAttempt, forms, router])
 
   // Forms per category + practice/full counts.
   const byCategory = useMemo(() => {
@@ -293,8 +296,17 @@ export default function TestsPage() {
                     ) : (
                       // Mock count only — practice tests are being replaced by
                       // prep mini-courses in a future update
-                      <p className="text-xs mt-auto pt-2" style={{ color: 'var(--text-muted)' }}>
+                      <p className="text-xs mt-auto pt-2 flex items-center gap-2" style={{ color: 'var(--text-muted)' }}>
                         {t(`模試 ${counts.full}`, `${counts.full} full ${counts.full === 1 ? 'test' : 'tests'}`)}
+                        {counts.forms.length > 0 && counts.forms.every(f => f.locked) && (
+                          <span className="px-2 py-0.5 rounded-full font-medium inline-flex items-center gap-1"
+                            style={{ background: 'var(--card-inset)', color: 'var(--text-muted)' }}>
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                              <rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                            </svg>
+                            {t('模試パス', 'Exam Pass')}
+                          </span>
+                        )}
                       </p>
                     )}
                   </SquircleBox>
@@ -356,6 +368,15 @@ export default function TestsPage() {
                         {t('下書き', 'Draft')}
                       </span>
                     )}
+                    {ordered.every(f => f.locked) && (
+                      <span className="text-xs shrink-0 px-2 py-0.5 rounded-full font-medium inline-flex items-center gap-1"
+                        style={{ background: 'var(--card-inset)', color: 'var(--text-muted)' }}>
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                          <rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                        </svg>
+                        {t('模試パス', 'Exam Pass')}
+                      </span>
+                    )}
                     <span className="text-xs shrink-0 px-2.5 py-1 rounded-full font-medium"
                       style={{ background: allScored ? 'var(--accent)' : 'var(--card-inset)', color: allScored ? '#fff' : 'var(--text-muted)' }}>
                       {allScored ? t('完了 ✓', 'Complete ✓') : `${scoredCount} / ${ordered.length}`}
@@ -396,7 +417,7 @@ export default function TestsPage() {
               const label = starting === f.id
                 ? '...'
                 : !att
-                  ? t('開始', 'Start')
+                  ? f.locked ? t('プランを見る', 'See plans') : t('開始', 'Start')
                   : att.status === 'in_progress'
                     ? t('再開', 'Resume')
                     : att.status === 'submitted'

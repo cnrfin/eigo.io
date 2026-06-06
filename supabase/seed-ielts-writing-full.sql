@@ -6,7 +6,11 @@
 --  descriptors (0–9). mode=full_mock → official Writing band = (T1 + 2·T2)/3,
 --  rounded to the nearest half band. 60-minute timer.
 --
---  NOTE: real Task 1 shows a chart image (deferred); the data is given as text.
+--  NOTE: Task 1 uses a bar chart IMAGE (images/ielts-academic-writing-mock-01-
+--  task1.png in test-assets). Re-running this seed deletes the form and the
+--  group's image link — re-attach the existing asset to the Task 1 group
+--  afterwards (set question_groups.image_asset_id; the upload itself survives).
+--  payload.reference carries the chart data for the AI grader.
 --  All content ORIGINAL. Idempotent. Run AFTER add-practice-tests.sql +
 --  seed-test-scales-rubrics.sql.
 -- ============================================================
@@ -31,21 +35,17 @@ BEGIN
           'Complete both tasks. Task 1 ≥ 150 words (about 20 minutes); Task 2 ≥ 250 words (about 40 minutes). Task 2 counts double.', 0)
   RETURNING id INTO v_sec;
 
-  -- Task 1 (weight 1)
+  -- Task 1 (weight 1) — chart image attached separately (see NOTE above)
   INSERT INTO question_groups (section_id, order_index, stimulus_type, prompt)
-  VALUES (v_sec, 0, 'prompt',
+  VALUES (v_sec, 0, 'image',
     'WRITING TASK 1' || chr(10) ||
-    'The bar chart below shows the percentage of people who used four different modes of transport to get to work in one city in 2005 and in 2020.' || chr(10) || chr(10) ||
-    'Car — 2005: 55%,  2020: 40%' || chr(10) ||
-    'Bus — 2005: 20%,  2020: 18%' || chr(10) ||
-    'Bicycle — 2005: 10%,  2020: 22%' || chr(10) ||
-    'Train — 2005: 15%,  2020: 20%')
+    'The bar chart below shows the percentage of people who used four different modes of transport to get to work in one city in 2005 and in 2020.')
   RETURNING id INTO v_grp;
 
   INSERT INTO questions (group_id, order_index, question_type, scoring_method, prompt, payload, rubric_id, max_score)
   VALUES (v_grp, 0, 'essay', 'ai_rubric',
           'Summarise the information by selecting and reporting the main features, and make comparisons where relevant. Write at least 150 words.',
-          '{"task":"task1","min_words":150,"weight":1}'::jsonb, v_rubric, 9)
+          '{"task":"task1","min_words":150,"weight":1,"reference":"Chart data: Car 2005 55% / 2020 40%; Bus 2005 20% / 2020 18%; Bicycle 2005 10% / 2020 22%; Train 2005 15% / 2020 20%. Overall: car commuting fell sharply while cycling more than doubled; train rose moderately; bus roughly stable."}'::jsonb, v_rubric, 9)
   RETURNING id INTO v_q;
 
   -- Task 2 (weight 2)

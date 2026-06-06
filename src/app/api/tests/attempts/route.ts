@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { authenticate, isAdminTestUser } from '@/lib/test-auth'
+import { hasTestAccess, isFreeExam } from '@/lib/test-entitlement'
 
 /**
  * POST /api/tests/attempts
@@ -30,7 +31,7 @@ export async function POST(request: NextRequest) {
   // Verify the form exists and is published.
   let formQuery = supabase
     .from('test_forms')
-    .select('id, track_id, title, mode, time_limit_seconds, published')
+    .select('id, track_id, title, mode, time_limit_seconds, published, track:exam_tracks ( exam:exams ( slug ) )')
   formQuery = formId ? formQuery.eq('id', formId) : formQuery.eq('slug', formSlug!)
 
   const { data: form, error: formError } = await formQuery.single()
@@ -62,7 +63,17 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ attempt: existing, existing: true })
   }
 
-  // NOTE: subscription/quota gating can be enforced here before insert.
+  // Paywall (Exam Pass): free exams (CEFR) for everyone; everything else
+  // needs any non-cancelled subscription. Enforced server-side so it holds
+  // even if the client UI is bypassed. Existing attempts above stay
+  // accessible — entitlement is checked at the start of a test, not retroactively.
+  const examSlug = (form as unknown as { track: { exam: { slug: string } | null } | null }).track?.exam?.slug
+  if (!isFreeExam(examSlug) && !(await hasTestAccess(supabase, user))) {
+    return NextResponse.json(
+      { error: 'A subscription is required for this test', code: 'payment_required' },
+      { status: 402 },
+    )
+  }
 
   const { data: attempt, error: insertError } = await supabase
     .from('test_attempts')
