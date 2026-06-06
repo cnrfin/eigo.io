@@ -61,6 +61,8 @@ export default function TakeTestPage() {
   const [navOpen, setNavOpen] = useState(false)
   const [reportOpen, setReportOpen] = useState(false)
   const [reviewOpen, setReviewOpen] = useState(false)
+  const [leaveOpen, setLeaveOpen] = useState(false)
+  const [leaving, setLeaving] = useState(false)
   const [speakingStep, setSpeakingStep] = useState(0) // linear index for speaking interview mode
   const [instrAck, setInstrAck] = useState<Set<string>>(new Set()) // sections whose instruction screen was dismissed
   const [autoRecState, setAutoRecState] = useState<RecState | null>(null) // current machine-paced item's recorder state
@@ -220,6 +222,22 @@ export default function TakeTestPage() {
       setError(t('提出できませんでした。もう一度お試しください。', 'Could not submit — please try again.'))
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session?.access_token, attemptId, buildResponses, router])
+
+  // Leave the test: save answers + elapsed time explicitly (don't rely on the
+  // debounced autosave surviving navigation), then return to the tests page.
+  const leaveTest = useCallback(async () => {
+    setLeaving(true)
+    try {
+      if (session?.access_token) {
+        await fetch(`/api/tests/attempts/${attemptId}`, {
+          method: 'PATCH', keepalive: true,
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+          body: JSON.stringify({ responses: buildResponses(), timeSpentSeconds: elapsedRef.current }),
+        })
+      }
+    } catch { /* the periodic save has us mostly covered anyway */ }
+    router.push('/dashboard/tests')
   }, [session?.access_token, attemptId, buildResponses, router])
 
   // Tests with audio (speaking) ask the student to choose teacher vs AI review;
@@ -501,6 +519,15 @@ export default function TakeTestPage() {
             {showPrompt && (
               <div className="p-4 rounded-2xl text-sm whitespace-pre-line" style={{ background: 'var(--card)', color: 'var(--text)', border: '1px solid var(--hairline)', boxShadow: 'var(--card-shadow)' }}>{sp.group.prompt}</div>
             )}
+            {/* Group stimulus — the interview layout must also show passage
+                sheets (e.g. TOEIC S&W Q8-10 schedule) and picture-task images */}
+            {sp.group.passage_text && (
+              <div className="p-4 rounded-2xl text-sm whitespace-pre-line" style={{ background: 'var(--card)', color: 'var(--text)', border: '1px solid var(--hairline)', boxShadow: 'var(--card-shadow)' }}>{sp.group.passage_text}</div>
+            )}
+            {sp.group.image?.url && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={sp.group.image.url} alt={sp.group.image.alt_text || ''} className="rounded-lg w-full h-auto" />
+            )}
             {renderQuestion(sp.q, isAuto ? {
               stimulusUrl: sp.group.audio?.url ?? null,
               onFinished: isLastStep ? undefined : advance,
@@ -542,10 +569,25 @@ export default function TakeTestPage() {
   return (
     <div className="flex flex-col" style={{ height: '100dvh', background: 'var(--dash-bg)' }}>
       {/* Top bar */}
-      <header className="flex items-center justify-between px-4 py-2.5 border-b shrink-0" style={{ borderColor: 'var(--divider)' }}>
-        <div className="min-w-0">
-          <p className="text-sm font-semibold truncate" style={{ color: 'var(--text)' }}>{formTitle}</p>
-          {current && <p className="text-xs truncate" style={{ color: 'var(--text-muted)' }}>{current.section.part_label}{current.section.part_label && current.section.title ? ' · ' : ''}{current.section.title}</p>}
+      <header className="flex items-center justify-between pr-4 border-b shrink-0" style={{ borderColor: 'var(--divider)' }}>
+        <div className="flex items-center min-w-0 self-stretch">
+          {/* Exit — full-height square button, opens the leave confirmation */}
+          <button
+            onClick={() => setLeaveOpen(true)}
+            aria-label={t('テストを中断する', 'Leave the test')}
+            className="self-stretch w-12 shrink-0 flex items-center justify-center transition-colors"
+            style={{ borderRight: '1px solid var(--divider)', color: 'var(--text-muted)' }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'var(--item-hover)' }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+              <path d="M5 5l14 14M19 5L5 19" />
+            </svg>
+          </button>
+          <div className="min-w-0 pl-4 py-2.5">
+            <p className="text-sm font-semibold truncate" style={{ color: 'var(--text)' }}>{formTitle}</p>
+            {current && <p className="text-xs truncate" style={{ color: 'var(--text-muted)' }}>{current.section.part_label}{current.section.part_label && current.section.title ? ' · ' : ''}{current.section.title}</p>}
+          </div>
         </div>
         <div className="flex items-center gap-2 shrink-0">
           {timeLeft !== null && (
@@ -625,6 +667,32 @@ export default function TakeTestPage() {
 
       {/* Review-mode choice (tests with writing/speaking) */}
       {reviewOpen && <ReviewChoiceModal t={t} onClose={() => setReviewOpen(false)} onChoose={m => submit(m)} />}
+      {leaveOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'var(--overlay)' }} onClick={() => setLeaveOpen(false)}>
+          <div className="modal-card w-full max-w-sm rounded-2xl p-6 text-center" style={{ background: 'var(--card)', border: '1px solid var(--hairline)', boxShadow: '0 8px 28px rgba(0,0,0,0.10)' }} onClick={e => e.stopPropagation()}>
+            <p className="text-lg font-bold" style={{ color: 'var(--text)' }}>{t('テストを中断しますか？', 'Leave the test?')}</p>
+            <p className="text-sm mt-2" style={{ color: 'var(--text-secondary)' }}>
+              {t('テストは一度に最後まで受けることをおすすめします。中断しても、解答と残り時間は保存され、いつでも続きから再開できます。',
+                 'We recommend taking the test in one sitting. If you leave, your answers and remaining time are saved — you can pick up right where you left off.')}
+            </p>
+            <button
+              onClick={() => setLeaveOpen(false)}
+              className="block w-full mt-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-[120ms] ease-out hover:scale-[1.01] active:scale-[0.98]"
+              style={{ background: 'var(--accent)', color: '#fff' }}
+            >
+              {t('テストを続ける', 'Stay on the test')}
+            </button>
+            <button
+              onClick={leaveTest}
+              disabled={leaving}
+              className="block mx-auto mt-3 text-sm transition-opacity hover:opacity-70 disabled:opacity-50"
+              style={{ color: 'var(--text-muted)' }}
+            >
+              {leaving ? t('保存して退出中...', 'Saving & leaving…') : t('保存して退出', 'Save & leave')}
+            </button>
+          </div>
+        </div>
+      )}
       {submitting && <ScoringOverlay t={t} />}
     </div>
   )
@@ -865,7 +933,9 @@ function SpeakingRecorder({
     fd.append('audio', blob, `answer.${ext}`)
     fd.append('questionId', questionId)
     try {
-      const res = await fetch(`/api/tests/attempts/${attemptId}/speaking`, { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: fd })
+      // Timeout so a hung request can't strand the UI on "Saving…" forever —
+      // failures land in the error state, which offers "Try again" (re-record).
+      const res = await fetch(`/api/tests/attempts/${attemptId}/speaking`, { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: fd, signal: AbortSignal.timeout(60_000) })
       const d = await res.json()
       if (!res.ok) throw new Error(d.error || 'failed')
       setState('done'); onSaved()
@@ -877,14 +947,27 @@ function SpeakingRecorder({
     }
   }, [attemptId, questionId, token, t, onSaved, autoFlow])
 
-  const stop = useCallback(() => { clearTimer(); recorderRef.current?.stop() }, [clearTimer])
+  const stop = useCallback(() => {
+    clearTimer()
+    // Guard: stop() can fire twice (cap reached + manual click, or a
+    // double-invoked updater) — stopping an inactive recorder throws.
+    if (recorderRef.current && recorderRef.current.state !== 'inactive') recorderRef.current.stop()
+  }, [clearTimer])
   useEffect(() => {
     if (!stopRef) return
     stopRef.current = stop
     return () => { stopRef.current = null }
   }, [stop, stopRef])
 
+  // Re-entry guard: start() can be invoked twice for one recording — React
+  // (StrictMode) double-invokes state updaters, and the prep countdown kicks
+  // start() from inside one. A second concurrent start spun up a SECOND
+  // MediaRecorder + interval, making the elapsed timer count ~2x. The guard
+  // makes start() idempotent until the recording actually stops.
+  const startingRef = useRef(false)
   const start = useCallback(async () => {
+    if (startingRef.current) return
+    startingRef.current = true
     setErr('')
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
@@ -892,11 +975,16 @@ function SpeakingRecorder({
       const mr = new MediaRecorder(stream, mime ? { mimeType: mime } : undefined)
       chunksRef.current = []
       mr.ondataavailable = e => { if (e.data.size) chunksRef.current.push(e.data) }
-      mr.onstop = () => { clearTimer(); stream.getTracks().forEach(tr => tr.stop()); upload(new Blob(chunksRef.current, { type: mr.mimeType || 'audio/webm' })) }
+      mr.onstop = () => {
+        startingRef.current = false
+        clearTimer(); stream.getTracks().forEach(tr => tr.stop()); upload(new Blob(chunksRef.current, { type: mr.mimeType || 'audio/webm' }))
+      }
       recorderRef.current = mr
+      clearTimer() // never let a stale interval coexist with the new one
       mr.start(); setState('recording'); setElapsed(0)
       timerRef.current = setInterval(() => { setElapsed(prev => { const next = prev + 1; if (next >= cap) stop(); return next }) }, 1000)
     } catch {
+      startingRef.current = false
       setErr(t('マイクにアクセスできません', 'Could not access the microphone')); setState('error')
     }
   }, [t, upload, stop, clearTimer, cap])

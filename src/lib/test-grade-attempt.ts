@@ -138,6 +138,13 @@ export async function gradeAndFinalize(
         }
         const needsHuman = q.scoring_method === 'ai_plus_human'
         const taskPrompt = q.prompt || groupPrompt.get(q.group_id) || ''
+        // payload.reference gives the GRADER context the candidate sees as an
+        // image (e.g. what a picture-writing photo shows). Appended only to
+        // the text-grading prompt — never rendered to the student. (Speaking
+        // passes payload.reference to its grader separately.)
+        const refContext = (q.payload as { reference?: string } | null)?.reference
+        const textTaskPrompt = taskPrompt
+          + (refContext ? `\n\n[REFERENCE for the grader — the candidate sees this as an image/context, judge their answer against it]:\n${refContext}` : '')
         try {
           if (q.question_type === 'speaking_response') {
             const r = await gradeSpeaking(q, skill, taskPrompt)
@@ -149,7 +156,7 @@ export async function gradeAndFinalize(
           const r = await gradeWithRubricAveraged({
             skill,
             questionType: q.question_type,
-            taskPrompt,
+            taskPrompt: textTaskPrompt,
             studentText: response?.text_response || '',
             rubric: q.rubric_id ? rubricMap.get(q.rubric_id) ?? null : null,
             maxScore: Number(q.max_score) || 1,

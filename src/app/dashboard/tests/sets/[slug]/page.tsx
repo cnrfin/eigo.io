@@ -31,6 +31,10 @@ const ABOUT: Record<string, [string, string]> = {
     '本番形式のTOEIC Listening & Reading模試です。リスニング100問（写真描写・応答・会話・説明文）45分とリーディング100問（短文穴埋め・長文穴埋め・読解）75分で構成され、公式と同じ10〜990点のスケールでスコアを算出します。TOEIC L&Rは日本の就職・昇進で最も広く使われる英語テストです。本番前に現在のスコアと弱点パートを把握するのに最適です。',
     'A full-length TOEIC Listening & Reading mock: 100 listening questions (photographs, question–response, conversations and talks) in 45 minutes, and 100 reading questions (incomplete sentences, text completion and reading comprehension) in 75 minutes — scored on the official 10–990 scale. TOEIC L&R is the most widely used English test for hiring and promotion in Japan; use this mock to find your current score and which parts to focus on before test day.',
   ],
+  'toeic-sw-mock-01': [
+    '本番形式のTOEIC Speaking & Writing模試です。スピーキングは音読・写真描写・応答問題・意見表明など11問（約20分）、ライティングは写真描写文・メール作成・意見エッセイの8問（60分）で構成され、それぞれ0〜200点のスコアで評価されます。AIがETSの採点基準に沿って解答を採点し、発音や文法など項目別のフィードバックも確認できます。英語で「話す・書く」力を測りたい方におすすめです。',
+    'A full TOEIC Speaking & Writing mock: 11 speaking tasks (~20 min) — reading aloud, describing pictures, responding to questions and expressing an opinion — and 8 writing tasks (60 min) — picture sentences, e-mail replies and an opinion essay. Each section is scored 0–200, with AI grading against ETS-style criteria and per-criterion feedback on pronunciation, grammar and more. The companion to the L&R mock for measuring your productive English.',
+  ],
   'cefr-check': [
     '約20分で受けられる英語力のレベルチェックです。語彙・文法・リーディング・リスニングの問題に加えて、短いライティング1問とスピーキング2問に取り組みます。解答はCEFRの公式基準に沿って採点され、結果はA1〜C2のレベルで表示されます。いまの実力の確認や、これからの学習計画づくりにお役立てください。',
     'A roughly 20-minute placement check that estimates your CEFR level (A1–C2). A graded ladder of vocabulary, grammar, reading and listening questions is combined with one short writing task and two speaking recordings, judged directly against the official CEFR descriptors. Use it to find your starting level.',
