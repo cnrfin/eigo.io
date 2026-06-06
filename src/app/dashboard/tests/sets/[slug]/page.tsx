@@ -95,6 +95,9 @@ export default function SetPage() {
   const [loading, setLoading] = useState(true)
   const [starting, setStarting] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  // Retake confirmation: which form's section is about to be retaken
+  const [retakeForm, setRetakeForm] = useState<string | null>(null)
+  const [retaking, setRetaking] = useState(false)
 
   const load = useCallback(async () => {
     if (!session?.access_token || !slug) return
@@ -158,6 +161,28 @@ export default function SetPage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session?.access_token, router, data?.locked])
+
+  // Start a fresh attempt for an already-scored section (after confirmation).
+  // The old attempt is kept as history; this page tracks the newest one.
+  const confirmRetake = useCallback(async () => {
+    if (!session?.access_token || !retakeForm) return
+    setRetaking(true)
+    try {
+      const res = await fetch('/api/tests/attempts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+        body: JSON.stringify({ formId: retakeForm, retake: true }),
+      })
+      const d = await res.json()
+      if (!res.ok || !d.attempt) throw new Error(d.error || 'failed')
+      router.push(`/dashboard/tests/take/${d.attempt.id}`)
+    } catch {
+      setError(t('テストを開始できませんでした', 'Could not start the section'))
+      setRetakeForm(null)
+      setRetaking(false)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session?.access_token, retakeForm, router])
 
   const combined = data?.combined
 
@@ -255,37 +280,6 @@ export default function SetPage() {
             {locale === 'ja' ? data.set?.title_ja || data.set?.title : data.set?.title}
           </h1>
 
-          {/* ── Paywall: this exam needs a plan (Exam Pass or a student plan) ── */}
-          {data.locked && (
-            <SquircleBox cornerRadius={16} className="p-5 mb-6 flex flex-col sm:flex-row sm:items-center gap-4"
-              style={{ background: 'var(--panel)', border: '1px solid var(--hairline)', boxShadow: 'var(--card-shadow)' }}>
-              <div className="flex items-center gap-3 flex-1 min-w-0">
-                <span className="shrink-0 w-10 h-10 rounded-full flex items-center justify-center"
-                  style={{ background: 'var(--card-inset)', color: 'var(--text-muted)' }}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                    <rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                  </svg>
-                </span>
-                <div className="min-w-0">
-                  <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>
-                    {t('この模試は模試パスの対象です', 'This mock test requires a plan')}
-                  </p>
-                  <p className="text-xs mt-0.5" style={{ color: 'var(--text-secondary)' }}>
-                    {t('模試パス（月額¥2,000）ですべての模試が受け放題。レッスンプランにも模試が含まれています。',
-                       'Get unlimited mock tests with Exam Pass (¥2,000/month) — or any lesson plan, tests included.')}
-                  </p>
-                </div>
-              </div>
-              <Squircle asChild cornerRadius={10} cornerSmoothing={0.8}>
-                <button onClick={() => router.push('/plans')}
-                  className="px-4 py-2 text-sm font-medium self-start sm:self-center shrink-0 transition-all duration-[120ms] ease-out hover:scale-[1.03] active:scale-95"
-                  style={{ background: 'var(--accent)', color: '#fff' }}>
-                  {t('プランを見る', 'See plans')}
-                </button>
-              </Squircle>
-            </SquircleBox>
-          )}
-
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
             {/* ── Left: overall score + about this mock (transparent, divider-separated) ── */}
             <div className="flex flex-col">
@@ -372,18 +366,69 @@ export default function SetPage() {
                       </div>
                       <ProgressRing answered={s.progress?.answered ?? 0} total={s.progress?.total ?? 0} status={status} />
                     </div>
-                    <Squircle asChild cornerRadius={10} cornerSmoothing={0.8}>
-                      <button onClick={() => go(s.form.id, s.attempt)} disabled={starting === s.form.id}
-                        className="px-4 py-2 text-sm font-medium self-start transition-all duration-[120ms] ease-out hover:scale-[1.03] active:scale-95 disabled:opacity-50 disabled:hover:scale-100 disabled:active:scale-100"
-                        style={{ background: done ? 'var(--card-inset)' : 'var(--accent)', color: done ? 'var(--text)' : '#fff' }}>
-                        {label}
-                      </button>
-                    </Squircle>
+                    <div className="flex items-end justify-between gap-3">
+                      <Squircle asChild cornerRadius={10} cornerSmoothing={0.8}>
+                        <button onClick={() => go(s.form.id, s.attempt)} disabled={starting === s.form.id}
+                          className="px-4 py-2 text-sm font-medium self-start transition-all duration-[120ms] ease-out hover:scale-[1.03] active:scale-95 disabled:opacity-50 disabled:hover:scale-100 disabled:active:scale-100"
+                          style={{ background: done ? 'var(--card-inset)' : 'var(--accent)', color: done ? 'var(--text)' : '#fff' }}>
+                          {label}
+                        </button>
+                      </Squircle>
+                      {data.locked && !s.attempt && (
+                        <span className="text-xs shrink-0 px-2 py-0.5 rounded-full font-medium inline-flex items-center gap-1"
+                          style={{ background: 'var(--card-inset)', color: 'var(--text-muted)' }}>
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                            <rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                          </svg>
+                          {t('模試パスが必要', 'Exam Pass needed')}
+                        </span>
+                      )}
+                      {/* Retake — quiet link so "view results" stays the primary action.
+                          Without a plan it leads to /plans (retakes are a subscriber perk). */}
+                      {status === 'scored' && (
+                        <button
+                          onClick={() => (data.canRetake ? setRetakeForm(s.form.id) : router.push('/plans'))}
+                          className="text-xs shrink-0 transition-opacity hover:opacity-70"
+                          style={{ color: 'var(--text-muted)' }}
+                        >
+                          {t('もう一度受ける', 'Retake')}
+                        </button>
+                      )}
+                    </div>
                   </SquircleBox>
                 )
               })}
             </div>
           </div>
+
+          {/* Retake confirmation modal */}
+          {retakeForm && (
+            <div className="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'var(--overlay)' }} onClick={() => !retaking && setRetakeForm(null)}>
+              <div className="modal-card w-full max-w-sm rounded-2xl p-6 text-center" style={{ background: 'var(--card)', border: '1px solid var(--hairline)', boxShadow: '0 8px 28px rgba(0,0,0,0.10)' }} onClick={e => e.stopPropagation()}>
+                <p className="text-lg font-bold" style={{ color: 'var(--text)' }}>{t('もう一度受けますか？', 'Retake this section?')}</p>
+                <p className="text-sm mt-2" style={{ color: 'var(--text-secondary)' }}>
+                  {t('新しい受験をはじめから開始します。完了すると、スコアは新しい結果に更新されます。',
+                     'You will start this section again from the beginning. Once finished, your score is updated to the new result.')}
+                </p>
+                <button
+                  onClick={confirmRetake}
+                  disabled={retaking}
+                  className="block w-full mt-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-[120ms] ease-out hover:scale-[1.01] active:scale-[0.98] disabled:opacity-50"
+                  style={{ background: 'var(--accent)', color: '#fff' }}
+                >
+                  {retaking ? t('開始中...', 'Starting…') : t('もう一度受ける', 'Retake')}
+                </button>
+                <button
+                  onClick={() => setRetakeForm(null)}
+                  disabled={retaking}
+                  className="block mx-auto mt-3 text-sm transition-opacity hover:opacity-70 disabled:opacity-50"
+                  style={{ color: 'var(--text-muted)' }}
+                >
+                  {t('キャンセル', 'Cancel')}
+                </button>
+              </div>
+            </div>
+          )}
         </>
       )}
     </div>

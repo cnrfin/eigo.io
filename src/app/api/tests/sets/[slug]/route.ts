@@ -208,9 +208,11 @@ export async function GET(
     }
   }
 
-  // Paywall flag for the UI (enforcement lives in POST /api/tests/attempts).
+  // Paywall flags for the UI (enforcement lives in POST /api/tests/attempts).
+  // Retakes always need a plan — even on free exams (CEFR).
   const examSlug = (forms[0].track as unknown as { exam?: { slug?: string } | null } | null)?.exam?.slug
-  const locked = !isFreeExam(examSlug) && !(await hasTestAccess(supabase, user))
+  const entitled = await hasTestAccess(supabase, user)
+  const locked = !isFreeExam(examSlug) && !entitled
 
   return NextResponse.json({
     set: {
@@ -224,5 +226,6 @@ export async function GET(
     remaining,
     combined,
     locked,
+    canRetake: entitled,
   })
 }

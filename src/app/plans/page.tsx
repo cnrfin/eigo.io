@@ -2,12 +2,26 @@
 
 import { useAuth } from '@/context/AuthContext'
 import { useLanguage } from '@/context/LanguageContext'
+import { useTheme } from '@/context/ThemeContext'
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { Squircle } from '@squircle-js/react'
 import SquircleBox from '@/components/ui/SquircleBox'
 import { motion, AnimatePresence, useSpring, useTransform } from 'framer-motion'
 
 type BillingInterval = 'monthly' | 'yearly'
+
+// Dark-mode mesh pairs for the plan cards (pastel blobs that orbit on hover —
+// the same MESH_DARK pairs as the home tab action buttons).
+const PLAN_MESH = {
+  light: ['rgba(237,147,177,0.48)', 'rgba(167,159,236,0.48)'],    // pink/purple
+  standard: ['rgba(85,183,235,0.50)', 'rgba(94,234,228,0.45)'],   // blue/green
+  test: ['rgba(250,199,117,0.52)', 'rgba(238,128,58,0.48)'],      // yellow/orange
+} as const
+
+function planMeshGrad(key: keyof typeof PLAN_MESH): string {
+  const [a, b] = PLAN_MESH[key]
+  return `radial-gradient(circle 180px at calc(86% + 30px * cos(var(--angle))) calc(82% + 22px * sin(var(--angle))), ${a}, transparent 70%), radial-gradient(circle 180px at calc(86% + 30px * cos(var(--angle) + 180deg)) calc(82% + 22px * sin(var(--angle) + 180deg)), ${b}, transparent 70%)`
+}
 
 const PLANS = [
   {
@@ -57,6 +71,13 @@ function AnimatedPrice({ value, className, style }: { value: number; className?:
 export default function PlansPage() {
   const { user, loading, session } = useAuth()
   const { locale } = useLanguage()
+  const { theme } = useTheme()
+  const dark = theme === 'dark'
+  // Light mode: secondary CTAs (Lite, Exam Pass) are black with white text —
+  // same inverted style as the test submit button. Dark mode unchanged.
+  const secondaryBtnStyle = dark
+    ? { background: 'var(--surface-hover)', color: 'var(--text)' }
+    : { background: 'var(--text)', color: 'var(--dash-bg)' }
 
   const [interval, setInterval] = useState<BillingInterval>('monthly')
   const [trialHoursLeft, setTrialHoursLeft] = useState<number>(0)
@@ -339,8 +360,17 @@ export default function PlansPage() {
                 >
                   <SquircleBox
                     cornerRadius={20}
-                    className={`p-7 h-full flex flex-col relative overflow-hidden ${isStandard ? 'glass-card-accent' : 'glass-card'}`}
+                    className={`group p-7 h-full flex flex-col relative overflow-hidden ${isStandard ? 'glass-card-accent' : 'glass-card'}`}
                   >
+                    {/* Dark mode: pastel mesh orbits in on hover */}
+                    {dark && (
+                      <span
+                        aria-hidden
+                        className="mesh-orbit absolute inset-0 opacity-0 translate-x-3 translate-y-3 group-hover:opacity-100 group-hover:translate-x-0 group-hover:translate-y-0"
+                        style={{ background: planMeshGrad(plan.key), filter: 'blur(12px)', transition: 'opacity 220ms ease-out, transform 320ms ease-out' }}
+                      />
+                    )}
+                    <div className="relative z-10 flex flex-col h-full">
                     {/* Recommended badge */}
                     {isStandard && (
                       <span
@@ -414,10 +444,9 @@ export default function PlansPage() {
                         onClick={() => handleCheckout(plan.key)}
                         disabled={!!checkingOut}
                         className="w-full py-3.5 text-sm font-semibold transition-all disabled:opacity-50 hover:opacity-90"
-                        style={{
-                          background: isStandard ? 'var(--accent)' : 'var(--surface-hover)',
-                          color: isStandard ? 'var(--selected-text)' : 'var(--text)',
-                        }}
+                        style={isStandard
+                          ? { background: 'var(--accent)', color: 'var(--selected-text)' }
+                          : secondaryBtnStyle}
                       >
                         {checkingOut === plan.key ? (
                           <span className="inline-flex items-center gap-2">
@@ -429,6 +458,7 @@ export default function PlansPage() {
                         )}
                       </button>
                     </Squircle>
+                    </div>
                   </SquircleBox>
                 </motion.div>
               )
@@ -442,8 +472,16 @@ export default function PlansPage() {
             transition={{ delay: 0.45, duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
             className="mb-8"
           >
-            <SquircleBox cornerRadius={20} className="glass-card p-7 flex flex-col sm:flex-row sm:items-center gap-5">
-              <div className="flex-1 min-w-0">
+            <SquircleBox cornerRadius={20} className="group glass-card p-7 flex flex-col sm:flex-row sm:items-center gap-5 relative overflow-hidden">
+              {/* Dark mode: pastel mesh orbits in on hover */}
+              {dark && (
+                <span
+                  aria-hidden
+                  className="mesh-orbit absolute inset-0 opacity-0 translate-x-3 translate-y-3 group-hover:opacity-100 group-hover:translate-x-0 group-hover:translate-y-0"
+                  style={{ background: planMeshGrad('test'), filter: 'blur(12px)', transition: 'opacity 220ms ease-out, transform 320ms ease-out' }}
+                />
+              )}
+              <div className="flex-1 min-w-0 relative z-10">
                 <h2 className="text-xl font-bold mb-1" style={{ color: 'var(--text)' }}>
                   {locale === 'ja' ? '模試パス' : 'Exam Pass'}
                 </h2>
@@ -453,7 +491,7 @@ export default function PlansPage() {
                     : 'Unlimited full mock exams — TOEIC, IELTS, EIKEN and Versant — with instant AI grading. Lessons not included.'}
                 </p>
               </div>
-              <div className="flex items-center gap-5 shrink-0">
+              <div className="flex items-center gap-5 shrink-0 relative z-10">
                 <div className="text-right">
                   <span className="text-3xl font-bold tracking-tight" style={{ color: 'var(--text)' }}>¥2,000</span>
                   <span className="text-sm ml-1.5" style={{ color: 'var(--text-muted)' }}>
@@ -465,7 +503,7 @@ export default function PlansPage() {
                     onClick={() => handleCheckout('test')}
                     disabled={!!checkingOut}
                     className="px-6 py-3.5 text-sm font-semibold transition-all disabled:opacity-50 hover:opacity-90"
-                    style={{ background: 'var(--surface-hover)', color: 'var(--text)' }}
+                    style={secondaryBtnStyle}
                   >
                     {checkingOut === 'test' ? (
                       <span className="inline-flex items-center gap-2">

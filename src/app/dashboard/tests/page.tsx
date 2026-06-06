@@ -61,8 +61,8 @@ const CATEGORIES: {
     key: 'ielts',
     name: ['IELTS', 'IELTS'],
     description: [
-      '留学・海外移住のためのアカデミック英語テスト。',
-      'The academic English test for studying or moving abroad.',
+      '留学・海外移住のための英語テスト。アカデミックとジェネラルの両方に対応。',
+      'The English test for studying or moving abroad — Academic and General Training.',
     ],
   },
   {
@@ -358,8 +358,9 @@ export default function TestsPage() {
                   className="p-5 mb-3 flex flex-col gap-2.5 cursor-pointer transition-all duration-[120ms] ease-out hover:scale-[1.02] active:scale-[0.98]"
                   style={{ background: 'var(--panel)', border: '1px solid var(--hairline)', boxShadow: 'var(--card-shadow)' }}
                   onClick={() => router.push(`/dashboard/tests/sets/${setSlug}`)}>
-                  <div className="flex items-center justify-between gap-3">
-                    <p className="font-semibold truncate" style={{ color: 'var(--text)' }}>
+                  <div className="flex items-center gap-3">
+                    {/* flex-1 on the title keeps all badges clustered on the right */}
+                    <p className="font-semibold truncate flex-1 min-w-0" style={{ color: 'var(--text)' }}>
                       {locale === 'ja' ? ordered[0].set_title_ja || ordered[0].set_title : ordered[0].set_title}
                     </p>
                     {ordered.some(f => f.published === false) && (
