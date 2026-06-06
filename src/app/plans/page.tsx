@@ -487,8 +487,8 @@ export default function PlansPage() {
                 </h2>
                 <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
                   {locale === 'ja'
-                    ? 'TOEIC・IELTS・英検・Versantの本格模試が受け放題。AI採点ですぐに結果が届きます。レッスンは含まれません。'
-                    : 'Unlimited full mock exams — TOEIC, IELTS, EIKEN and Versant — with instant AI grading. Lessons not included.'}
+                    ? 'TOEIC・IELTS・英検・Versantの本格模試が受け放題。AI採点と講師採点に対応。レッスンは含まれません。'
+                    : 'Unlimited full mock exams: TOEIC, IELTS, EIKEN and Versant, with AI or teacher grading. Lessons not included.'}
                 </p>
               </div>
               <div className="flex items-center gap-5 shrink-0 relative z-10">
