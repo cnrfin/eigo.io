@@ -493,7 +493,7 @@ export default function PlansPage() {
               </div>
               <div className="flex items-center gap-5 shrink-0 relative z-10">
                 <div className="text-right">
-                  <span className="text-3xl font-bold tracking-tight" style={{ color: 'var(--text)' }}>¥2,000</span>
+                  <span className="text-3xl font-bold tracking-tight" style={{ color: 'var(--text)' }}>¥2,980</span>
                   <span className="text-sm ml-1.5" style={{ color: 'var(--text-muted)' }}>
                     {locale === 'ja' ? '/月' : '/mo'}
                   </span>

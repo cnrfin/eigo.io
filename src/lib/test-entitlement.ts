@@ -10,7 +10,7 @@ import { isAdminTestUser } from '@/lib/test-auth'
  * Everything else requires entitlement:
  *   - admins (draft preview accounts), or
  *   - ANY non-cancelled subscription: lesson plans (light/standard) include
- *     tests as a perk, and 'test' (Exam Pass, ¥2,000/month) is tests only.
+ *     tests as a perk, and 'test' (Exam Pass, ¥2,980/month) is tests only.
  *
  * Mirrors the lesson-booking check in /api/calendar/book: a subscription row
  * exists and status !== 'cancelled' (past_due keeps access during the Stripe

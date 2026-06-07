@@ -74,6 +74,6 @@ export const PLAN_PRICES = {
     yearly: { trial: 132000, full: 200000 },
   },
   test: {
-    monthly: { trial: 2000, full: 2000 }, // no trial discount
+    monthly: { trial: 2980, full: 2980 }, // no trial discount
   },
 } as const
