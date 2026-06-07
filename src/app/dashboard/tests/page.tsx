@@ -69,8 +69,8 @@ const CATEGORIES: {
     key: 'eiken',
     name: ['英検', 'EIKEN'],
     description: [
-      '5級から1級まで、日本で最も受験されている英語検定。',
-      "Japan's most popular English certification, from Grade 5 to Grade 1.",
+      '日本で最も受験されている英語検定。',
+      "Japan's most popular English certification.",
     ],
   },
   {
@@ -364,9 +364,14 @@ export default function TestsPage() {
               }
               return m[s] ? t(m[s][0], m[s][1]) : s
             }
-            // Stable order: by set slug, so Mock 1 always precedes Mock 2
-            // (and Academic precedes General Training).
-            return [...sets.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([setSlug, fs]) => {
+            // Stable order: by the track's difficulty order (exam_tracks.order_index
+            // — EIKEN grades ladder 5→1, Academic before GT, L&R before S&W),
+            // then by set slug so Mock 1 precedes Mock 2 within a track.
+            return [...sets.entries()].sort(([aSlug, aFs], [bSlug, bFs]) => {
+              const ao = aFs[0]?.track?.order_index ?? 0
+              const bo = bFs[0]?.track?.order_index ?? 0
+              return ao !== bo ? ao - bo : aSlug.localeCompare(bSlug)
+            }).map(([setSlug, fs]) => {
               const ordered = [...fs].sort((a, b) => a.set_order - b.set_order)
               const scoredCount = ordered.filter(f => attempts[f.id]?.status === 'scored').length
               const allScored = scoredCount === ordered.length
