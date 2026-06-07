@@ -146,17 +146,32 @@ export default function TestsPage() {
     const latest = (keys: string[]): ExamScore | undefined =>
       keys.map(k => examScores[k]).filter(Boolean)
         .sort((a, b) => String(b.updated_at ?? '').localeCompare(String(a.updated_at ?? '')))[0]
+    // Personal best: only once there's more than one result for the exam
+    // (Mock 1 + Mock 2, or a retake) and the best beats the current headline.
+    const bestSub = (e: ExamScore | undefined, currentKey: string): string | null => {
+      if (!e || typeof e.results !== 'number' || e.results < 2) return null
+      const cur = e[currentKey], best = e.best
+      if (typeof best !== 'number' || typeof cur !== 'number' || best <= cur) return null
+      return t(`自己ベスト ${best}`, `Best ${best}`)
+    }
     const cefr = examScores['cefr']
     const toeic = examScores['toeic-lr']
+    const sw = examScores['toeic-sw']
     const ielts = latest(['ielts-academic', 'ielts-general'])
     const eiken = latest(Object.keys(examScores).filter(k => k.startsWith('eiken')))
     const versant = examScores['versant']
+    // TOEIC sub: L&R is the headline (/990); S&W (its own /400 exam) shows in
+    // the sub-line when taken; personal best appended when it applies.
+    const toeicSub = [
+      sw?.total != null ? `S&W ${sw.total}` : toeic ? '/ 990' : null,
+      bestSub(toeic, 'total'),
+    ].filter(Boolean).join(' · ') || null
     return [
       { key: 'cefr', label: 'CEFR', value: cefr?.level != null ? String(cefr.level) : null, sub: cefr?.cefr_j ? `CEFR-J ${cefr.cefr_j}` : null },
-      { key: 'toeic', label: 'TOEIC', value: toeic?.total != null ? String(toeic.total) : null, sub: toeic ? '/ 990' : null },
-      { key: 'ielts', label: 'IELTS', value: ielts?.overall_band != null ? String(ielts.overall_band) : null, sub: ielts ? t('バンド', 'Band') : null },
-      { key: 'eiken', label: t('英検', 'EIKEN'), value: eiken ? (eiken.passed === true ? t('合格', 'Pass') : eiken.cse_total != null ? String(eiken.cse_total) : null) : null, sub: eiken && eiken.passed !== true ? 'CSE' : null },
-      { key: 'versant', label: 'Versant', value: versant?.gse != null ? String(versant.gse) : null, sub: versant ? 'GSE' : null },
+      { key: 'toeic', label: 'TOEIC', value: toeic?.total != null ? String(toeic.total) : null, sub: toeicSub },
+      { key: 'ielts', label: 'IELTS', value: ielts?.overall_band != null ? String(ielts.overall_band) : null, sub: bestSub(ielts, 'overall_band') ?? (ielts ? t('バンド', 'Band') : null) },
+      { key: 'eiken', label: t('英検', 'EIKEN'), value: eiken ? (eiken.passed === true ? t('合格', 'Pass') : eiken.cse_total != null ? String(eiken.cse_total) : null) : null, sub: bestSub(eiken, 'cse_total') ?? (eiken && eiken.passed !== true ? 'CSE' : null) },
+      { key: 'versant', label: 'Versant', value: versant?.gse != null ? String(versant.gse) : null, sub: bestSub(versant, 'gse') ?? (versant ? 'GSE' : null) },
     ]
   }, [examScores, locale]) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -349,7 +364,9 @@ export default function TestsPage() {
               }
               return m[s] ? t(m[s][0], m[s][1]) : s
             }
-            return [...sets.entries()].map(([setSlug, fs]) => {
+            // Stable order: by set slug, so Mock 1 always precedes Mock 2
+            // (and Academic precedes General Training).
+            return [...sets.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([setSlug, fs]) => {
               const ordered = [...fs].sort((a, b) => a.set_order - b.set_order)
               const scoredCount = ordered.filter(f => attempts[f.id]?.status === 'scored').length
               const allScored = scoredCount === ordered.length

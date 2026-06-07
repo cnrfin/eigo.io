@@ -100,8 +100,10 @@ const SETS = [
       {
         type: 'matching', prompt: 'Match each room to its activity.',
         items: [['hall', 'Main Hall'], ['garden', 'Garden Room'], ['studio', 'Studio'], ['library', 'Library Corner'], ['kitchen', 'Kitchen']],
-        options: [['iv', 'Homework club'], ['i', 'Badminton'], ['vi', 'Choir practice'], ['ii', 'Yoga'], ['v', 'Cookery class'], ['iii', 'Painting group'], ['vii', 'Table tennis']],
-        answer: { hall: 'i', garden: 'ii', studio: 'iii', library: 'iv', kitchen: 'v' },
+        // Option ids run i, ii, iii… in DISPLAY order (like the real exam),
+        // so the numerals carry no information about the answers.
+        options: [['i', 'Homework club'], ['ii', 'Badminton'], ['iii', 'Choir practice'], ['iv', 'Yoga'], ['v', 'Cookery class'], ['vi', 'Painting group'], ['vii', 'Table tennis']],
+        answer: { hall: 'ii', garden: 'iv', studio: 'vi', library: 'i', kitchen: 'v' },
       },
     ],
   },
@@ -130,8 +132,8 @@ const SETS = [
       {
         type: 'matching', prompt: 'Match each person to the task they will do.',
         items: [['dan', 'Dan'], ['priya', 'Priya'], ['karen', 'Karen'], ['leo', 'Leo']],
-        options: [['iii', 'Contacting the sponsors'], ['i', 'Designing the posters'], ['v', 'Marking the route'], ['iv', 'Organising first aid'], ['ii', 'Updating the website']],
-        answer: { dan: 'i', priya: 'ii', karen: 'iii', leo: 'iv' },
+        options: [['i', 'Contacting the sponsors'], ['ii', 'Designing the posters'], ['iii', 'Marking the route'], ['iv', 'Organising first aid'], ['v', 'Updating the website']],
+        answer: { dan: 'ii', priya: 'v', karen: 'i', leo: 'iv' },
       },
       { type: 'multiple_choice', prompt: 'Which TWO things do runners get for free? Choose TWO.', options: [['A', 'Water', true], ['B', 'Fruit', true], ['C', 'A medal', false], ['D', 'Parking', false], ['E', 'A photograph', false]] },
     ],

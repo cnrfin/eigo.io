@@ -95,8 +95,10 @@ const SETS = [
       {
         type: 'matching', prompt: 'Match each floor to what visitors find there.',
         items: [['ground', 'Ground floor'], ['first', 'First floor'], ['second', 'Second floor'], ['third', 'Third floor'], ['fourth', 'Fourth floor']],
-        options: [['iii', 'The human body'], ['vi', 'A planetarium'], ['i', 'Café and gift shop'], ['v', 'Temporary exhibitions'], ['ii', 'Rockets and space'], ['vii', 'A reading library'], ['iv', 'Hands-on experiments for children']],
-        answer: { ground: 'i', first: 'ii', second: 'iii', third: 'iv', fourth: 'v' },
+        // Option ids run i, ii, iii… in DISPLAY order (like the real exam),
+        // so the numerals carry no information about the answers.
+        options: [['i', 'The human body'], ['ii', 'A planetarium'], ['iii', 'Café and gift shop'], ['iv', 'Temporary exhibitions'], ['v', 'Rockets and space'], ['vi', 'A reading library'], ['vii', 'Hands-on experiments for children']],
+        answer: { ground: 'iii', first: 'v', second: 'i', third: 'vii', fourth: 'iv' },
       },
     ],
   },
@@ -120,8 +122,8 @@ const SETS = [
       {
         type: 'matching', prompt: 'Match each student to the task they will do.',
         items: [['tom', 'Tom'], ['sara', 'Sara'], ['mia', 'Mia'], ['ben', 'Ben']],
-        options: [['iii', 'Making the slides'], ['i', 'Designing the survey'], ['v', 'Booking the room'], ['iv', 'Presenting the results'], ['ii', 'Writing the introduction']],
-        answer: { tom: 'i', sara: 'ii', mia: 'iii', ben: 'iv' },
+        options: [['i', 'Making the slides'], ['ii', 'Designing the survey'], ['iii', 'Booking the room'], ['iv', 'Presenting the results'], ['v', 'Writing the introduction']],
+        answer: { tom: 'ii', sara: 'v', mia: 'i', ben: 'iv' },
       },
       { type: 'multiple_choice', prompt: 'Which TWO problems do the students mention? Choose TWO.', options: [['A', 'A low survey response', true], ['B', 'A tight deadline', true], ['C', 'A software crash', false], ['D', 'The tutor being absent', false], ['E', 'Lost data files', false]] },
     ],
