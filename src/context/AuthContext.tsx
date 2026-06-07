@@ -143,7 +143,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const signOut = async () => {
-    await supabase.auth.signOut()
+    try {
+      await supabase.auth.signOut()
+    } finally {
+      // Hard navigation to the landing page: leaving the user on a dashboard
+      // with no session shows half-empty UI, and a full reload also clears any
+      // per-user state held in memory by open components.
+      window.location.href = '/'
+    }
   }
 
   const refreshAvatar = useCallback(async () => {
