@@ -103,7 +103,7 @@ export default function CoursePage() {
   const [moving, setMoving] = useState(false)
   const [direction, setDirection] = useState<Dir>(1)
   const [notice, setNotice] = useState(false)
-  const [trackSegs, setTrackSegs] = useState<{ c1: string; c2: string; y1: number; y2: number; d: string }[]>([]) // tube lines per level
+  const [trackSegs, setTrackSegs] = useState<{ c1: string; c2: string; y1: number; y2: number; d: string; locked: boolean; fadeFrom?: string; fadeTop?: number }[]>([]) // tube lines per level
   const [trackH, setTrackH] = useState(0)         // full scroll height for the SVG
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null) // node whose card is shown
   const [cardVisible, setCardVisible] = useState(true) // selected node currently in view?
@@ -198,7 +198,7 @@ export default function CoursePage() {
     // previous level's last station so the line is continuous through the
     // interchange, taking on the new level's colour from that point.
     if (course) {
-      const segs: { c1: string; c2: string; y1: number; y2: number; d: string }[] = []
+      const segs: { c1: string; c2: string; y1: number; y2: number; d: string; locked: boolean; fadeFrom?: string; fadeTop?: number }[] = []
       let start = 0
       course.levels.forEach((lvl, li) => {
         const len = lvl.lessons.length
@@ -209,14 +209,25 @@ export default function CoursePage() {
         // Above the first node the gradient clamps to c1 (SVG pad spread).
         const ys = pts.map(p => p.y)
         const [c1, c2] = LEVEL_COLORS[li % LEVEL_COLORS.length]
-        segs.push({ c1, c2, y1: Math.min(...ys), y2: Math.max(...ys), d: connectorPath(linePts) })
+        // Levels past the first are paywalled: drain their colour for locked-out
+        // (non-entitled) users so only Level 1 reads as live. The FIRST locked
+        // level eases in from the previous level's end colour to the grey, so the
+        // line dissolves into the locked zone instead of cutting to grey abruptly.
+        const locked = !entitled && li > 0
+        const fadeFrom = locked && !(!entitled && (li - 1) > 0)
+          ? LEVEL_COLORS[(li - 1) % LEVEL_COLORS.length][1]
+          : undefined
+        // Fade starts at the top of this line (the interchange node) and reaches
+        // grey within a short span, so the colour dissolves quickly into the lock.
+        const fadeTop = fadeFrom !== undefined ? linePts[0].y : undefined
+        segs.push({ c1, c2, y1: Math.min(...ys), y2: Math.max(...ys), d: connectorPath(linePts), locked, fadeFrom, fadeTop })
         start += len
       })
       setTrackSegs(segs)
     }
     setTrackH(cont.scrollHeight)
     return cont
-  }, [course])
+  }, [course, entitled])
 
   // Remeasure on container resize and snap the mascot back onto its current node
   // (node x positions are a fraction of width, so they shift when width changes).
@@ -345,7 +356,7 @@ export default function CoursePage() {
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                 <rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" />
               </svg>
-              {t('最初のレッスンは無料。続きは模試パスで。', 'First lesson free. The rest with the Exam Pass.')}
+              {t('レベル1は無料。すべてのレベルはプランか模試パスで。', 'Level 1 is free. Unlock every level with a plan or the Exam Pass.')}
             </p>
           )}
         </SquircleBox>
@@ -378,14 +389,23 @@ export default function CoursePage() {
               >
                 <defs>
                   {trackSegs.map((s, i) => (
-                    <linearGradient key={i} id={`tubeline-${i}`} gradientUnits="userSpaceOnUse" x1="0" y1={s.y1} x2="0" y2={s.y2}>
-                      <stop offset="0" stopColor={s.c1} />
-                      <stop offset="1" stopColor={s.c2} />
-                    </linearGradient>
+                    s.fadeFrom
+                      ? (
+                        <linearGradient key={i} id={`tubeline-${i}`} gradientUnits="userSpaceOnUse" x1="0" y1={s.fadeTop} x2="0" y2={(s.fadeTop ?? 0) + 70}>
+                          <stop offset="0" stopColor={s.fadeFrom} />
+                          <stop offset="1" stopColor="var(--track-line)" />
+                        </linearGradient>
+                      )
+                      : (
+                        <linearGradient key={i} id={`tubeline-${i}`} gradientUnits="userSpaceOnUse" x1="0" y1={s.y1} x2="0" y2={s.y2}>
+                          <stop offset="0" stopColor={s.c1} />
+                          <stop offset="1" stopColor={s.c2} />
+                        </linearGradient>
+                      )
                   ))}
                 </defs>
                 {trackSegs.map((s, i) => (
-                  <path key={i} d={s.d} fill="none" stroke={`url(#tubeline-${i})`}
+                  <path key={i} d={s.d} fill="none" stroke={s.locked && !s.fadeFrom ? 'var(--track-line)' : `url(#tubeline-${i})`}
                     strokeWidth={10} strokeLinecap="round" strokeLinejoin="round" />
                 ))}
               </svg>
@@ -399,7 +419,7 @@ export default function CoursePage() {
                     it releases and scrolls up it dissolves in the same zone as
                     the nodes. Its own drop-fade band hides nodes passing under. */}
                 <div ref={el => { levelTitleEls.current[li] = el }} className="sticky z-10 pb-8" style={{ top: TOP_FADE, background: 'linear-gradient(var(--dash-bg) 62%, transparent)' }}>
-                  <div className="w-full px-5 py-3 rounded-2xl text-center"
+                  <div className="relative w-full px-5 py-3 rounded-2xl text-center"
                     style={{ background: 'var(--panel)', border: `1px solid ${li === currentLevelIdx(course, nextLesson) ? 'var(--accent)' : 'var(--edge)'}`, boxShadow: 'var(--card-shadow)' }}>
                     <span className="block text-[10px] font-semibold uppercase tracking-wider mb-0.5" style={{ color: 'var(--accent)' }}>
                       {t(`レベル ${li + 1}`, `Level ${li + 1}`)}
@@ -407,6 +427,21 @@ export default function CoursePage() {
                     <span className="text-sm font-bold" style={{ color: 'var(--text)' }}>
                       {locale === 'ja' ? level.title_ja : level.title}
                     </span>
+                    {/* Level 1 is free for everyone; later levels are paywalled, so a
+                        locked-out viewer sees a Free tag here and a padlock there. */}
+                    {!entitled && li === 0 && (
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] px-2 py-0.5 rounded-full font-semibold"
+                        style={{ background: 'var(--accent-bg)', color: 'var(--accent)' }}>
+                        {t('無料', 'Free')}
+                      </span>
+                    )}
+                    {!entitled && li > 0 && (
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} aria-label={t('ロック中', 'Locked')}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                          <rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                        </svg>
+                      </span>
+                    )}
                   </div>
                 </div>
 
@@ -419,8 +454,10 @@ export default function CoursePage() {
                     const done = lesson.progress?.status === 'completed'
                     const isNext = nextLesson?.id === lesson.id
                     const locked = !lesson.free && !entitled
-                    // node.riv state input: 0 locked, 1 available, 2 active, 3 completed
-                    const nodeState = done ? 3 : isNext ? 2 : locked ? 0 : 1
+                    // node.riv state input: 0 locked, 1 available, 2 active, 3 completed.
+                    // `locked` beats `isNext` so the first paywalled lesson reads as
+                    // locked (greyed), not as the bright active node.
+                    const nodeState = done ? 3 : locked ? 0 : isNext ? 2 : 1
                     // Match the marker to the gradient line at this point: interpolate
                     // the level's [start,end] by the lesson's position in the level.
                     const [lc1, lc2] = LEVEL_COLORS[li % LEVEL_COLORS.length]
@@ -429,7 +466,9 @@ export default function CoursePage() {
                     // The last station of a level is the interchange to the next line —
                     // give it a half-and-half fill (this level on top, next below).
                     const isJunction = lessonIdx === len - 1 && li < course.levels.length - 1
-                    const nextColor = isJunction ? LEVEL_COLORS[(li + 1) % LEVEL_COLORS.length][0] : undefined
+                    // The interchange half-fill takes the next level's colour, but if
+                    // that next level is paywalled (locked-out user) it's greyed too.
+                    const nextColor = isJunction ? (!entitled ? 'var(--track-line)' : LEVEL_COLORS[(li + 1) % LEVEL_COLORS.length][0]) : undefined
                     return (
                       <div key={lesson.id} className="relative" style={{ height: ROW_H }}>
                         {/* node */}
@@ -459,11 +498,6 @@ export default function CoursePage() {
                         >
                           <p className="text-sm font-semibold leading-snug" style={{ color: isNext || done ? 'var(--text)' : 'var(--text-muted)' }}>
                             {locale === 'ja' ? lesson.title_ja : lesson.title}
-                            {lesson.free && !entitled && (
-                              <span className="ml-2 text-[10px] px-1.5 py-0.5 rounded-full font-medium align-middle" style={{ background: 'var(--accent-bg)', color: 'var(--accent)' }}>
-                                {t('無料', 'Free')}
-                              </span>
-                            )}
                           </p>
                         </button>
                       </div>
@@ -519,7 +553,7 @@ export default function CoursePage() {
             const lesson = flat[selectedIdx]
             const lockedSel = !lesson.free && !entitled
             const status = lesson.progress?.status
-            const label = lockedSel ? t('プランを見る', 'See plans')
+            const label = lockedSel ? t('プランを見る', 'See Plans')
               : status === 'completed' ? t('もう一度', 'Review')
               : status === 'in_progress' ? t('続ける', 'Resume')
               : t('始める', 'Start')
@@ -533,12 +567,9 @@ export default function CoursePage() {
                 <SquircleBox cornerRadius={28} className="px-4 pt-8 pb-4"
                   style={{ background: 'var(--panel)', border: '2px solid var(--hairline)', boxShadow: '0 8px 28px rgba(0,0,0,0.18)' }}>
                   <p className="text-center font-bold mb-5 px-2" style={{ color: 'var(--text)' }}>
-                    {locale === 'ja' ? lesson.title_ja : lesson.title}
-                    {lesson.free && !entitled && (
-                      <span className="ml-2 text-[10px] px-1.5 py-0.5 rounded-full font-medium align-middle" style={{ background: 'var(--accent-bg)', color: 'var(--accent)' }}>
-                        {t('無料', 'Free')}
-                      </span>
-                    )}
+                    {lockedSel
+                      ? t('続きのレベルを解放しよう', 'Unlock more levels')
+                      : (locale === 'ja' ? lesson.title_ja : lesson.title)}
                   </p>
                   <button onClick={() => openLesson(lesson)}
                     className="w-full py-3 rounded-full font-semibold transition-transform duration-[120ms] ease-out hover:scale-[1.02] active:scale-[0.98]"
