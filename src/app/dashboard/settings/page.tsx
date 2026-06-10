@@ -303,7 +303,7 @@ export default function SettingsPage() {
     <section className="pt-12 pb-8">
       {/* Same content container as the dashboard tabs / tests page */}
       <motion.div
-        className="max-w-3xl mx-auto w-full px-4"
+        className="max-w-6xl mx-auto w-full px-4"
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}

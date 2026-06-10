@@ -15,7 +15,7 @@ function AppIcon({ kind, name }: { kind: App['icon']; name: string }) {
   const src = kind === 'eigo' ? '/eigoio.png' : '/sayafterme.png'
   return (
     <Squircle asChild cornerRadius={14} cornerSmoothing={0.8}>
-      <img src={src} alt={name} className="w-14 h-14 object-cover" />
+      <img src={src} alt={name} className="w-14 h-14 shrink-0 aspect-square object-cover" />
     </Squircle>
   )
 }
@@ -57,11 +57,11 @@ export default function AppsMenu() {
 
       {open && (
         <div
-          className="modal-card absolute right-0 top-11 z-50 p-4 rounded-2xl"
-          style={{ width: 248, background: 'var(--card)', border: '1px solid var(--hairline)', boxShadow: 'var(--card-shadow)' }}
+          className="modal-card absolute right-0 top-11 z-50 w-max p-4 rounded-2xl"
+          style={{ background: 'var(--card)', border: '1px solid var(--hairline)', boxShadow: 'var(--card-shadow)' }}
         >
           <p className="text-sm font-medium mb-3" style={{ color: 'var(--text)' }}>{locale === 'ja' ? 'アプリ' : 'Apps'}</p>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="flex gap-2">
             {APPS.map((app) => (
               <a
                 key={app.name}

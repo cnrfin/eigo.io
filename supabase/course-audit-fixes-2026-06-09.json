@@ -1,0 +1,439 @@
+[
+ {
+  "screen_id": "9fd934f8-af4c-48c6-a081-6dce38821f3f",
+  "field": "explanation",
+  "before_snippet": "(A), (C), and (D) contradict the text.",
+  "after": "Inference. \"Twenty minutes for a coffee\" plus \"not during the lunch rush\" implies service slows when busy. (A), (B), and (D) contradict the text.",
+  "note": "EN explanation listed the correct answer (C) as a contradiction; JA already had the right letters"
+ },
+ {
+  "screen_id": "c0f42be2-3a2d-469a-8583-174474132c72",
+  "field": "explanation",
+  "before_snippet": "Spacious or roomy fit best. A ",
+  "after": "“Keen ON photography”, “find it relaxing”, and “doesn’t COST much money”. “Interested” takes “in”, so it cannot fill the “keen” slot, and “spend” needs a person as its subject (I don’t spend much money on it) — with “hobby” as the subject, the verb is “cost”. With near-synonyms, the fork is usually the preposition or the subject.",
+  "note": "EN explanation was a copy-paste of screen #9 (spacious/roomy); JA was already correct"
+ },
+ {
+  "screen_id": "c3977383-d432-4a4b-85f7-eadfba262248",
+  "field": "explanation",
+  "before_snippet": "“Because” introduces the reaso",
+  "after": "Sentence ② gives the reason — fresh air lifts my mood — but ③’s example is about gym prices, which does not support that reason. An example only works as evidence for the reason just given. To talk about cost, open a second reason first: “Another reason is the cost.” The signpost (“For example”) was right; the cargo was wrong.",
+  "note": "EN explanation was a copy-paste of screen #3 (because/whereas); JA was already correct"
+ },
+ {
+  "screen_id": "748d174a-ad3c-42a2-abbb-d6a34589c7c0",
+  "field": "accepted",
+  "before_snippet": "[\"interested\", \"keen\"]",
+  "after": [
+   "interested"
+  ],
+  "note": "\"keen\" produced \"keen in photography\" — wrong English, contradicts lexical#10 which drills keen ON"
+ },
+ {
+  "screen_id": "748d174a-ad3c-42a2-abbb-d6a34589c7c0",
+  "field": "explanation",
+  "before_snippet": "\"Interested in\" (or \"keen on\")",
+  "after": "“Interested in.” (“Keen” does not fit here: keen takes ON — keen ON photography.) Learn each word together with its preposition."
+ },
+ {
+  "screen_id": "748d174a-ad3c-42a2-abbb-d6a34589c7c0",
+  "field": "explanation_ja",
+  "before_snippet": "be interested in / be keen on。",
+  "after": "be interested in が正解。keen は前置詞が on（be keen on）なので、in の前には入りません。単語は前置詞とセットで覚えましょう。"
+ },
+ {
+  "screen_id": "26e716e9-1ac4-4382-a864-6da20502d295",
+  "field": "prompt",
+  "before_snippet": "【Summary】The kiwi finds food by ______ for insects underground.",
+  "after": "【Passage】\nUnlike most birds, the kiwi cannot fly. It uses its long beak, which has nostrils at the very tip, to sniff out insects in the soil.\n\n【Summary】The kiwi finds insects underground using its long ______.",
+  "note": "Required morphing \"sniff out\"→\"smelling\", contradicting the verbatim-words rule the completion lesson teaches (and real IELTS)"
+ },
+ {
+  "screen_id": "26e716e9-1ac4-4382-a864-6da20502d295",
+  "field": "accepted",
+  "before_snippet": "[\"smelling\", \"sniffing\"]",
+  "after": [
+   "beak",
+   "long beak"
+  ]
+ },
+ {
+  "screen_id": "26e716e9-1ac4-4382-a864-6da20502d295",
+  "field": "explanation",
+  "before_snippet": "\"Sniff out\" becomes \"smelling ",
+  "after": "Summary completion lifts the passage’s own words: beak. If you ever find yourself changing a word’s form to make it fit, re-check the gap — completion answers come from the text as they are."
+ },
+ {
+  "screen_id": "26e716e9-1ac4-4382-a864-6da20502d295",
+  "field": "explanation_ja",
+  "before_snippet": "sniff out → smelling / sniffin",
+  "after": "要約完成は本文の語をそのまま抜き出します。beak が正解。形を変えたくなったら空所の文法を見直しましょう。完成問題の答えは本文の形のままです。"
+ },
+ {
+  "screen_id": "a4107b86-c9af-4272-8d4e-aa180a649c7b",
+  "field": "body_ja",
+  "before_snippet": "Part 4つのうち、",
+  "after": "Part 3は、社会や将来についての大きな質問が続く「口頭のミニエッセイ」です。何も準備せずに臨むと、話があちこちに散らかってしまいます。用意しておきたいのがこの型。\n\n①立場：On the whole, I’d say… ／ It depends, but…\n\n②理由：The main reason is… ／ mainly because…\n\n③例：For instance… ／ In Japan, for example…\n\n④譲歩：That said, … ／ Of course, …\n\n4ステップで30〜45秒。4つのステップのうち、バンドを最も押し上げるのが④の譲歩です。反対側を認めても立場は弱くなりません。むしろ「両面を見た上での結論」として強くなります。\n\n合図のフレーズを口が覚えていれば、頭が中身を考えている間も、構造はひとりでに整います。",
+  "note": "Garbled Japanese (mistranslation of \"of the four parts\")"
+ },
+ {
+  "screen_id": "0817c09d-1211-4822-9e51-1c9e7943d3d9",
+  "field": "prompt",
+  "before_snippet": "ヒント: pushed back = 延期された",
+  "after": "選択肢ではこう言い換えられます：\nThe workshop has been ___.（1語で）\n\nヒント: 句動詞 → 1語の動詞に言い換え",
+  "note": "Hint was the direct JA translation of the expected answer (postponed)"
+ },
+ {
+  "screen_id": "f7d260b7-eca8-4a77-88bf-08aef725a45b",
+  "field": "body",
+  "before_snippet": "All twelve lessons complete. Use these patterns in a mock test.",
+  "after": "• One or two questions per set are cross questions.\n\n• Routine: mark the specifics → start in the document that has them → check in the other.\n\n• Price questions: base → surcharges → discounts.\n\n• Changes and exceptions are more important than the original table.\n\nThat completes the last new pattern. One more step: the Part 7 level review.",
+  "note": "Course-complete message fired one lesson early (review still follows); \"twelve lessons\" also outdated (now 16)"
+ },
+ {
+  "screen_id": "f7d260b7-eca8-4a77-88bf-08aef725a45b",
+  "field": "body_ja",
+  "before_snippet": "これで全12レッスン完了です。学んだパターンを使って、模試で力を試しましょう。",
+  "after": "・ダブルパッセージは5問中1〜2問がクロス問題\n\n・手順：設問の固有名詞・数字 → まず片方の文書 → 条件をもう一方で確認\n\n・料金問題は「基本 → 加算 → 割引」の順に当てはめる\n\n・変更・例外の情報（メール側）が、表や広告の情報に勝つ\n\nこれで新しいパターンはすべて学びました。仕上げは、次のPart 7総まとめレッスンです。"
+ },
+ {
+  "screen_id": "e20b1d89-8cc6-497d-b0f3-22e5b2b00593",
+  "field": "body",
+  "before_snippet": "That wraps up Listening. Next level: Reading, starting with the big one, True/False/Not Given.",
+  "after": "• Wrong options WILL be mentioned: hearing a word proves nothing.\n\n• Cross options off as they are raised and rejected.\n\n• Actually / my mistake / let’s make it ~ → change to what follows.\n\n• A proposal only counts once someone agrees to it.\n\n• Watch the last-year/this-year contrast.\n\nThat wraps up the new material. Next: a mixed review of this level — then on to Reading and the big one, True/False/Not Given.",
+  "note": "Pointed past the listening review lesson to the wrong next lesson"
+ },
+ {
+  "screen_id": "e20b1d89-8cc6-497d-b0f3-22e5b2b00593",
+  "field": "body_ja",
+  "before_snippet": "リスニング攻略はここまで。次のレベルはリーディング、まずは最重要のTrue/False/Not Givenです。",
+  "after": "・不正解の選択肢も必ず音声に登場する。「聞こえた」は根拠にならない\n\n・選択肢に「出たけど却下」のバツ印をつけながら聞く\n\n・Actually ／ my mistake ／ Let’s make it 〜 は訂正のサイン。直後の情報で上書き\n\n・提案は相手の賛成（Good idea ／ Let’s do that）が付いて初めて確定\n\n・last year ／ this year の対比にも注意\n\n新しい内容はここまで。次はこのレベルの総まとめ、そのあとリーディング（最重要のTrue/False/Not Given）へ進みます。"
+ },
+ {
+  "screen_id": "107306a9-a0f1-4b4c-847c-54c5575ccd57",
+  "field": "body",
+  "before_snippet": "That completes Reading. Next level: Writing, starting with GT Task 1 letters.",
+  "after": "• Word limits are rules: count on your fingers (articles count; hyphenated = one).\n\n• Digits are the safe way to write numbers.\n\n• Let the gap’s grammar decide the form before you search.\n\n• Use the passage’s exact words, never your own paraphrase.\n\n• Re-read the completed sentence for number and grammar.\n\nThat completes the new material. Next: the Reading level review — then Writing, starting with GT Task 1 letters.",
+  "note": "Pointed past the reading review lesson"
+ },
+ {
+  "screen_id": "107306a9-a0f1-4b4c-847c-54c5575ccd57",
+  "field": "body_ja",
+  "before_snippet": "リーディング攻略はここまで。次のレベルはライティング、まずはGT Task 1の手紙からです。",
+  "after": "・語数制限は絶対ルール。書いたら指折り数える（冠詞も1語、ハイフン語は1語）\n\n・数字は算用数字で書くのが安全\n\n・空所の前後の文法で、入る形を先に決める\n\n・答えは本文の言葉をそのまま。自分の言い換えは使わない\n\n・入れたら文ごと読み直して、単複と文法を確認\n\n新しい内容はここまで。次はリーディングの総まとめ、そのあとライティング（GT Task 1の手紙）です。"
+ },
+ {
+  "screen_id": "bc3e736d-cbaf-496d-bacc-94fba70d94da",
+  "field": "body",
+  "before_snippet": "That completes the Speaking level: criteria, vocabulary, grammar, structure, Part 2, Part 3, six frames to use in your mock tests and the real exam.",
+  "after": "• The Part 3 frame: position → reason → example → concession, 30–45 seconds.\n\n• The concession raises your band the most: “That said” / “Of course”.\n\n• Soften your claims instead of using absolutes: tend to / generally / I’d say.\n\n• Either-or → “It depends on ~”; agree-or-disagree → “I agree up to a point”.\n\n• Buy thinking time out loud: “That’s a tough one.”\n\nThat completes the six Speaking lessons: criteria, vocabulary, grammar, structure, Part 2, Part 3. One last step: the Speaking review — then take the frames into your mock tests and the real exam.",
+  "note": "\"Level complete\" before the review lesson"
+ },
+ {
+  "screen_id": "bc3e736d-cbaf-496d-bacc-94fba70d94da",
+  "field": "body_ja",
+  "before_snippet": "スピーキング攻略はこれで完了です。採点基準・語彙・文法・組み立て・Part 2・Part 3。6レッスンの型を、模試と本番で使いこなしてください。",
+  "after": "・Part 3の型：立場→理由→例→譲歩。30〜45秒\n\n・譲歩が最大のバンドブースター。That said ／ Of course で反対側を認める\n\n・断定よりヘッジ：tend to ／ generally ／ I’d say\n\n・二択は It depends on 〜 で場合分け、賛否は I agree up to a point で部分賛成\n\n・考える時間は That’s a tough one. と声に出して稼ぐ\n\n6つのレッスンはこれで完了です。採点基準・語彙・文法・組み立て・Part 2・Part 3。最後に総まとめレッスンで仕上げてから、模試と本番で型を使いこなしてください。"
+ },
+ {
+  "screen_id": "32c3ad09-b75f-49a2-8ce5-1ddbd363def6",
+  "field": "body",
+  "before_snippet": "Letters split into three registers",
+  "after": "Task 1 differs by exam type: General Training (GT) candidates write a letter, while Academic candidates describe a chart (next lesson). Letters split into three registers by relationship: FORMAL (no name known: company, council): Dear Sir or Madam, ↔ Yours faithfully. SEMI-FORMAL (named but not close: landlord, manager): Dear Mr Tanaka, ↔ Yours sincerely. INFORMAL (friend or family): Dear Ken, ↔ Best wishes / See you soon. Memory hook: no name → faithfully; a name → sincerely; and never “Yours faithfully” to a friend. Learn openings and closings as PAIRS: a mismatched pair loses marks by itself.",
+  "note": "GT never expanded; Academic/GT split never explained — app sells both mock types"
+ },
+ {
+  "screen_id": "32c3ad09-b75f-49a2-8ce5-1ddbd363def6",
+  "field": "body_ja",
+  "before_snippet": "GT Task 1の手紙は、相手との関係で3種類に分かれます。",
+  "after": "Task 1は受験タイプで異なります。General Training（GT）は手紙、Academicはグラフ描写（次のレッスン）です。\n\nGTの手紙は、相手との関係で3種類に分かれます。\n\n①フォーマル（名前を知らない相手：会社・役所など）\nDear Sir or Madam, ↔ Yours faithfully,\n\n②セミフォーマル（名前を知っている、でも親しくはない：大家さん・上司など）\nDear Mr Tanaka, ↔ Yours sincerely,\n\n③インフォーマル（友人・家族）\nDear Ken, ↔ Best wishes, ／ See you soon,\n\n覚え方：名前を知らなければ faithfully、知っていれば sincerely。そして友人に faithfully は使いません。開きと結びはペアで暗記してください。ちぐはぐな組み合わせ（Dear Ken, … Yours faithfully,）は、それだけで減点対象です。"
+ },
+ {
+  "screen_id": "6369e5ea-0d3b-4859-9c2f-6e8862d69c21",
+  "field": "body",
+  "before_snippet": "Next lesson: matching headings to paragraphs.",
+  "after": "• Three steps: match → True, contradict → False, no mention → Not Given.\n\n• The text is the only evidence; common sense is not allowed.\n\n• Added reasons, feelings or causes → probably Not Given.\n\n• Compare extreme words (every / all / only) against the text.\n\n• True is often hidden behind paraphrase: match meanings, not words.\n\nOne more thing: Yes/No/Not Given works exactly the same way — it just judges the writer’s claims instead of facts.\n\nNext lesson: matching headings to paragraphs.",
+  "note": "YNNG never mentioned anywhere despite appearing on real IELTS"
+ },
+ {
+  "screen_id": "6369e5ea-0d3b-4859-9c2f-6e8862d69c21",
+  "field": "body_ja",
+  "before_snippet": "次のレッスンは、段落と見出しを結びつけるマッチング問題です。",
+  "after": "・判定は3段階：一致→True、矛盾→False、書いていない→Not Given\n\n・根拠は本文の文だけ。常識・知識・「ありそう感」は禁止\n\n・設問が理由・感情・因果を「足して」いたらNot Givenを疑う\n\n・every ／ all ／ only などの極端な言葉は本文と強さを比較\n\n・Trueは言い換えで隠されている。単語ではなく意味で照合\n\nもうひとつ：Yes/No/Not Givenも判定方法はまったく同じ。事実ではなく筆者の主張を判定するだけです。\n\n次のレッスンは、段落と見出しを結びつけるマッチング問題です。"
+ },
+ {
+  "screen_id": "bc90187c-64ed-4249-b8c8-43ec4005c321",
+  "field": "body",
+  "before_snippet": "The structure is yours.",
+  "after": "• Ten seconds first: opinion type (“agree or disagree?”) or discuss-both (“Discuss both views”)?\n\n• Four paragraphs: intro + thesis / body 1 / body 2 / conclusion, and no new arguments in the conclusion.\n\n• Thesis = position + previewed reasons; never “This essay will discuss…”.\n\n• Open a discuss-both body 2 with “On the other hand, those who… argue that…”.\n\n• Despite + noun phrase, Although + clause; signs at the turns only.\n\n• Task 2 needs at least 250 words — plan on about 40 of your 60 minutes.\n\nThe structure is yours. Now rebuild it from memory in a mock Task 2.",
+  "note": "250-word minimum never stated anywhere in the course (Task 1’s 150 is stated)"
+ },
+ {
+  "screen_id": "bc90187c-64ed-4249-b8c8-43ec4005c321",
+  "field": "body_ja",
+  "before_snippet": "型が手に入ったら、",
+  "after": "・最初の10秒でタイプ判定：agree or disagree?＝意見型、Discuss both views＝両論型\n\n・骨格は4段落：導入＋thesis／本論1／本論2／結論。結論に新しい論点は持ち込まない\n\n・thesis＝立場＋理由の予告。「This essay will discuss…」は禁止\n\n・両論型の本論2は On the other hand, those who 〜 argue that… で開く\n\n・Despite＋名詞句／Although＋節。標識は角にだけ\n\n・Task 2は250語以上。時間配分は60分のうち約40分が目安\n\n型が手に入ったら、あとは中身。模試のTask 2で骨格ごと再現してみましょう。"
+ },
+ {
+  "screen_id": "a3d9703e-2313-4717-b365-480ca32290b6",
+  "field": "body",
+  "before_snippet": "Academic Task 1 is a 150-word report on a chart.",
+  "after": "Academic Task 1 is a report of at least 150 words on a chart. Opinions (“I think people should…”) and invented causes (“probably because of prices…”) are not allowed: treat think / should / best as warning signs.\n\nThe vocabulary is small and high-value: rises (rose / increased / climbed + sharply / steadily / slightly), falls (fell / dropped / declined + the same adverbs), flat lines (remained stable / levelled off), multiples (doubled / halved / more than doubled), extremes (peaked at ~ / fell to a low of ~).\n\nThe frame is SUBJECT + VERB + ADVERB + PERIOD. Put the bank’s parts into the frame and any chart becomes writable.",
+  "note": "EN implied a 150-word target; JA correctly says 以上 (minimum)"
+ },
+ {
+  "screen_id": "acf48231-e760-4892-8c7b-9c3b5561b499",
+  "field": "accepted",
+  "before_snippet": "[\"fell\", \"dropped\", \"plummeted\", \"decreased\"]",
+  "after": [
+   "fell",
+   "dropped",
+   "plummeted",
+   "decreased",
+   "declined",
+   "plunged",
+   "slumped",
+   "sank",
+   "tumbled",
+   "crashed"
+  ],
+  "note": "Omitted \"declined\" — taught as a core fall verb and accepted in charts#3 — plus other valid one-word fall verbs"
+ },
+ {
+  "screen_id": "4d7ec126-fc6d-419c-9e23-911170b1d08d",
+  "field": "accepted",
+  "before_snippet": "[\"wonderful\", \"great\", \"fantastic\", \"memorable\", \"valuable\",",
+  "after": [
+   "wonderful",
+   "great",
+   "fantastic",
+   "memorable",
+   "valuable",
+   "rewarding",
+   "enjoyable",
+   "terrific",
+   "excellent",
+   "amazing",
+   "brilliant",
+   "worthwhile",
+   "fascinating",
+   "superb",
+   "impressive",
+   "incredible",
+   "unforgettable",
+   "remarkable",
+   "outstanding"
+  ],
+  "note": "Omitted \"superb\" and \"impressive\" — the exact words lexical#1 taught as replacements for \"good\""
+ },
+ {
+  "screen_id": "33e3efdc-4c7f-4899-a580-0f15d106fdb6",
+  "field": "accepted",
+  "before_snippet": "[\"however\"]",
+  "after": [
+   "however",
+   "nevertheless",
+   "nonetheless",
+   "yet",
+   "still"
+  ],
+  "note": "Other correct one-word contrast linkers a Task-2-level student would type"
+ },
+ {
+  "screen_id": "d218b4c9-10c3-4640-a806-a8ffecef965d",
+  "field": "accepted",
+  "before_snippet": "[\"photographs\", \"recent photographs\", \"photos\"]",
+  "after": [
+   "photographs",
+   "recent photographs",
+   "photos",
+   "recent photos"
+  ],
+  "note": "Mixing the two accepted patterns was marked wrong"
+ },
+ {
+  "screen_id": "d71def73-805e-41ee-b095-d4c4bca805ff",
+  "field": "accepted",
+  "before_snippet": "[\"10:30\", \"half past ten\", \"10.30\", \"ten thirty\"]",
+  "after": [
+   "10:30",
+   "half past ten",
+   "10.30",
+   "ten thirty",
+   "1030",
+   "10:30 am",
+   "10.30 am",
+   "10:30am",
+   "10.30am"
+  ],
+  "note": "Common time formats"
+ },
+ {
+  "screen_id": "0a0da7d8-2fa7-4eb6-8e9e-ea20042e1d49",
+  "field": "accepted",
+  "before_snippet": "[\"07733096\", \"0773 3096\", \"077 33 096\", \"077 33096\"]",
+  "after": [
+   "07733096",
+   "0773 3096",
+   "077 33 096",
+   "077 33096",
+   "077-33-096",
+   "0773-3096",
+   "077-33096"
+  ],
+  "note": "Japanese learners habitually hyphenate phone numbers"
+ },
+ {
+  "screen_id": "6626437a-39ec-4c6b-a0da-cb4256bf0655",
+  "field": "accepted",
+  "before_snippet": "[\"cosy\", \"cozy\", \"lively\", \"picturesque\", \"charming\", \"invit",
+  "after": [
+   "cosy",
+   "cozy",
+   "lively",
+   "picturesque",
+   "charming",
+   "inviting",
+   "atmospheric",
+   "welcoming",
+   "quaint",
+   "snug",
+   "vibrant",
+   "bustling",
+   "lovely",
+   "pleasant",
+   "delightful",
+   "homely",
+   "relaxing"
+  ],
+  "note": "Reasonable additions"
+ },
+ {
+  "screen_id": "d897e799-075e-4406-afd2-f35fae6efbe7",
+  "field": "accepted",
+  "before_snippet": "[\"dramatic\", \"significant\", \"major\", \"huge\", \"massive\", \"eno",
+  "after": [
+   "dramatic",
+   "significant",
+   "major",
+   "huge",
+   "massive",
+   "enormous",
+   "profound",
+   "radical",
+   "drastic",
+   "life-changing",
+   "substantial",
+   "considerable",
+   "monumental",
+   "transformative"
+  ],
+  "note": "Reasonable additions"
+ },
+ {
+  "screen_id": "af8ee931-ffda-4761-a6ee-ad8c5008fb86",
+  "field": "explanation",
+  "before_snippet": "Challenge:",
+  "after": "Challenge: an indirect reply. \"There’s a notice by the door\" means \"I don’t know, but check there.\" (A) is a place; (B) answers a WH question with Yes.",
+  "note": "Missing space after colon; read like an internal difficulty tag"
+ },
+ {
+  "screen_id": "b4ca49d7-707c-43a6-a484-66806d3b6606",
+  "field": "explanation",
+  "before_snippet": "Challenge:",
+  "after": "Challenge: an indirect answer to a Yes/No question. \"She’s out until next Monday\" effectively means no. (B) and (C) just echo \"manager\" and \"visit.\"",
+  "note": "Missing space after colon; read like an internal difficulty tag"
+ },
+ {
+  "screen_id": "d24b626d-e4c7-464c-9e36-2f9cccb48534",
+  "field": "explanation",
+  "before_snippet": "Challenge:",
+  "after": "Challenge: a conditional instruction: \"If your pass is missing, see me at the front before you leave.\" (C) rewords \"before you leave today\" as \"before leaving.\"",
+  "note": "Missing space after colon; read like an internal difficulty tag"
+ },
+ {
+  "screen_id": "33dd93b7-045c-4fab-96f0-31aa83f3e39a",
+  "field": "explanation",
+  "before_snippet": "Challenge:",
+  "after": "Challenge: tense sequencing. \"By the time\" + past means the main clause happened earlier, so the past perfect \"had organized\" fits. (B) and (D) clash with the past frame.",
+  "note": "Missing space after colon; read like an internal difficulty tag"
+ },
+ {
+  "screen_id": "71ce6f16-2734-4bc6-bed2-f5655f51a89a",
+  "field": "explanation",
+  "before_snippet": "Challenge:",
+  "after": "Challenge: combining both. The first blank precedes a noun phrase (\"its high cost\"), so the preposition \"because of\"; the second precedes a clause, so the conjunction \"although.\"",
+  "note": "Missing space after colon; read like an internal difficulty tag"
+ },
+ {
+  "screen_id": "33f58a56-9457-4016-80c5-5343475a9f96",
+  "field": "explanation",
+  "before_snippet": "Challenge:",
+  "after": "Challenge: double passage. Document 2 names three workshops; Document 1’s \"any three for $100\" applies, so the discounted $100 (not $120) is the charge. Connect the two documents.",
+  "note": "Missing space after colon; read like an internal difficulty tag"
+ },
+ {
+  "screen_id": "b1742c93-9764-4843-8acf-bf8815a1a3f1",
+  "field": "explanation",
+  "before_snippet": "Challenge:",
+  "after": "Challenge: combine conditions. The ride takes an hour and check-in closes at 9:30. The 8:00 shuttle arrives 9:00 (in time); the 10:00 arrives too late. The latest that still works is 8:00.",
+  "note": "Missing space after colon; read like an internal difficulty tag"
+ },
+ {
+  "screen_id": "a8510841-576d-4250-9b4d-bfa538804219",
+  "field": "options",
+  "before_snippet": "\"A fast car forward.\"",
+  "after": [
+   {
+    "label": "A",
+    "content": "Sure, give me a minute.",
+    "is_correct": true
+   },
+   {
+    "label": "B",
+    "content": "He moved it forward.",
+    "is_correct": false
+   },
+   {
+    "label": "C",
+    "content": "The file cabinet.",
+    "is_correct": false
+   }
+  ],
+  "note": "Distractor was gibberish English; real sound-trap distractors are grammatical sentences"
+ },
+ {
+  "screen_id": "5a40144c-020d-4d56-aabf-95746261db58",
+  "field": "body",
+  "before_snippet": "Be careful with it instead.",
+  "after": "You can never answer a WH question with Yes or No, yet Part 2 still includes options like that. Remove them right away. The other common trap is an option that repeats a word (or a similar sound) from the question: it feels right because you heard it. Treat it with suspicion instead.",
+  "note": "Dangling sentence"
+ },
+ {
+  "screen_id": "553b9ebf-8a33-4079-bcae-cdb7658713d3",
+  "field": "prompt",
+  "before_snippet": "（接続詞を1語で）",
+  "after": "The report must be reviewed ___ it is sent to the client.（接続詞を1語で。「送る前に確認する」という意味に）",
+  "note": "\"after\"/\"once\" were defensible parses; disambiguate the intended meaning"
+ },
+ {
+  "screen_id": "c5fe8795-e5e8-4d55-ad24-eb67739caf20",
+  "field": "prompt",
+  "before_snippet": "Listen, then answer.",
+  "after": "Listen. Which statement matches what you hear?",
+  "note": "Only MCQ in the lesson with no EN question stem"
+ },
+ {
+  "screen_id": "1589f1ba-1dcc-40c4-8c41-1970e95f01d1",
+  "field": "explanation",
+  "before_snippet": "Scanning: search the passage",
+  "after": "Search the passage for the keyword \"finish\" to get \"central park.\" Take the fact as stated.",
+  "note": "\"Scanning\" introduced as a named technique never taught in the level"
+ },
+ {
+  "screen_id": "1589f1ba-1dcc-40c4-8c41-1970e95f01d1",
+  "field": "explanation_ja",
+  "before_snippet": "スキャニング。設問のキーワード",
+  "after": "設問のキーワード finish で本文を探すと central park。事実をそのまま取ります。"
+ }
+]

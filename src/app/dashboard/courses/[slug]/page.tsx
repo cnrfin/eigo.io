@@ -1,0 +1,562 @@
+'use client'
+
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { useParams, useRouter } from 'next/navigation'
+import { motion } from 'framer-motion'
+import { useAuth } from '@/context/AuthContext'
+import { useLanguage } from '@/context/LanguageContext'
+import { useDashboardNav } from '@/context/DashboardNavContext'
+import SquircleBox from '@/components/ui/SquircleBox'
+import CourseMascot, { type Dir } from '@/components/courses/CourseMascot'
+import CourseStation from '@/components/courses/CourseStation'
+
+type Lesson = {
+  id: string
+  slug: string
+  title: string
+  title_ja: string
+  free: boolean
+  estimated_minutes: number
+  progress: { status: string; screen_index: number } | null
+}
+type Level = { id: string; title: string; title_ja: string; lessons: Lesson[] }
+type Course = {
+  id: string; slug: string; title: string; title_ja: string
+  description: string; description_ja: string; published: boolean
+  levels: Level[]
+}
+
+// Track geometry
+const ROW_H = 150        // px per node row (generous spacing, Brilliant-style)
+const AMPLITUDE = 54     // px horizontal wobble of the serpentine
+const NODE_CENTER = 0.40 // node column center as a fraction of track width
+const TOP_FADE = 64      // px; sticky titles pin just below this
+const NODE = 92          // station hit-area / marker box px
+
+// Tube-line gradient per level (cycled): [start, end] hues that shift slightly
+// along the line, poster-style. Level 1 = brand teal. The station marker uses
+// the start colour. All read on both the dark and light track bg.
+const LEVEL_COLORS: [string, string][] = [
+  ['#00c2b8', '#3ad6a0'], // teal → green
+  ['#e85d8a', '#f0913f'], // pink → orange
+  ['#4a82e0', '#8a6df0'], // blue → purple
+  ['#34a853', '#9ccb3b'], // green → lime
+  ['#f0992e', '#ef6a6a'], // amber → red
+  ['#9a6df0', '#5b8def'], // purple → blue
+]
+
+// Smooth dashed connector through the node centres. Catmull-Rom → cubic bezier,
+// so the line curves naturally between the serpentine nodes instead of zig-zag
+// straight segments. Points at (0,0) are unmeasured nodes and are dropped.
+// Linear interpolate between two #rrggbb hex colours (t in 0..1).
+function lerpColor(a: string, b: string, t: number): string {
+  const pa = parseInt(a.slice(1), 16), pb = parseInt(b.slice(1), 16)
+  const r = Math.round(((pa >> 16) & 255) + (((pb >> 16) & 255) - ((pa >> 16) & 255)) * t)
+  const g = Math.round(((pa >> 8) & 255) + (((pb >> 8) & 255) - ((pa >> 8) & 255)) * t)
+  const bl = Math.round((pa & 255) + ((pb & 255) - (pa & 255)) * t)
+  return `#${((1 << 24) + (r << 16) + (g << 8) + bl).toString(16).slice(1)}`
+}
+
+// `k` is the curve tension (standard Catmull-Rom is 1/6 ≈ 0.167; higher = curvier).
+function connectorPath(pts: { x: number; y: number }[], k = 1 / 6): string {
+  const p = pts.filter(q => q && (q.x !== 0 || q.y !== 0))
+  if (p.length < 2) return ''
+  const f = (n: number) => n.toFixed(1)
+  const d = [`M ${f(p[0].x)} ${f(p[0].y)}`]
+  for (let i = 0; i < p.length - 1; i++) {
+    const p0 = p[i - 1] ?? p[i]
+    const p1 = p[i]
+    const p2 = p[i + 1]
+    const p3 = p[i + 2] ?? p2
+    const c1x = p1.x + (p2.x - p0.x) * k, c1y = p1.y + (p2.y - p0.y) * k
+    const c2x = p2.x - (p3.x - p1.x) * k, c2y = p2.y - (p3.y - p1.y) * k
+    d.push(`C ${f(c1x)} ${f(c1y)}, ${f(c2x)} ${f(c2y)}, ${f(p2.x)} ${f(p2.y)}`)
+  }
+  return d.join(' ')
+}
+
+/**
+ * Course map (Phase A) — a scrollable serpentine track of lesson nodes grouped
+ * by level. Sticky level titles pin just below the top fade and are pushed up
+ * by the next level. Top/bottom fades dissolve nodes at the track edges. A
+ * placeholder mascot sits on the active node (Phase B swaps in the Rive teri).
+ */
+export default function CoursePage() {
+  const { slug } = useParams<{ slug: string }>()
+  const { session } = useAuth()
+  const { locale } = useLanguage()
+  const router = useRouter()
+  const t = (ja: string, en: string) => (locale === 'ja' ? ja : en)
+
+  const [course, setCourse] = useState<Course | null>(null)
+  const [entitled, setEntitled] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [showTop, setShowTop] = useState(false)
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const activeNodeRef = useRef<HTMLDivElement>(null)
+  // mascot walk
+  const nodeEls = useRef<(HTMLDivElement | null)[]>([])
+  const levelTitleEls = useRef<(HTMLDivElement | null)[]>([])
+  const posRef = useRef<{ x: number; y: number }[]>([])
+  const [mascot, setMascot] = useState<{ x: number; y: number } | null>(null)
+  const [moving, setMoving] = useState(false)
+  const [direction, setDirection] = useState<Dir>(1)
+  const [notice, setNotice] = useState(false)
+  const [trackSegs, setTrackSegs] = useState<{ c1: string; c2: string; y1: number; y2: number; d: string }[]>([]) // tube lines per level
+  const [trackH, setTrackH] = useState(0)         // full scroll height for the SVG
+  const [selectedIdx, setSelectedIdx] = useState<number | null>(null) // node whose card is shown
+  const [cardVisible, setCardVisible] = useState(true) // selected node currently in view?
+  const mascotIdxRef = useRef(0)  // node Teri currently stands on
+  const walkSeqRef = useRef(0)    // cancels an in-flight walk when a new one starts
+  const mascotReadyRef = useRef(false)   // rig loaded → inputs exist
+  const pendingWalkRef = useRef<number | null>(null) // walk queued until rig ready
+
+  // Show the card only while its node is within the visible band of the track
+  // (above the top fade, above the card's own footprint at the bottom).
+  const updateCardVisible = useCallback((sel: number | null) => {
+    const cont = scrollRef.current
+    if (!cont || sel == null || !posRef.current[sel]) return
+    const yInView = posRef.current[sel].y - cont.scrollTop
+    setCardVisible(yInView > TOP_FADE - 24 && yInView < cont.clientHeight - 140)
+  }, [])
+
+  // Scroll-driven fade for the level title cards: full opacity in the top half
+  // of the track, fading toward 0 as they sit lower, so a title fades in as it
+  // rises to the centre. Written imperatively (no re-render) on each scroll.
+  const updateTitleOpacity = useCallback(() => {
+    const cont = scrollRef.current
+    if (!cont) return
+    const cr = cont.getBoundingClientRect()
+    const h = cont.clientHeight
+    const mid = h * 0.5
+    for (const el of levelTitleEls.current) {
+      if (!el) continue
+      const r = el.getBoundingClientRect()
+      const centerY = r.top - cr.top + r.height / 2
+      el.style.opacity = String(centerY <= mid ? 1 : Math.max(0, 1 - (centerY - mid) / (h - mid)))
+    }
+  }, [])
+
+  // Walk Teri from her current node to `target`, one straight node-to-node hop
+  // at a time (down if the target is later, up if earlier), then select it.
+  // Deliberately simple — one direction/position update per hop. Curved
+  // (sub-stepped) interpolation was tried twice but its extra mid-walk updates
+  // made the WebGL2 walk-cycle paint glitchy, so straight lines it is.
+  const walkTo = useCallback((target: number) => {
+    const pos = posRef.current
+    if (!pos.length || target < 0 || target >= pos.length) return
+    setSelectedIdx(target)
+    updateCardVisible(target)
+    setNotice(false) // clear the arrival notice the instant a new walk starts
+    const seq = ++walkSeqRef.current
+    const dirFor = (a: { x: number; y: number }, b: { x: number; y: number }): Dir =>
+      Math.abs(b.y - a.y) >= Math.abs(b.x - a.x) ? (b.y > a.y ? 1 : 3) : (b.x > a.x ? 0 : 2)
+    const greet = () => setNotice(true) // true on arrival; stays until the next walk
+    const step = (from: number) => {
+      if (seq !== walkSeqRef.current) return
+      if (from === target) { setMoving(false); mascotIdxRef.current = target; greet(); return }
+      const next = from < target ? from + 1 : from - 1
+      setDirection(dirFor(pos[from], pos[next]))
+      setMoving(true)
+      setMascot(pos[next])
+      mascotIdxRef.current = next
+      setTimeout(() => step(next), 650)
+    }
+    if (mascotIdxRef.current === target) { greet(); return }
+    step(mascotIdxRef.current)
+  }, [updateCardVisible])
+
+  // Start (or queue) a walk that only runs once the Rive rig has loaded —
+  // otherwise isMoving/direction are still null and the walk is silently lost.
+  const requestWalk = useCallback((target: number) => {
+    if (mascotReadyRef.current) walkTo(target)
+    else pendingWalkRef.current = target
+  }, [walkTo])
+
+  const onMascotReady = useCallback(() => {
+    mascotReadyRef.current = true
+    if (pendingWalkRef.current != null) {
+      const tg = pendingWalkRef.current
+      pendingWalkRef.current = null
+      walkTo(tg)
+    }
+  }, [walkTo])
+
+  // Measure node centres (in scroll-content coords) + rebuild the connector path
+  // and track height. Returns the scroll container, or null if not mounted yet.
+  const measurePositions = useCallback(() => {
+    const cont = scrollRef.current
+    if (!cont) return null
+    const cr = cont.getBoundingClientRect()
+    posRef.current = nodeEls.current.map(el => {
+      if (!el) return { x: 0, y: 0 }
+      const r = el.getBoundingClientRect()
+      return { x: r.left - cr.left + cont.scrollLeft + r.width / 2, y: r.top - cr.top + cont.scrollTop + r.height / 2 }
+    })
+    // One tube line per level (its own colour). Each level's path starts at the
+    // previous level's last station so the line is continuous through the
+    // interchange, taking on the new level's colour from that point.
+    if (course) {
+      const segs: { c1: string; c2: string; y1: number; y2: number; d: string }[] = []
+      let start = 0
+      course.levels.forEach((lvl, li) => {
+        const len = lvl.lessons.length
+        const pts = posRef.current.slice(start, start + len)
+        const linePts = start > 0 ? [posRef.current[start - 1], ...pts] : pts
+        // Gradient spans the level's OWN nodes (not the prepended prev-level node),
+        // so the line colour at each node matches the index-based node dot colour.
+        // Above the first node the gradient clamps to c1 (SVG pad spread).
+        const ys = pts.map(p => p.y)
+        const [c1, c2] = LEVEL_COLORS[li % LEVEL_COLORS.length]
+        segs.push({ c1, c2, y1: Math.min(...ys), y2: Math.max(...ys), d: connectorPath(linePts) })
+        start += len
+      })
+      setTrackSegs(segs)
+    }
+    setTrackH(cont.scrollHeight)
+    return cont
+  }, [course])
+
+  // Remeasure on container resize and snap the mascot back onto its current node
+  // (node x positions are a fraction of width, so they shift when width changes).
+  useEffect(() => {
+    const cont = scrollRef.current
+    if (!cont) return
+    let first = true
+    const ro = new ResizeObserver(() => {
+      if (first) { first = false; return } // skip the synchronous initial fire
+      measurePositions()
+      const cur = posRef.current[mascotIdxRef.current]
+      if (cur) setMascot(cur)
+      updateTitleOpacity()
+    })
+    ro.observe(cont)
+    return () => ro.disconnect()
+  }, [measurePositions, course, updateTitleOpacity])
+
+  useEffect(() => {
+    if (!session?.access_token) return
+    fetch('/api/courses', { headers: { Authorization: `Bearer ${session.access_token}` } })
+      .then(async r => { const d = await r.json(); if (!r.ok) throw new Error(d.error); return d })
+      .then(d => {
+        const c = (d.courses ?? []).find((x: Course) => x.slug === slug)
+        if (!c) throw new Error('not found')
+        setCourse(c)
+        setEntitled(d.entitled)
+      })
+      .catch(() => setError(t('コースを読み込めませんでした', 'Could not load this course')))
+      .finally(() => setLoading(false))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session?.access_token, slug])
+
+  const { setCrumbs } = useDashboardNav()
+  useEffect(() => {
+    setCrumbs([
+      { label: t('テスト', 'Tests'), onClick: () => router.push('/dashboard/tests') },
+      { label: course ? (locale === 'ja' ? course.title_ja : course.title) : t('コース', 'Course') },
+    ])
+    return () => setCrumbs([])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [course, locale, setCrumbs])
+
+  // Centre the active node, measure node positions, then walk the mascot from
+  // the last completed node to the active one (or just greet if at the start).
+  useEffect(() => {
+    if (!course) return
+    const flatL = course.levels.flatMap(l => l.lessons)
+    const activeIdx = flatL.findIndex(x => x.progress?.status !== 'completed')
+    const id = setTimeout(() => {
+      const cont = measurePositions()
+      if (!cont) return
+      // Scroll the TRACK (never the window) so the ACTIVE LEVEL's title pins at
+      // the top, flush with the info card — matching the reference.
+      if (activeIdx >= 0) {
+        const lvl = currentLevelIdx(course, nextLesson)
+        const tEl = levelTitleEls.current[lvl]
+        const top = tEl ? tEl.offsetTop - TOP_FADE : Math.max(0, posRef.current[activeIdx].y - 150)
+        cont.scrollTo({ top: Math.max(0, top), behavior: 'auto' })
+      }
+      // When every lesson is done, Teri rests at the top of the track by default
+      // (the first node) rather than the final one. Otherwise she starts on the
+      // last completed node and walks down to the active lesson.
+      if (activeIdx < 0) {
+        mascotIdxRef.current = 0
+        setMascot(posRef.current[0])
+        requestWalk(0)
+      } else {
+        let startIdx = activeIdx
+        for (let i = activeIdx - 1; i >= 0; i--) { if (flatL[i].progress?.status === 'completed') { startIdx = i; break } }
+        mascotIdxRef.current = startIdx
+        setMascot(posRef.current[startIdx])
+        requestWalk(activeIdx)
+      }
+      updateTitleOpacity()
+    }, 90)
+    return () => clearTimeout(id)
+  }, [course, requestWalk, measurePositions, updateTitleOpacity])
+
+  if (loading) {
+    return (
+      <div className="max-w-6xl mx-auto px-4 pt-12 pb-8 animate-pulse" aria-hidden>
+        <div className="h-8 w-72 max-w-full rounded mb-8" style={{ background: 'var(--inset)' }} />
+        <div className="h-40 rounded-2xl" style={{ background: 'var(--inset)' }} />
+      </div>
+    )
+  }
+  if (error || !course) {
+    return <div className="max-w-6xl mx-auto px-4 pt-12"><p style={{ color: 'var(--danger)' }}>{error}</p></div>
+  }
+
+  const flat = course.levels.flatMap(l => l.lessons)
+  const nextLesson = flat.find(x => x.progress?.status !== 'completed')
+  const doneCount = flat.filter(x => x.progress?.status === 'completed').length
+
+  const openLesson = (lesson: Lesson) => {
+    if (!lesson.free && !entitled) { router.push('/plans'); return }
+    router.push(`/dashboard/courses/lessons/${lesson.id}`)
+  }
+
+  // running global index for continuous numbering + serpentine offset
+  let g = -1
+
+  return (
+    <div className="max-w-6xl mx-auto px-4 pt-12 pb-8">
+      <h1 className="text-2xl sm:text-4xl font-bold mb-8" style={{ color: 'var(--text)' }}>
+        {locale === 'ja' ? course.title_ja : course.title}
+      </h1>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+        {/* ── Left: about + progress (static). Hidden at the 1-col breakpoint so
+            the track gets the full width and its bottom Start card stays on-screen. ── */}
+        <SquircleBox cornerRadius={16} className="hidden md:block p-6 md:sticky md:top-12"
+          style={{ background: 'var(--panel)', border: '1px solid var(--hairline)', boxShadow: 'var(--card-shadow)' }}>
+          <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+            {locale === 'ja' ? course.description_ja : course.description}
+          </p>
+          <p className="text-xs mt-4" style={{ color: 'var(--text-muted)' }}>
+            {t(`${flat.length}レッスン · 完了 ${doneCount}`, `${flat.length} lessons · ${doneCount} completed`)}
+          </p>
+          <div className="mt-2 h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--card-inset)' }}>
+            <div className="h-full rounded-full transition-all" style={{ background: 'var(--accent)', width: `${flat.length ? Math.round((doneCount / flat.length) * 100) : 0}%` }} />
+          </div>
+          {!entitled && (
+            <p className="text-xs mt-4 flex items-center gap-1.5" style={{ color: 'var(--text-muted)' }}>
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                <rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" />
+              </svg>
+              {t('最初のレッスンは無料。続きは模試パスで。', 'First lesson free. The rest with the Exam Pass.')}
+            </p>
+          )}
+        </SquircleBox>
+
+        {/* ── Right: scrollable serpentine track ──
+            Pulled up by the fade height so the title (pinned at top:TOP_FADE)
+            lands flush with the info-card top, and the fade zone sits ABOVE it.
+            Only at md+ — at the 1-col breakpoint there's no left card to align
+            with, so the negative margin would drag the track over the page title.
+            (-mt-[64px] must match TOP_FADE; px so the rem bump doesn't change it.) */}
+        {/* overflow-hidden: the bottom card animates y:150 (slides down) when it
+            hides; without clipping, that translated card grows the document and
+            makes the whole dashboard scrollable. Clipping keeps it to the track. */}
+        <div className="relative md:-mt-[64px] overflow-hidden">
+          <div
+            ref={scrollRef}
+            onScroll={e => { setShowTop(e.currentTarget.scrollTop > 300); updateCardVisible(selectedIdx); updateTitleOpacity() }}
+            className="no-scrollbar relative overflow-y-auto overscroll-contain h-[calc(100vh-140px)] min-h-[480px] pr-1"
+          >
+            {/* Tube lines through the station centres — one coloured line per
+                level. First child + no z-index so it paints behind the
+                (positioned) stations/titles. Scrolls with the content. */}
+            {trackSegs.length > 0 && (
+              <svg
+                className="absolute top-0 left-0 pointer-events-none"
+                width="100%"
+                height={trackH}
+                style={{ overflow: 'visible' }}
+                aria-hidden
+              >
+                <defs>
+                  {trackSegs.map((s, i) => (
+                    <linearGradient key={i} id={`tubeline-${i}`} gradientUnits="userSpaceOnUse" x1="0" y1={s.y1} x2="0" y2={s.y2}>
+                      <stop offset="0" stopColor={s.c1} />
+                      <stop offset="1" stopColor={s.c2} />
+                    </linearGradient>
+                  ))}
+                </defs>
+                {trackSegs.map((s, i) => (
+                  <path key={i} d={s.d} fill="none" stroke={`url(#tubeline-${i})`}
+                    strokeWidth={10} strokeLinecap="round" strokeLinejoin="round" />
+                ))}
+              </svg>
+            )}
+            {course.levels.map((level, li) => (
+              // gap below each level so the pinned title releases after the last
+              // node and scrolls up through empty space before the next title
+              <div key={level.id} style={{ marginBottom: 72 }}>
+                {/* sticky title — pins at the transparent edge of the top fade
+                    (crisp while pinned); sits BELOW the fade (z-10) so that when
+                    it releases and scrolls up it dissolves in the same zone as
+                    the nodes. Its own drop-fade band hides nodes passing under. */}
+                <div ref={el => { levelTitleEls.current[li] = el }} className="sticky z-10 pb-8" style={{ top: TOP_FADE, background: 'linear-gradient(var(--dash-bg) 62%, transparent)' }}>
+                  <div className="w-full px-5 py-3 rounded-2xl text-center"
+                    style={{ background: 'var(--panel)', border: `1px solid ${li === currentLevelIdx(course, nextLesson) ? 'var(--accent)' : 'var(--edge)'}`, boxShadow: 'var(--card-shadow)' }}>
+                    <span className="block text-[10px] font-semibold uppercase tracking-wider mb-0.5" style={{ color: 'var(--accent)' }}>
+                      {t(`レベル ${li + 1}`, `Level ${li + 1}`)}
+                    </span>
+                    <span className="text-sm font-bold" style={{ color: 'var(--text)' }}>
+                      {locale === 'ja' ? level.title_ja : level.title}
+                    </span>
+                  </div>
+                </div>
+
+                {/* nodes (pt gives the first node + mascot room below the title) */}
+                <div className="relative" style={{ paddingTop: 120, paddingBottom: 24 }}>
+                  {level.lessons.map((lesson, lessonIdx) => {
+                    g += 1
+                    const idx = g
+                    const offset = Math.round(Math.sin(idx * 0.9) * AMPLITUDE)
+                    const done = lesson.progress?.status === 'completed'
+                    const isNext = nextLesson?.id === lesson.id
+                    const locked = !lesson.free && !entitled
+                    // node.riv state input: 0 locked, 1 available, 2 active, 3 completed
+                    const nodeState = done ? 3 : isNext ? 2 : locked ? 0 : 1
+                    // Match the marker to the gradient line at this point: interpolate
+                    // the level's [start,end] by the lesson's position in the level.
+                    const [lc1, lc2] = LEVEL_COLORS[li % LEVEL_COLORS.length]
+                    const len = level.lessons.length
+                    const nodeColor = lerpColor(lc1, lc2, len > 1 ? lessonIdx / (len - 1) : 0)
+                    // The last station of a level is the interchange to the next line —
+                    // give it a half-and-half fill (this level on top, next below).
+                    const isJunction = lessonIdx === len - 1 && li < course.levels.length - 1
+                    const nextColor = isJunction ? LEVEL_COLORS[(li + 1) % LEVEL_COLORS.length][0] : undefined
+                    return (
+                      <div key={lesson.id} className="relative" style={{ height: ROW_H }}>
+                        {/* node */}
+                        <div
+                          ref={el => {
+                            nodeEls.current[idx] = el
+                            if (isNext) activeNodeRef.current = el
+                          }}
+                          className="absolute"
+                          style={{ left: `calc(${NODE_CENTER * 100}% + ${offset}px)`, top: '50%', transform: 'translate(-50%,-50%)' }}
+                        >
+                          <button
+                            onClick={() => walkTo(idx)}
+                            aria-label={locale === 'ja' ? lesson.title_ja : lesson.title}
+                            className="relative flex items-center justify-center transition-transform duration-[120ms] ease-out hover:scale-[1.08] active:scale-95"
+                            style={{ width: NODE, height: NODE }}
+                          >
+                            <CourseStation size={NODE} state={nodeState} color={nodeColor} color2={nextColor} isReview={lesson.slug.endsWith('-review')} />
+                          </button>
+                        </div>
+
+                        {/* label to the right of the node */}
+                        <button
+                          onClick={() => walkTo(idx)}
+                          className="absolute text-left max-w-[46%] transition-opacity hover:opacity-75"
+                          style={{ left: `calc(${NODE_CENTER * 100}% + ${offset}px + ${NODE / 2 + 16}px)`, top: '50%', transform: 'translateY(-50%)' }}
+                        >
+                          <p className="text-sm font-semibold leading-snug" style={{ color: isNext || done ? 'var(--text)' : 'var(--text-muted)' }}>
+                            {locale === 'ja' ? lesson.title_ja : lesson.title}
+                            {lesson.free && !entitled && (
+                              <span className="ml-2 text-[10px] px-1.5 py-0.5 rounded-full font-medium align-middle" style={{ background: 'var(--accent-bg)', color: 'var(--accent)' }}>
+                                {t('無料', 'Free')}
+                              </span>
+                            )}
+                          </p>
+                        </button>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            ))}
+            <div style={{ height: 80 }} />
+
+            {/* Teri — walks node-to-node within the scrolling track. Plain CSS
+                transform (not framer-motion, not imperative sub-steps): driving
+                the transform any other way made the WebGL2 walk-cycle paint
+                flaky. One state-driven hop per node, straight line, stays stable. */}
+            {mascot && (
+              <div
+                className="absolute z-[5] pointer-events-none"
+                style={{
+                  top: 0, left: 0, marginLeft: -78, marginTop: -142,
+                  transform: `translate(${mascot.x}px, ${mascot.y}px)`,
+                  transition: moving ? 'transform 0.65s ease-in-out' : 'none',
+                }}
+              >
+                <CourseMascot size={155} src={course.slug.startsWith('ielts') ? '/rive/earl.riv' : '/rive/teri.riv'} moving={moving} direction={direction} notice={notice} onReady={onMascotReady} />
+              </div>
+            )}
+          </div>
+
+          {/* top fade sits ABOVE titles + nodes (z-30) and reaches transparent
+              exactly at the pin line (TOP_FADE), so a pinned title is crisp but
+              anything scrolling up past it — node OR releasing title — dissolves
+              in this same zone */}
+          <div className="pointer-events-none absolute inset-x-0 top-0 z-30" style={{ height: TOP_FADE, background: 'linear-gradient(var(--dash-bg), transparent)' }} />
+          {/* tall bottom fade so titles/nodes dissolve well before they reach
+              the selected-lesson card sitting over the foot of the track */}
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-30" style={{ height: 260, background: 'linear-gradient(transparent, var(--dash-bg) 70%)' }} />
+
+          {/* scroll to top */}
+          {showTop && (
+            <button
+              onClick={() => scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' })}
+              aria-label={t('上に戻る', 'Back to top')}
+              className="absolute bottom-4 left-4 z-40 w-10 h-10 rounded-full flex items-center justify-center transition-transform duration-[120ms] ease-out hover:scale-110 active:scale-95"
+              style={{ background: 'var(--panel)', border: '1px solid var(--edge)', boxShadow: 'var(--card-shadow)', color: 'var(--text-muted)' }}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 15l-6-6-6 6"/></svg>
+            </button>
+          )}
+
+          {/* Selected-lesson card over the bottom of the track — Start opens the
+              lesson; tapping a node only walks Teri there and updates this card */}
+          {selectedIdx !== null && flat[selectedIdx] && (() => {
+            const lesson = flat[selectedIdx]
+            const lockedSel = !lesson.free && !entitled
+            const status = lesson.progress?.status
+            const label = lockedSel ? t('プランを見る', 'See plans')
+              : status === 'completed' ? t('もう一度', 'Review')
+              : status === 'in_progress' ? t('続ける', 'Resume')
+              : t('始める', 'Start')
+            return (
+              <motion.div
+                className="absolute inset-x-3 bottom-10 md:bottom-4 z-40"
+                animate={{ y: cardVisible ? 0 : 150, opacity: cardVisible ? 1 : 0 }}
+                transition={{ type: 'spring', stiffness: 360, damping: 34 }}
+                style={{ pointerEvents: cardVisible ? 'auto' : 'none' }}
+              >
+                <SquircleBox cornerRadius={28} className="px-4 pt-8 pb-4"
+                  style={{ background: 'var(--panel)', border: '2px solid var(--hairline)', boxShadow: '0 8px 28px rgba(0,0,0,0.18)' }}>
+                  <p className="text-center font-bold mb-5 px-2" style={{ color: 'var(--text)' }}>
+                    {locale === 'ja' ? lesson.title_ja : lesson.title}
+                    {lesson.free && !entitled && (
+                      <span className="ml-2 text-[10px] px-1.5 py-0.5 rounded-full font-medium align-middle" style={{ background: 'var(--accent-bg)', color: 'var(--accent)' }}>
+                        {t('無料', 'Free')}
+                      </span>
+                    )}
+                  </p>
+                  <button onClick={() => openLesson(lesson)}
+                    className="w-full py-3 rounded-full font-semibold transition-transform duration-[120ms] ease-out hover:scale-[1.02] active:scale-[0.98]"
+                    style={{ background: 'var(--accent)', color: '#fff' }}>
+                    {label}
+                  </button>
+                </SquircleBox>
+              </motion.div>
+            )
+          })()}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// Which level contains the active (next) lesson — used to accent its title.
+function currentLevelIdx(course: Course, nextLesson: Lesson | undefined): number {
+  if (!nextLesson) return -1
+  return course.levels.findIndex(l => l.lessons.some(le => le.id === nextLesson.id))
+}

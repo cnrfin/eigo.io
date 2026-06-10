@@ -1,0 +1,1635 @@
+[
+ {
+  "screen_id": "310c6a65-2392-4e02-a5a1-728b114f1572",
+  "lesson": "toeic-p2-wh-questions",
+  "order": 0,
+  "explanation": "The first word is When, so the answer must give a time: “Tomorrow at ten.” (A) answers a Where question, and (C) starts with Yes. WH questions are never answered with yes or no."
+ },
+ {
+  "screen_id": "7827ceae-d2e1-4321-982f-7f9ffee811db",
+  "lesson": "toeic-p2-wh-questions",
+  "order": 1,
+  "title": "The first word is everything",
+  "body": "In Part 2 you hear the question only once and nothing is printed. So decide your listening priority in advance: the question word at the very start. Catch What / Where / When / Who / Why / How, and you already know what KIND of answer to expect: a place, a time, a person. Then simply match the responses against that kind."
+ },
+ {
+  "screen_id": "3a3da425-ae11-4d04-8f21-1952c39bed34",
+  "lesson": "toeic-p2-wh-questions",
+  "order": 2,
+  "explanation": "Where asks for a place, so “On your desk.” is the answer. (B) recycles a similar-sounding word (shipping → shipped) and answers a WH question with Yes; (C) answers a When question."
+ },
+ {
+  "screen_id": "5bf79989-247b-4870-b90f-78d080e82382",
+  "lesson": "toeic-p2-wh-questions",
+  "order": 3,
+  "explanation": "Who asks for a person: Ms. Okada. A place (A) answers Where and a time (B) answers When. Pair each question word with its answer type."
+ },
+ {
+  "screen_id": "9b465fc8-8849-4f3e-8463-e327a9ee1c78",
+  "lesson": "toeic-p2-wh-questions",
+  "order": 4,
+  "explanation": "What time asks for a clock time: “At eight o’clock.” (A) is a place; (C) answers How often. Sort time-flavoured options into time / date / frequency."
+ },
+ {
+  "screen_id": "5a40144c-020d-4d56-aabf-95746261db58",
+  "lesson": "toeic-p2-wh-questions",
+  "order": 5,
+  "title": "The classic trap: options that start with Yes / No",
+  "body": "You can never answer a WH question with Yes or No, yet Part 2 happily includes such options. Eliminate them instantly. The other classic trap is an option that repeats a word (or a similar sound) from the question: it FEELS right because you heard it. Treat it with suspicion instead."
+ },
+ {
+  "screen_id": "395c9fe0-c907-4ef2-9fff-93f31ff3e312",
+  "lesson": "toeic-p2-wh-questions",
+  "order": 6,
+  "explanation": "Why needs a reason: “Because the director is away.” (B) is a double trap: Yes to a WH question plus a repeated word (Friday). (C) just echoes “meeting”."
+ },
+ {
+  "screen_id": "58a32533-32b4-4fd7-a5cb-4054b304b1a9",
+  "lesson": "toeic-p2-wh-questions",
+  "order": 7,
+  "explanation": "How many asks for a number: “About thirty.” (A) starts with Yes: gone. (B) answers When. Catch the first two words and this one is free."
+ },
+ {
+  "screen_id": "b4f3ff9c-330b-40a3-ab4d-c5c918875ef5",
+  "lesson": "toeic-p2-wh-questions",
+  "order": 8,
+  "title": "Recap: all eyes on the first word",
+  "body": "• The first question word decides the answer type.\n\n• Where→place, When→time, Who→person, Why→reason, How many→number.\n\n• Yes/No openers are instant eliminations for WH questions.\n\n• Repeated or similar-sounding words are traps.\n\nNext: yes/no questions and tag questions."
+ },
+ {
+  "screen_id": "dbcbb95a-3c5f-49f1-8dd1-f568c66abbfc",
+  "lesson": "toeic-p2-yesno-tag-questions",
+  "order": 0,
+  "title": "Yes/No questions, but the answer is rarely yes or no",
+  "body": "With Do you...? / Have you...? / Is it...? you might expect a yes or a no, but in Part 2 the correct response often skips it entirely, just like real conversation: “Have you read the report?” “About halfway through.” Never eliminate an option just because it lacks a yes or no."
+ },
+ {
+  "screen_id": "085a2591-a671-4193-b4c7-9e437a289a05",
+  "lesson": "toeic-p2-yesno-tag-questions",
+  "order": 1,
+  "explanation": "“Almost. I just need the June figures.” answers naturally without a yes/no. (B) starts with Yes but makes no sense (and “reported” is a sound trap); (C) just echoes “sales”."
+ },
+ {
+  "screen_id": "e0f35e0e-d46b-424e-b44f-634f9affa9f2",
+  "lesson": "toeic-p2-yesno-tag-questions",
+  "order": 2,
+  "title": "“I don’t know yet” is a perfectly good answer",
+  "body": "A hugely common correct pattern is the indirect answer: “I haven’t checked yet.” / “Ask Maria. She organized it.” / “It depends on the budget.” If it works as conversation, it can be the answer, and suspiciously tidy answers are often the traps."
+ },
+ {
+  "screen_id": "c4f90fbc-9ed6-42d8-b61c-dd802f162d17",
+  "lesson": "toeic-p2-yesno-tag-questions",
+  "order": 3,
+  "explanation": "“I haven’t tried it yet.” is a natural, indirect reply. (A) recycles “across”; (C) starts with Yes but the content is nonsense."
+ },
+ {
+  "screen_id": "e5c9b513-c270-4937-aabd-2f8e1837a12e",
+  "lesson": "toeic-p2-yesno-tag-questions",
+  "order": 4,
+  "explanation": "“His assistant would know.” redirects to someone who knows, a very common correct pattern. (A) is a money trap hooked to “budget”; (B) repeats “approved”."
+ },
+ {
+  "screen_id": "bd77e297-75cf-4d42-9058-55515d5dbf1c",
+  "lesson": "toeic-p2-yesno-tag-questions",
+  "order": 5,
+  "title": "Tag questions are just confirmation",
+  "body": "Tags like isn’t it? / didn’t you? / right? just turn a statement into a light confirmation. Answer them exactly like a normal yes/no question: ignore the tag and listen to the main sentence. “The shipment arrived on time, didn’t it?” simply means “Did the shipment arrive on time?”"
+ },
+ {
+  "screen_id": "403a8aa2-3f63-4ced-996d-38dbd8311f53",
+  "lesson": "toeic-p2-yesno-tag-questions",
+  "order": 6,
+  "explanation": "“Actually, it was a day late.” politely corrects the assumption; “actually” is a high-frequency signal for that. (B) is a place; (C) is a sound trap on “ship”."
+ },
+ {
+  "screen_id": "5f570520-83a6-4ec8-98f5-b02e54118a38",
+  "lesson": "toeic-p2-yesno-tag-questions",
+  "order": 7,
+  "explanation": "“I wouldn’t miss it.” means “definitely coming” without saying yes. (A) is past tense (the party hasn’t happened); (C) answers Where."
+ },
+ {
+  "screen_id": "114c66bc-1e16-4113-8c1d-a9dd95c2a662",
+  "lesson": "toeic-p2-yesno-tag-questions",
+  "order": 8,
+  "title": "Recap: don’t insist on a yes or no",
+  "body": "• Correct answers often skip yes/no entirely.\n\n• Indirect replies (“I haven’t checked”, “ask Maria”) are frequent winners.\n\n• Treat tag questions as ordinary yes/no questions.\n\n• “Actually...” signals a polite correction.\n\nNext: Part 2’s biggest trap, sound-alikes."
+ },
+ {
+  "screen_id": "fdcf2d4d-cd5e-45a4-bd91-5e0c001d27fc",
+  "lesson": "toeic-p2-sound-traps",
+  "order": 0,
+  "explanation": "“Walk me through ~” is a request for an explanation, so (A) agrees to it. (B) is a sound trap: walk vs. work. Mixing in near-homophones is Part 2’s favourite trick."
+ },
+ {
+  "screen_id": "b0dd6680-f8d6-4e2c-92ff-d1e40e979eb7",
+  "lesson": "toeic-p2-sound-traps",
+  "order": 1,
+  "title": "How sound traps work",
+  "body": "Wrong options in Part 2 are routinely seeded with near-homophones of words in the question: copy/coffee, walk/work, mail/meal, supplies/surprise. The danger is that your brain leaps at the sound it caught. So flip the logic: an option that repeats or resembles a question word is probably a trap, and the real answer is usually reworded."
+ },
+ {
+  "screen_id": "0f55c918-e8f7-40e0-81f9-87788d5136c9",
+  "lesson": "toeic-p2-sound-traps",
+  "order": 2,
+  "explanation": "(A) baits anyone who heard “coffee”; (C) plays handbook → handy. (B) gives a place, which is what Where demands."
+ },
+ {
+  "screen_id": "cb47902c-f938-46c6-9ef3-2de2938be544",
+  "lesson": "toeic-p2-sound-traps",
+  "order": 3,
+  "explanation": "(A) plays train → training; (B) plays leave → leaving AND answers a WH question with Yes. (C) gives a time, which When requires."
+ },
+ {
+  "screen_id": "e080e5ba-3dc6-4757-a6d7-f8f76d9e2c47",
+  "lesson": "toeic-p2-sound-traps",
+  "order": 4,
+  "title": "The right answer is usually plain",
+  "body": "You may have noticed: correct Part 2 answers tend to be plain and avoid repeating the question’s words. Test writers use repeated words as bait, and deliberately reword the real answer so only people who understood the whole sentence get it. In the test: same/similar word → suspect it; plain but conversationally natural → strong candidate."
+ },
+ {
+  "screen_id": "54453d55-9fd1-4801-b7cd-784c10a37dee",
+  "lesson": "toeic-p2-sound-traps",
+  "order": 5,
+  "explanation": "(A) plays closed → clothes; (C) repeats “park” and opens with Yes. (B) gives a reason. Even without knowing “repave”, elimination leaves only one option."
+ },
+ {
+  "screen_id": "52dc01a7-a833-44f0-89c2-5b3a62eb6ebd",
+  "lesson": "toeic-p2-sound-traps",
+  "order": 6,
+  "explanation": "“How was ~?” asks for an impression: “A little bumpy, but fine.” (B) and (C) both ride the -ight rhyme (flight → light / right)."
+ },
+ {
+  "screen_id": "9e28f00d-2378-4bcd-93a1-c859f5fb1388",
+  "lesson": "toeic-p2-sound-traps",
+  "order": 7,
+  "explanation": "(A) plays supplies → surprise and (B) supplies → sizes. Who needs a person: “That would be Mr. Tanaka.” A soft, very TOEIC-flavoured way to identify someone."
+ },
+ {
+  "screen_id": "c20e6f0c-6bc8-4b9b-9667-32b45935ee1b",
+  "lesson": "toeic-p2-sound-traps",
+  "order": 8,
+  "title": "Recap: suspect the sound-alikes",
+  "body": "• Wrong options carry near-homophones of question words.\n\n• The option you “heard” is the one to doubt.\n\n• Correct answers are plain and reworded.\n\n• Elimination is a legitimate strategy.\n\nThat completes the three big Part 2 patterns. Next level: Parts 3 & 4."
+ },
+ {
+  "screen_id": "106b0645-34d9-44f4-9b67-770675734616",
+  "lesson": "toeic-p34-question-preview",
+  "order": 0,
+  "title": "The battle starts before the audio plays",
+  "body": "In Parts 3 and 4 you answer three printed questions about each conversation or talk. Low scorers start reading the questions AFTER the audio begins, and the audio ends before they know what to listen for. High scorers preview: they read the questions in the seconds beforehand and decide their listening targets. This lesson trains that habit on paper."
+ },
+ {
+  "screen_id": "46bd39dc-007b-4865-8ab4-86cabcadd53c",
+  "lesson": "toeic-p34-question-preview",
+  "order": 1,
+  "title": "Turn each question into an ambush point",
+  "body": "When you read a question, mark two things: WHO it asks about (the man / the woman) and WHAT it asks for (place? purpose? next action?). “Why is the man calling?” → ambush the opening line, because callers state their purpose first. “What will the woman do next?” → the clue comes near the end. The question type even predicts WHERE the answer will appear."
+ },
+ {
+  "screen_id": "a3be7264-e3f1-4e18-9e4e-03a1e5a16bb5",
+  "lesson": "toeic-p34-question-preview",
+  "order": 2,
+  "explanation": "Callers state their purpose at the start (“I’m calling about...”), so ambush the woman’s opening line. Predicting WHERE the answer appears is the heart of previewing."
+ },
+ {
+  "screen_id": "e01d399e-c7e1-4363-b26a-b3589fd91118",
+  "lesson": "toeic-p34-question-preview",
+  "order": 3,
+  "explanation": "Her opening line says it outright: “I’m calling to remind you...”. (D) describes what the MAN wants, a classic subject swap."
+ },
+ {
+  "screen_id": "f1e83574-eebd-4ba2-81bf-fb6992992e27",
+  "lesson": "toeic-p34-question-preview",
+  "order": 4,
+  "explanation": "The man’s last line (“send the final deck on Wednesday”) is the evidence. Several days fly past in Part 3; previewing tells you which one to lock onto."
+ },
+ {
+  "screen_id": "9a8790d9-a83a-4a80-adf9-e51fe786b64e",
+  "lesson": "toeic-p34-question-preview",
+  "order": 5,
+  "title": "Watch for subject swaps",
+  "body": "The subject of the question matters more than it looks. If the question asks what the MAN offers, the conversation will usually contain a second offer, made by the woman. Wrong options are often things that WERE said, just by the other speaker. Track who said what, not just what was said."
+ },
+ {
+  "screen_id": "b1f597cc-255b-44d6-a1c9-2fa020ad8917",
+  "lesson": "toeic-p34-question-preview",
+  "order": 6,
+  "explanation": "His offer is “I can ask building services to open it.” The woman chooses the fifth floor, but the question asks about HIS offer. Subject awareness wins."
+ },
+ {
+  "screen_id": "da65b992-9b7a-4dab-a9f0-5fe08175ca13",
+  "lesson": "toeic-p34-question-preview",
+  "order": 7,
+  "explanation": "“After we look at the room” means the room comes first, the parking area second. “Next” questions love to scramble the order: ambush the ending AND check the sequence."
+ },
+ {
+  "screen_id": "acd95adf-e83b-4dba-8a96-02da2562277a",
+  "lesson": "toeic-p34-question-preview",
+  "order": 8,
+  "title": "Recap: the previewing routine",
+  "body": "• Before the audio, decide WHOSE words and WHAT information to ambush.\n\n• Purpose questions → opening; next-action questions → ending.\n\n• Right content, wrong speaker = wrong answer.\n\n• In the real test, the ~8-second pauses are your previewing time.\n\nNext: the heart of Parts 3 & 4, paraphrasing."
+ },
+ {
+  "screen_id": "01d4a12f-ceda-434d-878c-b11f2a809aaf",
+  "lesson": "toeic-p34-paraphrase",
+  "order": 0,
+  "title": "The answer never uses the same words",
+  "body": "Suppose the audio says “The shipment won’t arrive until Thursday.” The correct option will read “The delivery will come later this week.” Same meaning, almost every word swapped. That is TOEIC paraphrasing. Options that copy the audio word-for-word are usually traps, just like Part 2’s sound-alikes. Choose by meaning, not by matching words."
+ },
+ {
+  "screen_id": "8fd1a36f-525e-4565-a0b6-831e419dd2f3",
+  "lesson": "toeic-p34-paraphrase",
+  "order": 1,
+  "explanation": "“Give you a hand” = help, so the option says “offering to help”. Idiom → plain verb is a staple TOEIC paraphrase. Don’t let “hand” pull you to (C)."
+ },
+ {
+  "screen_id": "ced52043-4e93-40c8-8cac-99711602b07a",
+  "lesson": "toeic-p34-paraphrase",
+  "order": 2,
+  "title": "The three big paraphrase patterns",
+  "body": "1) Specific → general: desk lamps → lighting products; sandwiches → food.\n\n2) Verb/idiom swaps: give a hand → help; look into → investigate.\n\n3) Number/time conversions: not until Thursday → later this week; every 30 minutes → twice an hour.\n\nTrain yourself to re-say what you hear in other words, and correct options start to glow."
+ },
+ {
+  "screen_id": "7b3fb88a-f350-4105-9c88-808bcb95f10d",
+  "lesson": "toeic-p34-paraphrase",
+  "order": 3,
+  "explanation": "Three swaps at once: desk lamps → lighting products, weekend only → temporarily, 20% off → discounted. (C) baits anyone who only caught “desk”."
+ },
+ {
+  "screen_id": "9d10edb3-e0d4-4873-b053-a5d6602050ed",
+  "lesson": "toeic-p34-paraphrase",
+  "order": 4,
+  "explanation": "“Free of charge” → “at no cost”; “fitness center” → “gym”. Memorise the free-trio: free / at no cost / complimentary. It pays off in Part 7 too."
+ },
+ {
+  "screen_id": "0817c09d-1211-4822-9e51-1c9e7943d3d9",
+  "lesson": "toeic-p34-paraphrase",
+  "order": 5,
+  "explanation": "“Push back” becomes “postponed” (or “delayed”) in the options. Phrasal verb → single verb is a TOEIC-wide pattern; learn “put off → postpone” with it."
+ },
+ {
+  "screen_id": "dfeeb536-c5da-41b3-8b89-3fc5c874f241",
+  "lesson": "toeic-p34-paraphrase",
+  "order": 6,
+  "explanation": "“Every fifteen minutes” = four times an hour. (A) and (C) keep the number but twist its meaning. With number paraphrases, convert the units to verify."
+ },
+ {
+  "screen_id": "32bef74c-30d6-480e-92dc-d3af9790686d",
+  "lesson": "toeic-p34-paraphrase",
+  "order": 7,
+  "explanation": "“Go over” → review; “survey results” → findings, both high-frequency pairs. (A) keeps “survey” but swaps the verb to “distribute”."
+ },
+ {
+  "screen_id": "4daaea74-5670-4143-97d6-d6f58877d61f",
+  "lesson": "toeic-p34-paraphrase",
+  "order": 8,
+  "title": "Recap: choose by meaning",
+  "body": "• Correct options reword the audio.\n\n• Three patterns: general words / verb swaps / number conversions.\n\n• Word-for-word matches are suspect.\n\n• Learn paraphrase PAIRS (free → at no cost, push back → postpone).\n\nNext: one level deeper, speaker-intent questions."
+ },
+ {
+  "screen_id": "e56a7f91-98b1-41f7-b8a3-fb41ed36167f",
+  "lesson": "toeic-p34-speaker-intent",
+  "order": 0,
+  "title": "What “It’s already five o’clock” really means",
+  "body": "Some questions ask: Why does the woman say, “It’s already five o’clock”? “To tell the time” is almost always a trap. In real life that sentence means “let’s hurry”, “it’s too late today”, or “time to go home”. Intent questions ask about the FUNCTION of the line in context, and the surrounding lines are everything."
+ },
+ {
+  "screen_id": "542ed501-f92e-4796-8b9b-2dfc5dac1986",
+  "lesson": "toeic-p34-speaker-intent",
+  "order": 1,
+  "explanation": "The man’s reply (“Let’s send it as it is”) shows her line worked as “no time for changes”. (B) is the literal-meaning trap. Work backwards from the reaction."
+ },
+ {
+  "screen_id": "dfe9ed80-e424-43d1-adc1-f286df017546",
+  "lesson": "toeic-p34-speaker-intent",
+  "order": 2,
+  "title": "Sort intent into four functions",
+  "body": "Almost every intent line does one of four jobs: 1) suggest/prompt (“it’s already five” → let’s wrap up), 2) decline/object (“I’m travelling this week” → so I can’t), 3) express surprise (“sold out already?”), 4) reassure/volunteer (“I’ll be in tomorrow anyway”). The options mirror this: To suggest / To decline / To express surprise / To reassure."
+ },
+ {
+  "screen_id": "93ba8b00-0b2b-4f03-a5a1-d7e2172578fd",
+  "lesson": "toeic-p34-speaker-intent",
+  "order": 3,
+  "explanation": "As a reply to an invitation, “I have a client call at noon” is a refusal, just like “I have plans that day”. The woman’s “we’ll save you a few slices” confirms it."
+ },
+ {
+  "screen_id": "280f719c-cb8b-4d27-8eec-2f81ed46efd1",
+  "lesson": "toeic-p34-speaker-intent",
+  "order": 4,
+  "explanation": "The build-up (gone within an hour last year, 300 prepared this year, “but I’d STILL come early”) implies even 300 may not be enough. The evidence sits in the line just before."
+ },
+ {
+  "screen_id": "e9b7ec4a-42ea-4945-9c9e-22dc71c3235f",
+  "lesson": "toeic-p34-speaker-intent",
+  "order": 5,
+  "title": "The literal option is the trap",
+  "body": "Intent questions almost always include a literal-meaning option (“to tell the time”, “to describe his schedule”). Eliminate it on sight. The test only asks “why does she say this?” when the line does something beyond its surface meaning. Then check the remaining options against the lines just before and after."
+ },
+ {
+  "screen_id": "1f4e5813-9d1a-4145-9aec-4aa9663ec8c0",
+  "lesson": "toeic-p34-speaker-intent",
+  "order": 6,
+  "explanation": "Stating the schedule means “so we can’t pay by Friday”. The man’s move (asking the venue to wait) confirms it. Schedule statements very often function as “therefore it’s impossible”."
+ },
+ {
+  "screen_id": "ea1809ff-dfbc-4b5d-bd96-81508817c438",
+  "lesson": "toeic-p34-speaker-intent",
+  "order": 7,
+  "explanation": "To a worried colleague, “you saw the survey results, didn’t you?” means “relax, the demand is there”. Her relieved “Oh, right” seals it. A question in form, a reassurance in function."
+ },
+ {
+  "screen_id": "b42a301d-aaba-44f7-9345-4a8f9d8f7fd0",
+  "lesson": "toeic-p34-speaker-intent",
+  "order": 8,
+  "title": "Recap: read the function, not the words",
+  "body": "• Intent questions ask what the line DOES in context.\n\n• Four functions: suggest / decline / surprise / reassure.\n\n• Eliminate the literal-meaning option on sight.\n\n• Evidence lives in the lines just before and after.\n\nNext level: the scoring engine of Reading, Part 5 grammar."
+ },
+ {
+  "screen_id": "594d9255-ffee-4b78-8301-98633b731c76",
+  "lesson": "toeic-p5-word-forms",
+  "order": 0,
+  "explanation": "The blank follows the verb “increased”, and verbs are modified by adverbs: “significantly”. No need to translate the sentence; the words around the blank decide everything."
+ },
+ {
+  "screen_id": "5822efc0-73c6-4b84-81e5-c1ce542c7c10",
+  "lesson": "toeic-p5-word-forms",
+  "order": 1,
+  "title": "Don’t translate: look around the blank",
+  "body": "About a third of Part 5 is word-form questions. You spot them when the options are one word in four costumes. You never need the sentence’s meaning; only the one or two words around the blank. the ___ of → noun; a ___ + noun → adjective; verb + ___ → adverb. Under 20 seconds each; the time you save here funds Part 7."
+ },
+ {
+  "screen_id": "8158fe84-8d08-4599-b630-1f68a7c0be32",
+  "lesson": "toeic-p5-word-forms",
+  "order": 2,
+  "title": "Identify the part of speech by its ending",
+  "body": "Nouns: -tion / -ment / -ness / -ity. Adjectives: -ive / -ful / -able / -ous. Adverbs: adjective + -ly. Verbs: -ize / -ify. One caution: -ly is not always an adverb (friendly, timely are adjectives). Always combine the ending with the blank’s position."
+ },
+ {
+  "screen_id": "0da9cb99-2be4-488c-b0d6-494f6a7a011a",
+  "lesson": "toeic-p5-word-forms",
+  "order": 3,
+  "explanation": "“The safety ___” needs a noun (and it is the object of “read”): instructions. Note that non-words like “instructly” appear as options; ending knowledge lets you cut them with confidence."
+ },
+ {
+  "screen_id": "80f83fce-e873-417e-9e07-c253d9b40c05",
+  "lesson": "toeic-p5-word-forms",
+  "order": 4,
+  "explanation": "The blank sits before the noun “response” and is paired with the adjective “quick” by “and”. Coordinated words share a part of speech, so “efficient”. Coordination is a powerful clue."
+ },
+ {
+  "screen_id": "acc51261-8cfd-4178-ade5-6e2b2b0754ca",
+  "lesson": "toeic-p5-word-forms",
+  "order": 5,
+  "explanation": "“Explained” is a verb, so it takes the adverb “clearly”. Bonus clue: “very” can only be followed by an adjective or an adverb."
+ },
+ {
+  "screen_id": "dba3b80d-074e-49b9-b1fa-070b6cc48ddf",
+  "lesson": "toeic-p5-word-forms",
+  "order": 6,
+  "explanation": "Only a noun can follow the possessive “Ms. Park’s”: attention. Process “possessive + ___” mechanically. “Attention to detail” is also a phrase worth owning."
+ },
+ {
+  "screen_id": "4bc5c6fe-6d2f-40dc-9953-5c39f0c1230a",
+  "lesson": "toeic-p5-word-forms",
+  "order": 7,
+  "explanation": "The blank modifies the participle “designed”. Participles are verb-family words, so they take an adverb: “newly”. The “adverb + participle + noun” chain (newly designed, recently updated) is a Part 5 staple."
+ },
+ {
+  "screen_id": "24c24116-782c-4515-959c-531abe50c158",
+  "lesson": "toeic-p5-word-forms",
+  "order": 8,
+  "title": "Recap: word-form questions in 20 seconds",
+  "body": "• One word in four costumes = a word-form question.\n\n• Never translate; the 1–2 words around the blank decide.\n\n• Judge by endings: -tion/-ment nouns, -ive/-able adjectives, -ly adverbs (with exceptions).\n\n• Collect position patterns: coordination, possessives, participles.\n\nNext: verb forms, the tense/voice/agreement checklist."
+ },
+ {
+  "screen_id": "50fcacd1-b34b-4b89-9101-196f90a52adc",
+  "lesson": "toeic-p5-verb-forms",
+  "order": 0,
+  "title": "Verb questions: check exactly three things",
+  "body": "When the options are one verb in four forms, run a fixed three-point check: 1) AGREEMENT: is the subject singular or plural? 2) TENSE: any time markers (yesterday, next week, for the past...)? 3) VOICE: does the subject act or get acted on? In that order, two or three options usually vanish instantly."
+ },
+ {
+  "screen_id": "572fa678-41ed-475c-93fb-83a3997b6fdc",
+  "lesson": "toeic-p5-verb-forms",
+  "order": 1,
+  "explanation": "The subject is “The list” (singular); “of approved vendors” is just a modifier planted to make you pick “are”. “Every quarter” signals a habitual present: “is”. The real subject comes BEFORE “of”."
+ },
+ {
+  "screen_id": "b04fc759-33b4-49e9-95f5-ff42d56c8c5d",
+  "lesson": "toeic-p5-verb-forms",
+  "order": 2,
+  "title": "The passive signal: no object after the blank",
+  "body": "Torn between active and passive? Look right after the blank. An object (noun) follows → active. No object (just “by ~”, a preposition, or a full stop) → passive. “The report ___ by Mr. Chen.” → was written. “Mr. Chen ___ the report.” → wrote. The object check is faster and safer than translating."
+ },
+ {
+  "screen_id": "f0d726a5-6c15-45b2-89f9-952486673778",
+  "lesson": "toeic-p5-verb-forms",
+  "order": 3,
+  "explanation": "No object after the blank, and luggage gets inspected rather than inspecting anything: passive. After “must” we need the base form: “be inspected”. Modal + be + past participle is a recurring shape."
+ },
+ {
+  "screen_id": "165ea193-4c0e-4931-ae68-52240991c66b",
+  "lesson": "toeic-p5-verb-forms",
+  "order": 4,
+  "explanation": "“By the time + a future point” signals the future perfect: “will have completed”. Part 5 tense questions are pattern-matching between time markers and tenses."
+ },
+ {
+  "screen_id": "35bcc6f8-cf51-4b83-b753-14c6b7cbce7a",
+  "lesson": "toeic-p5-verb-forms",
+  "order": 5,
+  "explanation": "“For the past five years” is a present-perfect marker: “has grown” (or “has been growing”). Build the reflex: for / since / over the past → present perfect."
+ },
+ {
+  "screen_id": "64a15231-c697-4666-a5a7-dcea81b56a8a",
+  "lesson": "toeic-p5-verb-forms",
+  "order": 6,
+  "explanation": "“Anyone” is singular, and the verb after “who” agrees with its antecedent: “wishes”. Anyone / everyone / each are singular, a favourite TOEIC pressure point."
+ },
+ {
+  "screen_id": "986c7064-89e2-48f2-badf-2436d4c11212",
+  "lesson": "toeic-p5-verb-forms",
+  "order": 7,
+  "explanation": "Against the past moment “when the alarm went off”, the speech was in progress, and a speech is delivered, not delivering. Past progressive passive: “was being delivered”. Both checks, one question."
+ },
+ {
+  "screen_id": "adc848fd-b4fd-44e7-8cc0-92f185655d5b",
+  "lesson": "toeic-p5-verb-forms",
+  "order": 8,
+  "title": "Recap: agreement → tense → voice",
+  "body": "• Run the fixed order: agreement → time markers → voice.\n\n• Don’t be fooled by “of ~” modifiers; the real subject comes first.\n\n• No object after the blank → passive.\n\n• for the past ~ → present perfect; by the time + future → future perfect.\n\nNext: prepositions vs. conjunctions."
+ },
+ {
+  "screen_id": "ad7aeecc-d94f-4953-9754-f4290959e71f",
+  "lesson": "toeic-p5-prepositions-conjunctions",
+  "order": 0,
+  "explanation": "After the blank comes a noun phrase: “the heavy rain”. Only the preposition “Despite” can take a bare noun; Although and While are conjunctions and need a subject + verb. Same meaning, different grammar: the FORM decides."
+ },
+ {
+  "screen_id": "66a3f261-305f-4bae-8cb7-0efa52506827",
+  "lesson": "toeic-p5-prepositions-conjunctions",
+  "order": 1,
+  "title": "One glance behind the blank: preposition vs. conjunction",
+  "body": "Many preposition/conjunction pairs share a meaning: despite ⇔ although, because of ⇔ because, during ⇔ while. The single test: a bare noun after the blank → preposition; a subject + verb → conjunction. No meaning needed: the most mechanical points in Part 5."
+ },
+ {
+  "screen_id": "f105ff24-4eaa-43fa-946c-dba97ac7b248",
+  "lesson": "toeic-p5-prepositions-conjunctions",
+  "order": 2,
+  "explanation": "A subject + verb follows (“Mr. Okafor was attending”), so we need the conjunction “While”. “During” has the same meaning but is a preposition; it could only take “the conference”."
+ },
+ {
+  "screen_id": "2dfb1acd-5d06-483a-9c35-08d76f3fb3ae",
+  "lesson": "toeic-p5-prepositions-conjunctions",
+  "order": 3,
+  "explanation": "A noun phrase follows, so the preposition “due to” wins. “Because” would need a clause (“because the aircraft needed an inspection”). Group because of / due to / owing to together as prepositions."
+ },
+ {
+  "screen_id": "a4075d0b-b06b-4af6-9fa3-e8de0b204906",
+  "lesson": "toeic-p5-prepositions-conjunctions",
+  "order": 4,
+  "title": "Lock in the high-frequency pairs",
+  "body": "The other battleground is time words. by = deadline (“submit by Friday”) vs. until = continuation (“open until 9”). for + a length (“for two weeks”) vs. during + an event (“during the meeting”). in + month/year, on + day/date, at + clock time. Japanese 「〜まで」 covers both by and until, which is exactly why TOEIC tests it constantly."
+ },
+ {
+  "screen_id": "bbde4cee-2152-45bc-a10c-1426e0b7d62a",
+  "lesson": "toeic-p5-prepositions-conjunctions",
+  "order": 5,
+  "explanation": "Submitting happens ONCE before a deadline → “by”. “Until” describes a state continuing up to a time. One-shot verbs (submit, finish, arrive) + deadline → by."
+ },
+ {
+  "screen_id": "553f8a32-142b-4082-9ad0-adf17b386bbe",
+  "lesson": "toeic-p5-prepositions-conjunctions",
+  "order": 6,
+  "explanation": "“Their stay” is a noun phrase, so the preposition “during” (or “throughout”) fits. “While” would need a clause. Noun → during; clause → while."
+ },
+ {
+  "screen_id": "6674c46d-eecf-48fc-ac76-c229d3cde7c5",
+  "lesson": "toeic-p5-prepositions-conjunctions",
+  "order": 7,
+  "explanation": "A clause follows, so cut the prepositions (A) and (D) first. Then meaning: the campaign starts IF the budget is approved → “As long as”. “Unless” would flip the logic. Narrow by form, decide by meaning."
+ },
+ {
+  "screen_id": "8eb28bf6-30e9-47f8-a5f6-c00f2b9b3554",
+  "lesson": "toeic-p5-prepositions-conjunctions",
+  "order": 8,
+  "title": "Recap: solve by form",
+  "body": "• Bare noun → preposition; subject + verb → conjunction.\n\n• Memorise the pairs: despite ⇔ although, because of ⇔ because, during ⇔ while.\n\n• by = deadline, until = continuation.\n\n• Narrow by form first, confirm by meaning last.\n\nFinal level: Part 7 reading strategies."
+ },
+ {
+  "screen_id": "b459c54f-3089-441f-9fb9-b697cacf350b",
+  "lesson": "toeic-p7-scanning",
+  "order": 0,
+  "title": "Don’t read everything",
+  "body": "Part 7 has 54 questions, and running out of time is the default outcome, usually because people read each document top to bottom. Most questions are fact-finding: the answer sits in ONE spot. So search, don’t read: 1) read the question first, 2) pick a keyword, 3) scan the text for it, 4) read closely only around the hit. That four-step routine is scanning."
+ },
+ {
+  "screen_id": "c05ab901-e61e-40e6-be47-6b2695347322",
+  "lesson": "toeic-p7-scanning",
+  "order": 1,
+  "title": "Scan for numbers, names, and dates",
+  "body": "The best scan targets are words that never change shape: numbers, prices, times ($25, 9:30), proper names, dates and weekdays. For “When does registration open?”, sweep the text for time-shaped strings. One warning: Part 7 options paraphrase the text, so slow down only at the moment you compare the hit against the options."
+ },
+ {
+  "screen_id": "d5750f2c-4339-4fd6-8537-3096a27b4fe5",
+  "lesson": "toeic-p7-scanning",
+  "order": 2,
+  "explanation": "Keywords: “members” + a price. The Fee line gives “(members $20)”. $30 is the general fee and 16 is the capacity, both bait for number-grabbers. Read the WHOLE line you land on."
+ },
+ {
+  "screen_id": "d83e12a3-3d78-4d20-aaa4-bed454e2be93",
+  "lesson": "toeic-p7-scanning",
+  "order": 3,
+  "explanation": "Keyword: “Cedar Street”. That sentence says “bring your employee ID to enter”, the whole answer in one line. Question → keyword → one close-read line."
+ },
+ {
+  "screen_id": "add05a1f-30d6-497e-bf81-da058be73ad8",
+  "lesson": "toeic-p7-scanning",
+  "order": 4,
+  "explanation": "“Limited to 16 participants” is the evidence. This little notice contains dates, times, prices AND a capacity. Always check what each number labels."
+ },
+ {
+  "screen_id": "734bdc32-a17b-454b-a408-cdfb8c46cc73",
+  "lesson": "toeic-p7-scanning",
+  "order": 5,
+  "title": "Answer the scannable questions first",
+  "body": "Questions have a best order too. Fact questions with names or numbers (How much / When / Who) scan fast. Do them first. Purpose and “What is suggested” questions need the whole picture. Save them for last. While you answer the scannable ones, you absorb the document’s outline, and the hard question quietly becomes easy."
+ },
+ {
+  "screen_id": "23501f1e-aa77-41d2-b6f8-27872dd7e251",
+  "lesson": "toeic-p7-scanning",
+  "order": 6,
+  "explanation": "Keyword: “valid”. The line “valid weekdays only, April 1–30” settles it. (C) baits anyone who only caught “April”. Limiting words like “only” are answer gold; underline them mentally."
+ },
+ {
+  "screen_id": "ce99c60e-23ac-41f8-8562-36357125f00c",
+  "lesson": "toeic-p7-scanning",
+  "order": 7,
+  "explanation": "Keyword: “return”. “Returned with a full tank” is paraphrased as “fill the fuel tank”. The verbatim-looking phone number (B) belongs to reservations, a trap."
+ },
+ {
+  "screen_id": "1a8a7055-8335-4cf7-a490-e9487639e365",
+  "lesson": "toeic-p7-scanning",
+  "order": 8,
+  "title": "Recap: search, don’t read",
+  "body": "• Read the question first; pick numbers, names, dates as keywords.\n\n• Scan; close-read only around the hit.\n\n• Options paraphrase the text: compare carefully.\n\n• Fact questions first, purpose questions last.\n\nNext: the two time-eaters, NOT questions and inference questions."
+ },
+ {
+  "screen_id": "65359491-2623-4df1-805d-0a4eb3b37f41",
+  "lesson": "toeic-p7-not-inference",
+  "order": 0,
+  "title": "The question that asks what ISN’T there",
+  "body": "“What is NOT mentioned about the hotel?” In a NOT question, three of the four options ARE in the text and the missing one is the answer. That means up to four matching passes, making it Part 7’s biggest time sink. The cure is a fixed, mechanical procedure. See the next screen."
+ },
+ {
+  "screen_id": "182e4603-bf11-47f8-b579-143d15bc1848",
+  "lesson": "toeic-p7-not-inference",
+  "order": 1,
+  "title": "NOT questions are a crossing-off job",
+  "body": "The procedure: 1) skim options A–D first, 2) read the text and cross off each option as it appears, 3) the survivor is the answer. Remember the options are PARAPHRASES (complimentary breakfast → free morning meal). And since the evidence is scattered, a NOT question is closer to a read-through than a scan. Do it last in its set."
+ },
+ {
+  "screen_id": "fcf1949b-7a47-4ec2-b6a9-cb95ea644ffb",
+  "lesson": "toeic-p7-not-inference",
+  "order": 2,
+  "explanation": "(A) = free Wi-Fi, (C) = outdoor pool, (D) = complimentary breakfast. Only the fitness room never appears. The hinge was spotting complimentary = free."
+ },
+ {
+  "screen_id": "f1c9741b-fd1c-4894-b6c1-e2e2ba76362a",
+  "lesson": "toeic-p7-not-inference",
+  "order": 3,
+  "explanation": "(A), (B) and (D) all appear in the ad; a driver’s license never does. Plausible-sounding options are exactly the trap: go by the text, never by common sense."
+ },
+ {
+  "screen_id": "cb7c2142-9a87-4f57-ba9a-7413d0e740d4",
+  "lesson": "toeic-p7-not-inference",
+  "order": 4,
+  "title": "Inference: not written, but derivable",
+  "body": "Inference questions carry imply / suggest / most likely. The answer is never stated outright, but it is always derivable from stated facts: “members get free shipping” + “Mr. Soto’s invoice shows $0 shipping” → Mr. Soto is a member. The discipline is taking exactly ONE step from the facts, never a leap of plausible imagination."
+ },
+ {
+  "screen_id": "cfb92d8d-e114-4be6-982a-6cb5216b8f4f",
+  "lesson": "toeic-p7-not-inference",
+  "order": 5,
+  "explanation": "“9 A.M. instead of 10 A.M.” implies the current opening time is 10. (A) contradicts “may do so”. Correct inferences are often just the stated fact, flipped."
+ },
+ {
+  "screen_id": "5b6c302b-b315-47ab-8a28-65e5954ec57f",
+  "lesson": "toeic-p7-not-inference",
+  "order": 6,
+  "explanation": "“I’ve already booked a table for next month” → he plans to return. (A) contradicts the weekly visits; (C) assumes last week’s order, which the text never states. Unstated assumptions lose."
+ },
+ {
+  "screen_id": "81965727-7dae-43da-b187-e3a919c02158",
+  "lesson": "toeic-p7-not-inference",
+  "order": 7,
+  "explanation": "The booking methods are listed in one breath: online, by phone, or at the front desk; no email. When a NOT question maps onto a list, the cross-off takes seconds."
+ },
+ {
+  "screen_id": "c22ae51d-fe8f-43b9-bdff-0c90e2b786b7",
+  "lesson": "toeic-p7-not-inference",
+  "order": 8,
+  "title": "Recap: cross off, then take one step",
+  "body": "• NOT questions: skim the options, cross off matches, keep the survivor.\n\n• Cross off through paraphrases (complimentary = free).\n\n• Inference: exactly one step from stated facts.\n\n• Never fill gaps with common sense: the text is the only evidence.\n\nFinal lesson: double passages."
+ },
+ {
+  "screen_id": "5e0938c1-d689-4c4f-9617-0dc10c1d9db4",
+  "lesson": "toeic-p7-double-passage",
+  "order": 0,
+  "title": "The answer spans two documents",
+  "body": "Late in Part 7 come sets with two (or three) documents: an email plus a schedule, an ad plus an order form. The signature feature: one or two questions per set are CROSS questions that cannot be solved from either document alone. If the schedule says “Tuesday instructor: Hill” and the email says “I’ll attend Tuesday”, only the combination yields “her instructor is Hill”. Pick from one document only and you fall neatly into a plausible wrong answer."
+ },
+ {
+  "screen_id": "04168192-44fb-4aac-bd8b-610542ed5226",
+  "lesson": "toeic-p7-double-passage",
+  "order": 1,
+  "title": "Map each document’s role first",
+  "body": "Spend ten seconds mapping roles: an ad or schedule (document 1) is the warehouse of conditions, prices and dates; an email or form (document 2) carries one person’s situation, changes and requests. Cross questions always plug document 2’s specifics into document 1’s table. Routine: mark the name/date in the question → start in the document that has it → verify the condition in the other. Aim for a single round trip."
+ },
+ {
+  "screen_id": "40ee5c43-721d-4872-8937-33c3c13d123c",
+  "lesson": "toeic-p7-double-passage",
+  "order": 2,
+  "explanation": "The email rules out Monday and Friday and picks “the art class” of the remaining two: watercolor painting, not photography. The schedule puts P. Novak on Tuesday. One round trip: email → schedule."
+ },
+ {
+  "screen_id": "e0e3c414-a466-467c-ad79-94b94ace1f5a",
+  "lesson": "toeic-p7-double-passage",
+  "order": 3,
+  "explanation": "Document 2 alone answers this: “I work until 6 P.M. on Mondays and Fridays”, paraphrased as “works until the evening”. Not every question is a cross question. Knowing which document a question lives in cuts your reading dramatically."
+ },
+ {
+  "screen_id": "53ca6fe3-4bcf-420a-8672-42a54251b0df",
+  "lesson": "toeic-p7-double-passage",
+  "order": 4,
+  "title": "How to spot the cross question",
+  "body": "Cross questions are predictable: how much a SPECIFIC person pays (price table × their conditions), when or where people will actually meet (schedule × a change email), and anything with “most likely”. Above all, watch for changes and exceptions: if the email says Tuesday’s class is cancelled, every option that trusts the original schedule is a trap. New information beats old information, always."
+ },
+ {
+  "screen_id": "e53e76ad-41b7-4ca3-8c44-1048f810f181",
+  "lesson": "toeic-p7-double-passage",
+  "order": 5,
+  "explanation": "14 windows → Large house $120; Saturday → +$10; first-time → −$15. Total $115. Apply the form’s conditions in the order base → surcharges → discounts. $120 traps anyone who stopped at the table."
+ },
+ {
+  "screen_id": "32e16e9b-469d-4832-aea2-5108b0b8cd10",
+  "lesson": "toeic-p7-double-passage",
+  "order": 6,
+  "explanation": "The form’s note (“This is my first time using your service”) is reworded as “has never used Clearview before”. (A) says the exact opposite. Find the sentence, verify the paraphrase, collect the point."
+ },
+ {
+  "screen_id": "9c857344-74f5-42f1-b1eb-b7c0689ad356",
+  "lesson": "toeic-p7-double-passage",
+  "order": 7,
+  "explanation": "Connect “Preferred day: Saturday” (form) with “Weekend appointments: additional $10” (ad). Saturday = a weekend day, so the surcharge applies. Specific → general (Saturday → weekend) is a classic cross-passage paraphrase."
+ },
+ {
+  "screen_id": "f7d260b7-eca8-4a77-88bf-08aef725a45b",
+  "lesson": "toeic-p7-double-passage",
+  "order": 8,
+  "title": "Recap: solve it in one round trip",
+  "body": "• One or two questions per set are cross questions.\n\n• Routine: mark the specifics → start in the document that has them → verify in the other.\n\n• Price questions: base → surcharges → discounts.\n\n• Changes and exceptions beat the original table.\n\nAll twelve lessons complete. Take the patterns into a mock test and put them to work."
+ },
+ {
+  "screen_id": "c851ca1a-9331-4db1-b2cf-e07f95466a29",
+  "lesson": "ielts-listening-numbers",
+  "order": 0,
+  "explanation": "“Double N” means the letter N twice: T-A-N-N-E-R → Tanner. Section 1 almost always spells out a name, and “double + letter” is the first hurdle. One more rule: any misspelling scores zero."
+ },
+ {
+  "screen_id": "cbc7d155-a430-4eef-a185-c750382af93a",
+  "lesson": "ielts-listening-numbers",
+  "order": 1,
+  "title": "Form completion is 90% prediction",
+  "body": "In Section 1 you complete a form while listening to a phone call, heard ONCE. So before the audio starts, scan the gaps and predict what each needs: a spelled-out name, a price, a date. Prediction tells you exactly when to concentrate. And obey the instruction line: if it says ONE WORD AND/OR A NUMBER, two words score zero even when the content is right."
+ },
+ {
+  "screen_id": "0176854d-95b1-409a-b656-aeda0c74277c",
+  "lesson": "ielts-listening-numbers",
+  "order": 2,
+  "explanation": "“Double S” gives M-O-S-S-L-E-Y. When letters are read out, write them in your head AS you hear them. Reconstructing the word afterwards almost always drops a letter."
+ },
+ {
+  "screen_id": "aee1c102-b178-406d-b127-75fd38e21804",
+  "lesson": "ielts-listening-numbers",
+  "order": 3,
+  "title": "The big one: fifteen vs. fifty",
+  "body": "The most-missed distinction in the numbers game: -teen vs. -ty. Two cues: STRESS (fifTEEN vs. FIFty) and the ENDING (a long clear “-teen” vs. a short clipped “-ty”). Best of all, speakers often confirm digit by digit: “fifteen, that’s one five”. When you hear that confirmation, trust it over your first impression."
+ },
+ {
+  "screen_id": "6e848c4e-a71e-4c6b-af7c-fc6cb2dc8a79",
+  "lesson": "ielts-listening-numbers",
+  "order": 4,
+  "explanation": "Front-stressed FIFty, sealed by the digit-by-digit “five zero”. When torn between 15 and 50, wait for the confirmation. Section 1 speakers repeat the numbers that matter."
+ },
+ {
+  "screen_id": "c6959473-b0b6-4f7f-9049-f0865ec52722",
+  "lesson": "ielts-listening-numbers",
+  "order": 5,
+  "explanation": "End-stressed thirTEEN plus the “one three” confirmation: 13 weeks. If you wrote 30, replay the stress rule: stress at the end means -teen."
+ },
+ {
+  "screen_id": "221cd0a6-65e8-40f2-b1b7-5566a40e8a1b",
+  "lesson": "ielts-listening-numbers",
+  "order": 6,
+  "title": "How phone numbers, prices and dates are read out",
+  "body": "Numbers follow reading conventions worth memorising: oh = 0 and double four = 44 in phone numbers; “nineteen ninety-nine” = £19.99; “the twenty-first of June” = 21 June; “half past six” = 6.30 and “quarter to five” = 4.45. Understanding the phrase is half the job; the mark only comes when you convert it to digits on the form."
+ },
+ {
+  "screen_id": "0a0da7d8-2fa7-4eb6-8e9e-ea20042e1d49",
+  "lesson": "ielts-listening-numbers",
+  "order": 7,
+  "explanation": "“Oh” = 0 and “double three” = 33, giving 077 33 096. Phone numbers are long. Transcribe them AS you listen. Master the two conversions (oh → 0, double → twice) and phone numbers become free marks."
+ },
+ {
+  "screen_id": "a3cd312e-647a-48cb-b1a8-e06899df46b1",
+  "lesson": "ielts-listening-numbers",
+  "order": 8,
+  "explanation": "The first date (the thirtieth) gets changed; the agreed answer is the thirteenth. Two traps in one: -ty/-teen AND “the first number you hear isn’t necessarily the answer”. Only confirmed information goes on the form; corrections are covered in a later lesson."
+ },
+ {
+  "screen_id": "f39503da-fe8e-4958-914a-390a15e5a14d",
+  "lesson": "ielts-listening-numbers",
+  "order": 9,
+  "title": "Recap: a mark needs correct writing, not just hearing",
+  "body": "• Preview the form and predict each gap’s information type.\n\n• double + letter = write it twice; transcribe spellings letter by letter.\n\n• -teen stresses the end, -ty the front; digit-by-digit confirmations settle it.\n\n• Convert conventions to digits: oh = 0, half past six = 6.30.\n\n• Misspellings and extra words score zero, full stop.\n\nNext: the Listening test’s biggest device, paraphrase."
+ },
+ {
+  "screen_id": "6d1693e2-ce84-4c66-bf8b-f275366c07c6",
+  "lesson": "ielts-listening-paraphrase",
+  "order": 0,
+  "title": "The audio never uses the question’s words",
+  "body": "IELTS Listening follows one strict rule: the words printed in the question are almost never the words you hear. The question says “free”; the audio says “costs nothing”. The question says “weekly”; the audio says “every seven days”. Wait for the printed word and the answer sails past you. The fix: before listening, imagine how each question could be re-worded. That conversion skill is today’s training."
+ },
+ {
+  "screen_id": "6da6eae7-74d5-4eb8-b5b3-edfeafc0ccae",
+  "lesson": "ielts-listening-paraphrase",
+  "order": 1,
+  "explanation": "“Free of charge” in the question becomes “costs nothing” in the audio. Spot the conversion and Monday evenings is the only candidate. Missing answers because “the word never came up” is the single most common way to lose marks. Ambush the meaning, not the word."
+ },
+ {
+  "screen_id": "638e3b49-f4bd-462d-9c9d-0e7ecfa44be3",
+  "lesson": "ielts-listening-paraphrase",
+  "order": 2,
+  "title": "Bank the classic paraphrase pairs",
+  "body": "Paraphrases come in recurring pairs. Collect them like savings: costs nothing → free; not until Thursday → later in the week; book in advance → reserve early; nearly all → most; once a month → monthly. The working habit: as you read each question, ask “how else could English say this?” When one of your candidates plays, that is your answer."
+ },
+ {
+  "screen_id": "c5fe8795-e5e8-4d55-ad24-eb67739caf20",
+  "lesson": "ielts-listening-paraphrase",
+  "order": 3,
+  "explanation": "“Won’t reopen until the end of April” = it WILL reopen, just later in the spring. “Not until ~” is the highest-frequency time paraphrase: it means “only at that point”, never “never”."
+ },
+ {
+  "screen_id": "421437e9-edf6-43fa-bd13-e82c6ea507d1",
+  "lesson": "ielts-listening-paraphrase",
+  "order": 4,
+  "explanation": "“Provided at no extra charge” = “included in the price”, with lunch → meal as a bonus general-word swap. Treat the free-family (free / at no charge / at no cost / complimentary / included) as one meaning with five faces."
+ },
+ {
+  "screen_id": "9c572c08-9d6e-49dc-a7b1-46bff88710b9",
+  "lesson": "ielts-listening-paraphrase",
+  "order": 5,
+  "explanation": "“Brought forward” means moved EARLIER. Its mirror twins (push back / put off → later, postponed) appear over and over in both Listening and Reading."
+ },
+ {
+  "screen_id": "f416bb8c-0859-464f-b000-ad1af4e3ecd8",
+  "lesson": "ielts-listening-paraphrase",
+  "order": 6,
+  "explanation": "“Early booking” → “reserve in advance”; book/reserve is a must-know pair. (B) traps anyone who grabbed the word “early” alone: the advice is to book early, not to show up early. Match meanings, not words."
+ },
+ {
+  "screen_id": "80c40aa8-e723-466f-adcf-2a1b5bd714d1",
+  "lesson": "ielts-listening-paraphrase",
+  "order": 7,
+  "explanation": "“Must be accompanied by an adult” flips into “cannot visit on their own”, a positive-to-negative paraphrase. (C) contradicts “children are welcome”, and (A) was never mentioned. Flipping requirements into prohibitions is a staple conversion."
+ },
+ {
+  "screen_id": "74edb3fa-b4cf-436c-906a-f29a21f3ea95",
+  "lesson": "ielts-listening-paraphrase",
+  "order": 8,
+  "title": "Recap: ambush the meaning, not the word",
+  "body": "• The printed words won’t play; their paraphrases will.\n\n• Pre-imagine the re-wordings before the audio starts.\n\n• Bank the pairs: costs nothing → free, not until → later, book → reserve.\n\n• Practise positive↔negative flips (must be accompanied = can’t go alone).\n\nNext: the trap where EVERY option gets mentioned."
+ },
+ {
+  "screen_id": "cc23bbad-2069-498a-a15b-54d8e8688b82",
+  "lesson": "ielts-listening-option-traps",
+  "order": 0,
+  "explanation": "Two, four AND three all get said. That is exactly how IELTS builds its options. The first proposal and the counter-proposal both fall; the agreement lands on three. Hearing a number in the audio does not make it the answer: only what the speakers finally AGREE on counts."
+ },
+ {
+  "screen_id": "f368d8d7-512d-489c-b568-069d73611a52",
+  "lesson": "ielts-listening-option-traps",
+  "order": 1,
+  "title": "Every option gets mentioned",
+  "body": "IELTS multiple choice and matching are built on a design rule: every wrong option is also mentioned somewhere. “I heard that word” proves nothing: assume ALL options will play. What decides the answer is HOW each one is mentioned: proposed but declined, true last year but not this year, said about somebody else. Listen with a mental pencil, crossing options off as they are raised and rejected. The survivor is your answer."
+ },
+ {
+  "screen_id": "961a0b32-d64a-4915-87a7-54be5b32091d",
+  "lesson": "ielts-listening-option-traps",
+  "order": 2,
+  "explanation": "Oak: too small, crossed off. Cedar: already booked, crossed off. Garden: the survivor. A classic elimination race where all three names play. Track WHY each falls (too small / booked) and the cross-offs become certain."
+ },
+ {
+  "screen_id": "f5adc18e-bb56-4b53-b1f0-75eb478ec711",
+  "lesson": "ielts-listening-option-traps",
+  "order": 3,
+  "title": "Correction signals: brace when you hear “Actually”",
+  "body": "The hardest version of this trap: the speakers correct THEMSELVES. A settled answer flips at the last moment: “Let’s meet at two… actually, could we make it three?” Learn the signals: Actually… / On second thought… / Oh wait / Sorry, my mistake / Let’s make it ~. When one plays, get ready to erase what you just wrote. The last speaker’s correction wins."
+ },
+ {
+  "screen_id": "d07c931d-f476-4dc3-b9fb-0f9b9c2f3cab",
+  "lesson": "ielts-listening-option-traps",
+  "order": 4,
+  "explanation": "Friday: no deliveries; Wednesday: customer away; Thursday: agreed. All three days play, again. Date-and-time negotiations are Section 1’s bread and butter, and the FIRST proposed day almost never survives."
+ },
+ {
+  "screen_id": "437000db-06f9-4c87-9a51-45de57d21ccc",
+  "lesson": "ielts-listening-option-traps",
+  "order": 5,
+  "explanation": "The coffee machine is proposed first, but the man counter-offers a water cooler and the woman agrees: “Let’s order one”, where “one” = the cooler. The decider is never the proposal itself but the REACTION to it: only suggestions that win agreement survive."
+ },
+ {
+  "screen_id": "0fb4fb93-46c4-4ac4-b306-146489f4ef53",
+  "lesson": "ielts-listening-option-traps",
+  "order": 6,
+  "explanation": "The number after “sorry, my mistake” (309) is the confirmed one. If 306 was already on your paper, overwrite it instantly. Build the reflex: correction signal → replace with what follows."
+ },
+ {
+  "screen_id": "01267c92-8045-4650-b4b8-ec2edd3176db",
+  "lesson": "ielts-listening-option-traps",
+  "order": 7,
+  "explanation": "“Last year … but this year” is the whole game: the old venue (main tent) sits there as bait, and this year’s answer is the riverside area. Past-vs-present contrasts are the matching task’s favourite wrong-answer factory. Always check WHICH time the question asks about."
+ },
+ {
+  "screen_id": "e20b1d89-8cc6-497d-b0f3-22e5b2b00593",
+  "lesson": "ielts-listening-option-traps",
+  "order": 8,
+  "title": "Recap: the survivor is the answer",
+  "body": "• Wrong options WILL be mentioned: hearing a word proves nothing.\n\n• Cross options off as they are raised and rejected.\n\n• Actually / my mistake / let’s make it ~ → overwrite with what follows.\n\n• A proposal only counts once someone agrees to it.\n\n• Watch the last-year/this-year contrast.\n\nThat wraps up Listening. Next level: Reading, starting with the big one, True/False/Not Given."
+ },
+ {
+  "screen_id": "9c896b31-b858-41c8-9c5f-60262686e704",
+  "lesson": "ielts-reading-tfng",
+  "order": 0,
+  "explanation": "Twenty years in the job, surely he enjoys it? That instinct is exactly what the test hunts. The text states two facts: 20+ years of service and responsibility for a collection. Whether he ENJOYS it is never addressed. Not written → Not Given. The more plausible a statement feels, the more likely it is to be Not Given. That is the heart of this lesson."
+ },
+ {
+  "screen_id": "940ee317-bdb6-4f9c-a86a-16eebbc642b4",
+  "lesson": "ielts-reading-tfng",
+  "order": 1,
+  "title": "Three questions, always in this order",
+  "body": "Judge TFNG with a fixed three-step procedure: 1) Does the text say the SAME thing (in other words)? → True. 2) Does the text say the OPPOSITE? → False. 3) Neither? The text is silent on the point → Not Given. The only admissible evidence is the sentences of the passage; your knowledge, experience and common sense are banned. Ask “which sentence proves this?” If you cannot point at one, it is Not Given."
+ },
+ {
+  "screen_id": "3fabd4ab-7c71-4deb-9621-9f60df91bdf9",
+  "lesson": "ielts-reading-tfng",
+  "order": 2,
+  "explanation": "“Free entry” → “without paying”; “the first Sunday of every month” → “once a month”. Different words, identical meaning → True. True statements hide behind paraphrase, exactly like Listening answers. Never call something Not Given just because the words differ."
+ },
+ {
+  "screen_id": "d9b89d3f-f0c1-46b2-8f67-3ff7d9219999",
+  "lesson": "ielts-reading-tfng",
+  "order": 3,
+  "explanation": "The text says the path closes in winter; the statement claims year-round use. Direct contradiction → False. You may only answer False when the text actively asserts the opposite, and you can point at the sentence that does it."
+ },
+ {
+  "screen_id": "53f4cd86-4ed3-4213-b2d1-676b6f62df33",
+  "lesson": "ielts-reading-tfng",
+  "order": 4,
+  "title": "Not Given ≠ “probably true”",
+  "body": "Splitting False from Not Given is the hard part. False = the text asserts the opposite. Not Given = the text never addresses it. Plausibility is irrelevant: a statement that is almost certainly true in the real world is still Not Given if the passage is silent, and a bizarre claim is Not Given (not False) when the text simply doesn’t touch it. The setter’s trick is quietly ADDING a reason, feeling or comparison to the passage’s topic. Always check whether the added part is actually in the text."
+ },
+ {
+  "screen_id": "f35418b9-7546-4ffc-ae10-16c5fe59fb38",
+  "lesson": "ielts-reading-tfng",
+  "order": 5,
+  "explanation": "The text gives two facts: launched in 2019, popular with hospital staff. The statement adds a CAUSE (“because staff requested it”) that appears nowhere. Not Given. “Popular, so they must have asked for it” is a common-sense leap; shared topic does not mean the claim itself is stated."
+ },
+ {
+  "screen_id": "8f97f4fd-db5c-4241-8333-fd8a82fd9efb",
+  "lesson": "ielts-reading-tfng",
+  "order": 6,
+  "explanation": "The text says MOST; the statement says EVERY. “Most have one” entails that some do not: direct conflict → False. Extreme words (every / all / only / never) are classic TFNG levers: when you spot one in a statement, compare its strength against the text’s wording."
+ },
+ {
+  "screen_id": "1d72aba2-85cc-426d-8d36-dc35f55615da",
+  "lesson": "ielts-reading-tfng",
+  "order": 7,
+  "explanation": "“Must dismount and walk the bike” flips into “riding is not permitted”, an instruction and a prohibition with one meaning → True. The positive↔negative flip from the Listening lesson works here too."
+ },
+ {
+  "screen_id": "bf32737e-339c-4b17-a638-feff6fddd3d5",
+  "lesson": "ielts-reading-tfng",
+  "order": 8,
+  "explanation": "The text covers the schedule and a booklet; who TEACHES is never mentioned → Not Given. “A cookery school probably has professional chefs” is precisely the plausibility bait. Zero pointable evidence = Not Given, every single time."
+ },
+ {
+  "screen_id": "6369e5ea-0d3b-4859-9c2f-6e8862d69c21",
+  "lesson": "ielts-reading-tfng",
+  "order": 9,
+  "title": "Recap: if you can’t point at it, it’s Not Given",
+  "body": "• Three steps: match → True, contradict → False, silent → Not Given.\n\n• The text is the only evidence; common sense is banned.\n\n• Added reasons, feelings or causes → suspect Not Given.\n\n• Weigh extreme words (every / all / only) against the text.\n\n• True hides behind paraphrase: match meanings, not words.\n\nNext lesson: matching headings to paragraphs."
+ },
+ {
+  "screen_id": "b540cd9a-b458-4488-99ae-5ebaac715038",
+  "lesson": "ielts-reading-headings",
+  "order": 0,
+  "title": "A heading names the paragraph’s main act",
+  "body": "Heading matching looks simple and scores poorly, because wrong headings are engineered to match ONE detail inside the paragraph. Every paragraph has a main act (the through-line) and supporting cast (examples, data, asides). A heading must name the main act; a heading that matches only a supporting detail is wrong no matter how clearly that detail appears in the text. Same logic as Listening’s “mentioned ≠ correct”: present in the paragraph ≠ the heading."
+ },
+ {
+  "screen_id": "7f131c28-c140-444a-890d-61bb13ddac20",
+  "lesson": "ielts-reading-headings",
+  "order": 1,
+  "explanation": "The app IS in the text, for exactly one sentence. The through-line is runaway growth: half a million trips, tripled stations, “most successful in a decade”. Option (A) is the signature trap: a heading built from a single detail. Ask how many sentences each candidate heading covers, and the trap collapses."
+ },
+ {
+  "screen_id": "639653b8-772a-4428-a40f-d36d78ab4c64",
+  "lesson": "ielts-reading-headings",
+  "order": 2,
+  "title": "Read the first and last sentences",
+  "body": "The main act usually stands in a predictable spot: the FIRST sentence, since English paragraphs tend to run topic-sentence-then-support. Read sentence one, test it against the headings. The exception: paragraphs that open with a question or an anecdote as a hook: there the reveal often waits in the LAST sentence. Routine: read the first sentence → pencil in a heading → confirm with the last sentence. Only close-read the middle when two candidates survive."
+ },
+ {
+  "screen_id": "dbc2f5cb-d568-4d03-af73-221fa0117b7a",
+  "lesson": "ielts-reading-headings",
+  "order": 3,
+  "explanation": "Sentence one (remote work has changed how neighbourhoods are used) IS the topic sentence; cafés, shops and gyms are all illustrations of it. (B) contradicts the text (cafés are busier, not emptier) and (C) promotes a supporting detail to the title role. The cleanest pattern: topic sentence first."
+ },
+ {
+  "screen_id": "698a49eb-f528-449d-b382-737c8489a1f0",
+  "lesson": "ielts-reading-headings",
+  "order": 4,
+  "explanation": "The opener is a hook question; the reveal arrives in the last sentence (ordinary machines once had humans doing their job), with the knocker-up as the worked example. (A) is far too broad and (B) never happens in the text. In hook-style paragraphs, the final sentence holds the heading."
+ },
+ {
+  "screen_id": "2b52e418-7c42-4c6f-86f4-adae2285ec8a",
+  "lesson": "ielts-reading-headings",
+  "order": 5,
+  "title": "The three species of trap heading",
+  "body": "Trap headings come in three species: 1) the DETAIL trap: matches one sentence or example (the most common); 2) the TOO-BROAD trap: contains the paragraph but at chapter scale; 3) the REVERSED trap: right topic, wrong direction (rise vs. fall, benefit vs. drawback). Final check before committing: does my heading cover nearly every sentence? Is it the right size? Does it point the right way? Three yeses → lock it in."
+ },
+ {
+  "screen_id": "c69e1191-083f-4234-bc51-5052a6f619a1",
+  "lesson": "ielts-reading-headings",
+  "order": 6,
+  "explanation": "The through-line (announced by “Not all plastic recycling is equal”) is recycling’s limits and inequalities. (A) is a detail trap built on the bench example; (C) never appears. “Limits” covers the bottle/downcycling contrast and the final “rarely recycled again” in one word."
+ },
+ {
+  "screen_id": "291563fd-f39a-4534-a2fb-2e68f10077c7",
+  "lesson": "ielts-reading-headings",
+  "order": 7,
+  "explanation": "Sentence one: reopened after three years. Middle: the restoration work. Last sentence: sales smash the target (success). (A) covers all three beats. (B) points the wrong way (revival, not decline) and (C) never appears. Only (A) passes all three checks: coverage, size, direction."
+ },
+ {
+  "screen_id": "ad89dacf-c323-4fb6-bfb7-016b20d487cd",
+  "lesson": "ielts-reading-headings",
+  "order": 8,
+  "title": "Recap: headings go to the main act only",
+  "body": "• A heading names the paragraph’s through-line, never a detail.\n\n• Detail-only headings are the most common trap.\n\n• First sentence → pencil in → confirm with the last; hooks reveal late.\n\n• Final check: coverage, size, direction.\n\nNext: the war with word limits, completion and summary tasks."
+ },
+ {
+  "screen_id": "8c4ce9b1-1030-40f8-adc3-7d79548a6aae",
+  "lesson": "ielts-reading-completion",
+  "order": 0,
+  "explanation": "“NO MORE THAN TWO WORDS” kills (A) on arrival: three words score zero however correct the content. (C) rearranges the text’s wording (and is also three words). The mark goes to the text’s own words trimmed to fit: “information desk”. Word limits are law, not guidance."
+ },
+ {
+  "screen_id": "c570126f-5fd8-4dc6-8de3-26e268bb4bb8",
+  "lesson": "ielts-reading-completion",
+  "order": 1,
+  "title": "How to read the word-limit rules",
+  "body": "The instruction line varies: ONE WORD ONLY; NO MORE THAN TWO WORDS (one is fine too); NO MORE THAN TWO WORDS AND/OR A NUMBER. Counting rules are fixed: articles (a/the) count as words; hyphenated forms (part-time) count as one; “20” counts as a number but “twenty” counts as a word, so digits are the safe choice. After writing, count on your fingers. Those five seconds save real marks."
+ },
+ {
+  "screen_id": "c3aca0a6-842d-407f-8fc8-f51a86ce04b5",
+  "lesson": "ielts-reading-completion",
+  "order": 2,
+  "explanation": "The evidence is “created on the site of a disused car park”, with “built where ~ used to be” as the question’s paraphrase of it. The answer is the text’s own words: car park. The moment you start explaining the idea in your own words, you have left the road."
+ },
+ {
+  "screen_id": "d37fa7ab-02e0-4606-81e3-30bd87ebca54",
+  "lesson": "ielts-reading-completion",
+  "order": 3,
+  "title": "The words around the gap dictate the grammar",
+  "body": "Before hunting in the passage, let the gap’s surroundings dictate the form: after a/the → a noun; after will/must → a base verb; after by/in/at → a noun; after two/many → a PLURAL noun. The completed sentence must be grammatical English, so always re-read the whole line with your candidate in place: “two photograph” loses the mark by itself. Decide the form first, and the passage hunt narrows dramatically."
+ },
+ {
+  "screen_id": "7bb6ae22-5f6b-40c9-a0cf-9cea791331d7",
+  "lesson": "ielts-reading-completion",
+  "order": 4,
+  "explanation": "After “will”, only a base verb survives: “will open”. Even if the passage shows the word “opening”, a candidate that breaks the grammar is the wrong extraction. The gap’s grammar is your strongest filter."
+ },
+ {
+  "screen_id": "54435146-3df0-4cdd-84db-3ad701b1a09d",
+  "lesson": "ielts-reading-completion",
+  "order": 5,
+  "explanation": "The summary’s “could not operate in bad weather” paraphrases “stopped running whenever the weather turned rough”, and the subject of that clause is the passenger ferry. After “by” we need a noun, within two words: “ferry” or “passenger ferry”. Summary completion is paraphrase-mapping: find the matching passage, then lift the words that are already there."
+ },
+ {
+  "screen_id": "0b8239f1-415b-442d-974e-e8cd44038e28",
+  "lesson": "ielts-reading-completion",
+  "order": 6,
+  "explanation": "The text says “summer months”, so write “summer months”. Near-synonyms of your own invention, like (B) and (C), carry nothing but risk here. Paraphrase is a weapon in Writing; in completion tasks the rule is the opposite: the passage’s words, in the passage’s spelling."
+ },
+ {
+  "screen_id": "d218b4c9-10c3-4640-a806-a8ffecef965d",
+  "lesson": "ielts-reading-completion",
+  "order": 7,
+  "explanation": "After “two” the gap demands a plural noun: “photographs” (or “recent photographs”, still within the limit). Singular “photograph” fails on grammar alone. Decide the form → hunt → re-read the whole sentence: the full routine."
+ },
+ {
+  "screen_id": "107306a9-a0f1-4b4c-847c-54c5575ccd57",
+  "lesson": "ielts-reading-completion",
+  "order": 8,
+  "title": "Recap: the passage’s words, within the limit",
+  "body": "• Word limits are law: count on your fingers (articles count; hyphenated = one).\n\n• Digits are the safe way to write numbers.\n\n• Let the gap’s grammar decide the form before you hunt.\n\n• Use the passage’s exact words, never your own paraphrase.\n\n• Re-read the completed sentence for number and grammar.\n\nThat completes Reading. Next level: Writing, starting with GT Task 1 letters."
+ },
+ {
+  "screen_id": "0e8325c7-8c03-4ac3-ab8f-d682b9089966",
+  "lesson": "ielts-writing-letters",
+  "order": 0,
+  "explanation": "You are writing to a stranger at an organisation (a formal letter), and the standard opener when you don’t know the name is “Dear Sir or Madam,”. (A) greets a friend; (C) addresses a building. Register (matching your tone to the situation) is a major scoring criterion, and it starts on line one."
+ },
+ {
+  "screen_id": "32c3ad09-b75f-49a2-8ce5-1ddbd363def6",
+  "lesson": "ielts-writing-letters",
+  "order": 1,
+  "title": "Three registers, with matching openings and closings",
+  "body": "Letters split into three registers by relationship: FORMAL (no name known: company, council): Dear Sir or Madam, ↔ Yours faithfully. SEMI-FORMAL (named but not close: landlord, manager): Dear Mr Tanaka, ↔ Yours sincerely. INFORMAL (friend or family): Dear Ken, ↔ Best wishes / See you soon. Memory hook: no name → faithfully; a name → sincerely; and never “Yours faithfully” to a friend. Learn openings and closings as PAIRS: a mismatched pair loses marks by itself."
+ },
+ {
+  "screen_id": "3ba28bf9-8ef6-42f0-a4b1-59a199eb4e58",
+  "lesson": "ielts-writing-letters",
+  "order": 2,
+  "explanation": "“Dear Sir or Madam,” pairs with “Yours faithfully,”. “Yours sincerely,” belongs to letters that open with a name. In the exam this pairing is a fixed convention: memorise the pairs whole."
+ },
+ {
+  "screen_id": "96172cc2-7428-4c4a-8166-32ca341893d6",
+  "lesson": "ielts-writing-letters",
+  "order": 3,
+  "explanation": "A letter to a friend is informal: “Thanks a million” and contractions like “couldn’t” are exactly right. (A) and (B) are grammatical but absurdly stiff for a friend. The letter task grades situational fit, not just correctness. Writing to a friend in bureaucrat-speak costs Task Achievement marks."
+ },
+ {
+  "screen_id": "a108ce26-e75f-4134-a1db-c36bc32f1dee",
+  "lesson": "ielts-writing-letters",
+  "order": 4,
+  "title": "The three bullet points are a contract",
+  "body": "Every letter prompt carries three bullet points, and they are a contract: cover ALL three or your Task Achievement band is capped, however beautiful the English. The reliable shape: one bullet = one body paragraph. Thirty seconds of planning (“① what broke ② how it affects me ③ what I want done”) and the structure writes itself."
+ },
+ {
+  "screen_id": "90a6cec1-c0b2-4b0a-b88b-0c65679561a6",
+  "lesson": "ielts-writing-letters",
+  "order": 5,
+  "explanation": "Only (B) walks through problem → effect → request. (A) skips the “how it affects you” bullet and wanders into unrelated complaints; (C) misses both the effect and the request. After writing, point at each bullet and ask “did I cover this?” That one habit stabilises your Task Achievement score."
+ },
+ {
+  "screen_id": "6c13cbb7-ced8-42cc-a74f-6d3739a45cab",
+  "lesson": "ielts-writing-letters",
+  "order": 6,
+  "explanation": "(A) is boilerplate from a business letter; mid-letter it reads like suddenly putting on a suit. Tone consistency within one letter is something examiners actively check: keep the register you chose in line one all the way to the sign-off. For a friend, “If you want to know more, just ask!” does the job."
+ },
+ {
+  "screen_id": "13a4da0e-15c6-413f-ab51-0f6f51ccfe03",
+  "lesson": "ielts-writing-letters",
+  "order": 7,
+  "explanation": "No name known → Dear Sir or Madam ↔ Yours faithfully. Mind the spelling: faithful + -ly gives the double L. A misspelled sign-off is a sour final note: finish clean."
+ },
+ {
+  "screen_id": "b46c19e0-0283-48d7-8e9d-549a0a71cf69",
+  "lesson": "ielts-writing-letters",
+  "order": 8,
+  "title": "Recap: register plus full bullet coverage",
+  "body": "• Choose register by relationship: stranger → formal, named → semi-formal, friend → informal.\n\n• Openings and closings come in pairs: Sir or Madam ↔ faithfully; a name ↔ sincerely; a friend ↔ see you soon.\n\n• The three bullets are a contract: one paragraph each.\n\n• Keep the tone consistent to the sign-off.\n\nNext: describing charts in Academic Task 1."
+ },
+ {
+  "screen_id": "30ec17b3-cce8-46ea-9632-f5de352736c7",
+  "lesson": "ielts-writing-charts",
+  "order": 0,
+  "explanation": "84,000 → 42,000 is exactly a halving. (C)’s “by a third” fails the arithmetic. (A) is the subtle trap: with only two data points, the path between them is unknown; “steadily throughout” claims more than the data shows. A Task 1 sentence must never outrun its evidence."
+ },
+ {
+  "screen_id": "a3d9703e-2313-4717-b365-480ca32290b6",
+  "lesson": "ielts-writing-charts",
+  "order": 1,
+  "title": "Task 1 reads the instruments, with a small bank",
+  "body": "Academic Task 1 is a 150-word report on a chart. Opinions (“I think people should…”) and invented causes (“probably because of prices…”) are banned: treat think / should / best as red flags.\n\nThe vocabulary is small and high-value: rises (rose / increased / climbed + sharply / steadily / slightly), falls (fell / dropped / declined + the same adverbs), flat lines (remained stable / levelled off), multiples (doubled / halved / more than doubled), extremes (peaked at ~ / fell to a low of ~).\n\nThe frame is SUBJECT + VERB + ADVERB + PERIOD. Slot the bank’s parts into the frame and any chart becomes writable."
+ },
+ {
+  "screen_id": "468afc6f-a599-41ad-bbf4-10c54eb13b68",
+  "lesson": "ielts-writing-charts",
+  "order": 2,
+  "explanation": "200 → 850 is more than a fourfold rise, so rose / jumped / surged pair naturally with “sharply”. Verb + adverb together make one claim: match their energy to the data’s."
+ },
+ {
+  "screen_id": "c143c6de-b7af-4462-8709-65a852c37d08",
+  "lesson": "ielts-writing-charts",
+  "order": 3,
+  "explanation": "Fell, declined or dropped + “steadily”. Each fall-verb has its own shade (declined slightly formal, slid gentle), and rotating two or three keeps a 150-word report from going monotone."
+ },
+ {
+  "screen_id": "255cec4f-7f70-4709-9207-1a3d443f6781",
+  "lesson": "ielts-writing-charts",
+  "order": 4,
+  "explanation": "“PEAKED at 11%.” Extreme-point language earns its keep in both the overview and the body. Its valley-side partners: “fell to a low of ~” and “bottomed out at ~”. Carry one word for each."
+ },
+ {
+  "screen_id": "6c93c956-652f-46a2-b3d9-301cfb434ef6",
+  "lesson": "ielts-writing-charts",
+  "order": 5,
+  "title": "The overview: biggest trends, zero numbers",
+  "body": "The overview separates band 6 from band 7. Position: right after your one-sentence paraphrase of the task. Opener: “Overall,”. Contents: the one or two biggest trends, with NO specific numbers; details belong to the body paragraphs. The overview says what the chart looks like from a distance, and without one the most numerically perfect answer still hits a Task Achievement ceiling.\n\nCaution: starting with “Overall,” does not make a sentence an overview. A number report or an opinion in that costume still fails. It is judged by function, not by its first word."
+ },
+ {
+  "screen_id": "9cd04fe5-3bf5-4007-9eb1-1920686e587c",
+  "lesson": "ielts-writing-charts",
+  "order": 6,
+  "explanation": "(C) captures the two biggest movements with no numbers: the textbook overview. (A) opens with “Overall” but reports specific figures: body-paragraph work in disguise. (B) is an opinion about policy, banned in Task 1. Judge candidates by function, not by their first word."
+ },
+ {
+  "screen_id": "363a27ba-c81c-452b-8336-54d5039626f2",
+  "lesson": "ielts-writing-charts",
+  "order": 7,
+  "explanation": "“Rose steadily”, “peaked at 40%”, “remained broadly stable”. “Rising” lacks the required past tense, “stability” is a noun where remain needs an adjective, and “fell” points the wrong way for car ownership (35% → 64%). Small forms, but they carry the accuracy half of the score."
+ },
+ {
+  "screen_id": "6a187fde-2043-4fa7-96dd-19d5b9d4e953",
+  "lesson": "ielts-writing-charts",
+  "order": 8,
+  "explanation": "8,000 → 19,000 is beyond twofold: “more than DOUBLED”. Multiplier verbs (doubled, halved, tripled) compress a comparison into one word, and “more than / almost” tunes their precision."
+ },
+ {
+  "screen_id": "03a2bfd5-cf09-4860-90e5-2454d1e7718d",
+  "lesson": "ielts-writing-charts",
+  "order": 9,
+  "title": "Recap: only what is visible, in the precise word",
+  "body": "• Task 1 reports; it never opines or speculates (think / should / best = red flags).\n\n• Two data points cannot prove “steadily throughout”: write only what the data can defend.\n\n• The bank: rose / fell + sharply, steadily, slightly; remained stable; peaked at; more than doubled.\n\n• Frame: subject + verb + adverb + period.\n\n• Overview = “Overall,” + biggest trends, zero numbers, judged by function.\n\nNow cement the bank by writing a full mock Task 1."
+ },
+ {
+  "screen_id": "5de11cb2-8b17-4771-b5f0-91474011c5fd",
+  "lesson": "ielts-writing-essays",
+  "order": 0,
+  "explanation": "“To what extent do you agree or disagree?” marks an OPINION question: choose a side and defend it throughout. Drift into both-sides coverage and you are off-task, which sinks Task Response regardless of your English. Type identification is the most important ten seconds of the hour."
+ },
+ {
+  "screen_id": "74889711-892a-4381-9bd2-bfd487b4fb16",
+  "lesson": "ielts-writing-essays",
+  "order": 1,
+  "title": "Four paragraphs fit every topic",
+  "body": "One skeleton fits every Task 2: ① intro: paraphrase the question + your thesis; ② body 1: first reason + example; ③ body 2: second reason + example; ④ conclusion: restate your position.\n\nQuestions split into two big types. OPINION (“agree or disagree?”): both bodies support your side, or body 2 rebuts the opposition. DISCUSS-BOTH-VIEWS: body 1 = view A, body 2 = view B, with YOUR opinion declared in the intro and conclusion. Covering only one view in a discuss-both question is the deadliest scoring mistake: “both” means both."
+ },
+ {
+  "screen_id": "051d2e9d-7ea8-4f2e-b6d9-5f7b6c27b4e6",
+  "lesson": "ielts-writing-essays",
+  "order": 2,
+  "explanation": "Intro → body 1 → body 2 → conclusion. A dictionary-definition opening takes no position and burns words, and a brand-new argument in the conclusion is a claim you never defend; both erode the examiner’s trust in the essay’s control."
+ },
+ {
+  "screen_id": "6034cc60-5a57-4318-99d8-5f59291ecabc",
+  "lesson": "ielts-writing-essays",
+  "order": 3,
+  "title": "The thesis: the map sentence",
+  "body": "The last sentence of the intro is the thesis, the spoiler that hands the examiner a map. A good thesis does two things: answers the question directly (agree? disagree? leaning where?) and previews your reasons.\n\nFor discuss-both questions, a “While ~” opening nods to view A before declaring your camp: both views previewed and an opinion stated, in one sentence (below). The one to avoid: “This essay will discuss this topic.” A thesis with no position and no reasons is no thesis at all."
+ },
+ {
+  "screen_id": "0c1b7860-4595-4817-a8d3-24d11718e501",
+  "lesson": "ielts-writing-essays",
+  "order": 4,
+  "explanation": "“While” concedes the other side, “largely agree” calibrates the position, and the two previewed reasons (reduce… / create…) complete the map. “Despite” cannot govern a full clause, and “reduces / creates” break agreement with the plural “they”."
+ },
+ {
+  "screen_id": "03b3eed1-c4f2-40cb-94c9-7ab5ea05113d",
+  "lesson": "ielts-writing-essays",
+  "order": 5,
+  "explanation": "“On the other hand” signposts the second view, and “those who… argue that…” reports OTHER people’s position, a topic sentence opening body 2. A thesis would say “I believe”; the subject gives it away. A conclusion would carry its own signpost (“In conclusion”)."
+ },
+ {
+  "screen_id": "5c70dddb-b4da-4f39-ac40-1de48c394566",
+  "lesson": "ielts-writing-essays",
+  "order": 6,
+  "title": "Linking phrases: signs at the corners",
+  "body": "Plant signs at the joints: the Coherence and Cohesion criterion is graded right there. Body openers: Firstly / The main reason is that…; contrast: However / On the other hand (the natural opener for body 2 in a discuss-both essay); examples: For example / For instance; concession: Despite + noun phrase, Although + clause; conclusion: In conclusion / To sum up.\n\nOne warning: don’t over-sign the road. A Moreover-Furthermore-Additionally pile-up reads mechanical. Two or three per paragraph, only at the real corners."
+ },
+ {
+  "screen_id": "dab14eae-0d7f-490c-b38c-36df80a50ab1",
+  "lesson": "ielts-writing-essays",
+  "order": 7,
+  "explanation": "“DESPITE + noun phrase”. “Although” needs a full clause, so it cannot sit here. Despite / In spite of + noun vs. Although + clause: one distinction, marks in two criteria."
+ },
+ {
+  "screen_id": "0b300897-44d7-41a7-986a-efb8415518b6",
+  "lesson": "ielts-writing-essays",
+  "order": 8,
+  "explanation": "“Alternatively,” fits best: it offers the second proposal as another route (Additionally / Moreover also work). In a solutions paragraph, one signpost at the second idea transforms readability."
+ },
+ {
+  "screen_id": "bc90187c-64ed-4249-b8c8-43ec4005c321",
+  "lesson": "ielts-writing-essays",
+  "order": 9,
+  "title": "Recap: type → skeleton → thesis → signposts",
+  "body": "• Ten seconds first: opinion type (“agree or disagree?”) or discuss-both (“Discuss both views”)?\n\n• Four paragraphs: intro + thesis / body 1 / body 2 / conclusion, and no new arguments in the conclusion.\n\n• Thesis = position + previewed reasons; never “This essay will discuss…”.\n\n• Open a discuss-both body 2 with “On the other hand, those who… argue that…”.\n\n• Despite + noun phrase, Although + clause; signs at the corners only.\n\nThe skeleton is yours. Now rebuild it from memory in a mock Task 2."
+ },
+ {
+  "screen_id": "4aa445fe-716e-4009-bb52-c6a707a488ed",
+  "lesson": "ielts-speaking-band-criteria",
+  "order": 0,
+  "explanation": "The decisive factor is range, not length. Y shows natural vocabulary (unwind, catch up with, switch off) and combines clauses with “once” and “which”. IELTS Speaking is scored on four criteria (fluency and coherence, vocabulary, grammar, pronunciation), and length itself is not one of them. X is short and accurate, but offers no evidence of range, which caps its score."
+ },
+ {
+  "screen_id": "84fe0195-cb32-47c4-9f55-04885991b8cd",
+  "lesson": "ielts-speaking-band-criteria",
+  "order": 1,
+  "title": "Four criteria, 25% each",
+  "body": "Your Speaking band is the average of four equally weighted criteria: ① Fluency and Coherence: can you keep going, and does the answer hang together logically? ② Lexical Resource: a wide, precise vocabulary used appropriately. ③ Grammatical Range and Accuracy: varied structures with errors under control. ④ Pronunciation: effortless to follow, with natural stress and intonation.\n\nBecause the weights are equal, perfect grammar cannot rescue a vocabulary of repeated “nice”s, and lifting your weakest criterion moves the whole band. This level trains each criterion in turn, starting with the diagnostic skill: hearing an answer and naming WHICH criterion it loses."
+ },
+ {
+  "screen_id": "4d47d84c-ff31-4325-ba29-bab3f34693a0",
+  "lesson": "ielts-speaking-band-criteria",
+  "order": 2,
+  "explanation": "The vocabulary (browse, compare different brands) is sound and there are no grammar errors. What suffers is the FLOW: constant fillers and restarts interrupt the answer again and again. That lands squarely on Fluency and Coherence. Learning to diagnose which criterion an answer loses is also how you prioritise your own practice."
+ },
+ {
+  "screen_id": "a7e082b0-51ed-4261-aa0e-1056453487a4",
+  "lesson": "ielts-speaking-band-criteria",
+  "order": 3,
+  "explanation": "The answer flows and the grammar is accurate, but “nice” appears four times. Repeating one adjective leaves your range invisible: the classic Lexical Resource ceiling. The examiner is listening for a different word per target: welcoming people, delicious local dishes, leafy parks."
+ },
+ {
+  "screen_id": "be182004-cc13-4e47-ad9d-a40766b3dc9e",
+  "lesson": "ielts-speaking-band-criteria",
+  "order": 4,
+  "explanation": "The delivery is fluent and the vocabulary fits the topic. What bleeds is grammatical ACCURACY: change → has changed, appear → appeared, tourists is → tourists are. Three tense/agreement errors in two sentences. GRA grades range and accuracy together; nobody demands zero errors, but this density hits the score directly."
+ },
+ {
+  "screen_id": "54eb4863-8846-4568-9100-e47800a9957e",
+  "lesson": "ielts-speaking-band-criteria",
+  "order": 5,
+  "title": "What separates Band 5 from Band 7",
+  "body": "Compare the two sample answers below: both communicate. The difference: Band 5 strings short simple sentences with basic, repeated vocabulary; few errors, but no visible range. Band 7 shows less common phrasing (“nothing fancy”, “the queue tells you everything”), combined clauses, and detail with a personal voice.\n\nThe common misconception: Band 7 does not mean error-free. A few slips are fine if range and flexibility are there. Play it safe with simple correct sentences and you park at 5–6. The criteria pay for ambition, not caution."
+ },
+ {
+  "screen_id": "5fe080bf-15e1-461a-bc00-9d2ac1fd9d79",
+  "lesson": "ielts-speaking-band-criteria",
+  "order": 6,
+  "title": "Answer + reason + example feeds every criterion",
+  "body": "So how do you SHOW range? The most reliable habit: extend every answer to answer + reason + example. Fluency and Coherence: longer turns, with “because” and “for example” making the logic audible. Lexical Resource: examples drag concrete nouns and verbs in naturally. Grammar: reasons and examples generate complex sentences (because…, which…) by themselves.\n\nOne habit, three criteria paid at once: the best investment in the test. (Pronunciation is the exception; train it separately with reading aloud and shadowing.) Now assemble the shape yourself."
+ },
+ {
+  "screen_id": "60e0b234-233c-4088-a24a-c1eb5b3208f8",
+  "lesson": "ielts-speaking-band-criteria",
+  "order": 7,
+  "explanation": "“Mainly because” opens the reason, “For example” the example, and “even when it’s cold” adds a vivid detail of persistence. “Only when it’s cold” would contradict “most evenings”, and “However” / “so that” fit none of the gaps logically."
+ },
+ {
+  "screen_id": "e2e5aab6-5e09-4f3d-9dc4-b78ac029977c",
+  "lesson": "ielts-speaking-band-criteria",
+  "order": 8,
+  "explanation": "“For EXAMPLE,” (or “for instance,”) is the signal that evidence is coming. The moment the examiner hears it, your answer registers as supported. Train the reflex of following every reason with one, and the three-part shape builds itself."
+ },
+ {
+  "screen_id": "34f0c5a7-b1a7-4a35-940c-4533826b9d9e",
+  "lesson": "ielts-speaking-band-criteria",
+  "order": 9,
+  "explanation": "The language is flawless, but the question asked about your current NEIGHBOURHOOD, and the answer narrates a hometown’s history. An answer that doesn’t address the question is a coherence failure, scored under Fluency and Coherence. Steering every question toward a memorised topic is caught and penalised the same way, however fluent the delivery."
+ },
+ {
+  "screen_id": "bfc23378-253f-4e4f-8bcf-9b5013bf7227",
+  "lesson": "ielts-speaking-band-criteria",
+  "order": 10,
+  "title": "Recap: know the criteria, know your training plan",
+  "body": "• Four criteria at 25% each: fluency and coherence / vocabulary / grammar / pronunciation.\n\n• Length is not a criterion; range and naturalness are.\n\n• Band 7 ≠ error-free. Ambitious complex sentences beat cautious simple ones.\n\n• The answer + reason + example habit pays three criteria at once.\n\n• Fluent answers that dodge the question lose marks for coherence.\n\nNext lesson: the first pillar in detail, showing your lexical range."
+ },
+ {
+  "screen_id": "db8a0c24-2ad4-4763-a1b1-4f9d1aec6d6f",
+  "lesson": "ielts-speaking-lexical",
+  "order": 0,
+  "explanation": "(B) uses natural, varied vocabulary: strict, endlessly patient, a knack for. (A) repeats “good” and shows no range. (C) stacks rare words nobody says in conversation; Lexical Resource rewards the RIGHT word for the situation, not the hardest word in the dictionary."
+ },
+ {
+  "screen_id": "2f54ac7d-35eb-4c9f-9c16-d2f2d3ad513f",
+  "lesson": "ielts-speaking-lexical",
+  "order": 1,
+  "title": "Lexical Resource means having alternatives",
+  "body": "For vocabulary, the examiner listens for three things: ① range: a different word per target instead of one word recycled; ② precision: natural word partnerships (collocation); ③ paraphrase: talking your way around words you lack.\n\nThe starting point is knowing your crutch words. Everyone has them: good, nice, important, very. Prepare two or three stand-ins for each and range appears by itself. This lesson makes you PRODUCE those stand-ins: recalling a word yourself, not recognising it in a list, is the skill the test demands."
+ },
+ {
+  "screen_id": "d7321f19-e4e6-4c0d-bba2-4353bbde1c6b",
+  "lesson": "ielts-speaking-lexical",
+  "order": 2,
+  "explanation": "Essential, crucial and vital all fit naturally. “Important” is perfectly correct, but if it is your only word for the idea, your range stays invisible. Owning three ways to say “important” is exactly what the examiner is listening for."
+ },
+ {
+  "screen_id": "d595d578-a451-4cb4-9218-5157dc9ae34f",
+  "lesson": "ielts-speaking-lexical",
+  "order": 3,
+  "explanation": "Strong adjectives fit: delicious, superb, incredible. Note that “absolutely good” is impossible: absolutely pairs only with ungradable, already-extreme adjectives (delicious, freezing, exhausted). “Very good” but “absolutely delicious”: that pairing instinct is collocation."
+ },
+ {
+  "screen_id": "e72bcdba-633d-4939-b36a-15d513540ac3",
+  "lesson": "ielts-speaking-lexical",
+  "order": 4,
+  "title": "Build stand-ins for your overused words",
+  "body": "The training is simple: pick your five most-used words and prepare two or three stand-ins each, tied to situations you would genuinely talk about, not copied from a thesaurus.\n\nTwo refinements: ① the stand-in depends on the target: “nice” for a person and “nice” for a place need different replacements (see below); ② antonym pairs also prove range: “My old flat was tiny, but the new one is spacious” shows two words’ worth in one sentence.\n\nThe finishing drill is the ban game: answer a question without once saying “good” or “nice”. You will know within seconds whether the stand-ins are truly yours."
+ },
+ {
+  "screen_id": "c6583a46-585a-4f32-8b40-fb455a09a385",
+  "lesson": "ielts-speaking-lexical",
+  "order": 5,
+  "explanation": "For PEOPLE, nice becomes friendly, welcoming or easy-going. Here the sentence continues “gets along with everyone”, so sociable and outgoing also fit perfectly. Using a word immediately after learning it is what makes it stick."
+ },
+ {
+  "screen_id": "6626437a-39ec-4c6b-a0da-cb4256bf0655",
+  "lesson": "ielts-speaking-lexical",
+  "order": 6,
+  "explanation": "For PLACES, nice becomes cosy, lively or picturesque. After “small but…”, cosy is the most natural, though lively and charming work too. Same word, different target, different substitutes. That is what context-dependent vocabulary means."
+ },
+ {
+  "screen_id": "d897e799-075e-4406-afd2-f35fae6efbe7",
+  "lesson": "ielts-speaking-lexical",
+  "order": 7,
+  "explanation": "For CHANGES, big becomes dramatic or significant; major and profound also score well. You have now actively used all three sets from the previous screen, which is exactly how they will surface in the exam."
+ },
+ {
+  "screen_id": "7600917c-bd4e-43dc-83a3-65d4ec6e256e",
+  "lesson": "ielts-speaking-lexical",
+  "order": 8,
+  "explanation": "Things are informative; PEOPLE are knowledgeable or educated. “A knowledgeable guide”, but “an informative documentary”. With near-synonyms, what separates them is usually what they can describe, and that precision is high-value Lexical Resource."
+ },
+ {
+  "screen_id": "e7f5840d-a852-4b6e-827d-07e8edabf29f",
+  "lesson": "ielts-speaking-lexical",
+  "order": 9,
+  "explanation": "Spacious or roomy fit best. A contrast pair like tiny → spacious shows two words’ worth of range in one sentence. “Big” passes, but since “tiny” is already a vivid word, matching its energy with spacious or enormous is the stronger move."
+ },
+ {
+  "screen_id": "c0f42be2-3a2d-469a-8583-174474132c72",
+  "lesson": "ielts-speaking-lexical",
+  "order": 10,
+  "explanation": "“Keen ON photography” (interested takes IN, so it cannot fill that slot), “find it relaxing”, and “a hobby that doesn’t COST much”: people spend, things cost. Near-synonyms usually part ways at the preposition or the subject."
+ },
+ {
+  "screen_id": "5d20d938-5296-4e80-ac4c-49ec25325cb4",
+  "lesson": "ielts-speaking-lexical",
+  "order": 11,
+  "explanation": "Shape, affect and sway all work. Echoing the examiner’s word back is not an error, but paraphrasing it proves range on the spot. Treat every content word in the question as an invitation to show an alternative."
+ },
+ {
+  "screen_id": "612ddc4f-4ccf-4200-a614-9829eb4e4ff8",
+  "lesson": "ielts-speaking-lexical",
+  "order": 12,
+  "title": "Recap: precise stand-ins, produced on demand",
+  "body": "• Lexical Resource = range × precision × paraphrase, not rare-word recitals.\n\n• Give each crutch word (good / nice / important / very) two or three stand-ins.\n\n• Mind collocation: absolutely pairs only with extreme adjectives (absolutely delicious).\n\n• Contrast pairs (tiny → spacious) show double range in one sentence.\n\n• Paraphrase the examiner’s words back (influences → shape / sway).\n\nNext lesson: the other pillar, grammatical range."
+ },
+ {
+  "screen_id": "2ae19204-de2c-4a68-866a-ee2796487e09",
+  "lesson": "ielts-speaking-grammar-range",
+  "order": 0,
+  "explanation": "A state continuing from the past until now takes the present perfect: “I’ve lived… for eight years.” (A)’s simple present cannot carry a duration with “for”, and (B) misuses “since” with a length of time (since 2018 would work). Tense control is the first place Grammatical Range shows itself."
+ },
+ {
+  "screen_id": "8db1a638-ae0a-4c5c-a270-12226508e4b1",
+  "lesson": "ielts-speaking-grammar-range",
+  "order": 1,
+  "title": "GRA = range × accuracy",
+  "body": "The criterion’s name says it all: ① RANGE: varied structures; an answer of all-simple-present, all-simple-sentences hits a ceiling even with zero errors. ② ACCURACY: error density; perfection is not required, and Band 7 tolerates minor slips.\n\nThe easiest way to show range is to travel across time inside one answer: present situation → experience so far (present perfect) → plans (future). That alone evidences three tenses. Join clauses with because / although / which and structural variety comes with it. Make the “time tour” below your default."
+ },
+ {
+  "screen_id": "bf994897-d23d-4e51-bf8f-a659466b00e0",
+  "lesson": "ielts-speaking-grammar-range",
+  "order": 2,
+  "explanation": "“Since 2019” calls for the present perfect: have lived / have been living. In speech the contraction “I’ve lived” sounds most natural. Build the reflex: hear “since” or “for + period”, reach for the perfect."
+ },
+ {
+  "screen_id": "9e584a35-b2df-4764-9655-1e23b4990b3c",
+  "lesson": "ielts-speaking-grammar-range",
+  "order": 3,
+  "explanation": "A settled plan takes “be going to”: I’m going to start… One future-time sentence widens the answer’s time range: instant GRA evidence. Practise pivoting from present description to future plans on purpose."
+ },
+ {
+  "screen_id": "120aef8c-219e-487e-a488-48345d0310da",
+  "lesson": "ielts-speaking-grammar-range",
+  "order": 4,
+  "explanation": "“I’ve worked there for five years” means you still do; “I worked there” implies you have left. (C)’s past continuous describes background action and sounds unfinished on its own. One auxiliary changes your employment status: tense is meaning, not decoration."
+ },
+ {
+  "screen_id": "3eee14a8-ce1e-494b-bacf-18e908b1c7d7",
+  "lesson": "ielts-speaking-grammar-range",
+  "order": 5,
+  "title": "Conditionals and comparatives: the band boosters",
+  "body": "After tenses, two boosters: ① the second conditional: “If I had more time, I’d take up the piano” (you don’t). Talking about unreal situations is strong evidence of range, and “what if” questions always come, so install the frame If I + past, I’d…; ② comparatives: “far more convenient than”, “not as quiet as”, “the best decision I’ve ever made”, which either-or questions (city or countryside?) will call for naturally.\n\nLearn both as whole frames and swap the contents."
+ },
+ {
+  "screen_id": "72c51e9a-a241-4765-8161-b255d6a0c64e",
+  "lesson": "ielts-speaking-grammar-range",
+  "order": 6,
+  "explanation": "An unreal present calls for the second conditional: If I HAD more time, I would… The simple present “if I have” describes a real possibility and clashes with “would” in the main clause. Past form in the if-clause, would in the main clause: memorise them as a pair."
+ },
+ {
+  "screen_id": "73211580-0624-4a61-8f43-055ce1ffd99d",
+  "lesson": "ielts-speaking-grammar-range",
+  "order": 7,
+  "explanation": "Present (live) → past (grew up) → present perfect (have lived… for six years NOW, which rules out the simple past “lived”) → second conditional (if the chance AROSE, I’d stay; “will arise” cannot pair with “I’d”). One answer, four time frames: exactly what Grammatical Range means."
+ },
+ {
+  "screen_id": "cd9b8389-5454-4322-8cf2-dd766f7b4b09",
+  "lesson": "ielts-speaking-grammar-range",
+  "order": 8,
+  "explanation": "“Far LESS stressful than”: comparison isn’t only “more… than”. Less, far less and “not as… as” give you three more tools, and “far + comparative” adds natural emphasis."
+ },
+ {
+  "screen_id": "8f03fa9d-5ff0-4cc6-8772-468b6ab7952a",
+  "lesson": "ielts-speaking-grammar-range",
+  "order": 9,
+  "title": "Recap: answers that travel through time",
+  "body": "• GRA = range × accuracy: ambitious complex sentences beat error-free monotony.\n\n• Since / for + period → present perfect (I’ve lived…).\n\n• Travel the timeline (present, past, perfect, future) inside one answer.\n\n• The conditional frame: If I + past, I’d…\n\n• Compare with less / not as… as / far + comparative, not just “more”.\n\nNext lesson: a bigger unit than the sentence, structuring the whole answer."
+ },
+ {
+  "screen_id": "d1ab8cba-bfa5-40e7-996f-9a93c3e5cb5d",
+  "lesson": "ielts-speaking-structure",
+  "order": 0,
+  "explanation": "X and Y contain nearly identical material: only the ORDER differs. X runs point → reason → example → wrap, so the listener always knows where they are. Y leads with an example (“why are we hearing about your father?”) and ends by circling back. Grammar (C) is roughly equal here; the gap is pure coherence."
+ },
+ {
+  "screen_id": "aa84293d-23b1-4754-98a7-b37246e6b19b",
+  "lesson": "ielts-speaking-structure",
+  "order": 1,
+  "title": "Answers are mini-paragraphs: point → reason → example → wrap",
+  "body": "A good answer is a spoken mini-paragraph with four parts: ① POINT (conclusion first): “I’d say yes.” ② REASON: “mainly because…” ③ EXAMPLE: “For example…”, with names and numbers for weight. ④ WRAP (one landing sentence): “So overall…”. About thirty seconds.\n\nCoherence is graded on exactly this ordering. However good your reasons and examples are, putting them before the point puts the listener on a bus with no destination sign. The wrap can be dropped once you are comfortable; point-first is non-negotiable."
+ },
+ {
+  "screen_id": "3351ebd0-0aa7-43b7-9ed0-6ce7d5a31d0c",
+  "lesson": "ielts-speaking-structure",
+  "order": 2,
+  "explanation": "The opening sentence has one job: answer the question. (C) states a position first and even sets up curiosity. (B) is an excellent REASON, but it dives into support before answering “so what do you think?”. (A)’s example has the same problem: examples earn their place only after the point."
+ },
+ {
+  "screen_id": "cef701e6-cb14-4353-b8cd-a26b13ffd2e5",
+  "lesson": "ielts-speaking-structure",
+  "order": 3,
+  "explanation": "“Because” introduces the reason, “For example” the evidence, “whereas” contrasts paper with the phone inside one sentence, and “However” turns the whole answer toward a concession. Whereas compares two things mid-sentence; However redirects the argument from the front. Knowing which job each does is the advanced move."
+ },
+ {
+  "screen_id": "41ae77b8-1482-4fbb-9171-1a8ef20177c6",
+  "lesson": "ielts-speaking-structure",
+  "order": 4,
+  "title": "Signpost the corners, not every step",
+  "body": "Plant signs where the talk changes direction: into the reason (“The main thing is…”), adding (“On top of that…”), conceding (“Having said that…”), landing (“So overall…”).\n\nOne warning: don’t over-sign. A Moreover-Furthermore-Additionally pile-up at every sentence head sounds like a recited template. Two or three per answer, only at genuine corners.\n\nSigns serve the listener, but they rescue the speaker too: saying “On top of that…” out loud buys a natural beat in which to find what comes next."
+ },
+ {
+  "screen_id": "c3977383-d432-4a4b-85f7-eadfba262248",
+  "lesson": "ielts-speaking-structure",
+  "order": 5,
+  "explanation": "② claims the reason is MOOD, but ③’s example is about membership FEES: evidence for a reason that was never given. An example only works as proof of the reason just stated. To talk about cost, open a second reason first (“Another reason is the cost”). The signpost was right; the cargo didn’t match."
+ },
+ {
+  "screen_id": "a05af84a-c838-416c-a248-c2fc7712a391",
+  "lesson": "ielts-speaking-structure",
+  "order": 6,
+  "explanation": "“HAVING said that,” adds the other side of what you just claimed, a spoken-register cousin of “However”. Positives → having said that → a realistic drawback: that single round trip proves you can see both sides."
+ },
+ {
+  "screen_id": "c4d204b6-de25-464b-8469-a0bd928e3c1b",
+  "lesson": "ielts-speaking-structure",
+  "order": 7,
+  "explanation": "(A) answers immediately, hedged with “on balance” and scoped with “at least the big public ones”, a model opener. (B) is a true statement that takes no position; (C) leads with an example again. Background feels safe to start with, but the first sentence’s job never changes: answer the question."
+ },
+ {
+  "screen_id": "f94ed66d-6792-4c0a-a90c-9bf2a6fa7c27",
+  "lesson": "ielts-speaking-structure",
+  "order": 8,
+  "explanation": "“On the OTHER hand”: the fundamental two-sides signpost. One benefit, then “on the other hand” plus a felt drawback: that single exchange gives any answer dimension."
+ },
+ {
+  "screen_id": "bff62cc5-ed3b-4c00-b86a-36d29f297ffb",
+  "lesson": "ielts-speaking-structure",
+  "order": 9,
+  "title": "Recap: point first, signs at the corners",
+  "body": "• Answers are mini-paragraphs: point → reason → example → wrap, ~30 seconds.\n\n• The first sentence answers the question: never open with an example or background.\n\n• An example must prove the reason just given; check the cargo, not just the signpost.\n\n• Two or three signposts per answer, at genuine corners only.\n\n• “Having said that” / “On the other hand” show the other side.\n\nNext: into the exam proper, the Part 2 cue card."
+ },
+ {
+  "screen_id": "42d664af-d28f-40d5-a4fc-a99681fb8ae0",
+  "lesson": "ielts-speaking-cue-card",
+  "order": 0,
+  "explanation": "(B): the card’s four bullets ARE the speech plan. Two or three keywords per bullet scaffolds the whole two minutes (e.g. Aomori, night bus / two uni friends / stuck in heavy snow / strangers’ kindness). (A)’s vocabulary list builds no storyline, and (C) spends the minute producing two sentences you will then recite. Notes are hooks for memory, not a manuscript."
+ },
+ {
+  "screen_id": "47047060-9ad7-4bc0-b9db-c7320f655d54",
+  "lesson": "ielts-speaking-cue-card",
+  "order": 1,
+  "title": "Four bullets = the two-minute blueprint",
+  "body": "The Part 2 routine: you receive a topic card, prepare for one minute, then speak for one to two minutes: no nods, no rescue from the examiner.\n\nThe universal fear is running dry at thirty seconds, but the solution is printed on the card: there are always four bullets, and 20–30 seconds per bullet lands you at 1.5–2 minutes by arithmetic alone.\n\nThe prep minute has one fixed job: two or three keywords per bullet, listed top-to-bottom in speaking order. While speaking, walk down the list. Getting lost becomes impossible. The card is not the enemy; it is the script."
+ },
+ {
+  "screen_id": "f51d0f1d-b6cd-406a-a23c-021dc9d4d0e4",
+  "lesson": "ielts-speaking-cue-card",
+  "order": 2,
+  "explanation": "“I’d LIKE to talk about ~” is the dependable Part 2 opener: it announces the topic in your own words while your nerves settle. Fix the opening line in advance and save all your thinking for the content."
+ },
+ {
+  "screen_id": "fb9348ef-1912-4be8-b4b1-be0e0e60671a",
+  "lesson": "ielts-speaking-cue-card",
+  "order": 3,
+  "explanation": "“As for” steps onto the card’s next bullet, “at least twice a week” gives frequency, “While I’m there” frames the routine, and “So, that’s why…” lands the talk. “Even though I’m there” makes no sense here, and “by far” only intensifies superlatives. With the skeleton phrases fixed, any card becomes a matter of swapping the contents."
+ },
+ {
+  "screen_id": "6707f139-aa75-4b75-97c6-9cdc6e17c317",
+  "lesson": "ielts-speaking-cue-card",
+  "order": 4,
+  "title": "Spare time? Extend with feelings and detail",
+  "body": "Even at 20–30 seconds per bullet, you may finish early. The extension parts are always the same: what was said or thought at the time (quoting someone’s words is the strongest concretiser); sensory detail (sights, sounds, smells); what happened afterwards, and whether it continues today. They fit any topic. Keep entry phrases ready (below).\n\nThe two banned moves: silence, which hits Fluency directly, and repetition, which produces nothing new to grade. Notice that the card’s last line (“and explain why / how you felt…”) hands you the feelings section on purpose."
+ },
+ {
+  "screen_id": "4496ddbe-1951-4683-97d4-c5ddd24ac7b7",
+  "lesson": "ielts-speaking-cue-card",
+  "order": 5,
+  "explanation": "(C): expand with “What I remember most is…”, the aftermath, the feelings, fresh language all the way to the two-minute mark. (A) re-words material the examiner has already graded. Stopping early (B) isn’t penalised directly, but it hands back time you could have filled with scoreable English."
+ },
+ {
+  "screen_id": "c0b757a5-137d-40fd-acce-137e99428987",
+  "lesson": "ielts-speaking-cue-card",
+  "order": 6,
+  "explanation": "“So, that’s WHY ~” signals a finished talk and prevents the awkward is-there-more silence. Pair it with your fixed opener: the frame can be identical every time, and the more fixed it is, the easier the exam day."
+ },
+ {
+  "screen_id": "c8b3158c-991c-4f54-abf8-546dcf0ad851",
+  "lesson": "ielts-speaking-cue-card",
+  "order": 7,
+  "explanation": "(A) answers “why” with a lesson learned, an actual quoted catchphrase, and its effect today. Quoting someone’s words is a universally available way to make any story concrete. (B) answers a different bullet (where he lives), and (C) circles the word “important” three times without ever producing a reason."
+ },
+ {
+  "screen_id": "ee3af0c8-0d0b-4914-9ebd-b21ff8b2355a",
+  "lesson": "ielts-speaking-cue-card",
+  "order": 8,
+  "explanation": "“Looking BACK,” bridges the story from then to now, and shifts you naturally from past narration into present-tense reflection, which doubles as grammatical-range evidence. One phrase, two criteria served."
+ },
+ {
+  "screen_id": "1a3006ac-bbae-4abb-843c-ac4059630337",
+  "lesson": "ielts-speaking-cue-card",
+  "order": 9,
+  "title": "Recap: the card is the script, detail is the extension",
+  "body": "• Four bullets = the blueprint: 20–30 seconds each fills the two minutes.\n\n• Prep minute: keywords only, never sentences.\n\n• Fixed opener and closer: “I’d like to talk about ~” / “So, that’s why ~”.\n\n• Spare time → quoted words, sensory detail, the aftermath.\n\n• Never silence, never repetition.\n\nFinal lesson: the abstract finale, Part 3."
+ },
+ {
+  "screen_id": "64c6486e-430e-47e5-8ed0-3f8a792e1a6b",
+  "lesson": "ielts-speaking-part3",
+  "order": 0,
+  "explanation": "(B) runs the four moves: position → reason → example → concession. The closing “That said…” grants the other side its point, proof of multi-angle thinking. (A) is too thin for Part 3, and (C) is long and fluent but absolutist (“whatever it costs”, “simply don’t understand”), which makes it one-dimensional. Talking at length and building an argument are different skills."
+ },
+ {
+  "screen_id": "a4107b86-c9af-4272-8d4e-aa180a649c7b",
+  "lesson": "ielts-speaking-part3",
+  "order": 1,
+  "title": "The frame: position → reason → example → concession",
+  "body": "Part 3 strings big questions about society and the future, a spoken mini-essay. The equipment to carry: ① position (“On the whole, I’d say…”), ② reason (“The main reason is…”), ③ example (“For instance…”), ④ concession (“That said…” / “Of course…”). Four moves, 30–45 seconds.\n\nThe concession is the strongest band-mover of the four: granting the other side its point doesn’t weaken your position; it upgrades it into a conclusion reached after seeing both sides. And once your mouth knows the signal phrases, the structure assembles itself while your brain works on content."
+ },
+ {
+  "screen_id": "f58f63f5-87e0-4977-b673-8079fcbafae5",
+  "lesson": "ielts-speaking-part3",
+  "order": 2,
+  "explanation": "Position → reason → example → concession. Opening with a definition burns time without answering, and repetition restates without advancing. Each of the four moves does a job none of the others can."
+ },
+ {
+  "screen_id": "417937e5-0614-4f3b-81cb-52ae1093c1ce",
+  "lesson": "ielts-speaking-part3",
+  "order": 3,
+  "explanation": "“It DEPENDS on ~” converts an either-or question into a case-by-case answer, and the “while” contrast that follows delivers two perspectives in one breath, exactly the dimensionality Part 3 rewards."
+ },
+ {
+  "screen_id": "c7145904-139f-43b6-b830-227b9f8a4693",
+  "lesson": "ielts-speaking-part3",
+  "order": 4,
+  "title": "Hedge your claims, buy time out loud",
+  "body": "Part 3 questions are big, so absolutes (always / everyone / 100%) collapse at the first counter-example. Assert softly: “tend to”, “generally”, “probably”, “I’d say…” (gentler than “I think”), “It depends on…”.\n\nThe other tool is buying time aloud: “That’s a tough one.” / “I’ve never really thought about that, but…” / “It’s hard to say, but on balance…”. Three seconds of silence costs you; three seconds of audible thinking is natural conversation, and the phrase itself is scoreable English."
+ },
+ {
+  "screen_id": "eac1ddc6-f7bc-4be2-b0c8-507876fb8dfb",
+  "lesson": "ielts-speaking-part3",
+  "order": 5,
+  "explanation": "“TEND to” (also “seem to” / “appear to”) is the workhorse hedge. “Always” collapses at the first counter-example; “tend to” makes the same claim defensible. One small verb, a much smarter-sounding argument."
+ },
+ {
+  "screen_id": "d943fb15-d83b-46f3-9a42-cd3d97ac9fe4",
+  "lesson": "ielts-speaking-part3",
+  "order": 6,
+  "explanation": "(A): position, reason and example are already in place. The missing move is the concession. One “Of course, it depends on the family’s circumstances” completes the frame and evidences balanced thinking. A second example (B) duplicates a job already done, and restating the position (C) adds volume, not value."
+ },
+ {
+  "screen_id": "52195ef8-dd53-4f78-85e4-2e8aa11364d6",
+  "lesson": "ielts-speaking-part3",
+  "order": 7,
+  "explanation": "“That’s a TOUGH one” (difficult / tricky also work) buys thinking time out loud instead of in silence, and the phrase itself is natural, scoreable English. Time-buying isn’t a trick; it is what fluent speakers actually do."
+ },
+ {
+  "screen_id": "46b13d51-d4f6-4089-9aae-88595f2ac615",
+  "lesson": "ielts-speaking-part3",
+  "order": 8,
+  "explanation": "(C)’s “I agree up to a point” concedes what deserves conceding, then argues back, the adult way to handle agree-or-disagree. Agreement isn’t all-or-nothing: (A) over-commits with “every possible way”, and (B) retreats into a platitude without ever answering."
+ },
+ {
+  "screen_id": "bc3e736d-cbaf-496d-bacc-94fba70d94da",
+  "lesson": "ielts-speaking-part3",
+  "order": 9,
+  "title": "Recap: argue with a frame, assert with a hedge",
+  "body": "• The Part 3 frame: position → reason → example → concession, 30–45 seconds.\n\n• The concession is the biggest band-booster: “That said” / “Of course”.\n\n• Hedge rather than absolutise: tend to / generally / I’d say.\n\n• Either-or → “It depends on ~”; agree-or-disagree → “I agree up to a point”.\n\n• Buy thinking time out loud: “That’s a tough one.”\n\nThat completes the Speaking level: criteria, vocabulary, grammar, structure, Part 2, Part 3, six frames to carry into your mock tests and the real thing."
+ }
+]

@@ -1,0 +1,1064 @@
+[
+  {
+    "screen_id": "7827ceae-d2e1-4321-982f-7f9ffee811db",
+    "field": "title",
+    "before_snippet": "The first word is everything",
+    "after": "Listen for the first word"
+  },
+  {
+    "screen_id": "9b465fc8-8849-4f3e-8463-e327a9ee1c78",
+    "field": "explanation",
+    "before_snippet": "What time asks for a clock tim",
+    "after": "What time asks for a clock time: “At eight o’clock.” (A) is a place; (C) answers How often. Put time options into groups: time / date / frequency."
+  },
+  {
+    "screen_id": "5a40144c-020d-4d56-aabf-95746261db58",
+    "field": "title",
+    "before_snippet": "The classic trap: options that",
+    "after": "A common trap: options that start with Yes / No"
+  },
+  {
+    "screen_id": "5a40144c-020d-4d56-aabf-95746261db58",
+    "field": "body",
+    "before_snippet": "You can never answer a WH ques",
+    "after": "You can never answer a WH question with Yes or No, yet Part 2 still includes options like that. Remove them right away. The other common trap is an option that repeats a word (or a similar sound) from the question: it feels right because you heard it. Be careful with it instead."
+  },
+  {
+    "screen_id": "395c9fe0-c907-4ef2-9fff-93f31ff3e312",
+    "field": "explanation",
+    "before_snippet": "Why needs a reason: “Because t",
+    "after": "Why needs a reason: “Because the director is away.” (B) has two problems: Yes to a WH question, plus a repeated word (Friday). (C) just repeats “meeting”."
+  },
+  {
+    "screen_id": "58a32533-32b4-4fd7-a5cb-4054b304b1a9",
+    "field": "explanation",
+    "before_snippet": "How many asks for a number: “A",
+    "after": "How many asks for a number: “About thirty.” (A) starts with Yes: remove it. (B) answers When. Catch the first two words and this one is easy."
+  },
+  {
+    "screen_id": "b4f3ff9c-330b-40a3-ab4d-c5c918875ef5",
+    "field": "title",
+    "before_snippet": "Recap: all eyes on the first w",
+    "after": "Recap: focus on the first word"
+  },
+  {
+    "screen_id": "dbcbb95a-3c5f-49f1-8dd1-f568c66abbfc",
+    "field": "body",
+    "before_snippet": "With Do you...? / Have you...?",
+    "after": "With Do you...? / Have you...? / Is it...? you might expect a yes or a no, but in Part 2 the correct response often leaves it out, just like real conversation: “Have you read the report?” “About halfway through.” Never remove an option just because it has no yes or no."
+  },
+  {
+    "screen_id": "085a2591-a671-4193-b4c7-9e437a289a05",
+    "field": "explanation",
+    "before_snippet": "“Almost. I just need the June ",
+    "after": "“Almost. I just need the June figures.” answers naturally without a yes/no. (B) starts with Yes but makes no sense (and “reported” is a sound trap); (C) just repeats “sales”."
+  },
+  {
+    "screen_id": "e0f35e0e-d46b-424e-b44f-634f9affa9f2",
+    "field": "body",
+    "before_snippet": "A hugely common correct patter",
+    "after": "A very common correct pattern is the indirect answer: “I haven’t checked yet.” / “Ask Maria. She organized it.” / “It depends on the budget.” If it works as conversation, it can be the answer, and answers that look too neat and direct are often the traps."
+  },
+  {
+    "screen_id": "c4f90fbc-9ed6-42d8-b61c-dd802f162d17",
+    "field": "explanation",
+    "before_snippet": "“I haven’t tried it yet.” is a",
+    "after": "“I haven’t tried it yet.” is a natural, indirect reply. (A) repeats “across”; (C) starts with Yes but the content is nonsense."
+  },
+  {
+    "screen_id": "e5c9b513-c270-4937-aabd-2f8e1837a12e",
+    "field": "explanation",
+    "before_snippet": "“His assistant would know.” re",
+    "after": "“His assistant would know.” points to someone who knows, a very common correct pattern. (A) is a trap using “budget”; (B) repeats “approved”."
+  },
+  {
+    "screen_id": "403a8aa2-3f63-4ced-996d-38dbd8311f53",
+    "field": "explanation",
+    "before_snippet": "“Actually, it was a day late.”",
+    "after": "“Actually, it was a day late.” politely corrects the assumption; “actually” is a common signal for that. (B) is a place; (C) is a sound trap on “ship”."
+  },
+  {
+    "screen_id": "114c66bc-1e16-4113-8c1d-a9dd95c2a662",
+    "field": "body",
+    "before_snippet": "• Correct answers often skip y",
+    "after": "• Correct answers often leave out yes/no entirely.\n\n• Indirect replies (“I haven’t checked”, “ask Maria”) are often correct.\n\n• Treat tag questions as ordinary yes/no questions.\n\n• “Actually...” signals a polite correction.\n\nNext: Part 2’s biggest trap, sound-alikes."
+  },
+  {
+    "screen_id": "fdcf2d4d-cd5e-45a4-bd91-5e0c001d27fc",
+    "field": "explanation",
+    "before_snippet": "“Walk me through ~” is a reque",
+    "after": "“Walk me through ~” is a request for an explanation, so (A) agrees to it. (B) is a sound trap: walk vs. work. Adding near-homophones is a common Part 2 trick."
+  },
+  {
+    "screen_id": "b0dd6680-f8d6-4e2c-92ff-d1e40e979eb7",
+    "field": "body",
+    "before_snippet": "Wrong options in Part 2 are ro",
+    "after": "Wrong options in Part 2 often contain near-homophones of words in the question: copy/coffee, walk/work, mail/meal, supplies/surprise. The danger is that your brain reacts to the sound it caught. So reverse the logic: an option that repeats or sounds like a question word is probably a trap, and the real answer is usually reworded."
+  },
+  {
+    "screen_id": "0f55c918-e8f7-40e0-81f9-87788d5136c9",
+    "field": "explanation",
+    "before_snippet": "(A) baits anyone who heard “co",
+    "after": "(A) is a trap for anyone who heard “coffee”; (C) uses handbook → handy. (B) gives a place, which is what Where needs."
+  },
+  {
+    "screen_id": "cb47902c-f938-46c6-9ef3-2de2938be544",
+    "field": "explanation",
+    "before_snippet": "(A) plays train → training; (B",
+    "after": "(A) uses train → training; (B) uses leave → leaving AND answers a WH question with Yes. (C) gives a time, which When needs."
+  },
+  {
+    "screen_id": "e080e5ba-3dc6-4757-a6d7-f8f76d9e2c47",
+    "field": "body",
+    "before_snippet": "You may have noticed: correct ",
+    "after": "You may have noticed: correct Part 2 answers tend to be plain and do not repeat the question’s words. Test writers use repeated words as bait, and they reword the real answer on purpose, so only people who understood the whole sentence get it. In the test: same or similar word → be careful with it; plain but natural in conversation → a strong candidate."
+  },
+  {
+    "screen_id": "54453d55-9fd1-4801-b7cd-784c10a37dee",
+    "field": "explanation",
+    "before_snippet": "(A) plays closed → clothes; (C",
+    "after": "(A) uses closed → clothes; (C) repeats “park” and opens with Yes. (B) gives a reason. Even without knowing “repave”, removing the others leaves only one option."
+  },
+  {
+    "screen_id": "52dc01a7-a833-44f0-89c2-5b3a62eb6ebd",
+    "field": "explanation",
+    "before_snippet": "“How was ~?” asks for an impre",
+    "after": "“How was ~?” asks for an impression: “A little bumpy, but fine.” (B) and (C) both use the -ight sound (flight → light / right)."
+  },
+  {
+    "screen_id": "9e28f00d-2378-4bcd-93a1-c859f5fb1388",
+    "field": "explanation",
+    "before_snippet": "(A) plays supplies → surprise ",
+    "after": "(A) uses supplies → surprise and (B) uses supplies → sizes. Who needs a person: “That would be Mr. Tanaka.” A gentle, very common TOEIC way to identify someone."
+  },
+  {
+    "screen_id": "c20e6f0c-6bc8-4b9b-9667-32b45935ee1b",
+    "field": "title",
+    "before_snippet": "Recap: suspect the sound-alike",
+    "after": "Recap: be careful with the sound-alikes"
+  },
+  {
+    "screen_id": "c20e6f0c-6bc8-4b9b-9667-32b45935ee1b",
+    "field": "body",
+    "before_snippet": "• Wrong options carry near-hom",
+    "after": "• Wrong options contain near-homophones of question words.\n\n• The option you “heard” is the one to doubt.\n\n• Correct answers are plain and reworded.\n\n• Removing wrong options is a good strategy.\n\nThat completes the three big Part 2 patterns. Next level: Parts 3 & 4."
+  },
+  {
+    "screen_id": "106b0645-34d9-44f4-9b67-770675734616",
+    "field": "title",
+    "before_snippet": "The battle starts before the a",
+    "after": "Read the questions before the audio starts"
+  },
+  {
+    "screen_id": "106b0645-34d9-44f4-9b67-770675734616",
+    "field": "body",
+    "before_snippet": "In Parts 3 and 4 you answer th",
+    "after": "In Parts 3 and 4 you answer three printed questions about each conversation or talk. Low scorers start reading the questions AFTER the audio begins, and the audio ends before they know what to listen for. High scorers read first: they read the questions in the seconds beforehand and decide what to listen for. This lesson trains that habit on paper."
+  },
+  {
+    "screen_id": "46bd39dc-007b-4865-8ab4-86cabcadd53c",
+    "field": "title",
+    "before_snippet": "Turn each question into an amb",
+    "after": "Decide what to listen for in each question"
+  },
+  {
+    "screen_id": "46bd39dc-007b-4865-8ab4-86cabcadd53c",
+    "field": "body",
+    "before_snippet": "When you read a question, mark",
+    "after": "When you read a question, mark two things: WHO it asks about (the man / the woman) and WHAT it asks for (place? purpose? next action?). “Why is the man calling?” → listen carefully to the opening line, because callers state their purpose first. “What will the woman do next?” → the clue comes near the end. The question type even predicts WHERE the answer will appear."
+  },
+  {
+    "screen_id": "a3be7264-e3f1-4e18-9e4e-03a1e5a16bb5",
+    "field": "explanation",
+    "before_snippet": "Callers state their purpose at",
+    "after": "Callers state their purpose at the start (“I’m calling about...”), so listen carefully to the woman’s opening line. Predicting WHERE the answer appears is the main point of reading the questions first."
+  },
+  {
+    "screen_id": "f1e83574-eebd-4ba2-81bf-fb6992992e27",
+    "field": "explanation",
+    "before_snippet": "The man’s last line (“send the",
+    "after": "The man’s last line (“send the final deck on Wednesday”) is the evidence. Several days are mentioned in Part 3; reading the questions first tells you which one to focus on."
+  },
+  {
+    "screen_id": "9a8790d9-a83a-4a80-adf9-e51fe786b64e",
+    "field": "title",
+    "before_snippet": "Watch for subject swaps",
+    "after": "Watch for changes of speaker"
+  },
+  {
+    "screen_id": "b1f597cc-255b-44d6-a1c9-2fa020ad8917",
+    "field": "explanation",
+    "before_snippet": "His offer is “I can ask buildi",
+    "after": "His offer is “I can ask building services to open it.” The woman chooses the fifth floor, but the question asks about HIS offer. Paying attention to who is speaking wins."
+  },
+  {
+    "screen_id": "da65b992-9b7a-4dab-a9f0-5fe08175ca13",
+    "field": "explanation",
+    "before_snippet": "“After we look at the room” me",
+    "after": "“After we look at the room” means the room comes first, the parking area second. “Next” questions often mix up the order: listen carefully to the ending AND check the sequence."
+  },
+  {
+    "screen_id": "acd95adf-e83b-4dba-8a96-02da2562277a",
+    "field": "body",
+    "before_snippet": "• Before the audio, decide WHO",
+    "after": "• Before the audio, decide WHOSE words and WHAT information to listen for.\n\n• Purpose questions → opening; next-action questions → ending.\n\n• Right content, wrong speaker = wrong answer.\n\n• In the real test, the ~8-second pauses are your time to read ahead.\n\nNext: the heart of Parts 3 & 4, paraphrasing."
+  },
+  {
+    "screen_id": "01d4a12f-ceda-434d-878c-b11f2a809aaf",
+    "field": "title",
+    "before_snippet": "The answer never uses the same",
+    "after": "The answer uses different words"
+  },
+  {
+    "screen_id": "01d4a12f-ceda-434d-878c-b11f2a809aaf",
+    "field": "body",
+    "before_snippet": "Suppose the audio says “The sh",
+    "after": "Suppose the audio says “The shipment won’t arrive until Thursday.” The correct option will read “The delivery will come later this week.” Same meaning, almost every word changed. That is TOEIC paraphrasing. Options that copy the audio word-for-word are usually traps, just like Part 2’s sound-alikes. Choose by meaning, not by matching words."
+  },
+  {
+    "screen_id": "8fd1a36f-525e-4565-a0b6-831e419dd2f3",
+    "field": "explanation",
+    "before_snippet": "“Give you a hand” = help, so t",
+    "after": "“Give you a hand” = help, so the option says “offering to help”. Idiom → plain verb is a common TOEIC paraphrase. Don’t let “hand” pull you to (C)."
+  },
+  {
+    "screen_id": "ced52043-4e93-40c8-8cac-99711602b07a",
+    "field": "body",
+    "before_snippet": "1) Specific → general: desk la",
+    "after": "1) Specific → general: desk lamps → lighting products; sandwiches → food.\n\n2) Verb/idiom swaps: give a hand → help; look into → investigate.\n\n3) Number/time conversions: not until Thursday → later this week; every 30 minutes → twice an hour.\n\nPractise re-saying what you hear in other words, and the correct options become easier to see."
+  },
+  {
+    "screen_id": "7b3fb88a-f350-4105-9c88-808bcb95f10d",
+    "field": "explanation",
+    "before_snippet": "Three swaps at once: desk lamp",
+    "after": "Three swaps at once: desk lamps → lighting products, weekend only → temporarily, 20% off → discounted. (C) is a trap for anyone who only caught “desk”."
+  },
+  {
+    "screen_id": "9d10edb3-e0d4-4873-b053-a5d6602050ed",
+    "field": "explanation",
+    "before_snippet": "“Free of charge” → “at no cost",
+    "after": "“Free of charge” → “at no cost”; “fitness center” → “gym”. Memorise the three free words: free / at no cost / complimentary. It helps in Part 7 too."
+  },
+  {
+    "screen_id": "0817c09d-1211-4822-9e51-1c9e7943d3d9",
+    "field": "explanation",
+    "before_snippet": "“Push back” becomes “postponed",
+    "after": "“Push back” becomes “postponed” (or “delayed”) in the options. Phrasal verb → single verb is a pattern across the whole TOEIC; learn “put off → postpone” with it."
+  },
+  {
+    "screen_id": "32bef74c-30d6-480e-92dc-d3af9790686d",
+    "field": "explanation",
+    "before_snippet": "“Go over” → review; “survey re",
+    "after": "“Go over” → review; “survey results” → findings, both common pairs. (A) keeps “survey” but changes the verb to “distribute”."
+  },
+  {
+    "screen_id": "4daaea74-5670-4143-97d6-d6f58877d61f",
+    "field": "body",
+    "before_snippet": "• Correct options reword the a",
+    "after": "• Correct options reword the audio.\n\n• Three patterns: general words / verb swaps / number conversions.\n\n• Word-for-word matches are often traps.\n\n• Learn paraphrase PAIRS (free → at no cost, push back → postpone).\n\nNext: one level deeper, speaker-intent questions."
+  },
+  {
+    "screen_id": "e56a7f91-98b1-41f7-b8a3-fb41ed36167f",
+    "field": "body",
+    "before_snippet": "Some questions ask: Why does t",
+    "after": "Some questions ask: Why does the woman say, “It’s already five o’clock”? “To tell the time” is almost always a trap. In real life that sentence means “let’s hurry”, “it’s too late today”, or “time to go home”. Intent questions ask about the FUNCTION of the line in context, and the surrounding lines are very important."
+  },
+  {
+    "screen_id": "542ed501-f92e-4796-8b9b-2dfc5dac1986",
+    "field": "explanation",
+    "before_snippet": "The man’s reply (“Let’s send i",
+    "after": "The man’s reply (“Let’s send it as it is”) shows her line meant “no time for changes”. (B) is the literal-meaning trap. Use the reaction to find the meaning."
+  },
+  {
+    "screen_id": "280f719c-cb8b-4d27-8eec-2f81ed46efd1",
+    "field": "explanation",
+    "before_snippet": "The build-up (gone within an h",
+    "after": "The lead-up (gone within an hour last year, 300 prepared this year, “but I’d STILL come early”) suggests even 300 may not be enough. The evidence is in the line just before."
+  },
+  {
+    "screen_id": "ea1809ff-dfbc-4b5d-bd96-81508817c438",
+    "field": "explanation",
+    "before_snippet": "To a worried colleague, “you s",
+    "after": "To a worried colleague, “you saw the survey results, didn’t you?” means “relax, the demand is there”. Her relieved “Oh, right” confirms it. A question in form, but a reassurance in function."
+  },
+  {
+    "screen_id": "1f4e5813-9d1a-4145-9aec-4aa9663ec8c0",
+    "field": "explanation",
+    "before_snippet": "Stating the schedule means “so",
+    "after": "Stating the schedule means “so we can’t pay by Friday”. The man’s action (asking the venue to wait) confirms it. Schedule statements very often function as “therefore it’s impossible”."
+  },
+  {
+    "screen_id": "5822efc0-73c6-4b84-81e5-c1ce542c7c10",
+    "field": "title",
+    "before_snippet": "Don’t translate: look around t",
+    "after": "Don’t translate: look at the words near the blank"
+  },
+  {
+    "screen_id": "5822efc0-73c6-4b84-81e5-c1ce542c7c10",
+    "field": "body",
+    "before_snippet": "About a third of Part 5 is wor",
+    "after": "About a third of Part 5 is word-form questions. You spot them when the options are the same word in four different forms. You never need the sentence’s meaning; only the one or two words around the blank. the ___ of → noun; a ___ + noun → adjective; verb + ___ → adverb. Under 20 seconds each; the time you save here gives you more time for Part 7."
+  },
+  {
+    "screen_id": "24c24116-782c-4515-959c-531abe50c158",
+    "field": "body",
+    "before_snippet": "• One word in four costumes = ",
+    "after": "• The same word in four different forms = a word-form question.\n\n• Never translate; the 1–2 words around the blank decide.\n\n• Judge by endings: -tion/-ment nouns, -ive/-able adjectives, -ly adverbs (with exceptions).\n\n• Collect position patterns: coordination, possessives, participles.\n\nNext: verb forms, the tense/voice/agreement checklist."
+  },
+  {
+    "screen_id": "50fcacd1-b34b-4b89-9101-196f90a52adc",
+    "field": "body",
+    "before_snippet": "When the options are one verb ",
+    "after": "When the options are the same verb in four forms, run a fixed three-point check: 1) AGREEMENT: is the subject singular or plural? 2) TENSE: any time markers (yesterday, next week, for the past...)? 3) VOICE: does the subject act or get acted on? In that order, two or three options usually disappear quickly."
+  },
+  {
+    "screen_id": "a4075d0b-b06b-4af6-9fa3-e8de0b204906",
+    "field": "title",
+    "before_snippet": "Lock in the high-frequency pai",
+    "after": "Learn the high-frequency pairs"
+  },
+  {
+    "screen_id": "a4075d0b-b06b-4af6-9fa3-e8de0b204906",
+    "field": "body",
+    "before_snippet": "The other battleground is time",
+    "after": "The other common area is time words. by = deadline (“submit by Friday”) vs. until = continuation (“open until 9”). for + a length (“for two weeks”) vs. during + an event (“during the meeting”). in + month/year, on + day/date, at + clock time. Japanese 「〜まで」 covers both by and until, which is exactly why TOEIC tests it constantly."
+  },
+  {
+    "screen_id": "b459c54f-3089-441f-9fb9-b697cacf350b",
+    "field": "body",
+    "before_snippet": "Part 7 has 54 questions, and r",
+    "after": "Part 7 has 54 questions, and most people run out of time, usually because they read each document from top to bottom. Most questions are fact-finding: the answer is in ONE place. So search, don’t read: 1) read the question first, 2) pick a keyword, 3) scan the text for it, 4) read closely only around the place you find it. That four-step routine is scanning."
+  },
+  {
+    "screen_id": "d5750f2c-4339-4fd6-8537-3096a27b4fe5",
+    "field": "explanation",
+    "before_snippet": "Keywords: “members” + a price.",
+    "after": "Keywords: “members” + a price. The Fee line gives “(members $20)”. $30 is the general fee and 16 is the capacity, both traps for people who grab the first number. Read the WHOLE line you land on."
+  },
+  {
+    "screen_id": "23501f1e-aa77-41d2-b6f8-27872dd7e251",
+    "field": "explanation",
+    "before_snippet": "Keyword: “valid”. The line “va",
+    "after": "Keyword: “valid”. The line “valid weekdays only, April 1–30” settles it. (C) is a trap for anyone who only caught “April”. Limiting words like “only” often point to the answer; underline them in your mind."
+  },
+  {
+    "screen_id": "ce99c60e-23ac-41f8-8562-36357125f00c",
+    "field": "explanation",
+    "before_snippet": "Keyword: “return”. “Returned w",
+    "after": "Keyword: “return”. “Returned with a full tank” is paraphrased as “fill the fuel tank”. The phone number (B), which looks like it copies the text, belongs to reservations: a trap."
+  },
+  {
+    "screen_id": "65359491-2623-4df1-805d-0a4eb3b37f41",
+    "field": "body",
+    "before_snippet": "“What is NOT mentioned about t",
+    "after": "“What is NOT mentioned about the hotel?” In a NOT question, three of the four options ARE in the text and the missing one is the answer. That means up to four checks against the text, making it the slowest question type in Part 7. The cure is a fixed, mechanical procedure. See the next screen."
+  },
+  {
+    "screen_id": "182e4603-bf11-47f8-b579-143d15bc1848",
+    "field": "title",
+    "before_snippet": "NOT questions are a crossing-o",
+    "after": "NOT questions: cross off the options you find"
+  },
+  {
+    "screen_id": "182e4603-bf11-47f8-b579-143d15bc1848",
+    "field": "body",
+    "before_snippet": "The procedure: 1) skim options",
+    "after": "The procedure: 1) skim options A–D first, 2) read the text and cross off each option as it appears, 3) the one left over is the answer. Remember the options are PARAPHRASES (complimentary breakfast → free morning meal). And since the evidence is spread around, a NOT question is closer to a full read than a scan. Do it last in its set."
+  },
+  {
+    "screen_id": "fcf1949b-7a47-4ec2-b6a9-cb95ea644ffb",
+    "field": "explanation",
+    "before_snippet": "(A) = free Wi-Fi, (C) = outdoo",
+    "after": "(A) = free Wi-Fi, (C) = outdoor pool, (D) = complimentary breakfast. Only the fitness room never appears. The key point was seeing that complimentary = free."
+  },
+  {
+    "screen_id": "c22ae51d-fe8f-43b9-bdff-0c90e2b786b7",
+    "field": "body",
+    "before_snippet": "• NOT questions: skim the opti",
+    "after": "• NOT questions: skim the options, cross off matches, keep the one left over.\n\n• Cross off through paraphrases (complimentary = free).\n\n• Inference: exactly one step from stated facts.\n\n• Never fill gaps with common sense: the text is the only evidence.\n\nFinal lesson: double passages."
+  },
+  {
+    "screen_id": "5e0938c1-d689-4c4f-9617-0dc10c1d9db4",
+    "field": "body",
+    "before_snippet": "Late in Part 7 come sets with ",
+    "after": "Late in Part 7 come sets with two (or three) documents: an email plus a schedule, an ad plus an order form. The key feature: one or two questions per set are CROSS questions that cannot be solved from either document alone. If the schedule says “Tuesday instructor: Hill” and the email says “I’ll attend Tuesday”, only the combination gives you “her instructor is Hill”. Pick from one document only and you choose a wrong answer that looks correct."
+  },
+  {
+    "screen_id": "04168192-44fb-4aac-bd8b-610542ed5226",
+    "field": "body",
+    "before_snippet": "Spend ten seconds mapping role",
+    "after": "Spend ten seconds noting each document’s role: an ad or schedule (document 1) holds the conditions, prices and dates; an email or form (document 2) carries one person’s situation, changes and requests. Cross questions always combine document 2’s specifics with document 1’s table. Routine: mark the name/date in the question → start in the document that has it → check the condition in the other. Aim to move between the documents only once."
+  },
+  {
+    "screen_id": "e53e76ad-41b7-4ca3-8c44-1048f810f181",
+    "field": "explanation",
+    "before_snippet": "14 windows → Large house $120;",
+    "after": "14 windows → Large house $120; Saturday → +$10; first-time → minus $15. Total $115. Apply the form’s conditions in this order: base → surcharges → discounts. $120 traps anyone who stopped at the table."
+  },
+  {
+    "screen_id": "aee1c102-b178-406d-b127-75fd38e21804",
+    "field": "title",
+    "before_snippet": "The big one: fifteen vs. fifty",
+    "after": "An important one: fifteen vs. fifty"
+  },
+  {
+    "screen_id": "aee1c102-b178-406d-b127-75fd38e21804",
+    "field": "body",
+    "before_snippet": "The most-missed distinction in",
+    "after": "The most-missed difference with numbers: -teen vs. -ty. Two clues: STRESS (fifTEEN vs. FIFty) and the ENDING (a long clear “-teen” vs. a short clipped “-ty”). Best of all, speakers often confirm digit by digit: “fifteen, that’s one five”. When you hear that confirmation, trust it over your first impression."
+  },
+  {
+    "screen_id": "6e848c4e-a71e-4c6b-af7c-fc6cb2dc8a79",
+    "field": "explanation",
+    "before_snippet": "Front-stressed FIFty, sealed b",
+    "after": "Front-stressed FIFty, confirmed by the digit-by-digit “five zero”. When unsure between 15 and 50, wait for the confirmation. Section 1 speakers repeat the numbers that matter."
+  },
+  {
+    "screen_id": "c6959473-b0b6-4f7f-9049-f0865ec52722",
+    "field": "explanation",
+    "before_snippet": "End-stressed thirTEEN plus the",
+    "after": "End-stressed thirTEEN plus the “one three” confirmation: 13 weeks. If you wrote 30, use the stress rule again: stress at the end means -teen."
+  },
+  {
+    "screen_id": "221cd0a6-65e8-40f2-b1b7-5566a40e8a1b",
+    "field": "body",
+    "before_snippet": "Numbers follow reading convent",
+    "after": "Numbers follow conventions worth memorising: oh = 0 and double four = 44 in phone numbers; “nineteen ninety-nine” = £19.99; “the twenty-first of June” = 21 June; “half past six” = 6.30 and “quarter to five” = 4.45. Understanding the phrase is half the job; the mark only comes when you write it as digits on the form."
+  },
+  {
+    "screen_id": "0a0da7d8-2fa7-4eb6-8e9e-ea20042e1d49",
+    "field": "explanation",
+    "before_snippet": "“Oh” = 0 and “double three” = ",
+    "after": "“Oh” = 0 and “double three” = 33, giving 077 33 096. Phone numbers are long. Write them down AS you listen. Learn the two conversions (oh → 0, double → twice) and phone numbers become easy marks."
+  },
+  {
+    "screen_id": "a3cd312e-647a-48cb-b1a8-e06899df46b1",
+    "field": "explanation",
+    "before_snippet": "The first date (the thirtieth)",
+    "after": "The first date (the thirtieth) gets changed; the agreed answer is the thirteenth. Two traps in one: -ty/-teen AND “the first number you hear is not always the answer”. Only confirmed information goes on the form; corrections are covered in a later lesson."
+  },
+  {
+    "screen_id": "6d1693e2-ce84-4c66-bf8b-f275366c07c6",
+    "field": "title",
+    "before_snippet": "The audio never uses the quest",
+    "after": "The audio uses different words from the question"
+  },
+  {
+    "screen_id": "6d1693e2-ce84-4c66-bf8b-f275366c07c6",
+    "field": "body",
+    "before_snippet": "IELTS Listening follows one st",
+    "after": "IELTS Listening follows one strict rule: the words printed in the question are almost never the words you hear. The question says “free”; the audio says “costs nothing”. The question says “weekly”; the audio says “every seven days”. Wait for the printed word and the answer passes you by. The fix: before listening, imagine how each question could be re-worded. That conversion skill is today’s training."
+  },
+  {
+    "screen_id": "6da6eae7-74d5-4eb8-b5b3-edfeafc0ccae",
+    "field": "explanation",
+    "before_snippet": "“Free of charge” in the questi",
+    "after": "“Free of charge” in the question becomes “costs nothing” in the audio. Spot the change and Monday evenings is the only candidate. Missing answers because “the word never came up” is the most common way to lose marks. Listen for the meaning, not the exact word."
+  },
+  {
+    "screen_id": "638e3b49-f4bd-462d-9c9d-0e7ecfa44be3",
+    "field": "title",
+    "before_snippet": "Bank the classic paraphrase pa",
+    "after": "Collect the common paraphrase pairs"
+  },
+  {
+    "screen_id": "638e3b49-f4bd-462d-9c9d-0e7ecfa44be3",
+    "field": "body",
+    "before_snippet": "Paraphrases come in recurring ",
+    "after": "Paraphrases come in recurring pairs. Collect them: costs nothing → free; not until Thursday → later in the week; book in advance → reserve early; nearly all → most; once a month → monthly. The working habit: as you read each question, ask “how else could English say this?” When one of your guesses appears in the audio, that is your answer."
+  },
+  {
+    "screen_id": "74edb3fa-b4cf-436c-906a-f29a21f3ea95",
+    "field": "title",
+    "before_snippet": "Recap: ambush the meaning, not",
+    "after": "Recap: listen for the meaning, not the word"
+  },
+  {
+    "screen_id": "74edb3fa-b4cf-436c-906a-f29a21f3ea95",
+    "field": "body",
+    "before_snippet": "• The printed words won’t play",
+    "after": "• The printed words won’t appear; their paraphrases will.\n\n• Imagine the re-wordings before the audio starts.\n\n• Collect the pairs: costs nothing → free, not until → later, book → reserve.\n\n• Practise positive↔negative flips (must be accompanied = can’t go alone).\n\nNext: the trap where EVERY option gets mentioned."
+  },
+  {
+    "screen_id": "f368d8d7-512d-489c-b568-069d73611a52",
+    "field": "body",
+    "before_snippet": "IELTS multiple choice and matc",
+    "after": "IELTS multiple choice and matching are built on one design rule: every wrong option is also mentioned somewhere. “I heard that word” proves nothing: assume ALL options will be mentioned. What decides the answer is HOW each one is mentioned: proposed but declined, true last year but not this year, said about somebody else. Listen and cross options off as they are raised and rejected. The one left over is your answer."
+  },
+  {
+    "screen_id": "961a0b32-d64a-4915-87a7-54be5b32091d",
+    "field": "explanation",
+    "before_snippet": "Oak: too small, crossed off. C",
+    "after": "Oak: too small, crossed off. Cedar: already booked, crossed off. Garden: the one left over. A classic elimination where all three names are mentioned. Track WHY each is rejected (too small / booked) and the cross-offs become certain."
+  },
+  {
+    "screen_id": "f5adc18e-bb56-4b53-b1f0-75eb478ec711",
+    "field": "title",
+    "before_snippet": "Correction signals: brace when",
+    "after": "Correction signals: be ready when you hear “Actually”"
+  },
+  {
+    "screen_id": "f5adc18e-bb56-4b53-b1f0-75eb478ec711",
+    "field": "body",
+    "before_snippet": "The hardest version of this tr",
+    "after": "The hardest version of this trap: the speakers correct THEMSELVES. A settled answer changes at the last moment: “Let’s meet at two… actually, could we make it three?” Learn the signals: Actually… / On second thought… / Oh wait / Sorry, my mistake / Let’s make it ~. When one appears, get ready to change what you just wrote. The last speaker’s correction wins."
+  },
+  {
+    "screen_id": "d07c931d-f476-4dc3-b9fb-0f9b9c2f3cab",
+    "field": "explanation",
+    "before_snippet": "Friday: no deliveries; Wednesd",
+    "after": "Friday: no deliveries; Wednesday: customer away; Thursday: agreed. All three days are mentioned, again. Date-and-time negotiations are very common in Section 1, and the FIRST proposed day almost never survives."
+  },
+  {
+    "screen_id": "437000db-06f9-4c87-9a51-45de57d21ccc",
+    "field": "explanation",
+    "before_snippet": "The coffee machine is proposed",
+    "after": "The coffee machine is proposed first, but the man suggests a water cooler instead and the woman agrees: “Let’s order one”, where “one” = the cooler. The decider is never the proposal itself but the REACTION to it: only suggestions that get agreement survive."
+  },
+  {
+    "screen_id": "01267c92-8045-4650-b4b8-ec2edd3176db",
+    "field": "explanation",
+    "before_snippet": "“Last year … but this year” is",
+    "after": "“Last year … but this year” is the whole point: the old venue (main tent) sits there as bait, and this year’s answer is the riverside area. Past-vs-present contrasts are a very common source of wrong answers in matching tasks. Always check WHICH time the question asks about."
+  },
+  {
+    "screen_id": "e20b1d89-8cc6-497d-b0f3-22e5b2b00593",
+    "field": "body",
+    "before_snippet": "• Wrong options WILL be mentio",
+    "after": "• Wrong options WILL be mentioned: hearing a word proves nothing.\n\n• Cross options off as they are raised and rejected.\n\n• Actually / my mistake / let’s make it ~ → change to what follows.\n\n• A proposal only counts once someone agrees to it.\n\n• Watch the last-year/this-year contrast.\n\nThat wraps up Listening. Next level: Reading, starting with the big one, True/False/Not Given."
+  },
+  {
+    "screen_id": "9c896b31-b858-41c8-9c5f-60262686e704",
+    "field": "explanation",
+    "before_snippet": "Twenty years in the job, surel",
+    "after": "Twenty years in the job, so surely he enjoys it? That instinct is exactly what the test looks for. The text states two facts: 20+ years of service and responsibility for a collection. Whether he ENJOYS it is never mentioned. Not written → Not Given. The more likely a statement feels, the more likely it is to be Not Given. That is the main point of this lesson."
+  },
+  {
+    "screen_id": "940ee317-bdb6-4f9c-a86a-16eebbc642b4",
+    "field": "body",
+    "before_snippet": "Judge TFNG with a fixed three-",
+    "after": "Judge TFNG with a fixed three-step procedure: 1) Does the text say the SAME thing (in other words)? → True. 2) Does the text say the OPPOSITE? → False. 3) Neither? The text says nothing about the point → Not Given. The only evidence allowed is the sentences of the passage; your knowledge, experience and common sense are not allowed. Ask “which sentence proves this?” If you cannot point at one, it is Not Given."
+  },
+  {
+    "screen_id": "3fabd4ab-7c71-4deb-9621-9f60df91bdf9",
+    "field": "explanation",
+    "before_snippet": "“Free entry” → “without paying",
+    "after": "“Free entry” → “without paying”; “the first Sunday of every month” → “once a month”. Different words, same meaning → True. True statements are often hidden behind paraphrase, just like Listening answers. Never call something Not Given just because the words differ."
+  },
+  {
+    "screen_id": "53f4cd86-4ed3-4213-b2d1-676b6f62df33",
+    "field": "body",
+    "before_snippet": "Splitting False from Not Given",
+    "after": "Splitting False from Not Given is the hard part. False = the text states the opposite. Not Given = the text says nothing about it. How likely it feels is not relevant: a statement that is almost certainly true in the real world is still Not Given if the passage says nothing, and a strange claim is Not Given (not False) when the text simply doesn’t mention it. The test writer’s trick is quietly ADDING a reason, feeling or comparison to the passage’s topic. Always check whether the added part is actually in the text."
+  },
+  {
+    "screen_id": "f35418b9-7546-4ffc-ae10-16c5fe59fb38",
+    "field": "explanation",
+    "before_snippet": "The text gives two facts: laun",
+    "after": "The text gives two facts: launched in 2019, popular with hospital staff. The statement adds a CAUSE (“because staff requested it”) that appears nowhere. Not Given. “Popular, so they must have asked for it” is a common-sense guess; the same topic does not mean the claim itself is stated."
+  },
+  {
+    "screen_id": "6369e5ea-0d3b-4859-9c2f-6e8862d69c21",
+    "field": "body",
+    "before_snippet": "• Three steps: match → True, c",
+    "after": "• Three steps: match → True, contradict → False, no mention → Not Given.\n\n• The text is the only evidence; common sense is not allowed.\n\n• Added reasons, feelings or causes → probably Not Given.\n\n• Compare extreme words (every / all / only) against the text.\n\n• True is often hidden behind paraphrase: match meanings, not words.\n\nNext lesson: matching headings to paragraphs."
+  },
+  {
+    "screen_id": "b540cd9a-b458-4488-99ae-5ebaac715038",
+    "field": "title",
+    "before_snippet": "A heading names the paragraph’",
+    "after": "A heading names the paragraph’s main point"
+  },
+  {
+    "screen_id": "b540cd9a-b458-4488-99ae-5ebaac715038",
+    "field": "body",
+    "before_snippet": "Heading matching looks simple ",
+    "after": "Heading matching looks simple but scores poorly, because wrong headings are designed to match ONE detail inside the paragraph. Every paragraph has a main point and supporting details (examples, data, side notes). A heading must name the main point; a heading that matches only a supporting detail is wrong, no matter how clearly that detail appears in the text. Same logic as Listening’s “mentioned ≠ correct”: present in the paragraph ≠ the heading."
+  },
+  {
+    "screen_id": "7f131c28-c140-444a-890d-61bb13ddac20",
+    "field": "explanation",
+    "before_snippet": "The app IS in the text, for ex",
+    "after": "The app IS in the text, for exactly one sentence. The main point is fast growth: half a million trips, three times as many stations, “most successful in a decade”. Option (A) is the classic trap: a heading built from a single detail. Ask how many sentences each candidate heading covers, and the trap is easy to see."
+  },
+  {
+    "screen_id": "639653b8-772a-4428-a40f-d36d78ab4c64",
+    "field": "body",
+    "before_snippet": "The main act usually stands in",
+    "after": "The main point usually sits in a predictable place: the FIRST sentence, since English paragraphs tend to give the topic sentence first, then support. Read sentence one, test it against the headings. The exception: paragraphs that open with a question or a short story to catch attention: there the main point often comes in the LAST sentence. Routine: read the first sentence → pencil in a heading → confirm with the last sentence. Only close-read the middle when two candidates are still possible."
+  },
+  {
+    "screen_id": "dbc2f5cb-d568-4d03-af73-221fa0117b7a",
+    "field": "explanation",
+    "before_snippet": "Sentence one (remote work has ",
+    "after": "Sentence one (remote work has changed how neighbourhoods are used) IS the topic sentence; cafés, shops and gyms are all examples of it. (B) contradicts the text (cafés are busier, not emptier) and (C) makes a supporting detail into the title. The cleanest pattern: topic sentence first."
+  },
+  {
+    "screen_id": "698a49eb-f528-449d-b382-737c8489a1f0",
+    "field": "explanation",
+    "before_snippet": "The opener is a hook question;",
+    "after": "The opener is a question to catch attention; the main point arrives in the last sentence (ordinary machines once had humans doing their job), with the knocker-up as the example. (A) is far too broad and (B) never happens in the text. In these paragraphs, the final sentence holds the heading."
+  },
+  {
+    "screen_id": "2b52e418-7c42-4c6f-86f4-adae2285ec8a",
+    "field": "body",
+    "before_snippet": "Trap headings come in three sp",
+    "after": "Trap headings come in three types: 1) the DETAIL trap: matches one sentence or example (the most common); 2) the TOO-BROAD trap: covers the paragraph but at chapter size; 3) the REVERSED trap: right topic, wrong direction (rise vs. fall, benefit vs. drawback). Final check before you choose: does my heading cover nearly every sentence? Is it the right size? Does it point the right way? Three yeses → choose it."
+  },
+  {
+    "screen_id": "c69e1191-083f-4234-bc51-5052a6f619a1",
+    "field": "explanation",
+    "before_snippet": "The through-line (announced by",
+    "after": "The main point (introduced by “Not all plastic recycling is equal”) is the limits and inequalities of recycling. (A) is a detail trap built on the bench example; (C) never appears. “Limits” covers the bottle/downcycling contrast and the final “rarely recycled again” in one word."
+  },
+  {
+    "screen_id": "291563fd-f39a-4534-a2fb-2e68f10077c7",
+    "field": "explanation",
+    "before_snippet": "Sentence one: reopened after t",
+    "after": "Sentence one: reopened after three years. Middle: the restoration work. Last sentence: sales pass the target (success). (A) covers all three points. (B) points the wrong way (revival, not decline) and (C) never appears. Only (A) passes all three checks: coverage, size, direction."
+  },
+  {
+    "screen_id": "ad89dacf-c323-4fb6-bfb7-016b20d487cd",
+    "field": "title",
+    "before_snippet": "Recap: headings go to the main",
+    "after": "Recap: headings go to the main point only"
+  },
+  {
+    "screen_id": "ad89dacf-c323-4fb6-bfb7-016b20d487cd",
+    "field": "body",
+    "before_snippet": "• A heading names the paragrap",
+    "after": "• A heading names the paragraph’s main point, never a detail.\n\n• Detail-only headings are the most common trap.\n\n• First sentence → pencil in → confirm with the last; attention-grabbing openers reveal the point late.\n\n• Final check: coverage, size, direction.\n\nNext: word limits in completion and summary tasks."
+  },
+  {
+    "screen_id": "8c4ce9b1-1030-40f8-adc3-7d79548a6aae",
+    "field": "explanation",
+    "before_snippet": "“NO MORE THAN TWO WORDS” kills",
+    "after": "“NO MORE THAN TWO WORDS” rules out (A): three words score zero, however correct the content. (C) rearranges the text’s wording (and is also three words). The mark goes to the text’s own words, cut to fit: “information desk”. Word limits are rules, not suggestions."
+  },
+  {
+    "screen_id": "c3aca0a6-842d-407f-8fc8-f51a86ce04b5",
+    "field": "explanation",
+    "before_snippet": "The evidence is “created on th",
+    "after": "The evidence is “created on the site of a disused car park”, with “built where ~ used to be” as the question’s paraphrase of it. The answer is the text’s own words: car park. The moment you start explaining the idea in your own words, you have gone wrong."
+  },
+  {
+    "screen_id": "d37fa7ab-02e0-4606-81e3-30bd87ebca54",
+    "field": "body",
+    "before_snippet": "Before hunting in the passage,",
+    "after": "Before searching the passage, let the words around the gap decide the form: after a/the → a noun; after will/must → a base verb; after by/in/at → a noun; after two/many → a PLURAL noun. The completed sentence must be grammatical English, so always re-read the whole line with your candidate in place: “two photograph” loses the mark by itself. Decide the form first, and the passage search becomes much narrower."
+  },
+  {
+    "screen_id": "7bb6ae22-5f6b-40c9-a0cf-9cea791331d7",
+    "field": "explanation",
+    "before_snippet": "After “will”, only a base verb",
+    "after": "After “will”, only a base verb works: “will open”. Even if the passage shows the word “opening”, a candidate that breaks the grammar is the wrong extraction. The gap’s grammar is your strongest filter."
+  },
+  {
+    "screen_id": "54435146-3df0-4cdd-84db-3ad701b1a09d",
+    "field": "explanation",
+    "before_snippet": "The summary’s “could not opera",
+    "after": "The summary’s “could not operate in bad weather” paraphrases “stopped running whenever the weather turned rough”, and the subject of that clause is the passenger ferry. After “by” we need a noun, within two words: “ferry” or “passenger ferry”. Summary completion is paraphrase-matching: find the matching passage, then take the words that are already there."
+  },
+  {
+    "screen_id": "d218b4c9-10c3-4640-a806-a8ffecef965d",
+    "field": "explanation",
+    "before_snippet": "After “two” the gap demands a ",
+    "after": "After “two” the gap needs a plural noun: “photographs” (or “recent photographs”, still within the limit). Singular “photograph” fails on grammar alone. Decide the form → search → re-read the whole sentence: the full routine."
+  },
+  {
+    "screen_id": "107306a9-a0f1-4b4c-847c-54c5575ccd57",
+    "field": "body",
+    "before_snippet": "• Word limits are law: count o",
+    "after": "• Word limits are rules: count on your fingers (articles count; hyphenated = one).\n\n• Digits are the safe way to write numbers.\n\n• Let the gap’s grammar decide the form before you search.\n\n• Use the passage’s exact words, never your own paraphrase.\n\n• Re-read the completed sentence for number and grammar.\n\nThat completes Reading. Next level: Writing, starting with GT Task 1 letters."
+  },
+  {
+    "screen_id": "6c13cbb7-ced8-42cc-a74f-6d3739a45cab",
+    "field": "explanation",
+    "before_snippet": "(A) is boilerplate from a busi",
+    "after": "(A) is standard text from a business letter; in the middle of a friendly letter it sounds suddenly too formal. Keeping one tone within a letter is something examiners actively check: keep the register you chose in line one all the way to the sign-off. For a friend, “If you want to know more, just ask!” works well."
+  },
+  {
+    "screen_id": "13a4da0e-15c6-413f-ab51-0f6f51ccfe03",
+    "field": "explanation",
+    "before_snippet": "No name known → Dear Sir or Ma",
+    "after": "No name known → Dear Sir or Madam ↔ Yours faithfully. Mind the spelling: faithful + -ly gives the double L. A misspelled sign-off is a bad way to finish: end cleanly."
+  },
+  {
+    "screen_id": "a3d9703e-2313-4717-b365-480ca32290b6",
+    "field": "title",
+    "before_snippet": "Task 1 reads the instruments, ",
+    "after": "Task 1 describes the data, with a small word bank"
+  },
+  {
+    "screen_id": "a3d9703e-2313-4717-b365-480ca32290b6",
+    "field": "body",
+    "before_snippet": "Academic Task 1 is a 150-word ",
+    "after": "Academic Task 1 is a 150-word report on a chart. Opinions (“I think people should…”) and invented causes (“probably because of prices…”) are not allowed: treat think / should / best as warning signs.\n\nThe vocabulary is small and high-value: rises (rose / increased / climbed + sharply / steadily / slightly), falls (fell / dropped / declined + the same adverbs), flat lines (remained stable / levelled off), multiples (doubled / halved / more than doubled), extremes (peaked at ~ / fell to a low of ~).\n\nThe frame is SUBJECT + VERB + ADVERB + PERIOD. Put the bank’s parts into the frame and any chart becomes writable."
+  },
+  {
+    "screen_id": "468afc6f-a599-41ad-bbf4-10c54eb13b68",
+    "field": "explanation",
+    "before_snippet": "200 → 850 is more than a fourf",
+    "after": "200 → 850 is more than four times as much, so rose / jumped / surged pair naturally with “sharply”. Verb + adverb together make one claim: match their strength to the data."
+  },
+  {
+    "screen_id": "c143c6de-b7af-4462-8709-65a852c37d08",
+    "field": "explanation",
+    "before_snippet": "Fell, declined or dropped + “s",
+    "after": "Fell, declined or dropped + “steadily”. Each fall-verb has its own shade (declined is slightly formal, slid is gentle), and changing between two or three keeps a 150-word report from sounding repetitive."
+  },
+  {
+    "screen_id": "255cec4f-7f70-4709-9207-1a3d443f6781",
+    "field": "explanation",
+    "before_snippet": "“PEAKED at 11%.” Extreme-point",
+    "after": "“PEAKED at 11%.” Extreme-point language is useful in both the overview and the body. Its low-side partners: “fell to a low of ~” and “bottomed out at ~”. Carry one word for each."
+  },
+  {
+    "screen_id": "6c93c956-652f-46a2-b3d9-301cfb434ef6",
+    "field": "body",
+    "before_snippet": "The overview separates band 6 ",
+    "after": "The overview separates band 6 from band 7. Position: right after your one-sentence paraphrase of the task. Opener: “Overall,”. Contents: the one or two biggest trends, with NO specific numbers; details belong to the body paragraphs. The overview says what the chart looks like from a distance, and without one even the most accurate answer cannot reach a high Task Achievement score.\n\nCaution: starting with “Overall,” does not make a sentence an overview. A number report or an opinion that starts that way still fails. It is judged by function, not by its first word."
+  },
+  {
+    "screen_id": "363a27ba-c81c-452b-8336-54d5039626f2",
+    "field": "explanation",
+    "before_snippet": "“Rose steadily”, “peaked at 40",
+    "after": "“Rose steadily”, “peaked at 40%”, “remained broadly stable”. “Rising” lacks the required past tense, “stability” is a noun where remain needs an adjective, and “fell” points the wrong way for car ownership (35% → 64%). Small forms, but they carry half of the accuracy score."
+  },
+  {
+    "screen_id": "6a187fde-2043-4fa7-96dd-19d5b9d4e953",
+    "field": "explanation",
+    "before_snippet": "8,000 → 19,000 is beyond twofo",
+    "after": "8,000 → 19,000 is more than twice as much: “more than DOUBLED”. Multiplier verbs (doubled, halved, tripled) put a comparison into one word, and “more than / almost” makes them more precise."
+  },
+  {
+    "screen_id": "03a2bfd5-cf09-4860-90e5-2454d1e7718d",
+    "field": "body",
+    "before_snippet": "• Task 1 reports; it never opi",
+    "after": "• Task 1 reports; it never gives opinions or guesses (think / should / best = warning signs).\n\n• Two data points cannot prove “steadily throughout”: write only what the data supports.\n\n• The bank: rose / fell + sharply, steadily, slightly; remained stable; peaked at; more than doubled.\n\n• Frame: subject + verb + adverb + period.\n\n• Overview = “Overall,” + biggest trends, zero numbers, judged by function.\n\nNow practise the bank by writing a full mock Task 1."
+  },
+  {
+    "screen_id": "6034cc60-5a57-4318-99d8-5f59291ecabc",
+    "field": "title",
+    "before_snippet": "The thesis: the map sentence",
+    "after": "The thesis: the sentence that maps the essay"
+  },
+  {
+    "screen_id": "6034cc60-5a57-4318-99d8-5f59291ecabc",
+    "field": "body",
+    "before_snippet": "The last sentence of the intro",
+    "after": "The last sentence of the intro is the thesis, the sentence that tells the examiner where the essay is going. A good thesis does two things: answers the question directly (agree? disagree? leaning where?) and previews your reasons.\n\nFor discuss-both questions, a “While ~” opening mentions view A before stating your own side: both views previewed and an opinion stated, in one sentence (below). The one to avoid: “This essay will discuss this topic.” A thesis with no position and no reasons is not a thesis at all."
+  },
+  {
+    "screen_id": "5c70dddb-b4da-4f39-ac40-1de48c394566",
+    "field": "title",
+    "before_snippet": "Linking phrases: signs at the ",
+    "after": "Linking phrases: signs at the turns"
+  },
+  {
+    "screen_id": "5c70dddb-b4da-4f39-ac40-1de48c394566",
+    "field": "body",
+    "before_snippet": "Plant signs at the joints: the",
+    "after": "Put signs at the joints: the Coherence and Cohesion criterion is graded right there. Body openers: Firstly / The main reason is that…; contrast: However / On the other hand (the natural opener for body 2 in a discuss-both essay); examples: For example / For instance; concession: Despite + noun phrase, Although + clause; conclusion: In conclusion / To sum up.\n\nOne warning: don’t use too many signs. A Moreover-Furthermore-Additionally pile-up reads mechanical. Two or three per paragraph, only at the real turns."
+  },
+  {
+    "screen_id": "bc90187c-64ed-4249-b8c8-43ec4005c321",
+    "field": "body",
+    "before_snippet": "• Ten seconds first: opinion t",
+    "after": "• Ten seconds first: opinion type (“agree or disagree?”) or discuss-both (“Discuss both views”)?\n\n• Four paragraphs: intro + thesis / body 1 / body 2 / conclusion, and no new arguments in the conclusion.\n\n• Thesis = position + previewed reasons; never “This essay will discuss…”.\n\n• Open a discuss-both body 2 with “On the other hand, those who… argue that…”.\n\n• Despite + noun phrase, Although + clause; signs at the turns only.\n\nThe structure is yours. Now rebuild it from memory in a mock Task 2."
+  },
+  {
+    "screen_id": "74889711-892a-4381-9bd2-bfd487b4fb16",
+    "field": "body",
+    "before_snippet": "One skeleton fits every Task 2",
+    "after": "One structure fits every Task 2: ① intro: paraphrase the question + your thesis; ② body 1: first reason + example; ③ body 2: second reason + example; ④ conclusion: restate your position.\n\nQuestions split into two main types. OPINION (“agree or disagree?”): both bodies support your side, or body 2 answers the other side. DISCUSS-BOTH-VIEWS: body 1 = view A, body 2 = view B, with YOUR opinion stated in the intro and conclusion. Covering only one view in a discuss-both question is the most serious scoring mistake: “both” means both."
+  },
+  {
+    "screen_id": "5fe080bf-15e1-461a-bc00-9d2ac1fd9d79",
+    "field": "title",
+    "before_snippet": "Answer + reason + example feed",
+    "after": "Answer + reason + example helps every criterion"
+  },
+  {
+    "screen_id": "5fe080bf-15e1-461a-bc00-9d2ac1fd9d79",
+    "field": "body",
+    "before_snippet": "So how do you SHOW range? The ",
+    "after": "So how do you SHOW range? The most reliable habit: extend every answer to answer + reason + example. Fluency and Coherence: longer turns, with “because” and “for example” making the logic clear. Lexical Resource: examples bring in concrete nouns and verbs naturally. Grammar: reasons and examples produce complex sentences (because…, which…) by themselves.\n\nOne habit, three criteria helped at once: the best use of your practice time. (Pronunciation is the exception; train it separately with reading aloud and shadowing.) Now build the shape yourself."
+  },
+  {
+    "screen_id": "54eb4863-8846-4568-9100-e47800a9957e",
+    "field": "body",
+    "before_snippet": "Compare the two sample answers",
+    "after": "Compare the two sample answers below: both communicate. The difference: Band 5 uses short simple sentences with basic, repeated vocabulary; few errors, but no visible range. Band 7 shows less common phrasing (“nothing fancy”, “the queue tells you everything”), combined clauses, and detail with a personal voice.\n\nA common misunderstanding: Band 7 does not mean error-free. A few mistakes are fine if range and flexibility are there. Play it safe with simple correct sentences and you stay at 5–6. The criteria reward ambition, not caution."
+  },
+  {
+    "screen_id": "e72bcdba-633d-4939-b36a-15d513540ac3",
+    "field": "title",
+    "before_snippet": "Build stand-ins for your overu",
+    "after": "Build other words for your overused words"
+  },
+  {
+    "screen_id": "e72bcdba-633d-4939-b36a-15d513540ac3",
+    "field": "body",
+    "before_snippet": "The training is simple: pick y",
+    "after": "The training is simple: pick your five most-used words and prepare two or three other words for each, tied to situations you would really talk about, not copied from a thesaurus.\n\nTwo points: ① the other word depends on the target: “nice” for a person and “nice” for a place need different replacements (see below); ② opposite pairs also show range: “My old flat was tiny, but the new one is spacious” shows two words’ worth in one sentence.\n\nThe last exercise is the ban game: answer a question without once saying “good” or “nice”. You will know within seconds whether the other words are truly yours."
+  },
+  {
+    "screen_id": "d595d578-a451-4cb4-9218-5157dc9ae34f",
+    "field": "explanation",
+    "before_snippet": "Strong adjectives fit: delicio",
+    "after": "Strong adjectives fit: delicious, superb, incredible. Note that “absolutely good” is not possible: absolutely pairs only with already-extreme adjectives (delicious, freezing, exhausted). “Very good” but “absolutely delicious”: that pairing sense is collocation."
+  },
+  {
+    "screen_id": "c0f42be2-3a2d-469a-8583-174474132c72",
+    "field": "explanation",
+    "before_snippet": "“Keen ON photography” (interes",
+    "after": "Spacious or roomy fit best. A contrast pair like tiny → spacious shows two words’ worth of range in one sentence. “Big” is fine, but since “tiny” is already a vivid word, matching it with spacious or enormous is the stronger choice."
+  },
+  {
+    "screen_id": "8db1a638-ae0a-4c5c-a270-12226508e4b1",
+    "field": "body",
+    "before_snippet": "The criterion’s name says it a",
+    "after": "The criterion’s name says it all: ① RANGE: varied structures; an answer of all-simple-present, all-simple-sentences reaches a limit even with zero errors. ② ACCURACY: how often you make mistakes; perfection is not required, and Band 7 allows minor slips.\n\nThe easiest way to show range is to move across time inside one answer: present situation → experience so far (present perfect) → plans (future). That alone shows three tenses. Join clauses with because / although / which and structural variety comes with it. Make the “time tour” below your default."
+  },
+  {
+    "screen_id": "3eee14a8-ce1e-494b-bacf-18e908b1c7d7",
+    "field": "body",
+    "before_snippet": "After tenses, two boosters: ① ",
+    "after": "After tenses, two boosters: ① the second conditional: “If I had more time, I’d take up the piano” (you don’t). Talking about unreal situations is strong evidence of range, and “what if” questions always come, so install the frame If I + past, I’d…; ② comparatives: “far more convenient than”, “not as quiet as”, “the best decision I’ve ever made”, which either-or questions (city or countryside?) will need naturally.\n\nLearn both as whole frames and change the contents."
+  },
+  {
+    "screen_id": "aa84293d-23b1-4754-98a7-b37246e6b19b",
+    "field": "body",
+    "before_snippet": "A good answer is a spoken mini",
+    "after": "A good answer is a spoken mini-paragraph with four parts: ① POINT (your answer first): “I’d say yes.” ② REASON: “mainly because…” ③ EXAMPLE: “For example…”, with names and numbers for weight. ④ WRAP (one closing sentence): “So overall…”. About thirty seconds.\n\nCoherence is graded on exactly this order. However good your reasons and examples are, putting them before the point leaves the listener without a clear direction. The wrap can be dropped once you are comfortable; point-first is required."
+  },
+  {
+    "screen_id": "d1ab8cba-bfa5-40e7-996f-9a93c3e5cb5d",
+    "field": "explanation",
+    "before_snippet": "X and Y contain nearly identic",
+    "after": "X and Y contain nearly the same material: only the ORDER differs. X runs point → reason → example → wrap, so the listener always knows where they are. Y leads with an example (“why are we hearing about your father?”) and ends by going back to the point. Grammar (C) is about equal here; the difference is purely coherence."
+  },
+  {
+    "screen_id": "3351ebd0-0aa7-43b7-9ed0-6ce7d5a31d0c",
+    "field": "explanation",
+    "before_snippet": "The opening sentence has one j",
+    "after": "The opening sentence has one job: answer the question. (C) states a position first and even creates interest. (B) is an excellent REASON, but it goes into support before answering “so what do you think?”. (A)’s example has the same problem: examples belong only after the point."
+  },
+  {
+    "screen_id": "41ae77b8-1482-4fbb-9171-1a8ef20177c6",
+    "field": "title",
+    "before_snippet": "Signpost the corners, not ever",
+    "after": "Put signs at the turns, not at every step"
+  },
+  {
+    "screen_id": "41ae77b8-1482-4fbb-9171-1a8ef20177c6",
+    "field": "body",
+    "before_snippet": "Plant signs where the talk cha",
+    "after": "Put signs where the talk changes direction: into the reason (“The main thing is…”), adding (“On top of that…”), conceding (“Having said that…”), closing (“So overall…”).\n\nOne warning: don’t use too many signs. A Moreover-Furthermore-Additionally pile-up at the start of every sentence sounds like a memorised template. Two or three per answer, only at real turns.\n\nSigns help the listener, but they help the speaker too: saying “On top of that…” out loud gives you a natural pause to find what comes next."
+  },
+  {
+    "screen_id": "c3977383-d432-4a4b-85f7-eadfba262248",
+    "field": "explanation",
+    "before_snippet": "② claims the reason is MOOD, b",
+    "after": "“Because” introduces the reason, “For example” the evidence, “whereas” contrasts paper with the phone inside one sentence, and “However” turns the whole answer toward the other side. Whereas compares two things mid-sentence; However changes the direction of the argument from the start. Knowing which job each does is the advanced move."
+  },
+  {
+    "screen_id": "734bdc32-a17b-454b-a408-cdfb8c46cc73",
+    "field": "body",
+    "before_snippet": "Questions have a best order to",
+    "after": "Questions have a best order too. Fact questions with names or numbers (How much / When / Who) scan fast. Do them first. Purpose and “What is suggested” questions need the whole picture. Do them last. While you answer the easy-to-scan ones, you learn the document’s outline, and the hard question becomes easier."
+  },
+  {
+    "screen_id": "1a8a7055-8335-4cf7-a490-e9487639e365",
+    "field": "body",
+    "before_snippet": "• Read the question first; pic",
+    "after": "• Read the question first; pick numbers, names, dates as keywords.\n\n• Scan; close-read only around the place you find the keyword.\n\n• Options paraphrase the text: compare carefully.\n\n• Fact questions first, purpose questions last.\n\nNext: the two slow question types, NOT questions and inference questions."
+  },
+  {
+    "screen_id": "04168192-44fb-4aac-bd8b-610542ed5226",
+    "field": "title",
+    "before_snippet": "Map each document’s role first",
+    "after": "Note each document’s role first"
+  },
+  {
+    "screen_id": "f7d260b7-eca8-4a77-88bf-08aef725a45b",
+    "field": "title",
+    "before_snippet": "Recap: solve it in one round t",
+    "after": "Recap: solve it by checking both documents once"
+  },
+  {
+    "screen_id": "f7d260b7-eca8-4a77-88bf-08aef725a45b",
+    "field": "body",
+    "before_snippet": "• One or two questions per set",
+    "after": "• One or two questions per set are cross questions.\n\n• Routine: mark the specifics → start in the document that has them → check in the other.\n\n• Price questions: base → surcharges → discounts.\n\n• Changes and exceptions are more important than the original table.\n\nAll twelve lessons complete. Use these patterns in a mock test."
+  },
+  {
+    "screen_id": "8f97f4fd-db5c-4241-8333-fd8a82fd9efb",
+    "field": "explanation",
+    "before_snippet": "The text says MOST; the statem",
+    "after": "The text says MOST; the statement says EVERY. “Most have one” means some do not: direct conflict → False. Extreme words (every / all / only / never) are commonly tested in TFNG: when you see one in a statement, compare its strength against the text’s wording."
+  },
+  {
+    "screen_id": "bf32737e-339c-4b17-a638-feff6fddd3d5",
+    "field": "explanation",
+    "before_snippet": "The text covers the schedule a",
+    "after": "The text covers the schedule and a booklet; who TEACHES is never mentioned → Not Given. “A cookery school probably has professional chefs” is exactly the kind of likely-sounding statement used as a trap. No evidence you can point to = Not Given, every single time."
+  },
+  {
+    "screen_id": "0b8239f1-415b-442d-974e-e8cd44038e28",
+    "field": "explanation",
+    "before_snippet": "The text says “summer months”,",
+    "after": "The text says “summer months”, so write “summer months”. Near-synonyms of your own invention, like (B) and (C), carry only risk here. Paraphrase is useful in Writing; in completion tasks the rule is the opposite: the passage’s words, in the passage’s spelling."
+  },
+  {
+    "screen_id": "be182004-cc13-4e47-ad9d-a40766b3dc9e",
+    "field": "explanation",
+    "before_snippet": "The delivery is fluent and the",
+    "after": "The delivery is fluent and the vocabulary fits the topic. The problem is grammatical ACCURACY: change → has changed, appear → appeared, tourists is → tourists are. Three tense/agreement errors in two sentences. GRA grades range and accuracy together; nobody demands zero errors, but this many errors lowers the score directly."
+  },
+  {
+    "screen_id": "bfc23378-253f-4e4f-8bcf-9b5013bf7227",
+    "field": "body",
+    "before_snippet": "• Four criteria at 25% each: f",
+    "after": "• Four criteria at 25% each: fluency and coherence / vocabulary / grammar / pronunciation.\n\n• Length is not a criterion; range and naturalness are.\n\n• Band 7 ≠ error-free. Ambitious complex sentences beat cautious simple ones.\n\n• The answer + reason + example habit helps three criteria at once.\n\n• Fluent answers that avoid the question lose marks for coherence.\n\nNext lesson: the first part in detail, showing your lexical range."
+  },
+  {
+    "screen_id": "2f54ac7d-35eb-4c9f-9c16-d2f2d3ad513f",
+    "field": "body",
+    "before_snippet": "For vocabulary, the examiner l",
+    "after": "For vocabulary, the examiner listens for three things: ① range: a different word per target instead of one word repeated; ② precision: natural word partnerships (collocation); ③ paraphrase: finding a way around words you don’t know.\n\nThe starting point is knowing your overused words. Everyone has them: good, nice, important, very. Prepare two or three other words for each and range appears by itself. This lesson makes you PRODUCE those other words: recalling a word yourself, not recognising it in a list, is the skill the test needs."
+  },
+  {
+    "screen_id": "612ddc4f-4ccf-4200-a614-9829eb4e4ff8",
+    "field": "body",
+    "before_snippet": "• Lexical Resource = range × p",
+    "after": "• Lexical Resource = range × precision × paraphrase, not lists of rare words.\n\n• Give each overused word (good / nice / important / very) two or three other words.\n\n• Mind collocation: absolutely pairs only with extreme adjectives (absolutely delicious).\n\n• Opposite pairs (tiny → spacious) show double range in one sentence.\n\n• Paraphrase the examiner’s words back (influences → shape / sway).\n\nNext lesson: the other part, grammatical range."
+  },
+  {
+    "screen_id": "3eee14a8-ce1e-494b-bacf-18e908b1c7d7",
+    "field": "title",
+    "before_snippet": "Conditionals and comparatives:",
+    "after": "Conditionals and comparatives raise your band"
+  },
+  {
+    "screen_id": "a05af84a-c838-416c-a248-c2fc7712a391",
+    "field": "explanation",
+    "before_snippet": "“HAVING said that,” adds the o",
+    "after": "“HAVING said that,” adds the other side of what you just claimed, a spoken version of “However”. Positives → having said that → a realistic drawback: that one move shows you can see both sides."
+  },
+  {
+    "screen_id": "bff62cc5-ed3b-4c00-b86a-36d29f297ffb",
+    "field": "title",
+    "before_snippet": "Recap: point first, signs at t",
+    "after": "Recap: point first, signs at the turns"
+  },
+  {
+    "screen_id": "bff62cc5-ed3b-4c00-b86a-36d29f297ffb",
+    "field": "body",
+    "before_snippet": "• Answers are mini-paragraphs:",
+    "after": "• Answers are mini-paragraphs: point → reason → example → wrap, ~30 seconds.\n\n• The first sentence answers the question: never open with an example or background.\n\n• An example must prove the reason just given; check the content, not just the signpost.\n\n• Two or three signposts per answer, at real turns only.\n\n• “Having said that” / “On the other hand” show the other side.\n\nNext: the exam itself, the Part 2 cue card."
+  },
+  {
+    "screen_id": "42d664af-d28f-40d5-a4fc-a99681fb8ae0",
+    "field": "explanation",
+    "before_snippet": "(B): the card’s four bullets A",
+    "after": "(B): the card’s four bullets ARE the speech plan. Two or three keywords per bullet support the whole two minutes (e.g. Aomori, night bus / two uni friends / stuck in heavy snow / strangers’ kindness). (A)’s vocabulary list builds no story, and (C) spends the minute writing two sentences you will then read out. Notes are reminders for memory, not a full script."
+  },
+  {
+    "screen_id": "47047060-9ad7-4bc0-b9db-c7320f655d54",
+    "field": "title",
+    "before_snippet": "Four bullets = the two-minute ",
+    "after": "Four bullets = the two-minute plan"
+  },
+  {
+    "screen_id": "47047060-9ad7-4bc0-b9db-c7320f655d54",
+    "field": "body",
+    "before_snippet": "The Part 2 routine: you receiv",
+    "after": "The Part 2 routine: you receive a topic card, prepare for one minute, then speak for one to two minutes, with no help from the examiner.\n\nThe common fear is having nothing to say after thirty seconds, but the solution is printed on the card: there are always four bullets, and 20–30 seconds per bullet brings you to 1.5–2 minutes just by arithmetic.\n\nThe prep minute has one fixed job: two or three keywords per bullet, listed top-to-bottom in speaking order. While speaking, go down the list. Getting lost becomes impossible. The card is not a problem; it is your plan."
+  },
+  {
+    "screen_id": "1a3006ac-bbae-4abb-843c-ac4059630337",
+    "field": "title",
+    "before_snippet": "Recap: the card is the script,",
+    "after": "Recap: the card is the plan, detail is the extension"
+  },
+  {
+    "screen_id": "1a3006ac-bbae-4abb-843c-ac4059630337",
+    "field": "body",
+    "before_snippet": "• Four bullets = the blueprint",
+    "after": "• Four bullets = the plan: 20–30 seconds each fills the two minutes.\n\n• Prep minute: keywords only, never sentences.\n\n• Fixed opener and closer: “I’d like to talk about ~” / “So, that’s why ~”.\n\n• Spare time → quoted words, sensory detail, what happened afterwards.\n\n• Never silence, never repetition.\n\nFinal lesson: the last one, Part 3."
+  },
+  {
+    "screen_id": "a4107b86-c9af-4272-8d4e-aa180a649c7b",
+    "field": "body",
+    "before_snippet": "Part 3 strings big questions a",
+    "after": "Part 3 asks big questions about society and the future, like a spoken mini-essay. The four parts to use: ① position (“On the whole, I’d say…”), ② reason (“The main reason is…”), ③ example (“For instance…”), ④ concession (“That said…” / “Of course…”). Four moves, 30–45 seconds.\n\nThe concession raises your band the most of the four: granting the other side its point doesn’t weaken your position; it turns it into a conclusion reached after seeing both sides. And once you know the signal phrases, the structure builds itself while your brain works on content."
+  },
+  {
+    "screen_id": "eac1ddc6-f7bc-4be2-b0c8-507876fb8dfb",
+    "field": "explanation",
+    "before_snippet": "“TEND to” (also “seem to” / “a",
+    "after": "“TEND to” (also “seem to” / “appear to”) is the most useful softening phrase. “Always” fails at the first counter-example; “tend to” makes the same claim easier to defend. One small verb, a much smarter-sounding argument."
+  },
+  {
+    "screen_id": "46b13d51-d4f6-4089-9aae-88595f2ac615",
+    "field": "explanation",
+    "before_snippet": "(C)’s “I agree up to a point” ",
+    "after": "(C)’s “I agree up to a point” agrees with what deserves agreement, then argues back, the mature way to handle agree-or-disagree. Agreement isn’t all-or-nothing: (A) over-commits with “every possible way”, and (B) gives a vague, obvious statement without ever answering."
+  },
+  {
+    "screen_id": "bc3e736d-cbaf-496d-bacc-94fba70d94da",
+    "field": "body",
+    "before_snippet": "• The Part 3 frame: position →",
+    "after": "• The Part 3 frame: position → reason → example → concession, 30–45 seconds.\n\n• The concession raises your band the most: “That said” / “Of course”.\n\n• Soften your claims instead of using absolutes: tend to / generally / I’d say.\n\n• Either-or → “It depends on ~”; agree-or-disagree → “I agree up to a point”.\n\n• Buy thinking time out loud: “That’s a tough one.”\n\nThat completes the Speaking level: criteria, vocabulary, grammar, structure, Part 2, Part 3, six frames to use in your mock tests and the real exam."
+  },
+  {
+    "screen_id": "64a15231-c697-4666-a5a7-dcea81b56a8a",
+    "field": "explanation",
+    "before_snippet": "“Anyone” is singular, and the ",
+    "after": "“Anyone” is singular, and the verb after “who” agrees with its antecedent: “wishes”. Anyone / everyone / each are singular, a point TOEIC often tests."
+  },
+  {
+    "screen_id": "b42a301d-aaba-44f7-9345-4a8f9d8f7fd0",
+    "field": "body",
+    "before_snippet": "• Intent questions ask what th",
+    "after": "• Intent questions ask what the line DOES in context.\n\n• Four functions: suggest / decline / surprise / reassure.\n\n• Remove the literal-meaning option right away.\n\n• Evidence is in the lines just before and after.\n\nNext level: the part that scores the most in Reading, Part 5 grammar."
+  },
+  {
+    "screen_id": "30ec17b3-cce8-46ea-9632-f5de352736c7",
+    "field": "explanation",
+    "before_snippet": "84,000 → 42,000 is exactly a h",
+    "after": "84,000 → 42,000 is exactly a halving. (C)’s “by a third” fails the arithmetic. (A) is the subtle trap: with only two data points, you don’t know what happened between them; “steadily throughout” claims more than the data shows. A Task 1 sentence must never claim more than its evidence."
+  },
+  {
+    "screen_id": "6707f139-aa75-4b75-97c6-9cdc6e17c317",
+    "field": "body",
+    "before_snippet": "Even at 20–30 seconds per bull",
+    "after": "Even at 20–30 seconds per bullet, you may finish early. The extension parts are always the same: what was said or thought at the time (quoting someone’s words is the best way to make a story concrete); sensory detail (sights, sounds, smells); what happened afterwards, and whether it continues today. They fit any topic. Keep entry phrases ready (below).\n\nThe two things to avoid: silence, which lowers Fluency directly, and repetition, which produces nothing new to grade. Notice that the card’s last line (“and explain why / how you felt…”) gives you the feelings section on purpose."
+  },
+  {
+    "screen_id": "612ddc4f-4ccf-4200-a614-9829eb4e4ff8",
+    "field": "title",
+    "before_snippet": "Recap: precise stand-ins, prod",
+    "after": "Recap: precise other words, ready when you need them"
+  },
+  {
+    "screen_id": "0c1b7860-4595-4817-a8d3-24d11718e501",
+    "field": "explanation",
+    "before_snippet": "“While” concedes the other sid",
+    "after": "“While” concedes the other side, “largely agree” shows how strongly you agree, and the two previewed reasons (reduce… / create…) complete the plan. “Despite” cannot govern a full clause, and “reduces / creates” break agreement with the plural “they”."
+  },
+  {
+    "screen_id": "c7145904-139f-43b6-b830-227b9f8a4693",
+    "field": "body",
+    "before_snippet": "Part 3 questions are big, so a",
+    "after": "Part 3 questions are big, so absolutes (always / everyone / 100%) fail at the first counter-example. Make claims softly: “tend to”, “generally”, “probably”, “I’d say…” (gentler than “I think”), “It depends on…”.\n\nThe other tool is taking thinking time out loud: “That’s a tough one.” / “I’ve never really thought about that, but…” / “It’s hard to say, but on balance…”. Three seconds of silence costs you; three seconds of thinking out loud is natural conversation, and the phrase itself is scoreable English."
+  },
+  {
+    "screen_id": "9e584a35-b2df-4764-9655-1e23b4990b3c",
+    "field": "explanation",
+    "before_snippet": "A settled plan takes “be going",
+    "after": "A settled plan takes “be going to”: I’m going to start… One future-time sentence widens the answer’s time range: instant GRA evidence. Practise changing from present description to future plans on purpose."
+  }
+]

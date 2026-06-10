@@ -1,0 +1,1528 @@
+[
+ {
+  "screen_id": "310c6a65-2392-4e02-a5a1-728b114f1572",
+  "lesson": "toeic-p2-wh-questions",
+  "order": 0,
+  "explanation_ja": "質問の最初の一語は When。「いつ？」と聞かれているので、時を答える Tomorrow at ten. が正解です。場所を答える(A)や、Yes で始まる(C)は When の質問への答えになりません。\n\nこの「最初の一語で答えの種類が決まる」感覚が、Part 2攻略の出発点です。",
+  "prompt_ja": "まずは1問。応答として正しいものを選んでください。"
+ },
+ {
+  "screen_id": "7827ceae-d2e1-4321-982f-7f9ffee811db",
+  "lesson": "toeic-p2-wh-questions",
+  "order": 1,
+  "title_ja": "最初の一語がすべて",
+  "body_ja": "Part 2では質問が一度しか流れず、選択肢も印刷されていません。だからこそ、聞き取りの優先順位を決めておくことが大切です。\n\n最優先は文頭の疑問詞。What（何）・Where（どこ）・When（いつ）・Who（誰）・Why（なぜ）・How（どう）。この一語さえつかめば、「答えの種類」が先にわかります。\n\nWhere なら場所、When なら時、Who なら人。あとは選択肢の中から、その種類に合うものを探すだけです。"
+ },
+ {
+  "screen_id": "3a3da425-ae11-4d04-8f21-1952c39bed34",
+  "lesson": "toeic-p2-wh-questions",
+  "order": 2,
+  "explanation_ja": "Where と聞かれたら、答えは場所。On your desk. が正解です。\n\n(B)は質問の shipping と似た shipped を使ったひっかけで、しかもWH疑問文に Yes で答えています。(C)は When への答えですね。",
+  "prompt_ja": "応答として正しいものを選んでください。"
+ },
+ {
+  "screen_id": "5bf79989-247b-4870-b90f-78d080e82382",
+  "lesson": "toeic-p2-wh-questions",
+  "order": 3,
+  "explanation_ja": "Who の答えは人。Ms. Okada from HR. が正解です。\n\n場所(A)や時刻(B)は、それぞれ Where / When への答え。疑問詞と「答えの種類」をセットでとらえる習慣をつけましょう。",
+  "prompt_ja": "応答として正しいものを選んでください。"
+ },
+ {
+  "screen_id": "9b465fc8-8849-4f3e-8463-e327a9ee1c78",
+  "lesson": "toeic-p2-wh-questions",
+  "order": 4,
+  "explanation_ja": "What time は時刻を聞く質問なので、At eight o’clock. が正解。\n\n(A)は場所、(C)は頻度（How often への答え）です。What time / When / How often は答えの形が紛らわしいので、選択肢を「時刻・時・頻度」に仕分けする意識を持つと強くなります。",
+  "prompt_ja": "応答として正しいものを選んでください。"
+ },
+ {
+  "screen_id": "5a40144c-020d-4d56-aabf-95746261db58",
+  "lesson": "toeic-p2-wh-questions",
+  "order": 5,
+  "title_ja": "ひっかけの定番：Yes / No で始まる選択肢",
+  "body_ja": "WH疑問文に Yes や No で答えることはできません。「何時ですか？」と聞かれて「はい」と答えたら不自然ですよね。英語でも同じです。\n\nところがPart 2では、WH疑問文の選択肢に Yes / No で始まるものが平気で混ざってきます。これは即座に消去してOK。\n\nもうひとつの定番は、質問に出た単語（や似た音の単語）をそのまま使った選択肢。「聞こえた単語があるから正解っぽい」と感じさせるワナです。むしろ疑ってかかりましょう。"
+ },
+ {
+  "screen_id": "395c9fe0-c907-4ef2-9fff-93f31ff3e312",
+  "lesson": "toeic-p2-wh-questions",
+  "order": 6,
+  "explanation_ja": "Why には理由で答えます。Because... の(A)が正解。\n\n(B)はWH疑問文への Yes、しかも質問の Friday をそのまま繰り返す二重のワナ。(C)は meeting つながりのひっかけです。ワナの形が見えてくると、消去法だけでも正解できます。",
+  "prompt_ja": "応答として正しいものを選んでください。"
+ },
+ {
+  "screen_id": "58a32533-32b4-4fd7-a5cb-4054b304b1a9",
+  "lesson": "toeic-p2-wh-questions",
+  "order": 7,
+  "explanation_ja": "How many は数を聞いています。About thirty... と数で答える(C)が正解。\n\n(A)は Yes 始まりで即消去、(B)は時刻なので When の答えです。最初の2語 How many まで聞ければ確実に取れる問題です。",
+  "prompt_ja": "応答として正しいものを選んでください。"
+ },
+ {
+  "screen_id": "b4f3ff9c-330b-40a3-ab4d-c5c918875ef5",
+  "lesson": "toeic-p2-wh-questions",
+  "order": 8,
+  "title_ja": "まとめ：最初の一語に全集中",
+  "body_ja": "・Part 2は質問の最初の疑問詞で「答えの種類」が決まる\n\n・Where→場所、When→時、Who→人、Why→理由、How many→数\n\n・WH疑問文に Yes / No で始まる選択肢は即消去\n\n・質問と同じ単語・似た音の選択肢はワナを疑う\n\n次のレッスンでは、Yes / No で答えられる疑問文と付加疑問文を攻略します。"
+ },
+ {
+  "screen_id": "dbcbb95a-3c5f-49f1-8dd1-f568c66abbfc",
+  "lesson": "toeic-p2-yesno-tag-questions",
+  "order": 0,
+  "title_ja": "Yes/No疑問文 — でも正解は Yes/No とは限らない",
+  "body_ja": "Do you...? / Have you...? / Is it...? のようなYes/No疑問文。今度こそ Yes か No で答えればいい…と思いきや、Part 2の正解は Yes/No を言わないことのほうが多いんです。\n\n実際の会話では、Yes/Noを飛ばして中身だけ答えることがよくあります。「資料、もう読んだ？」に「まだ半分くらい」と答えるイメージです。\n\nPart 2はこの「自然な会話」を出題します。Yes/Noがない選択肢を切り捨てないこと。これが今日のポイントです。"
+ },
+ {
+  "screen_id": "085a2591-a671-4193-b4c7-9e437a289a05",
+  "lesson": "toeic-p2-yesno-tag-questions",
+  "order": 1,
+  "explanation_ja": "「終わった？」への自然な答えは Almost（ほぼね）。Yes/Noがなくても、進み具合を伝えていれば立派な応答です。\n\n(B)は Yes で始まるものの中身が質問とかみ合わず、reported は report の音ワナ。(C)は sales つながりのひっかけです。",
+  "prompt_ja": "応答として正しいものを選んでください。"
+ },
+ {
+  "screen_id": "e0f35e0e-d46b-424e-b44f-634f9affa9f2",
+  "lesson": "toeic-p2-yesno-tag-questions",
+  "order": 2,
+  "title_ja": "「わからない」も立派な正解",
+  "body_ja": "Part 2で頻出の正解パターンが、間接的な答えです。\n\n・I haven’t checked yet.（まだ確認していない）\n・Ask Maria — she organized it.（マリアに聞いて）\n・It depends on the budget.（予算次第だね）\n\n質問に正面から答えていなくても、会話として成立していればそれが正解。むしろ「きれいに答えすぎる」選択肢ほどワナだったりします。"
+ },
+ {
+  "screen_id": "c4f90fbc-9ed6-42d8-b61c-dd802f162d17",
+  "lesson": "toeic-p2-yesno-tag-questions",
+  "order": 3,
+  "explanation_ja": "「新しいカフェ、おいしい？」に「まだ行ってないんだ」——完璧に自然な会話です。質問に直接答えていなくてもOK、というのがPart 2の鉄則。\n\n(A)は across の繰り返し、(C)は Yes で始まりますが中身がかみ合っていません。",
+  "prompt_ja": "応答として正しいものを選んでください。"
+ },
+ {
+  "screen_id": "e5c9b513-c270-4937-aabd-2f8e1837a12e",
+  "lesson": "toeic-p2-yesno-tag-questions",
+  "order": 4,
+  "explanation_ja": "「伊藤さん、予算を承認した？」に「アシスタントの方が知ってるよ」。自分は知らないので、知っていそうな人を案内する——これも頻出の正解パターンです。\n\n(A)は budget に引っ張られた金額のワナ、(B)は approved の繰り返しワナです。",
+  "prompt_ja": "応答として正しいものを選んでください。"
+ },
+ {
+  "screen_id": "bd77e297-75cf-4d42-9058-55515d5dbf1c",
+  "lesson": "toeic-p2-yesno-tag-questions",
+  "order": 5,
+  "title_ja": "付加疑問文は「ただの確認」",
+  "body_ja": "文の最後に付く isn’t it? / didn’t you? / right? が付加疑問文。「〜だよね？」という軽い確認です。\n\n複雑に見えますが、答え方は普通のYes/No疑問文とまったく同じ。後ろの小さな疑問は無視して、文の本体だけ聞き取ればOKです。\n\nThe shipment arrived on time, didn’t it? は要するに Did the shipment arrive on time? と同じ質問です。"
+ },
+ {
+  "screen_id": "403a8aa2-3f63-4ced-996d-38dbd8311f53",
+  "lesson": "toeic-p2-yesno-tag-questions",
+  "order": 6,
+  "explanation_ja": "「予定どおり届いたよね？」への答えは、Actually, it was a day late.（実は1日遅れたんだ）。\n\nActually は「実はね」と相手の想定をやんわり訂正する頻出ワード。(B)は場所、(C)は ship の音ワナです。",
+  "prompt_ja": "応答として正しいものを選んでください。"
+ },
+ {
+  "screen_id": "5f570520-83a6-4ec8-98f5-b02e54118a38",
+  "lesson": "toeic-p2-yesno-tag-questions",
+  "order": 7,
+  "explanation_ja": "「金曜の送別会、来るよね？」に I wouldn’t miss it.（絶対行くよ）。Yes と言わずに「行く」と伝える、こなれた表現です。\n\n(A)は過去形なので「これから」の話に合いません。(C)は場所の答えです。",
+  "prompt_ja": "応答として正しいものを選んでください。"
+ },
+ {
+  "screen_id": "114c66bc-1e16-4113-8c1d-a9dd95c2a662",
+  "lesson": "toeic-p2-yesno-tag-questions",
+  "order": 8,
+  "title_ja": "まとめ：Yes/Noにこだわらない",
+  "body_ja": "・Yes/No疑問文の正解は、Yes/Noを言わないことが多い\n\n・「まだ確認していない」「〜に聞いて」などの間接的な答えは頻出の正解\n\n・付加疑問文（〜, isn’t it?）は普通の疑問文と同じに扱う\n\n・Actually で始まる応答は「実は違う」のサイン\n\n次は、Part 2最大のワナ「似た音のひっかけ」を集中攻略します。"
+ },
+ {
+  "screen_id": "fdcf2d4d-cd5e-45a4-bd91-5e0c001d27fc",
+  "lesson": "toeic-p2-sound-traps",
+  "order": 0,
+  "explanation_ja": "walk me through 〜 は「〜を一通り説明して」という依頼。快諾している(A)が正解です。\n\n(B)は walk と work の音のひっかけ。発音が似た単語を混ぜて聞き間違いを誘うのが、Part 2の定番ワナです。",
+  "prompt_ja": "まずは1問。応答として正しいものを選んでください。"
+ },
+ {
+  "screen_id": "b0dd6680-f8d6-4e2c-92ff-d1e40e979eb7",
+  "lesson": "toeic-p2-sound-traps",
+  "order": 1,
+  "title_ja": "音のワナの仕組み",
+  "body_ja": "Part 2の不正解選択肢には、質問に出た単語と「音がそっくりな単語」が高確率で仕込まれます。\n\n・copy（コピー）⇔ coffee（コーヒー）\n・walk（歩く）⇔ work（働く）\n・mail（郵便）⇔ meal（食事）\n・supplies（備品）⇔ surprise（驚き）\n\n怖いのは、聞き取れた音に脳が飛びつくこと。「coffee って聞こえた！」と思った選択肢ほど、一度疑ってください。\n\n逆にいえば——質問と同じ・似た単語が入った選択肢はワナの可能性が高い。正解は別の表現で言い換えられていることがほとんどです。"
+ },
+ {
+  "screen_id": "0f55c918-e8f7-40e0-81f9-87788d5136c9",
+  "lesson": "toeic-p2-sound-traps",
+  "order": 2,
+  "explanation_ja": "(A)は copy を coffee と聞き違えた人を釣るワナ、(C)は handbook と handy の音ワナです。\n\nWhere への答えとして場所を示す(B)が正解。「似た音を疑う」と「場所で答える」、2つのチェックが両方使えた問題でした。",
+  "prompt_ja": "応答として正しいものを選んでください。"
+ },
+ {
+  "screen_id": "cb47902c-f938-46c6-9ef3-2de2938be544",
+  "lesson": "toeic-p2-sound-traps",
+  "order": 3,
+  "explanation_ja": "(A)は train → training、(B)は leave → leaving の音ワナ＋WH疑問文への Yes。\n\nWhen に時間で答える(C)が正解です。ワナを2つ消せば、自信を持って選べますね。",
+  "prompt_ja": "応答として正しいものを選んでください。"
+ },
+ {
+  "screen_id": "e080e5ba-3dc6-4757-a6d7-f8f76d9e2c47",
+  "lesson": "toeic-p2-sound-traps",
+  "order": 4,
+  "title_ja": "正解はたいてい「地味」",
+  "body_ja": "ここまでで気づいたかもしれません。Part 2の正解は、質問の単語を繰り返さない、地味な選択肢が多いんです。\n\n出題者の心理を想像してみましょう。聞き取れた単語をそのまま含む選択肢は「お、聞こえたぞ」と選ばせるエサ。正解はあえて別の単語で作っておく——こうすれば、本当に文全体を理解した人だけが正解できます。\n\nだから本番では、こう考えてください。「同じ単語・似た音 → 疑う」「地味だけど会話が成立 → 有力」。"
+ },
+ {
+  "screen_id": "54453d55-9fd1-4801-b7cd-784c10a37dee",
+  "lesson": "toeic-p2-sound-traps",
+  "order": 5,
+  "explanation_ja": "(A)は closed → clothes の音ワナ。(C)は parking → park の繰り返し＋Yes始まり。\n\n理由を答えている(B)が正解です。repave（舗装し直す）を知らなくても、ワナを2つ消せば残りは1つ。消去法もPart 2の立派な戦略です。",
+  "prompt_ja": "応答として正しいものを選んでください。"
+ },
+ {
+  "screen_id": "52dc01a7-a833-44f0-89c2-5b3a62eb6ebd",
+  "lesson": "toeic-p2-sound-traps",
+  "order": 6,
+  "explanation_ja": "How was 〜? は感想を聞く質問なので、(A)「ちょっと揺れたけど、まあ快適だったよ」が正解。\n\n(B)は flight → light、(C)は flight → right の音ワナです。語尾の -ight つながりに惑わされないように。",
+  "prompt_ja": "応答として正しいものを選んでください。"
+ },
+ {
+  "screen_id": "9e28f00d-2378-4bcd-93a1-c859f5fb1388",
+  "lesson": "toeic-p2-sound-traps",
+  "order": 7,
+  "explanation_ja": "(A)は supplies → surprise、(B)は supplies → sizes の音ワナです。Who に人で答える(C)が正解。\n\nThat would be 〜 は「（担当は）〜のはずですよ」という柔らかい言い方で、Part 2の正解によく出ます。",
+  "prompt_ja": "応答として正しいものを選んでください。"
+ },
+ {
+  "screen_id": "c20e6f0c-6bc8-4b9b-9667-32b45935ee1b",
+  "lesson": "toeic-p2-sound-traps",
+  "order": 8,
+  "title_ja": "まとめ：似た音は疑え",
+  "body_ja": "・不正解の選択肢には、質問と音が似た単語が仕込まれる（copy/coffee、walk/work）\n\n・「聞こえた単語がある」選択肢ほど疑う\n\n・正解は地味に言い換えられていることが多い\n\n・ワナを消す消去法も立派な戦略\n\nこれでPart 2の3大パターンは攻略完了。次のレベルからは、Part 3・4の会話問題に進みます。"
+ },
+ {
+  "screen_id": "106b0645-34d9-44f4-9b67-770675734616",
+  "lesson": "toeic-p34-question-preview",
+  "order": 0,
+  "title_ja": "音声が流れる前に、勝負は始まっている",
+  "body_ja": "Part 3・4では、会話やトークを聞いて、印刷された3つの設問に答えます。\n\nスコアが伸びない人の多くは、音声が始まってから設問を読み始めます。これでは「何を聞き取ればいいか」わからないまま音声が終わってしまう。\n\n上級者は逆です。音声の前の数秒で設問を先に読み、「聞き取るべきポイント」を決めてから音声を迎える。これが先読みです。このレッスンでは、紙の上のトレーニングで先読みの型を身につけます。"
+ },
+ {
+  "screen_id": "46bd39dc-007b-4865-8ab4-86cabcadd53c",
+  "lesson": "toeic-p34-question-preview",
+  "order": 1,
+  "title_ja": "設問から「待ち伏せポイント」を決める",
+  "body_ja": "設問を読んだら、2つだけマークします。\n\n①誰について聞かれているか（the man / the woman / the speaker）\n②何を聞かれているか（場所？目的？次の行動？）\n\nたとえば Why is the man calling? なら、「男性が」「電話の目的を」話す瞬間を待ち伏せします。電話の目的はほぼ冒頭で語られるので、集中すべきは最初のひと言。\n\nWhat will the woman do next? なら、答えのヒントは会話の終盤に来ます。設問の種類で「答えが出る位置」まで予測できるんです。"
+ },
+ {
+  "screen_id": "a3be7264-e3f1-4e18-9e4e-03a1e5a16bb5",
+  "lesson": "toeic-p34-question-preview",
+  "order": 2,
+  "explanation_ja": "電話の用件は、かけた本人が冒頭で言うのが自然です（「〜の件でお電話したのですが」）。\n\nWhy is A calling? 型の設問は、答えが冒頭に来る代表格。設問の形から「答えの位置」を予測するのが、先読みの核心です。",
+  "prompt_ja": "先読みトレーニング"
+ },
+ {
+  "screen_id": "e01d399e-c7e1-4363-b26a-b3589fd91118",
+  "lesson": "toeic-p34-question-preview",
+  "order": 3,
+  "explanation_ja": "女性は冒頭で I’m calling to remind you... とハッキリ目的を言っています。「先読みで冒頭を待ち伏せ → 一発で正解」の流れを体感してください。\n\n(D)の「予定変更」をしたがっているのは男性のほう。主語のすり替えに注意です。",
+  "prompt_ja": "会話を読んで、設問に答えてください。"
+ },
+ {
+  "screen_id": "f1e83574-eebd-4ba2-81bf-fb6992992e27",
+  "lesson": "toeic-p34-question-preview",
+  "order": 4,
+  "explanation_ja": "男性の最後のセリフ send the final deck on Wednesday が根拠です。\n\nPart 3では曜日や時刻が複数飛び交います。先読みで「最終版はいつ？」と決め打ちして聞けば、Tuesday や Monday に惑わされません。",
+  "prompt_ja": "会話を読んで、答えを入力してください。"
+ },
+ {
+  "screen_id": "9a8790d9-a83a-4a80-adf9-e51fe786b64e",
+  "lesson": "toeic-p34-question-preview",
+  "order": 5,
+  "title_ja": "主語のすり替えに注意",
+  "body_ja": "先読みで意外と大事なのが、設問の主語です。\n\nWhat does the man offer to do?（男性は何を申し出ている？）という設問で、会話に「提案」が2つ出てきたら——片方は男性の提案、もう片方は女性の提案、という作りになっています。\n\n不正解の選択肢は「会話に出てきた内容だけど、主語が違う」ことが多い。聞こえた内容に飛びつかず、誰が言ったかをセットで追いましょう。"
+ },
+ {
+  "screen_id": "b1f597cc-255b-44d6-a1c9-2fa020ad8917",
+  "lesson": "toeic-p34-question-preview",
+  "order": 6,
+  "explanation_ja": "男性のセリフ I can ask building services... が「申し出」です。\n\n女性が選んだのは5階のプリンターですが、設問が聞いているのは男性の申し出のほう。主語を意識した先読みができていれば迷いません。",
+  "prompt_ja": "会話を読んで、設問に答えてください。"
+ },
+ {
+  "screen_id": "da65b992-9b7a-4dab-a9f0-5fe08175ca13",
+  "lesson": "toeic-p34-question-preview",
+  "order": 7,
+  "explanation_ja": "女性は after we look at the room（部屋を見たあとで）と言っているので、次にするのは部屋の内見です。(D)の駐車場はそのあと。\n\nnext を聞く設問は、順番の入れ替えがワナになります。終盤を待ち伏せ＋順序に注意、です。",
+  "prompt_ja": "会話を読んで、設問に答えてください。"
+ },
+ {
+  "screen_id": "acd95adf-e83b-4dba-8a96-02da2562277a",
+  "lesson": "toeic-p34-question-preview",
+  "order": 8,
+  "title_ja": "まとめ：先読みの型",
+  "body_ja": "・音声の前に設問を読み、「誰の」「何を」待ち伏せするか決める\n\n・Why is ~ calling? → 冒頭、What will ~ do next? → 終盤に答えが出やすい\n\n・会話に出てきた内容でも、主語が違えば不正解\n\n・本番では設問間のポーズ（約8秒）が先読みタイム。解答を即決して、残りで次の設問を読む\n\n次のレッスンは、Part 3・4の核心「言い換え」です。"
+ },
+ {
+  "screen_id": "01d4a12f-ceda-434d-878c-b11f2a809aaf",
+  "lesson": "toeic-p34-paraphrase",
+  "order": 0,
+  "title_ja": "正解は「同じ言葉」では出てこない",
+  "body_ja": "Part 3・4で音声がこう言ったとします。The shipment won’t arrive until Thursday.\n\n正解の選択肢はこうなります。The delivery will come later this week.\n\nshipment は delivery に、not until Thursday は later this week に。同じ内容なのに、単語はほぼ総入れ替えです。これがTOEICの言い換え（パラフレーズ）。\n\n逆に、音声と同じ単語をそのまま使った選択肢はワナのことが多い。Part 2の「似た音のワナ」と同じ発想ですね。聞こえた単語ではなく、意味で選ぶ——これがこのレッスンのテーマです。"
+ },
+ {
+  "screen_id": "8fd1a36f-525e-4565-a0b6-831e419dd2f3",
+  "lesson": "toeic-p34-paraphrase",
+  "order": 1,
+  "explanation_ja": "give 〜 a hand は「手を貸す」。選択肢では offer to help と言い換えられています。\n\nイディオム → 普通の動詞、という言い換えはPart 3・4の頻出パターン。hand につられて(C)を選ばないように。",
+  "prompt_ja": "言い換えトレーニング"
+ },
+ {
+  "screen_id": "ced52043-4e93-40c8-8cac-99711602b07a",
+  "lesson": "toeic-p34-paraphrase",
+  "order": 2,
+  "title_ja": "言い換えの3大パターン",
+  "body_ja": "①上位語への言い換え（具体 → ざっくり）\ndesk lamps → lighting products ／ sandwiches → food\n\n②動詞・イディオムの言い換え\ngive a hand → help ／ look into → investigate\n\n③数字・時間の言い換え\nnot until Thursday → later this week ／ every 30 minutes → twice an hour\n\n音声を聞きながら「これ、別の言い方をしたら？」と変換する癖をつけると、正解が浮かび上がって見えるようになります。"
+ },
+ {
+  "screen_id": "7b3fb88a-f350-4105-9c88-808bcb95f10d",
+  "lesson": "toeic-p34-paraphrase",
+  "order": 3,
+  "explanation_ja": "desk lamps → lighting products（上位語）、this weekend only → temporarily、twenty percent off → discounted。三段階の言い換えが入っています。\n\n(C)は desk だけ聞き取った人へのワナ。値引きされるのは机ではなくランプです。",
+  "prompt_ja": "言い換えトレーニング"
+ },
+ {
+  "screen_id": "9d10edb3-e0d4-4873-b053-a5d6602050ed",
+  "lesson": "toeic-p34-paraphrase",
+  "order": 4,
+  "explanation_ja": "free of charge → at no cost、fitness center → gym。\n\n「無料」の言い換えは free ／ at no cost ／ complimentary の3点セットで覚えておくと、Part 3・4でも Part 7でも役立ちます。",
+  "prompt_ja": "言い換えトレーニング"
+ },
+ {
+  "screen_id": "0817c09d-1211-4822-9e51-1c9e7943d3d9",
+  "lesson": "toeic-p34-paraphrase",
+  "order": 5,
+  "explanation_ja": "push back（後ろへ押す → 延期する）は、選択肢では postponed や delayed に化けます。\n\n句動詞 → 1語の動詞への言い換えはTOEIC全パートの定番。put off → postpone もセットで覚えましょう。",
+  "prompt_ja": "言い換えを完成させてください。"
+ },
+ {
+  "screen_id": "dfeeb536-c5da-41b3-8b89-3fc5c874f241",
+  "lesson": "toeic-p34-paraphrase",
+  "order": 6,
+  "explanation_ja": "every fifteen minutes（15分おき）＝1時間に4本。\n\n数字をそのまま使った(A)(C)は「15分」の意味をすり替えたワナです。数字の言い換えは、単位を変換して確認するのが確実です。",
+  "prompt_ja": "言い換えトレーニング"
+ },
+ {
+  "screen_id": "32bef74c-30d6-480e-92dc-d3af9790686d",
+  "lesson": "toeic-p34-paraphrase",
+  "order": 7,
+  "explanation_ja": "go over → review（見直す・説明する）、survey results → findings（調査結果）。どちらもTOEIC頻出の言い換えペアです。\n\n(A)は survey を「配る」にすり替えたワナ。動詞まで正確に聞き取れたかが問われています。",
+  "prompt_ja": "言い換えトレーニング"
+ },
+ {
+  "screen_id": "4daaea74-5670-4143-97d6-d6f58877d61f",
+  "lesson": "toeic-p34-paraphrase",
+  "order": 8,
+  "title_ja": "まとめ：意味で選ぶ",
+  "body_ja": "・正解の選択肢は、音声の単語を言い換えてある\n\n・3大パターン：上位語／動詞・イディオム／数字・時間\n\n・音声と同じ単語が目立つ選択肢はワナを疑う\n\n・free → at no cost、push back → postpone など、ペアで暗記すると速い\n\n次は、言い換えのさらに上を行く「話者の意図問題」です。"
+ },
+ {
+  "screen_id": "e56a7f91-98b1-41f7-b8a3-fb41ed36167f",
+  "lesson": "toeic-p34-speaker-intent",
+  "order": 0,
+  "title_ja": "“It’s already five o’clock” の本当の意味",
+  "body_ja": "Part 3・4には、こんな設問があります。\n\nWhy does the woman say, “It’s already five o’clock”?（女性はなぜ「もう5時だ」と言っているのか）\n\n「時刻を伝えるため」——これはほぼ確実にワナです。実際の会話で「もう5時だよ」と言うとき、私たちは時刻ではなく「急ごう」「今日はもう無理」「帰ろう」といった気持ちを伝えていますよね。\n\n意図問題は、セリフの文字どおりの意味ではなく、その場での働き（機能）を聞いています。前後の流れがすべてです。"
+ },
+ {
+  "screen_id": "542ed501-f92e-4796-8b9b-2dfc5dac1986",
+  "lesson": "toeic-p34-speaker-intent",
+  "order": 1,
+  "explanation_ja": "直後に男性が「そのまま送ろう」と納得していることから、女性の「もう5時」は時刻の報告ではなく「修正している時間はない」という反対のサイン。\n\n(B)の「時刻を伝えるため」は文字どおり解釈のワナです。意図問題は前後の反応から逆算しましょう。",
+  "prompt_ja": "会話を聞いて、設問に答えてください。"
+ },
+ {
+  "screen_id": "dfe9ed80-e424-43d1-adc1-f286df017546",
+  "lesson": "toeic-p34-speaker-intent",
+  "order": 2,
+  "title_ja": "意図は4種類に分けて考える",
+  "body_ja": "意図問題のセリフの働きは、だいたい次の4つに収まります。\n\n①提案・促し：「もう5時だよ」→ そろそろ終わろう\n\n②断り・反対：「今週は出張なんだ」→ だから無理\n\n③驚き・意外：「もう売り切れ？」→ 早すぎる\n\n④安心させる・引き受ける：「私、明日も出社するよ」→ 任せて\n\n選択肢を読むときも、To suggest... ／ To decline... ／ To express surprise... ／ To reassure... という動詞に注目すると、この4分類がそのまま使えます。"
+ },
+ {
+  "screen_id": "93ba8b00-0b2b-4f03-a5a1-d7e2172578fd",
+  "lesson": "toeic-p34-speaker-intent",
+  "order": 3,
+  "explanation_ja": "誘いへの返事として「12時に客先と電話があって」と言えば、それは断りです。日本語でも「その日ちょっと予定が…」で断りが伝わるのと同じ。\n\n直後に女性が「取っておくね」とフォローしているのも決め手です。",
+  "prompt_ja": "会話を聞いて、設問に答えてください。"
+ },
+ {
+  "screen_id": "280f719c-cb8b-4d27-8eec-2f81ed46efd1",
+  "lesson": "toeic-p34-speaker-intent",
+  "order": 4,
+  "explanation_ja": "直前の「去年は1時間で配布終了 → 今年は300個用意した。それでも早めに来る」という流れから、「300個でも足りないかもしれない」という含みが読めます。\n\n意図問題の根拠は、直前のセリフにあることがほとんどです。",
+  "prompt_ja": "トークを聞いて、設問に答えてください。"
+ },
+ {
+  "screen_id": "e9b7ec4a-42ea-4945-9c9e-22dc71c3235f",
+  "lesson": "toeic-p34-speaker-intent",
+  "order": 5,
+  "title_ja": "文字どおりの選択肢はワナ",
+  "body_ja": "意図問題の選択肢には、必ずと言っていいほど文字どおりの意味の選択肢が混ざっています。\n\n“It’s already five o’clock” → To tell the man the time\n“I have a client call” → To describe his schedule\n\nこの手の選択肢は、ほぼ自動で消去してかまいません。出題者がわざわざ「なぜこう言ったのか」と聞くのは、文字どおりではない働きがあるからです。\n\n残った選択肢を、直前・直後のセリフと突き合わせる。これが意図問題の解答手順です。"
+ },
+ {
+  "screen_id": "1f4e5813-9d1a-4145-9aec-4aa9663ec8c0",
+  "lesson": "toeic-p34-speaker-intent",
+  "order": 6,
+  "explanation_ja": "「承認会議は来週の火曜」＝「金曜までにお金は出せない」という遠回しの指摘です。男性が「先方に待ってもらえるか聞いてみる」と動いたことが裏付け。\n\nスケジュールを述べるセリフは、「だから間に合わない／できない」のサインとして頻出です。",
+  "prompt_ja": "会話を聞いて、設問に答えてください。"
+ },
+ {
+  "screen_id": "ea1809ff-dfbc-4b5d-bd96-81508817c438",
+  "lesson": "toeic-p34-speaker-intent",
+  "order": 7,
+  "explanation_ja": "不安がる女性に「アンケート結果、見たでしょ？」と返すのは、「心配いらないよ、需要はあるよ」と安心させるため。女性が Oh — right（あ、そうだった）と安心しているのが決め手です。\n\n疑問文の形でも、働きは「励まし」。これが意図問題の面白いところです。",
+  "prompt_ja": "会話を聞いて、設問に答えてください。"
+ },
+ {
+  "screen_id": "b42a301d-aaba-44f7-9345-4a8f9d8f7fd0",
+  "lesson": "toeic-p34-speaker-intent",
+  "order": 8,
+  "title_ja": "まとめ：セリフの「働き」を読む",
+  "body_ja": "・意図問題はセリフの文字どおりの意味ではなく、その場での働きを聞く\n\n・働きは4分類：提案／断り／驚き／安心させる\n\n・文字どおりの意味の選択肢はほぼ消去してよい\n\n・根拠は直前・直後のセリフ（相手の反応）にある\n\n次のレベルは、リーディングの得点源・Part 5の文法問題です。"
+ },
+ {
+  "screen_id": "594d9255-ffee-4b78-8301-98633b731c76",
+  "lesson": "toeic-p5-word-forms",
+  "order": 0,
+  "explanation_ja": "空所の前は increased（動詞）。動詞を修飾するのは副詞なので、-ly の significantly が正解です。\n\n実はこの問題、文全体を訳す必要はありません。空所の前後だけで品詞が決まる——これがPart 5最速の解き方です。",
+  "prompt_ja": "まずは1問。空所に入る語を選んでください。"
+ },
+ {
+  "screen_id": "5822efc0-73c6-4b84-81e5-c1ce542c7c10",
+  "lesson": "toeic-p5-word-forms",
+  "order": 1,
+  "title_ja": "訳すな、前後を見ろ",
+  "body_ja": "Part 5の約3分の1は品詞問題。選択肢に significant ／ significantly ／ significance のような同じ単語の変化形が並んでいたら、それが品詞問題のサインです。\n\n品詞問題は文の意味を取る必要がありません。見るのは空所の前後1〜2語だけ。\n\n・the ___ of → the と of に挟まれたら名詞\n・a ___ ＋名詞 → 名詞の前は形容詞\n・動詞＋ ___ → 動詞のあとは副詞\n・___ ＋動詞（文頭）→ 主語になる名詞\n\n1問20秒以内。ここで稼いだ時間をPart 7に回すのが、リーディング全体の戦略です。"
+ },
+ {
+  "screen_id": "8158fe84-8d08-4599-b630-1f68a7c0be32",
+  "lesson": "toeic-p5-word-forms",
+  "order": 2,
+  "title_ja": "語尾で品詞を見分ける",
+  "body_ja": "変化形のどれが名詞でどれが形容詞か、迷わないために語尾のパターンを押さえましょう。\n\n名詞：-tion ／ -ment ／ -ness ／ -ity（information, payment, kindness, ability）\n\n形容詞：-ive ／ -ful ／ -able ／ -ous（effective, useful, reliable, famous）\n\n副詞：形容詞＋ -ly（effectively, usefully）\n\n動詞：-ize ／ -ify（organize, simplify）\n\n注意したいのは -ly。friendly や timely のように形容詞の -ly もあるので、「-ly だから副詞」と即断せず、空所の位置と合わせて判断しましょう。"
+ },
+ {
+  "screen_id": "0da9cb99-2be4-488c-b0d6-494f6a7a011a",
+  "lesson": "toeic-p5-word-forms",
+  "order": 3,
+  "explanation_ja": "the safety ___ は「the＋名詞のかたまり」、しかも read の目的語。名詞の instructions が正解です。\n\n-tion(s) は名詞の代表的な語尾。(D)の instructly のような実在しない単語も平気で並ぶので、語尾の知識で堂々と切りましょう。",
+  "prompt_ja": "空所に入る語を選んでください。"
+ },
+ {
+  "screen_id": "80f83fce-e873-417e-9e07-c253d9b40c05",
+  "lesson": "toeic-p5-word-forms",
+  "order": 4,
+  "explanation_ja": "空所は response（名詞）の前、しかも quick and ___ と形容詞 quick に並列されています。and で結ばれる語は同じ品詞。だから形容詞の efficient が正解です。\n\n並列（and ／ or ／ but）は品詞問題の強力なヒントになります。",
+  "prompt_ja": "空所に入る語を選んでください。"
+ },
+ {
+  "screen_id": "acc51261-8cfd-4178-ade5-6e2b2b0754ca",
+  "lesson": "toeic-p5-word-forms",
+  "order": 5,
+  "explanation_ja": "explained（動詞）を修飾するので、副詞の clearly が正解。「動詞の後ろ・文末で様子を表す → 副詞」は品詞問題の頻出位置です。\n\nvery も実はヒント：very のあとに来られるのは形容詞か副詞だけです。",
+  "prompt_ja": "品詞問題・記述トレーニング"
+ },
+ {
+  "screen_id": "dba3b80d-074e-49b9-b1fa-070b6cc48ddf",
+  "lesson": "toeic-p5-word-forms",
+  "order": 6,
+  "explanation_ja": "所有格 Ms. Park’s の直後に来られるのは名詞だけ。attention が正解です。「所有格＋ ___」は名詞、と機械的に処理してOK。\n\nattention to detail（細部への気配り）は、ビジネス英語の頻出表現としても覚えておくとお得です。",
+  "prompt_ja": "空所に入る語を選んでください。"
+ },
+ {
+  "screen_id": "4bc5c6fe-6d2f-40dc-9953-5c39f0c1230a",
+  "lesson": "toeic-p5-word-forms",
+  "order": 7,
+  "explanation_ja": "空所の後ろは designed（過去分詞）＋ brochure。分詞という「動詞の仲間」を修飾するのは副詞なので、newly が正解。\n\nnewly designed（新しくデザインされた）、recently updated のような「副詞＋分詞＋名詞」はPart 5の定番パターンです。",
+  "prompt_ja": "空所に入る語を選んでください。"
+ },
+ {
+  "screen_id": "24c24116-782c-4515-959c-531abe50c158",
+  "lesson": "toeic-p5-word-forms",
+  "order": 8,
+  "title_ja": "まとめ：品詞問題は20秒で",
+  "body_ja": "・選択肢に同じ単語の変化形が並んだら品詞問題\n\n・文を訳さない。空所の前後1〜2語で決める\n\n・語尾で品詞を判定：-tion/-ment＝名詞、-ive/-able＝形容詞、-ly＝副詞（例外あり）\n\n・and の並列、所有格の後ろ、分詞の前など、「位置のパターン」を貯める\n\n次は動詞の形——時制・態・一致の3点チェックです。"
+ },
+ {
+  "screen_id": "50fcacd1-b34b-4b89-9101-196f90a52adc",
+  "lesson": "toeic-p5-verb-forms",
+  "order": 0,
+  "title_ja": "動詞問題は3つだけチェック",
+  "body_ja": "選択肢に develop ／ develops ／ developed ／ is developed のように同じ動詞の形が並んでいたら、動詞の形問題です。\n\nチェックするのは3つだけ。\n\n①一致：主語は単数？複数？\n\n②時制：時を表すヒント（yesterday, next week, for the past...）はあるか？\n\n③態：主語は「する側」（能動）か「される側」（受動）か？\n\nこの順番で確認すれば、たいてい2〜3個の選択肢が瞬時に消えます。"
+ },
+ {
+  "screen_id": "572fa678-41ed-475c-93fb-83a3997b6fdc",
+  "lesson": "toeic-p5-verb-forms",
+  "order": 1,
+  "explanation_ja": "主語は The list（単数）。直後の of approved vendors は修飾語で、ここに惑わされて are を選ばせるのが出題者の狙いです。\n\nevery quarter（毎四半期）という習慣のヒントから現在形。よって is が正解。「of の前が本当の主語」と覚えましょう。",
+  "prompt_ja": "空所に入る語を選んでください。"
+ },
+ {
+  "screen_id": "b04fc759-33b4-49e9-95f5-ff42d56c8c5d",
+  "lesson": "toeic-p5-verb-forms",
+  "order": 2,
+  "title_ja": "受動態のサイン：目的語がない",
+  "body_ja": "能動と受動で迷ったら、空所の後ろを見てください。\n\n・後ろに目的語（名詞）がある → 能動態\n・後ろに目的語がない（by 〜や前置詞、ピリオド）→ 受動態\n\nThe report ___ by Mr. Chen. → 後ろに目的語なし → was written\nMr. Chen ___ the report. → 目的語あり → wrote\n\n「レポートは書く側ではなく書かれる側」という意味からも判断できますが、目的語チェックのほうが速くて確実です。"
+ },
+ {
+  "screen_id": "f0d726a5-6c15-45b2-89f9-952486673778",
+  "lesson": "toeic-p5-verb-forms",
+  "order": 3,
+  "explanation_ja": "空所の後ろに目的語がなく、主語の luggage は「検査する側」ではなく「される側」。must のあとは動詞の原形なので、be inspected が正解です。\n\n助動詞＋ be ＋過去分詞の形は、Part 5で何度も出ます。",
+  "prompt_ja": "空所に入る語を選んでください。"
+ },
+ {
+  "screen_id": "165ea193-4c0e-4931-ae68-52240991c66b",
+  "lesson": "toeic-p5-verb-forms",
+  "order": 4,
+  "explanation_ja": "By the time＋未来の時点（next month）とくれば、「その時までに〜し終えている」という未来完了 will have completed の合図です。\n\nPart 5の時制問題は、文中の「時のヒント」と時制の組み合わせをパターンとして覚えるのが近道です。",
+  "prompt_ja": "空所に入る語を選んでください。"
+ },
+ {
+  "screen_id": "35bcc6f8-cf51-4b83-b753-14c6b7cbce7a",
+  "lesson": "toeic-p5-verb-forms",
+  "order": 5,
+  "explanation_ja": "for the past five years（この5年間ずっと）は現在完了のサイン。has grown（または has been growing）が正解です。\n\nfor ／ since ／ over the past 〜 を見たら現在完了——この反射を作っておくと、時制問題が一気に楽になります。",
+  "prompt_ja": "時のヒントに注目"
+ },
+ {
+  "screen_id": "64a15231-c697-4666-a5a7-dcea81b56a8a",
+  "lesson": "toeic-p5-verb-forms",
+  "order": 6,
+  "explanation_ja": "主語は Anyone（単数扱い）。関係代名詞 who の動詞は先行詞に合わせるので、三単現の wishes が正解です。\n\nanyone ／ everyone ／ each は見た目より「単数」。ここを突いてくるのがTOEICです。",
+  "prompt_ja": "空所に入る語を選んでください。"
+ },
+ {
+  "screen_id": "986c7064-89e2-48f2-badf-2436d4c11212",
+  "lesson": "toeic-p5-verb-forms",
+  "order": 7,
+  "explanation_ja": "when the fire alarm went off（警報が鳴ったとき）という過去の一瞬に対し、スピーチは「行われている最中」でした。さらに speech は「行われる側」なので受動。\n\n過去進行＋受動の was being delivered が正解です。態と時制、両方のチェックが活きる1問でした。",
+  "prompt_ja": "空所に入る語を選んでください。"
+ },
+ {
+  "screen_id": "adc848fd-b4fd-44e7-8cc0-92f185655d5b",
+  "lesson": "toeic-p5-verb-forms",
+  "order": 8,
+  "title_ja": "まとめ：一致 → 時制 → 態",
+  "body_ja": "・動詞の形問題は ①主語との一致 ②時のヒント ③能動/受動 の順でチェック\n\n・of 〜 などの修飾語に惑わされない。「of の前が本当の主語」\n\n・空所の後ろに目的語がなければ受動態\n\n・for the past 〜 ＝現在完了、by the time＋未来＝未来完了\n\n次は前置詞と接続詞の使い分けです。"
+ },
+ {
+  "screen_id": "ad7aeecc-d94f-4953-9754-f4290959e71f",
+  "lesson": "toeic-p5-prepositions-conjunctions",
+  "order": 0,
+  "explanation_ja": "空所の後ろは the heavy rain——名詞のかたまりです。名詞を従えられるのは前置詞の Despite だけ。Although や While は接続詞なので、後ろに「主語＋動詞」が必要です。\n\n意味はどちらも「〜にもかかわらず」。決め手は意味ではなく、後ろの形なんです。",
+  "prompt_ja": "まずは1問。空所に入る語を選んでください。"
+ },
+ {
+  "screen_id": "66a3f261-305f-4bae-8cb7-0efa52506827",
+  "lesson": "toeic-p5-prepositions-conjunctions",
+  "order": 1,
+  "title_ja": "後ろを見れば一発：前置詞 vs 接続詞",
+  "body_ja": "前置詞と接続詞には、意味がほぼ同じペアがたくさんあります。\n\n・despite ／ in spite of（前）⇔ although ／ though（接）「〜にもかかわらず」\n・because of ／ due to（前）⇔ because ／ since（接）「〜のため」\n・during（前）⇔ while（接）「〜の間」\n\n見分け方はただ1つ。空所の後ろが名詞だけなら前置詞、主語＋動詞（SV）が続くなら接続詞。\n\n意味で迷う必要はありません。形で解く——Part 5で最も「機械的に」得点できる問題です。"
+ },
+ {
+  "screen_id": "f105ff24-4eaa-43fa-946c-dba97ac7b248",
+  "lesson": "toeic-p5-prepositions-conjunctions",
+  "order": 2,
+  "explanation_ja": "空所の後ろは Mr. Okafor was attending——主語＋動詞が続いています。だから接続詞の While が正解。\n\n「〜の間」という意味では During も浮かびますが、During は前置詞なので During the conference のように名詞しか従えられません。",
+  "prompt_ja": "空所に入る語を選んでください。"
+ },
+ {
+  "screen_id": "2dfb1acd-5d06-483a-9c35-08d76f3fb3ae",
+  "lesson": "toeic-p5-prepositions-conjunctions",
+  "order": 3,
+  "explanation_ja": "空所の後ろは a mechanical inspection という名詞のかたまり。前置詞の due to が正解です。\n\nbecause はSVが必要なので、because the aircraft needed an inspection なら正解になれます。because of ／ due to ／ owing to はワンセットで前置詞扱いです。",
+  "prompt_ja": "空所に入る語を選んでください。"
+ },
+ {
+  "screen_id": "a4075d0b-b06b-4af6-9fa3-e8de0b204906",
+  "lesson": "toeic-p5-prepositions-conjunctions",
+  "order": 4,
+  "title_ja": "頻出ペアを表で固める",
+  "body_ja": "前置詞・接続詞問題でもう1つ問われるのが、時間系の使い分けです。\n\n・by「〜までに（締切）」⇔ until「〜までずっと（継続）」\nSubmit the form by Friday. ／ The shop is open until 9.\n\n・for＋期間の長さ（for two weeks）⇔ during＋出来事の名前（during the meeting）\n\n・in＋月・年（in March）／ on＋日付・曜日（on Monday）／ at＋時刻（at noon）\n\n「締切の by、継続の until」は毎回のように出題されます。日本語の「〜まで」が両方を兼ねるせいで、日本人が最も間違えやすいポイントです。"
+ },
+ {
+  "screen_id": "bbde4cee-2152-45bc-a10c-1426e0b7d62a",
+  "lesson": "toeic-p5-prepositions-conjunctions",
+  "order": 5,
+  "explanation_ja": "提出は「締切までに1回やる」動作なので by が正解。until は「その時までずっと続く」状態に使います（The office stays open until 6）。\n\nsubmit ／ finish ／ arrive のような一回きりの動作＋締切 → by、と覚えましょう。",
+  "prompt_ja": "空所に入る語を選んでください。"
+ },
+ {
+  "screen_id": "553f8a32-142b-4082-9ad0-adf17b386bbe",
+  "lesson": "toeic-p5-prepositions-conjunctions",
+  "order": 6,
+  "explanation_ja": "後ろが their stay という名詞なので、前置詞の during（または throughout）が正解。while を使うなら while they are staying とSVが必要です。\n\n「名詞なら during、SVなら while」——この型はそのまま本番で使えます。",
+  "prompt_ja": "ヒント：空所の後ろは their stay という名詞です。"
+ },
+ {
+  "screen_id": "6674c46d-eecf-48fc-ac76-c229d3cde7c5",
+  "lesson": "toeic-p5-prepositions-conjunctions",
+  "order": 7,
+  "explanation_ja": "空所の後ろは the budget is approved とSVなので、接続詞が必要。まず前置詞の(A)(D)を消去します。\n\n残りは意味勝負：「予算が承認されれば開始する」という条件なので As long as（〜する限り）が正解。Unless（〜しない限り）だと意味が逆になります。形で絞って意味で決める、の2段構えです。",
+  "prompt_ja": "空所に入る語を選んでください。"
+ },
+ {
+  "screen_id": "8eb28bf6-30e9-47f8-a5f6-c00f2b9b3554",
+  "lesson": "toeic-p5-prepositions-conjunctions",
+  "order": 8,
+  "title_ja": "まとめ：形で解く",
+  "body_ja": "・後ろが名詞だけ → 前置詞、SVが続く → 接続詞\n\n・despite ⇔ although、because of ⇔ because、during ⇔ while のペアで暗記\n\n・締切の by、継続の until\n\n・前置詞／接続詞で絞ってから、最後に意味で確認\n\n次のレベルはいよいよ最終関門、Part 7の読解戦略です。"
+ },
+ {
+  "screen_id": "b459c54f-3089-441f-9fb9-b697cacf350b",
+  "lesson": "toeic-p7-scanning",
+  "order": 0,
+  "title_ja": "全部読むな",
+  "body_ja": "Part 7は54問。最後まで終わらない受験者が続出する、時間との戦いです。\n\n敗因ははっきりしています。文書を頭から全部読むこと。\n\nPart 7の設問の多くは、本文のどこか1カ所に答えが書いてある「事実検索型」。必要なのは読解ではなく検索です。\n\n①設問を先に読む → ②キーワードを決める → ③本文をスキャン（目を走らせて探す）→ ④見つけた周辺だけ精読。\n\nこの4ステップをスキャニングと呼びます。今日はこれを体で覚えます。"
+ },
+ {
+  "screen_id": "c05ab901-e61e-40e6-be47-6b2695347322",
+  "lesson": "toeic-p7-scanning",
+  "order": 1,
+  "title_ja": "キーワードは「数字・固有名詞・日付」",
+  "body_ja": "スキャンの目印に向いているのは、形が変わらない語です。\n\n・数字・金額・時刻（40%、$25、9:30）\n・固有名詞（人名・社名・地名）\n・日付・曜日（March 15、Monday）\n\nWhen does registration open? という設問なら、本文から時刻っぽい表記だけを探して目を走らせます。文章を「読む」のではなく、目的の形を「探す」。\n\n注意点はひとつ。Part 7の選択肢は本文の言い換えになっていることが多い。見つけた箇所と選択肢を突き合わせるときだけ、丁寧に読みましょう。"
+ },
+ {
+  "screen_id": "d5750f2c-4339-4fd6-8537-3096a27b4fe5",
+  "lesson": "toeic-p7-scanning",
+  "order": 2,
+  "explanation_ja": "キーワードは members と金額。Fee の行をスキャンすれば (members $20) が見つかります。\n\n$30 は一般料金、16 は定員——どちらも「数字だけ拾った人」を引っかける選択肢です。見つけた行は最後まで読む、が鉄則です。",
+  "prompt_ja": "設問のキーワードを決めてから、本文をスキャンしましょう。"
+ },
+ {
+  "screen_id": "d83e12a3-3d78-4d20-aaa4-bed454e2be93",
+  "lesson": "toeic-p7-scanning",
+  "order": 3,
+  "explanation_ja": "キーワードは Cedar Street。その一文をスキャンすると bring your employee ID to enter とあります。\n\n答えは1文に凝縮されていて、メール全体を読む必要はありません。設問 → キーワード → 該当行だけ精読、の流れを確認してください。",
+  "prompt_ja": "設問のキーワードを決めてから、本文をスキャンしましょう。"
+ },
+ {
+  "screen_id": "add05a1f-30d6-497e-bf81-da058be73ad8",
+  "lesson": "toeic-p7-scanning",
+  "order": 4,
+  "explanation_ja": "キーワードは「人数」。limited to 16 participants（16名限定）の行が根拠です。\n\nこの文書の数字は日付・時刻・料金・定員と4種類もあります。「何の数字か」をラベルごと確認する癖をつけましょう。",
+  "prompt_ja": "本文の数字は「何の数字か」をラベルごと確認しましょう。"
+ },
+ {
+  "screen_id": "734bdc32-a17b-454b-a408-cdfb8c46cc73",
+  "lesson": "toeic-p7-scanning",
+  "order": 5,
+  "title_ja": "設問はスキャンしやすい順に解く",
+  "body_ja": "実は、設問にも解きやすい順番があります。\n\n・固有名詞や数字を含む設問（How much ／ When ／ Who）→ スキャンが速い。先に解く\n\n・What is the purpose...? ／ What is suggested...? → 全体理解が必要。後回し\n\n1つの文書に複数の設問が付いている場合、検索型を解くうちに文書の全体像がつかめて、結果的に purpose 型も速く解けます。\n\n「易 → 難の順に解くと、難が勝手に易しくなる」——Part 7の小さな裏ワザです。"
+ },
+ {
+  "screen_id": "23501f1e-aa77-41d2-b6f8-27872dd7e251",
+  "lesson": "toeic-p7-scanning",
+  "order": 6,
+  "explanation_ja": "キーワードは valid。Offer valid weekdays only, April 1–30 の行から「4月の平日のみ」とわかります。\n\n(C)は April だけ拾った人へのワナ、(B)は逆の内容。only のような限定語は正解の根拠になりやすいので、見つけたら必ず線を引く気持ちで読みましょう。",
+  "prompt_ja": "設問のキーワードを決めてから、本文をスキャンしましょう。"
+ },
+ {
+  "screen_id": "ce99c60e-23ac-41f8-8562-36357125f00c",
+  "lesson": "toeic-p7-scanning",
+  "order": 7,
+  "explanation_ja": "キーワードは return。最終行 returned with a full tank が根拠で、正解では fill the fuel tank と言い換えられています。\n\nPart 7でも言い換えは健在。「本文の表現そのまま」の(B)の電話番号は予約用で、ワナです。",
+  "prompt_ja": "設問のキーワードを決めてから、本文をスキャンしましょう。"
+ },
+ {
+  "screen_id": "1a8a7055-8335-4cf7-a490-e9487639e365",
+  "lesson": "toeic-p7-scanning",
+  "order": 8,
+  "title_ja": "まとめ：読むな、探せ",
+  "body_ja": "・設問を先に読み、数字・固有名詞・日付をキーワードに決める\n\n・本文はスキャン。見つけた行の周辺だけ精読\n\n・選択肢は本文の言い換え。突き合わせは丁寧に\n\n・検索型の設問から解き、purpose 型は後回し\n\n次は、Part 7で最も時間を食う「NOT問題」と「推測問題」の攻略です。"
+ },
+ {
+  "screen_id": "65359491-2623-4df1-805d-0a4eb3b37f41",
+  "lesson": "toeic-p7-not-inference",
+  "order": 0,
+  "title_ja": "「書いていないもの」を探す問題",
+  "body_ja": "Part 7にはこんな設問があります。\n\nWhat is NOT mentioned about the hotel?（ホテルについて述べられていないものは？）\n\n普通の問題は「書いてあるもの」を1つ探せば終わり。でもNOT問題は、選択肢4つのうち3つが本文に書いてあり、書いていない1つが正解。つまり最大4回の照合が必要な、Part 7で最も時間を食うタイプです。\n\nだからこそ、手順を固定して機械的に処理します。次の画面でその手順を見てみましょう。"
+ },
+ {
+  "screen_id": "182e4603-bf11-47f8-b579-143d15bc1848",
+  "lesson": "toeic-p7-not-inference",
+  "order": 1,
+  "title_ja": "NOT問題は「消し込み作業」",
+  "body_ja": "手順はシンプルです。\n\n①選択肢A〜Dを先にざっと読む（4つの内容を頭に置く）\n\n②本文を読みながら、出てきた選択肢を消していく\n\n③最後まで消えなかった1つが正解\n\nコツは、選択肢が本文の言い換えになっていること。本文 complimentary breakfast → 選択肢 free morning meal のような変換を見抜きながら消します。\n\nまた、NOT問題は文書全体に根拠が散らばるので、スキャンではなく通し読みに近くなります。3問セットの最後に回すのが効率的です。"
+ },
+ {
+  "screen_id": "fcf1949b-7a47-4ec2-b6a9-cb95ea644ffb",
+  "lesson": "toeic-p7-not-inference",
+  "order": 2,
+  "explanation_ja": "(A)は free Wi-Fi、(C)は outdoor pool、(D)は complimentary breakfast として本文にあります。残った(B)のフィットネスルームだけ言及なし。\n\ncomplimentary ＝ free の言い換えに気づけたかがポイントです。消し込み → 残った1つ、の手順どおりに解けましたか？",
+  "prompt_ja": "選択肢を先に読んでから、本文と照合しましょう。"
+ },
+ {
+  "screen_id": "f1c9741b-fd1c-4894-b6c1-e2e2ba76362a",
+  "lesson": "toeic-p7-not-inference",
+  "order": 3,
+  "explanation_ja": "(A)は one year of retail experience、(B)は available on weekends、(D)は send a résumé として本文に登場します。運転免許だけはどこにもありません。\n\n「ありそうな内容」ほどワナになるのがNOT問題。常識ではなく、本文だけを根拠にしましょう。",
+  "prompt_ja": "選択肢を先に読んでから、本文と照合しましょう。"
+ },
+ {
+  "screen_id": "cb7c2142-9a87-4f57-ba9a-7413d0e740d4",
+  "lesson": "toeic-p7-not-inference",
+  "order": 4,
+  "title_ja": "推測問題：書いていない、でも導ける",
+  "body_ja": "次は推測問題。設問に imply ／ suggest ／ most likely が入っていたらこのタイプです。\n\nWhat is implied about Mr. Soto?（ソトさんについて何が示唆されている？）\n\n答えは本文にそのまま書いてありません。でも、書いてある事実を組み合わせれば必ず導けるようにできています。\n\n例：本文「会員は送料無料。Sotoさんの注文書には送料$0と記載」→ 導ける結論「Sotoさんは会員である」。\n\n大切なのは、飛躍しないこと。「たぶんそうだろう」という常識的な想像ではなく、本文の事実から一歩だけ進んだ結論を選びます。"
+ },
+ {
+  "screen_id": "cfb92d8d-e114-4be6-982a-6cb5216b8f4f",
+  "lesson": "toeic-p7-not-inference",
+  "order": 5,
+  "explanation_ja": "「来月から10時ではなく9時開店に変わる」という一文から、今は10時開店だと導けます。\n\n(A)は may do so（現行どおりでもよい）と矛盾。推測問題の正解は、このように本文の事実を裏返しただけのことが多いんです。",
+  "prompt_ja": "本文の事実から「一歩だけ」進んだ結論を選びましょう。"
+ },
+ {
+  "screen_id": "5b6c302b-b315-47ab-8a28-65e5954ec57f",
+  "lesson": "toeic-p7-not-inference",
+  "order": 6,
+  "explanation_ja": "booked a table for ... next month（来月の予約を入れた）から、「また行くつもり」が導けます。\n\n(A)は every Friday for the past year と矛盾。(C)は「いつもパスタ」とはあっても、先週何を頼んだかは書かれていません——本文にない決めつけは、推測問題では不正解です。",
+  "prompt_ja": "本文の事実から「一歩だけ」進んだ結論を選びましょう。"
+ },
+ {
+  "screen_id": "81965727-7dae-43da-b187-e3a919c02158",
+  "lesson": "toeic-p7-not-inference",
+  "order": 7,
+  "explanation_ja": "予約方法は online ／ by phone ／ at the front desk の3つが列挙されています。email はありません。\n\nA, B, or C のような列挙を見つけたら、選択肢との照合は一瞬で終わります。NOT問題は「列挙箇所を探す」と速い——覚えておいて損はないコツです。",
+  "prompt_ja": "列挙（A, B, or C）を見つけると照合が速くなります。"
+ },
+ {
+  "screen_id": "c22ae51d-fe8f-43b9-bdff-0c90e2b786b7",
+  "lesson": "toeic-p7-not-inference",
+  "order": 8,
+  "title_ja": "まとめ：消し込みと一歩の推測",
+  "body_ja": "・NOT問題は選択肢を先に読み、本文と照合して消し込む。残った1つが正解\n\n・言い換え（complimentary ＝ free）を見抜きながら消す\n\n・推測問題は本文の事実から「一歩だけ」進んだ結論を選ぶ\n\n・常識や想像で補わない。根拠は常に本文\n\n最終レッスンは、2つの文書を組み合わせて解くダブルパッセージです。"
+ },
+ {
+  "screen_id": "5e0938c1-d689-4c4f-9617-0dc10c1d9db4",
+  "lesson": "toeic-p7-double-passage",
+  "order": 0,
+  "title_ja": "答えは2つの文書をまたいで",
+  "body_ja": "Part 7の後半には、2つ（または3つ）の文書を読んで答えるセットが登場します。メール＋予定表、広告＋申込書といった組み合わせです。\n\n最大の特徴は、5問中1〜2問が「両方の文書を見ないと解けない」クロス問題だということ。\n\nたとえば、予定表に「火曜の講師：Hill先生」、メールに「火曜に参加します」とあれば、「この人の講師はHill先生」という答えは、2つの文書を組み合わせて初めて出てきます。\n\n片方の文書だけで選ぶと、もっともらしい不正解にきれいにはまる——そういう作りになっています。"
+ },
+ {
+  "screen_id": "04168192-44fb-4aac-bd8b-610542ed5226",
+  "lesson": "toeic-p7-double-passage",
+  "order": 1,
+  "title_ja": "文書の役割分担をつかむ",
+  "body_ja": "攻略の第一歩は、各文書の役割を10秒でつかむこと。\n\n・文書1が広告なら「条件・料金・日程」の倉庫\n・文書2がメールなら「個別の事情・変更・依頼」が書いてある\n\nクロス問題は決まって、文書2の具体的な人や日付を、文書1の表や条件に当てはめる形になります。\n\n解く手順：①設問の固有名詞・日付をマーク → ②まずそれが載っている文書を見る → ③出てきた条件をもう一方の文書で確認。往復は1回で済ませるのが理想です。"
+ },
+ {
+  "screen_id": "40ee5c43-721d-4872-8937-33c3c13d123c",
+  "lesson": "toeic-p7-double-passage",
+  "order": 2,
+  "explanation_ja": "メール（文書2）から「月・金は不可」「残りのうちアートの講座を選ぶ」とわかります。火曜の水彩画と木曜の写真のうち、アートと呼べるのは水彩画。予定表（文書1）で火曜の講師を見ると P. Novak です。\n\nメール → 予定表の1往復で解く、典型的なクロス問題でした。",
+  "prompt_ja": "2つの文書を組み合わせて答えましょう。"
+ },
+ {
+  "screen_id": "e0e3c414-a466-467c-ad79-94b94ace1f5a",
+  "lesson": "toeic-p7-double-passage",
+  "order": 3,
+  "explanation_ja": "これは文書2だけで解ける問題。I work until 6 P.M. on Mondays and Fridays が根拠で、works until the evening と言い換えられています。\n\nダブルパッセージでも全問がクロスではありません。「この設問はどちらの文書か」を見極めるだけで、読む量がぐっと減ります。",
+  "prompt_ja": "今度は片方の文書だけで解ける問題です。"
+ },
+ {
+  "screen_id": "53ca6fe3-4bcf-420a-8672-42a54251b0df",
+  "lesson": "toeic-p7-double-passage",
+  "order": 4,
+  "title_ja": "クロス問題のサイン",
+  "body_ja": "どの設問がクロス問題かは、ある程度予測できます。\n\nクロスになりやすい設問：\n・特定の人が「いくら払うか」（料金表 × その人の条件）\n・「いつ・どこで会うか」（予定表 × 変更メール）\n・most likely を含む設問\n\n特に注意したいのが変更・例外の情報。文書2のメールに「火曜は休講になりました」とあれば、文書1の予定表をそのまま信じた選択肢はワナです。\n\n新しい情報が古い情報に勝つ——ダブルパッセージの鉄則です。"
+ },
+ {
+  "screen_id": "e53e76ad-41b7-4ca3-8c44-1048f810f181",
+  "lesson": "toeic-p7-double-passage",
+  "order": 5,
+  "explanation_ja": "窓14枚 → Large house $120（文書1）。土曜希望 → ＋$10。初回利用 → −$15。120＋10−15＝$115 です。\n\n料金のクロス問題は「基本料金 → 加算 → 割引」の順に文書2の条件を当てはめれば確実。(C)の$120は、割引と週末料金を見落とした人へのワナです。",
+  "prompt_ja": "「基本料金 → 加算 → 割引」の順に当てはめましょう。"
+ },
+ {
+  "screen_id": "32e16e9b-469d-4832-aea2-5108b0b8cd10",
+  "lesson": "toeic-p7-double-passage",
+  "order": 6,
+  "explanation_ja": "文書2の Notes に This is my first time using your service とあります。正解(D)はそれを has never used ... before と言い換えたもの。(A)はその正反対です。\n\nindicated 型の設問は、根拠の一文を見つけて言い換えを確認するだけ——落ち着いて取りましょう。",
+  "prompt_ja": "根拠の一文を見つけて、言い換えを確認しましょう。"
+ },
+ {
+  "screen_id": "9c857344-74f5-42f1-b1eb-b7c0689ad356",
+  "lesson": "toeic-p7-double-passage",
+  "order": 7,
+  "explanation_ja": "文書2の Preferred day: Saturday と、文書1の Weekend appointments: additional $10 を結びつける問題です。土曜＝週末なので追加料金が発生します。\n\n「土曜 → 週末」のような一段ざっくりした言い換えも、クロス問題の定番です。",
+  "prompt_ja": "2つの文書を結びつけて、空所を英語1語で埋めてください。"
+ },
+ {
+  "screen_id": "f7d260b7-eca8-4a77-88bf-08aef725a45b",
+  "lesson": "toeic-p7-double-passage",
+  "order": 8,
+  "title_ja": "まとめ：1往復で仕留める",
+  "body_ja": "・ダブルパッセージは5問中1〜2問がクロス問題\n\n・手順：設問の固有名詞・数字 → まず片方の文書 → 条件をもう一方で確認\n\n・料金問題は「基本 → 加算 → 割引」の順に当てはめる\n\n・変更・例外の情報（メール側）が、表や広告の情報に勝つ\n\nこれで全12レッスン完了です。学んだパターンを武器に、模試で腕試ししましょう。"
+ },
+ {
+  "screen_id": "c851ca1a-9331-4db1-b2cf-e07f95466a29",
+  "lesson": "ielts-listening-numbers",
+  "order": 0,
+  "explanation_ja": "double N は「Nを2回」という意味。T-A-N-N-E-R で Tanner です。\n\nIELTSリスニングのSection 1では、名前のスペルがほぼ必ず読み上げられます。最初の関門がこの double。「double＋文字」と聞こえたら、その文字を2回書く——今日はこのフォーム記入を徹底的に練習します。\n\nなお、スペルミスは容赦なく0点。Taner でも Tannar でも不正解です。",
+  "prompt_ja": "まずは1問。音声を聞いて、フォームに記入してください。"
+ },
+ {
+  "screen_id": "cbc7d155-a430-4eef-a185-c750382af93a",
+  "lesson": "ielts-listening-numbers",
+  "order": 1,
+  "title_ja": "フォーム記入は「予測」が9割",
+  "body_ja": "Section 1は、電話での問い合わせや申し込みを聞いてフォームを埋める形式。音声は一度しか流れません。\n\nだから音声が始まる前に、フォームの空所をざっと見て「何が入るか」を予測しておきます。Surname なら名前のスペル、£ マークなら金額、Date なら日付。予測ができていれば、その瞬間だけ全集中すればいい。\n\nもうひとつ大事なのが指示文。Write ONE WORD AND/OR A NUMBER とあれば、2語書いた時点で不正解です。内容が合っていても、です。"
+ },
+ {
+  "screen_id": "0176854d-95b1-409a-b656-aeda0c74277c",
+  "lesson": "ielts-listening-numbers",
+  "order": 2,
+  "explanation_ja": "double S なので M-O-S-S-L-E-Y、Mossley です。\n\ndouble は本番の音声でも本当によく出ます。アルファベットを聞き取るときは、頭の中で1文字ずつ「書きながら」聞くのがコツ。聞き終わってから思い出そうとすると、たいてい1文字抜けます。",
+  "prompt_ja": "音声を聞いて、フォームに記入してください。"
+ },
+ {
+  "screen_id": "aee1c102-b178-406d-b127-75fd38e21804",
+  "lesson": "ielts-listening-numbers",
+  "order": 3,
+  "title_ja": "最大の聞き分け：15と50",
+  "body_ja": "数字の聞き取りで一番落とされるのが、-teen と -ty の区別です。fifteen（15）と fifty（50）、thirteen（13）と thirty（30）。\n\n聞き分けのポイントは2つ。\n\n①アクセント：-teen は後ろ（fifTEEN）、-ty は前（FIFty）にアクセント。\n\n②語尾：-teen は「ティーン」とはっきり伸び、-ty は「ティ」と短く落ちます。\n\nそして実は、話し手自身が間違いを防ごうとして “fifteen — that’s one five” のように数字を1桁ずつ言い直してくれることが多い。この確認が聞こえたら、必ずそちらを採用しましょう。"
+ },
+ {
+  "screen_id": "6e848c4e-a71e-4c6b-af7c-fc6cb2dc8a79",
+  "lesson": "ielts-listening-numbers",
+  "order": 4,
+  "explanation_ja": "FIFty（前アクセント）、そして決定打は five zero という1桁ずつの確認。50ポンドです。\n\n15と迷ったら、確認の言い直しを待つ。Section 1の話し手は親切なので、大事な数字はたいてい2回言ってくれます。",
+  "prompt_ja": "音声を聞いて、フォームに記入してください。"
+ },
+ {
+  "screen_id": "c6959473-b0b6-4f7f-9049-f0865ec52722",
+  "lesson": "ielts-listening-numbers",
+  "order": 5,
+  "explanation_ja": "thirTEEN（後ろアクセント）＋ one three の確認で、13週間です。\n\n30と書いた人は、-ty と -teen の聞き分けをもう一度。「アクセントが後ろなら -teen」と体に覚えさせましょう。",
+  "prompt_ja": "音声を聞いて、フォームに記入してください。"
+ },
+ {
+  "screen_id": "221cd0a6-65e8-40f2-b1b7-5566a40e8a1b",
+  "lesson": "ielts-listening-numbers",
+  "order": 6,
+  "title_ja": "電話番号・値段・日付の読み上げルール",
+  "body_ja": "数字には独特の読み上げ方があります。知っているだけで聞き取れるようになるので、ここでまとめて覚えましょう。\n\n・電話番号：0 は oh（オウ）、同じ数字の連続は double（double four ＝ 44）\n\n・値段：nineteen ninety-nine ＝ £19.99。ポンドとペンスを分けて読みます\n\n・日付：the twenty-first of June ＝ 21 June。書くときは数字でOK\n\n・時刻：half past six ＝ 6.30、quarter to five ＝ 4.45\n\nhalf past six を「6時半」と理解できても、フォームに 6.30 と書けなければ得点になりません。「聞く→数字に変換して書く」まででワンセットです。"
+ },
+ {
+  "screen_id": "0a0da7d8-2fa7-4eb6-8e9e-ea20042e1d49",
+  "lesson": "ielts-listening-numbers",
+  "order": 7,
+  "explanation_ja": "oh ＝ 0、double three ＝ 33。つなげると 077 33 096 です。\n\n電話番号は long なので、聞きながらそのまま書き取るのが鉄則。「oh は 0」「double は2回」の2つの変換さえ反射でできれば、電話番号は得点源になります。",
+  "prompt_ja": "音声を聞いて、フォームに記入してください。"
+ },
+ {
+  "screen_id": "a3cd312e-647a-48cb-b1a8-e06899df46b1",
+  "lesson": "ielts-listening-numbers",
+  "order": 8,
+  "explanation_ja": "最初に出た thirtieth（30日）は変更され、最終合意は thirteenth（13日）。-ty と -teen の聞き分けに加えて、「最初に聞こえた数字が答えとは限らない」という大事なワナが入っていました。\n\n会話は最後まで聞いて、確定した情報だけをフォームへ。この「訂正のワナ」は、次の次のレッスンでがっつり攻略します。",
+  "prompt_ja": "音声を聞いて、フォームに記入してください。最後まで聞いてから書くこと。"
+ },
+ {
+  "screen_id": "f39503da-fe8e-4958-914a-390a15e5a14d",
+  "lesson": "ielts-listening-numbers",
+  "order": 9,
+  "title_ja": "まとめ：書けて初めて1点",
+  "body_ja": "・音声の前にフォームを見て、空所に入る情報の種類を予測する\n\n・double＋文字 ＝ その文字を2回。スペルは1文字ずつ書きながら聞く\n\n・-teen は後ろ、-ty は前にアクセント。1桁ずつの確認（one five）が決定打\n\n・oh ＝ 0、half past six ＝ 6.30。読み上げルールを数字に変換して書く\n\n・スペルミス・語数オーバーは内容が合っていても0点\n\n次のレッスンでは、リスニング最大の仕掛け「言い換え」を攻略します。"
+ },
+ {
+  "screen_id": "6d1693e2-ce84-4c66-bf8b-f275366c07c6",
+  "lesson": "ielts-listening-paraphrase",
+  "order": 0,
+  "title_ja": "音声は、設問の単語を使わない",
+  "body_ja": "IELTSリスニングには、意地悪なほど徹底したルールがあります。設問に書いてある単語は、音声ではまず使われない。\n\n設問が free（無料）と聞いていれば、音声は costs nothing（お金がかからない）と言う。設問が weekly なら、音声は every seven days と言う。\n\nつまり、設問の単語が聞こえてくるのを待っていると、答えの瞬間を素通りしてしまうんです。\n\n対策はひとつ。設問を読んだら「これは音声でどう言い換えられるか」を先に想像しておく。今日はその変換力を鍛えます。"
+ },
+ {
+  "screen_id": "6da6eae7-74d5-4eb8-b5b3-edfeafc0ccae",
+  "lesson": "ielts-listening-paraphrase",
+  "order": 1,
+  "explanation_ja": "設問の free of charge は、音声では costs nothing と言い換えられています。この変換に気づければ、答えは Monday evenings しかありません。\n\n「free という単語が聞こえなかったから答えがわからなかった」——これがリスニングで最も多い失点パターン。単語ではなく意味を待ち伏せしましょう。",
+  "prompt_ja": "ミニ音声を聞いて、設問に答えてください。"
+ },
+ {
+  "screen_id": "638e3b49-f4bd-462d-9c9d-0e7ecfa44be3",
+  "lesson": "ielts-listening-paraphrase",
+  "order": 2,
+  "title_ja": "言い換えの定番ペアを貯金する",
+  "body_ja": "言い換えには「よく出るペア」があります。出会うたびに貯金していきましょう。まずはこの基本セットから。\n\n・costs nothing ／ at no charge → free\n\n・not until Thursday → later in the week（木曜より前ではない＝週の後半）\n\n・book in advance → reserve early\n\n・nearly all ／ the vast majority → most\n\n・once a month → monthly\n\nコツは、設問を読んだ瞬間に「自分ならこの内容を別の英語でどう言うか」と考えること。その候補が音声で流れたら、そこが答えです。"
+ },
+ {
+  "screen_id": "c5fe8795-e5e8-4d55-ad24-eb67739caf20",
+  "lesson": "ielts-listening-paraphrase",
+  "order": 3,
+  "explanation_ja": "not until the end of April（4月末までは開かない）は、言い換えると「春の後半に再開する」。won’t … until 〜 は「〜になってやっと」という意味で、closed forever ではありません。\n\nnot until は時間系の言い換えで最頻出。「までは〜ない」＝「その時点でようやく」と変換できるようにしておきましょう。",
+  "prompt_ja": "ミニ音声を聞いて、内容に合う選択肢を選んでください。"
+ },
+ {
+  "screen_id": "421437e9-edf6-43fa-bd13-e82c6ea507d1",
+  "lesson": "ielts-listening-paraphrase",
+  "order": 4,
+  "explanation_ja": "provided at no extra charge（追加料金なしで提供）＝ included in the price（料金に含まれる）。lunch → meal という上位語への言い換えも入っています。\n\n「無料」系の表現は free ／ at no charge ／ at no cost ／ complimentary ／ included と仲間が多いので、まとめて1つの意味として覚えてしまいましょう。",
+  "prompt_ja": "ミニ音声を聞いて、設問に答えてください。"
+ },
+ {
+  "screen_id": "9c572c08-9d6e-49dc-a7b1-46bff88710b9",
+  "lesson": "ielts-listening-paraphrase",
+  "order": 5,
+  "explanation_ja": "bring forward は「予定を前倒しする」。つまり講演は予定より早く行われます。正解は earlier（または sooner）。\n\n反対は push back ／ put off（延期する）→ later ／ postponed。前倒しと延期のペアはリスニングでもリーディングでも繰り返し出ます。",
+  "prompt_ja": "言い換えを完成させてください。"
+ },
+ {
+  "screen_id": "f416bb8c-0859-464f-b000-ad1af4e3ecd8",
+  "lesson": "ielts-listening-paraphrase",
+  "order": 6,
+  "explanation_ja": "early booking（早めの予約）→ reserve in advance（事前に予約する）。book と reserve は試験の最重要言い換えペアのひとつです。\n\n(B)は early という単語だけ拾うと選んでしまうワナ。「早く来る」ではなく「早く予約する」です。単語の一致ではなく、文の意味で選びましょう。",
+  "prompt_ja": "ミニ音声を聞いて、設問に答えてください。"
+ },
+ {
+  "screen_id": "80c40aa8-e723-466f-adcf-2a1b5bd714d1",
+  "lesson": "ielts-listening-paraphrase",
+  "order": 7,
+  "explanation_ja": "must be accompanied by an adult（大人の同伴が必要）＝ cannot visit on their own（一人では来られない）。肯定文と否定文をひっくり返した言い換えです。\n\n(C)は welcome（歓迎します）と矛盾。料金の話(A)はそもそも出ていません。「同伴必須」＝「単独不可」の裏返し変換、これも頻出です。",
+  "prompt_ja": "ミニ音声を聞いて、設問に答えてください。"
+ },
+ {
+  "screen_id": "74edb3fa-b4cf-436c-906a-f29a21f3ea95",
+  "lesson": "ielts-listening-paraphrase",
+  "order": 8,
+  "title_ja": "まとめ：単語ではなく意味を待ち伏せる",
+  "body_ja": "・設問の単語は音声ではまず使われない。聞こえるのは言い換え\n\n・設問を読んだら「別の英語でどう言うか」を先に想像する\n\n・定番ペアを貯金：costs nothing→free、not until→later、book→reserve\n\n・肯定⇔否定の裏返し（同伴必須＝単独不可）にも慣れる\n\n次は、選択肢が全部聞こえてくる「選択肢の罠」を攻略します。"
+ },
+ {
+  "screen_id": "cc23bbad-2069-498a-a15b-54d8e8688b82",
+  "lesson": "ielts-listening-option-traps",
+  "order": 0,
+  "explanation_ja": "2時、4時、3時——選択肢の時刻が全部会話に出てきましたね。これがIELTSの選択問題の作り方です。最初の提案（2時）も対案（4時）も退けられ、最後に合意したのは3時。\n\n「聞こえた＝正解」がまったく通用しない世界へようこそ。会話は最後まで聞いて、合意した内容だけを採用します。",
+  "prompt_ja": "まずは1問。会話を最後まで聞いてから答えてください。"
+ },
+ {
+  "screen_id": "f368d8d7-512d-489c-b568-069d73611a52",
+  "lesson": "ielts-listening-option-traps",
+  "order": 1,
+  "title_ja": "全部の選択肢が「聞こえてくる」",
+  "body_ja": "IELTSの選択問題・マッチング問題には設計思想があります。不正解の選択肢も、音声の中で必ず一度は触れられる。\n\nだから「この単語、聞こえた！」は何の根拠にもなりません。むしろ全選択肢が聞こえてくる前提で構えてください。\n\n勝負を分けるのは、それぞれの選択肢が どう言及されたか です。\n\n・提案されたが断られた\n・去年はそうだった（今年は違う）\n・別の人の話だった\n\n音声を聞きながら、選択肢に「出たけど却下」のバツ印をつけていく感覚。最後まで残ったものが答えです。"
+ },
+ {
+  "screen_id": "961a0b32-d64a-4915-87a7-54be5b32091d",
+  "lesson": "ielts-listening-option-traps",
+  "order": 2,
+  "explanation_ja": "Oak Room は狭すぎて却下、Cedar Room は予約済みで却下、残った Garden Room で決定。3部屋とも名前が聞こえる、典型的な消去レースです。\n\n各部屋が「なぜダメだったか」まで追えていれば確実。理由（狭い・埋まっている）とセットでバツをつけましょう。",
+  "prompt_ja": "会話を最後まで聞いてから答えてください。"
+ },
+ {
+  "screen_id": "f5adc18e-bb56-4b53-b1f0-75eb478ec711",
+  "lesson": "ielts-listening-option-traps",
+  "order": 3,
+  "title_ja": "訂正のサイン：Actually が出たら身構える",
+  "body_ja": "選択肢の罠の最終形態が、話し手自身による訂正です。一度決まりかけた内容が、最後の最後でひっくり返る。\n\n“Let’s meet at two… actually, could we make it three? I just remembered a call.”\n\nこの actually 以降がすべてです。訂正のサインを覚えておきましょう。\n\n・Actually… ／ On second thought…（やっぱり）\n・Oh wait ／ Sorry, my mistake（あ、間違えた）\n・Let’s make it 〜（〜に変更しよう）\n\nサインが聞こえたら、直前にメモした答えを消す準備を。最後に話した人の発言が勝つ、と覚えてください。"
+ },
+ {
+  "screen_id": "d07c931d-f476-4dc3-b9fb-0f9b9c2f3cab",
+  "lesson": "ielts-listening-option-traps",
+  "order": 4,
+  "explanation_ja": "金曜は配達不可、水曜は客が不在、最終合意は木曜。今回も3つの曜日が全部聞こえました。\n\n配達日・集合時間・締切などの「日時の交渉」は、Section 1の超定番。最初の希望日が通ることはまずない、くらいに構えておくとちょうどいいです。",
+  "prompt_ja": "会話を最後まで聞いてから答えてください。"
+ },
+ {
+  "screen_id": "437000db-06f9-4c87-9a51-45de57d21ccc",
+  "lesson": "ielts-listening-option-traps",
+  "order": 5,
+  "explanation_ja": "最初の提案はコーヒーメーカーでしたが、男性が水のサーバーを対案として出し、女性が That’s true … Let’s order one. と乗りました。one ＝ a water cooler です。\n\n決め手は、提案そのものではなく相手の反応。賛成（That’s true ／ Good idea ／ Let’s do that）が付いた提案だけが生き残ります。",
+  "prompt_ja": "会話を最後まで聞いてから答えてください。"
+ },
+ {
+  "screen_id": "0fb4fb93-46c4-4ac4-b306-146489f4ef53",
+  "lesson": "ielts-listening-option-traps",
+  "order": 6,
+  "explanation_ja": "sorry, my mistake のあとに出た 309 が確定情報です。最初の 306 をメモしていたら、すぐ書き直す。\n\n数字の訂正は、フォーム記入問題と選択問題の両方で出ます。「訂正のサイン → 直後の情報で上書き」の反射を作っておきましょう。",
+  "prompt_ja": "音声を聞いて、最終的に確定した番号を書いてください。"
+ },
+ {
+  "screen_id": "01267c92-8045-4650-b4b8-ec2edd3176db",
+  "lesson": "ielts-listening-option-traps",
+  "order": 7,
+  "explanation_ja": "last year … but this year の対比がすべて。去年の場所（main tent）はワナとして置かれ、今年は riverside area です。\n\n「以前は／今年は」「昔は／今は」の対比は、マッチング問題の不正解づくりの定番。設問が聞いているのは どの時点の話か、を常に確認しましょう。",
+  "prompt_ja": "音声を聞いて、設問に答えてください。"
+ },
+ {
+  "screen_id": "e20b1d89-8cc6-497d-b0f3-22e5b2b00593",
+  "lesson": "ielts-listening-option-traps",
+  "order": 8,
+  "title_ja": "まとめ：最後に残ったものが答え",
+  "body_ja": "・不正解の選択肢も必ず音声に登場する。「聞こえた」は根拠にならない\n\n・選択肢に「出たけど却下」のバツ印をつけながら聞く\n\n・Actually ／ my mistake ／ Let’s make it 〜 は訂正のサイン。直後の情報で上書き\n\n・提案は相手の賛成（Good idea ／ Let’s do that）が付いて初めて確定\n\n・last year ／ this year の対比にも注意\n\nリスニング攻略はここまで。次のレベルはリーディング、まずは最重要のTrue/False/Not Givenです。"
+ },
+ {
+  "screen_id": "9c896b31-b858-41c8-9c5f-60262686e704",
+  "lesson": "ielts-reading-tfng",
+  "order": 0,
+  "explanation_ja": "20年も働いているなら、きっと仕事が好きなはず——そう考えてTrueを選びましたか？それこそが出題者の狙いです。\n\n本文にあるのは「20年以上働いている」「郷土史コレクションの担当」という事実だけ。楽しんでいるかどうかは一言も書かれていません。書いていない→Not Given。\n\n常識的に「たぶんそうだろう」と思える内容ほどNot Givenになる——これがTFNG最大のワナであり、このレッスンの核心です。",
+  "prompt_ja": "まずは1問。直感で答えてみてください。"
+ },
+ {
+  "screen_id": "940ee317-bdb6-4f9c-a86a-16eebbc642b4",
+  "lesson": "ielts-reading-tfng",
+  "order": 1,
+  "title_ja": "3つの問いを、この順番で",
+  "body_ja": "True/False/Not Givenは、毎回同じ手順で機械的に判定します。\n\n①本文は、設問と同じことを言っているか？\n→ 言っている（言い換えで一致）なら True\n\n②本文は、設問と逆のことを言っているか？\n→ 矛盾しているなら False\n\n③どちらでもない？\n→ 本文がその件について沈黙しているなら Not Given\n\n大事なのは、判定の材料は本文の文だけということ。あなたの知識・経験・常識は、この問題では一切使ってはいけません。「本文のどの文が根拠？」と自分に聞いて、指させなければNot Givenです。"
+ },
+ {
+  "screen_id": "3fabd4ab-7c71-4deb-9621-9f60df91bdf9",
+  "lesson": "ielts-reading-tfng",
+  "order": 2,
+  "explanation_ja": "free entry → without paying、the first Sunday of every month → once a month。単語は違いますが、意味は完全に一致しています。だからTrue。\n\nTrueの根拠は、リスニングで学んだのと同じ言い換えで書かれています。「同じ単語がないからNot Given」としないこと。意味の一致を確認しましょう。",
+  "prompt_ja": "手順どおりに判定してください。根拠の文を指させますか？"
+ },
+ {
+  "screen_id": "d9b89d3f-f0c1-46b2-8f67-3ff7d9219999",
+  "lesson": "ielts-reading-tfng",
+  "order": 3,
+  "explanation_ja": "本文は「冬の間は閉鎖」、設問は「一年中使える」。真っ向から矛盾しているのでFalseです。\n\nFalseと言えるのは、このように本文が設問の逆を明言しているときだけ。「本文を読むと設問が成り立たない」と根拠の文を指させることが条件です。",
+  "prompt_ja": "手順どおりに判定してください。"
+ },
+ {
+  "screen_id": "53f4cd86-4ed3-4213-b2d1-676b6f62df33",
+  "lesson": "ielts-reading-tfng",
+  "order": 4,
+  "title_ja": "Not Given ≠「たぶん本当」",
+  "body_ja": "FalseとNot Givenの区別こそ、このタイプの最難関です。\n\n・False ＝ 本文が設問の逆を言っている\n・Not Given ＝ 本文がその件に触れていない\n\n「もっともらしいかどうか」は関係ありません。現実世界でほぼ確実に正しいことでも、本文に書いていなければNot Given。逆に、明らかに変な内容でも、本文が触れていなければFalseではなくNot Givenです。\n\n出題者の典型パターンは、本文の話題に理由・感情・比較をこっそり足すこと。「人気がある→だから増設した？」「長く働いている→だから好き？」——足された部分が本文にあるか、必ず確認してください。"
+ },
+ {
+  "screen_id": "f35418b9-7546-4ffc-ae10-16c5fe59fb38",
+  "lesson": "ielts-reading-tfng",
+  "order": 5,
+  "explanation_ja": "本文にあるのは「2019年に開始」「病院職員に人気」という2つの事実。設問はそこに「職員の要望で始まった」という因果関係を足しています。導入の理由は本文のどこにも書かれていません→Not Given。\n\n人気だから要望があったはず、は常識による飛躍。話題が重なっていても、主張そのものが書かれていなければNot Givenです。",
+  "prompt_ja": "設問が本文に何かを「足して」いないか確認しましょう。"
+ },
+ {
+  "screen_id": "8f97f4fd-db5c-4241-8333-fd8a82fd9efb",
+  "lesson": "ielts-reading-tfng",
+  "order": 6,
+  "explanation_ja": "本文は most（大半）、設問は every（すべて）。「大半にある」は「すべてにある」と両立しません——mostは「バルコニーのない部屋もある」ことを含むからです。よってFalse。\n\nevery ／ all ／ only ／ never のような極端な言葉は、TFNGの定番の仕掛け。設問に見つけたら、本文の表現と強さを比べてください。",
+  "prompt_ja": "設問の「強い言葉」に注目してください。"
+ },
+ {
+  "screen_id": "1d72aba2-85cc-426d-8d36-dc35f55615da",
+  "lesson": "ielts-reading-tfng",
+  "order": 7,
+  "explanation_ja": "「自転車を降りて押して通ること」は、裏返せば「乗ったまま通ってはいけない」。肯定の指示と否定の禁止、形は違っても意味は一致するのでTrueです。\n\nリスニングのレッスンでやった裏返し変換（同伴必須＝単独不可）と同じ技がここでも使えます。",
+  "prompt_ja": "言い換えに注意して判定してください。"
+ },
+ {
+  "screen_id": "bf32737e-339c-4b17-a638-feff6fddd3d5",
+  "lesson": "ielts-reading-tfng",
+  "order": 8,
+  "explanation_ja": "本文にあるのは曜日とレシピ冊子の話だけ。誰が教えるかは一切書かれていません→Not Given。\n\n料理学校ならプロの講師がいそう——その「ありそう感」がワナです。指させる根拠ゼロ＝Not Given。この基準を最後まで貫けるかが、TFNGのスコアを決めます。",
+  "prompt_ja": "最後の1問。根拠の文を指させますか？"
+ },
+ {
+  "screen_id": "6369e5ea-0d3b-4859-9c2f-6e8862d69c21",
+  "lesson": "ielts-reading-tfng",
+  "order": 9,
+  "title_ja": "まとめ：指させなければNot Given",
+  "body_ja": "・判定は3段階：一致→True、矛盾→False、書いていない→Not Given\n\n・根拠は本文の文だけ。常識・知識・「ありそう感」は禁止\n\n・設問が理由・感情・因果を「足して」いたらNot Givenを疑う\n\n・every ／ all ／ only などの極端な言葉は本文と強さを比較\n\n・Trueは言い換えで隠されている。単語ではなく意味で照合\n\n次のレッスンは、段落と見出しを結びつけるマッチング問題です。"
+ },
+ {
+  "screen_id": "b540cd9a-b458-4488-99ae-5ebaac715038",
+  "lesson": "ielts-reading-headings",
+  "order": 0,
+  "title_ja": "見出しは段落の「主役」を言い当てる",
+  "body_ja": "見出しマッチングは、段落のリストと見出しのリストを正しく結びつける問題。一見シンプルですが、正答率は低めです。\n\n理由ははっきりしています。不正解の見出しが、段落の中の1つの詳細とは一致するように作られているから。\n\n段落には主役（段落全体を貫くテーマ）と脇役（例・データ・補足）がいます。見出しが言い当てるべきは主役だけ。脇役に一致する見出しは、どんなに「本文にある」内容でも不正解です。\n\nリスニングの「mentioned ≠ correct」と同じ構図ですね。書いてある ≠ 見出しになる、です。"
+ },
+ {
+  "screen_id": "7f131c28-c140-444a-890d-61bb13ddac20",
+  "lesson": "ielts-reading-headings",
+  "order": 1,
+  "explanation_ja": "アプリの話は確かに本文にあります——でも1文だけ。段落全体を貫いているのは「予想を超える成長」（50万回の利用、ステーション3倍、過去10年で最も成功）です。\n\n(A)のような「1つの詳細だけ拾った見出し」が、このタイプの代表的なワナ。見出し候補が段落の何文をカバーしているか、と考えると見破れます。",
+  "prompt_ja": "段落の「主役」はどれか考えてから、見出しを選んでください。"
+ },
+ {
+  "screen_id": "639653b8-772a-4428-a40f-d36d78ab4c64",
+  "lesson": "ielts-reading-headings",
+  "order": 2,
+  "title_ja": "最初の文と最後の文を読む",
+  "body_ja": "段落の主役は、たいてい決まった場所にいます。\n\n基本は最初の文。英語の段落は「主題文→裏付け」の順で書かれることが多いからです。まず第1文を読み、見出し候補と照らす。\n\nただし例外があります。第1文が問いかけや具体例で始まる「つかみ」型の段落では、主役は最後の文で種明かしされることが多い。\n\nおすすめの手順：①第1文を読む → ②ピンとくる見出しがあれば仮置き → ③最終文で確認。中間の文は、候補が2つに絞れて迷ったときだけ精読すれば十分です。"
+ },
+ {
+  "screen_id": "dbc2f5cb-d568-4d03-af73-221fa0117b7a",
+  "lesson": "ielts-reading-headings",
+  "order": 3,
+  "explanation_ja": "第1文「在宅勤務が地域の使われ方を変えた」がそのまま主題文で、カフェ・商店・ジムはすべてその具体例です。\n\n(B)はカフェの客はむしろ増えているので本文と逆、(C)はジムという脇役を主役に昇格させたワナ。主題文がきれいに最初に来る、いちばん素直なパターンでした。",
+  "prompt_ja": "第1文に注目して、見出しを選んでください。"
+ },
+ {
+  "screen_id": "698a49eb-f528-449d-b382-737c8489a1f0",
+  "lesson": "ielts-reading-headings",
+  "order": 4,
+  "explanation_ja": "第1文は問いかけの「つかみ」で、主役は最終文 even the most ordinary machines once had a human doing their job に出てきます。knocker-up はその実例です。\n\n(A)は広すぎ（産業時代の生活全般の話ではない）、(B)は本文にない話。つかみ型の段落では、最後の文が見出しの答えを持っています。",
+  "prompt_ja": "第1文が「つかみ」のときは、最後の文を確認しましょう。"
+ },
+ {
+  "screen_id": "2b52e418-7c42-4c6f-86f4-adae2285ec8a",
+  "lesson": "ielts-reading-headings",
+  "order": 5,
+  "title_ja": "ワナ見出しの3類型",
+  "body_ja": "不正解の見出しは、だいたい3種類に分類できます。\n\n①詳細型：段落内の1文・1例とだけ一致する（最多のワナ）\n\n②広すぎ型：段落を含むけれど、章全体・分野全体レベルに大きすぎる\n\n③逆向き型：段落のテーマは合っているが、方向が逆（増えた⇔減った、利点⇔欠点）\n\n見出しを選んだら、最後にこのチェックを。「この見出しは、段落のほぼ全部の文をカバーしているか？大きすぎないか？方向は合っているか？」\n\n3つのYesがそろえば確定です。"
+ },
+ {
+  "screen_id": "c69e1191-083f-4234-bc51-5052a6f619a1",
+  "lesson": "ielts-reading-headings",
+  "order": 6,
+  "explanation_ja": "段落全体を貫くのは「リサイクルには限界・格差がある」という話。第1文 Not all plastic recycling is equal がそのまま予告しています。\n\n(A)はベンチという1例を主役にした詳細型のワナ、(C)は本文にない話題。limits という言葉が、ボトル⇔ダウンサイクルの対比と最終文の rarely recycled again をきれいにカバーします。",
+  "prompt_ja": "3つのチェック（カバー率・サイズ・方向）で選んでください。"
+ },
+ {
+  "screen_id": "291563fd-f39a-4534-a2fb-2e68f10077c7",
+  "lesson": "ielts-reading-headings",
+  "order": 7,
+  "explanation_ja": "第1文で「3年の閉鎖を経て再開」、中間で修復の中身、最終文で「チケットが年間目標を2週間で突破」＝成功。見出し(A)は再開・修復・成功の3要素をすべてカバーします。\n\n(B)は方向が逆（衰退ではなく復活）、(C)は本文にない話。チェック3つ——カバー率・サイズ・方向——が全部Yesになるのは(A)だけです。",
+  "prompt_ja": "仕上げの1問。手順どおりに：第1文 → 仮置き → 最終文で確認。"
+ },
+ {
+  "screen_id": "ad89dacf-c323-4fb6-bfb7-016b20d487cd",
+  "lesson": "ielts-reading-headings",
+  "order": 8,
+  "title_ja": "まとめ：主役にだけ見出しを",
+  "body_ja": "・見出しは段落の主役（全体を貫くテーマ）を言い当てる\n\n・1つの詳細と一致するだけの見出しは最多のワナ\n\n・第1文を読む → 仮置き → 最終文で確認。つかみ型は最終文に主役\n\n・最終チェック：カバー率・サイズ・方向\n\n次は、語数制限との戦い——空所補充と要約完成です。"
+ },
+ {
+  "screen_id": "8c4ce9b1-1030-40f8-adc3-7d79548a6aae",
+  "lesson": "ielts-reading-completion",
+  "order": 0,
+  "explanation_ja": "NO MORE THAN TWO WORDS（2語以内）なので、3語の (A) はその時点で0点。内容が完璧でも、です。(C) は語数こそ2語…ではなく3語ですし、本文の表現を勝手に組み替えています。\n\n正解は本文の言葉をそのまま2語に収めた information desk。語数制限は「努力目標」ではなく絶対ルール——これが空所補充の第一歩です。",
+  "prompt_ja": "まずは1問。語数制限に注意して、満点になる答え方を選んでください。"
+ },
+ {
+  "screen_id": "c570126f-5fd8-4dc6-8de3-26e268bb4bb8",
+  "lesson": "ielts-reading-completion",
+  "order": 1,
+  "title_ja": "語数ルールの読み方",
+  "body_ja": "指示文には数パターンあります。\n\n・ONE WORD ONLY ＝ 1語だけ\n・NO MORE THAN TWO WORDS ＝ 2語以内（1語でもOK）\n・NO MORE THAN TWO WORDS AND/OR A NUMBER ＝ 2語以内＋数字も使える\n\n数え方のルールも決まっています。\n\n・a ／ the などの冠詞も1語と数える\n・ハイフンでつながった語（part-time）は1語\n・数字は 20 と書けば「a number」、twenty と書けば1語\n\nだから迷ったら数字は算用数字で書くのが安全。そして答えを書いたら、指を折って語数を数える——この5秒を惜しまないでください。"
+ },
+ {
+  "screen_id": "c3aca0a6-842d-407f-8fc8-f51a86ce04b5",
+  "lesson": "ielts-reading-completion",
+  "order": 2,
+  "explanation_ja": "本文の on the site of a disused car park（使われなくなった駐車場の跡地に）が根拠。設問の built where 〜 used to be は created on the site of の言い換えです。\n\n答えは本文の言葉そのまま car park。「跡地」の意味を自分の言葉で説明し始めたら、その時点で道を外れています。",
+  "prompt_ja": "2語以内で答えてください（NO MORE THAN TWO WORDS）。"
+ },
+ {
+  "screen_id": "d37fa7ab-02e0-4606-81e3-30bd87ebca54",
+  "lesson": "ielts-reading-completion",
+  "order": 3,
+  "title_ja": "空所の前後が品詞を教えてくれる",
+  "body_ja": "空所補充には、本文を探す前にできる準備があります。空所の前後を見て、入るべき形を決めておくことです。\n\n・a ／ the の直後 → 名詞（かたまり）\n・will ／ must の直後 → 動詞の原形\n・by ／ in ／ at の直後 → 名詞\n・two ／ many の直後 → 複数形の名詞\n\n完成した文は、文法的に正しい英文になるはず。だから候補を入れたら必ず文ごと読み直す。単数・複数のズレ（two photograph ←アウト）は、それだけで失点です。\n\n「形を決めてから探す」と、本文のどの語を抜けばいいかが一気に絞れます。"
+ },
+ {
+  "screen_id": "7bb6ae22-5f6b-40c9-a0cf-9cea791331d7",
+  "lesson": "ielts-reading-completion",
+  "order": 4,
+  "explanation_ja": "will の直後に来られるのは動詞の原形だけ。will open が正解です。\n\nwill opening も will openness も、英文として成立しません。本文に opening という単語が見えても、文法が合わなければ抜き出す語が違うというサイン。空所の前後の文法は、答え探しの最強のフィルターです。",
+  "prompt_ja": "文法的に成立するものを選んでください。"
+ },
+ {
+  "screen_id": "54435146-3df0-4cdd-84db-3ad701b1a09d",
+  "lesson": "ielts-reading-completion",
+  "order": 5,
+  "explanation_ja": "要約文の could not operate in bad weather は、本文の stopped running whenever the weather turned rough の言い換え。その主語にあたるのが passenger ferry です。by のあとなので名詞、2語以内なので ferry か passenger ferry。\n\n要約完成は「本文→要約」の言い換え対応を見つけて、対応箇所から語を抜く問題。探す場所さえ合えば、答えは本文に置いてあります。",
+  "prompt_ja": "要約の空所を、本文の言葉で埋めてください（2語以内）。"
+ },
+ {
+  "screen_id": "0b8239f1-415b-442d-974e-e8cd44038e28",
+  "lesson": "ielts-reading-completion",
+  "order": 6,
+  "explanation_ja": "本文に summer months とあるのだから、それをそのまま使います。(B)や(C)のような「意味は近い自分の言葉」は、空所補充では減点リスクしかありません。\n\nライティングでは言い換えが武器になりますが、空所補充は逆。本文の言葉を、本文のスペルのまま。これが鉄則です。",
+  "prompt_ja": "満点になる答えはどれ？（NO MORE THAN TWO WORDS）"
+ },
+ {
+  "screen_id": "d218b4c9-10c3-4640-a806-a8ffecef965d",
+  "lesson": "ielts-reading-completion",
+  "order": 7,
+  "explanation_ja": "two の直後なので複数形の名詞。本文の two recent photographs から photographs を抜き出します（recent photographs でも2語以内でOK）。\n\nphotograph と単数で書くと、内容が合っていても文法エラーで失点。「形を決める→探す→文ごと読み直す」の3点セット、身につきましたか？",
+  "prompt_ja": "仕上げの1問。形を決めてから本文を探しましょう（2語以内）。"
+ },
+ {
+  "screen_id": "107306a9-a0f1-4b4c-847c-54c5575ccd57",
+  "lesson": "ielts-reading-completion",
+  "order": 8,
+  "title_ja": "まとめ：本文の言葉を、制限内で",
+  "body_ja": "・語数制限は絶対ルール。書いたら指折り数える（冠詞も1語、ハイフン語は1語）\n\n・数字は算用数字で書くのが安全\n\n・空所の前後の文法で、入る形を先に決める\n\n・答えは本文の言葉をそのまま。自分の言い換えは使わない\n\n・入れたら文ごと読み直して、単複と文法を確認\n\nリーディング攻略はここまで。次のレベルはライティング、まずはGT Task 1の手紙からです。"
+ },
+ {
+  "screen_id": "0e8325c7-8c03-4ac3-ab8f-d682b9089966",
+  "lesson": "ielts-writing-letters",
+  "order": 0,
+  "explanation_ja": "相手は知らない人（組織の担当者）なので、フォーマルな手紙。名前を知らない相手への定番の書き出しは Dear Sir or Madam, です。\n\n(A)は友達向け、(C)は建物宛てになってしまいます。GT Task 1の採点では、場面に合った丁寧さ（レジスター）が大きな評価項目。手紙は最初の1行から採点が始まっています。",
+  "prompt_ja": "まずは1問。場面に合う書き出しを選んでください。"
+ },
+ {
+  "screen_id": "32c3ad09-b75f-49a2-8ce5-1ddbd363def6",
+  "lesson": "ielts-writing-letters",
+  "order": 1,
+  "title_ja": "3つのレジスターと、開き・結びのペア",
+  "body_ja": "GT Task 1の手紙は、相手との関係で3種類に分かれます。\n\n①フォーマル（名前を知らない相手：会社・役所など）\nDear Sir or Madam, ↔ Yours faithfully,\n\n②セミフォーマル（名前を知っている、でも親しくはない：大家さん・上司など）\nDear Mr Tanaka, ↔ Yours sincerely,\n\n③インフォーマル（友人・家族）\nDear Ken, ↔ Best wishes, ／ See you soon,\n\n覚え方：名前を知らなければ faithfully、知っていれば sincerely。そして friend に faithfully は使わない。開きと結びはペアで暗記してください。ちぐはぐな組み合わせ（Dear Ken, … Yours faithfully,）は、それだけで減点対象です。"
+ },
+ {
+  "screen_id": "3ba28bf9-8ef6-42f0-a4b1-59a199eb4e58",
+  "lesson": "ielts-writing-letters",
+  "order": 2,
+  "explanation_ja": "Dear Sir or Madam,（名前を知らない）とペアになるのは Yours faithfully, です。\n\nYours sincerely, は Dear Mr Tanaka, のように名前で呼びかけたときの結び。この組み合わせは試験の世界では固定ルールなので、理屈抜きでペアごと覚えるのが早道です。",
+  "prompt_ja": "開きと結びはペアです。"
+ },
+ {
+  "screen_id": "96172cc2-7428-4c4a-8166-32ca341893d6",
+  "lesson": "ielts-writing-letters",
+  "order": 3,
+  "explanation_ja": "友人への手紙はインフォーマル。Thanks a million（本当にありがとう）や短縮形（couldn’t）が自然です。\n\n(A)(B)は文法的には正しくても、友達に向けた言葉としては不自然なほど堅い。「正しい英語」ではなく「場面に合う英語」が採点されるのが手紙問題です。役所文体で友達に書くと、Task Achievement（課題達成）で減点されます。",
+  "prompt_ja": "場面に合うトーンを選んでください。"
+ },
+ {
+  "screen_id": "a108ce26-e75f-4134-a1db-c36bc32f1dee",
+  "lesson": "ielts-writing-letters",
+  "order": 4,
+  "title_ja": "3つの箇条書きは「契約書」",
+  "body_ja": "手紙の問題文には、必ず3つの箇条書きが付いています。\n\nWrite a letter to your landlord. In your letter:\n・describe the problem（問題を説明し）\n・explain how it affects you（影響を述べ）\n・say what you want the landlord to do（してほしいことを伝える）\n\nこの3点は「全部書いてください」という契約です。1つでも落とすと、どんなに美しい英語でもTask Achievementのバンドに上限がかかります。\n\nおすすめの型：箇条書き1つ＝本文1段落。書く前の30秒で「①故障の状況 ②寒くて在宅勤務に支障 ③今週中の修理依頼」のようにメモすれば、構成は自動的に完成します。"
+ },
+ {
+  "screen_id": "90a6cec1-c0b2-4b0a-b88b-0c65679561a6",
+  "lesson": "ielts-writing-letters",
+  "order": 5,
+  "explanation_ja": "(B)だけが「問題→影響→依頼」の3点をすべて踏んでいます。\n\n(A)は2つ目の箇条書き（自分への影響）が抜け、関係のない不満に脱線。(C)は影響と依頼が抜けています。書き終わったら箇条書きを1つずつ指差して「書いたか？」と確認する——この習慣だけでTask Achievementは安定します。",
+  "prompt_ja": "どのプランが3つの箇条書きをすべてカバーしていますか？"
+ },
+ {
+  "screen_id": "6c13cbb7-ced8-42cc-a74f-6d3739a45cab",
+  "lesson": "ielts-writing-letters",
+  "order": 6,
+  "explanation_ja": "(A)はビジネスレターの定型文。友人への手紙に混ざると、急にスーツを着たような違和感が出ます。\n\nこの「1通の中でのトーンの揺れ」は採点者がよく見るポイント。書き出しで決めたレジスターを、結びまで一貫させましょう。友人になら If you want to know more, just ask! で十分です。",
+  "prompt_ja": "レジスターは最後まで一貫させます。"
+ },
+ {
+  "screen_id": "13a4da0e-15c6-413f-ab51-0f6f51ccfe03",
+  "lesson": "ielts-writing-letters",
+  "order": 7,
+  "explanation_ja": "名前を知らない相手への手紙は Dear Sir or Madam, ↔ Yours faithfully, のペア。\n\nスペルにも注意：faithfully は full に -ly ではなく、faithful ＋ -ly で l が2つ続きます。結びの1語のスペルミスは、最後の最後で印象を落とすので丁寧に。",
+  "prompt_ja": "ペアで覚えた結びを書いてください（1語）。"
+ },
+ {
+  "screen_id": "b46c19e0-0283-48d7-8e9d-549a0a71cf69",
+  "lesson": "ielts-writing-letters",
+  "order": 8,
+  "title_ja": "まとめ：レジスターと3点カバー",
+  "body_ja": "・相手との関係でレジスターを決める：知らない→フォーマル、名前を知る→セミフォーマル、友人→インフォーマル\n\n・開きと結びはペア：Sir or Madam↔faithfully、名前↔sincerely、友人↔See you soon\n\n・3つの箇条書きは契約。1つ＝1段落で全部カバー\n\n・トーンは1通の中で一貫させる\n\n次は、Academic Task 1のグラフ描写です。"
+ },
+ {
+  "screen_id": "a88e0e20-24e1-4637-9e55-91353b9491f8",
+  "lesson": "ielts-writing-charts",
+  "order": 0,
+  "title_ja": "Task 1はレポート。エッセイではない",
+  "body_ja": "Academic Task 1では、グラフや表を見て150語以上で説明します。ここで多くの受験者が踏む地雷がこれ——意見を書いてしまうこと。\n\nやることは「データに見えること」の報告だけです。\n\n・主要な特徴を選ぶ（全データの読み上げはしない）\n・比較する（AはBの2倍、など）\n\nやってはいけないこと：\n\n・意見（I think people should drive less.）\n・データにない理由の推測（おそらくガソリン価格のせいで…）\n\nあなたはジャーナリストではなく、計器の読み上げ係。見えるものだけを、正確な英語で。"
+ },
+ {
+  "screen_id": "3fa645a5-0b0d-4c1d-923c-5a2900783d58",
+  "lesson": "ielts-writing-charts",
+  "order": 1,
+  "explanation_ja": "120万→250万は2倍を超える増加なので、more than doubled（2倍以上になった）が正確です。\n\nTask 1の文は「データと突き合わせて真偽を判定できる文」でなければなりません。stable（横ばい）も fell（減少）も、データを見れば即アウト。数字→英語の変換が正確かどうか、それだけが勝負です。",
+  "prompt_ja": "データを見て、正しく描写した文を選んでください。"
+ },
+ {
+  "screen_id": "7dfc9ad2-829c-43c3-b5e1-dba99917dd4a",
+  "lesson": "ielts-writing-charts",
+  "order": 2,
+  "title_ja": "トレンド表現の語彙バンク",
+  "body_ja": "グラフ描写の語彙は、実は少数精鋭で足ります。\n\n上昇：rose ／ increased ＋ sharply（急に）・steadily（着実に）・slightly（わずかに）\n\n下降：fell ／ dropped ／ declined ＋ 同じ副詞\n\n横ばい：remained stable ／ stayed constant\n\n倍率：doubled（2倍）／ halved（半減）／ more than doubled\n\n頂点・底：peaked at 80% ／ fell to a low of 5%\n\n基本の型は「主語＋動詞＋副詞＋期間」。Car use fell sharply between 2005 and 2020. この型に語彙バンクから部品をはめれば、どんなグラフでも文が作れます。"
+ },
+ {
+  "screen_id": "b877d1c2-ccc2-4024-bfeb-0812dc191a94",
+  "lesson": "ielts-writing-charts",
+  "order": 3,
+  "explanation_ja": "£2.00→£2.10は3年で5%の上昇。rose only slightly（わずかに上昇）がぴったりです。\n\ndoubled なら£4.00になっていないといけませんし、fell は方向が逆。副詞の選択（sharply か slightly か）まで含めて、データと一致して初めて正解です。",
+  "prompt_ja": "データに対して正確な描写はどれ？"
+ },
+ {
+  "screen_id": "ba9914d3-a880-44f7-b5e9-81f7c38c8701",
+  "lesson": "ielts-writing-charts",
+  "order": 4,
+  "explanation_ja": "(B)は意見です。best という評価語が出た時点で、データの報告ではなくなっています。\n\n(A)(C)は数字と突き合わせて検証できる事実の文。Task 1では think ／ should ／ best ／ unfortunately のような意見・感情の言葉が出てきたら赤信号、と覚えてください。意見はTask 2で思う存分どうぞ。",
+  "prompt_ja": "Task 1に書いてはいけない文が1つあります。どれ？"
+ },
+ {
+  "screen_id": "b53b5d7d-fc01-4c76-8443-eae0a9186e61",
+  "lesson": "ielts-writing-charts",
+  "order": 5,
+  "title_ja": "オーバービュー：採点者が最初に探す1文",
+  "body_ja": "Task 1の答案でバンド6と7を分けるのが、オーバービュー（全体観の1文）です。\n\n・書き出しの言い換え（The chart shows…）のすぐあとに置く\n\n・Overall, で始めるのが定番\n\n・具体的な数字は入れない。一番大きな傾向だけを2つ程度\n\n例：Overall, car use declined considerably over the period, while cycling grew to become the second most common way to travel.\n\n細かい数字は本文の段落で。オーバービューは「遠くから見たら何が起きているか」を言う1〜2文です。これがない答案は、どんなに数字が正確でもTask Achievementで頭打ちになります。"
+ },
+ {
+  "screen_id": "05e880cf-6ff4-4f63-9f2a-9c831ba7e341",
+  "lesson": "ielts-writing-charts",
+  "order": 6,
+  "explanation_ja": "(C)は「両グループで上昇、特に高齢層の伸びが大きい」という最大の傾向だけを、数字なしでまとめています。これがオーバービューの教科書形です。\n\n(A)は1つの数字の読み上げ（本文の段落でやること）、(B)は Overall で始まっていても中身が意見。形ではなく役割で判定しましょう。",
+  "prompt_ja": "オーバービューとして最も良い文を選んでください。"
+ },
+ {
+  "screen_id": "4ec556a6-11a1-49fc-a0e2-a4a4330c0d75",
+  "lesson": "ielts-writing-charts",
+  "order": 7,
+  "explanation_ja": "数字がほぼ動いていないので remained stable（または stayed stable）。「横ばい」はグラフ頻出なのに書ける人が少ない、差がつく表現です。\n\nバリエーションとして stayed constant ／ levelled off（横ばいになった）も一緒にバンクへどうぞ。",
+  "prompt_ja": "トレンド表現を完成させてください（1語）。"
+ },
+ {
+  "screen_id": "e5efaf34-8809-4168-b0ba-a8990a1cd267",
+  "lesson": "ielts-writing-charts",
+  "order": 8,
+  "title_ja": "まとめ：見えるものを、正確に",
+  "body_ja": "・Task 1は報告。意見・推測の理由づけは書かない（think ／ should ／ best は赤信号）\n\n・語彙バンク：rose sharply ／ fell slightly ／ remained stable ／ more than doubled ／ peaked at\n\n・型は「主語＋動詞＋副詞＋期間」\n\n・オーバービューを必ず書く：Overall, ＋最大の傾向、数字なし\n\n・すべての文がデータで検証可能かチェック\n\n次は配点最大、Task 2エッセイの型です。"
+ },
+ {
+  "screen_id": "1fd9da14-9b33-4292-998e-0cab34f9c868",
+  "lesson": "ielts-writing-essays",
+  "order": 0,
+  "explanation_ja": "To what extent do you agree or disagree?（どの程度賛成/反対か）は意見型のサイン。求められているのは、立場を決めて一貫して主張することです。\n\nここで「賛成の意見もあれば反対の意見もある」と両論併記を始めると、設問に答えていないと判定されます。タイプの見極めを外すと、英語力に関係なくTask Responseが沈む——だから最初の10秒で必ずタイプ判定をします。",
+  "prompt_ja": "まずは1問。設問のタイプを見極めてください。"
+ },
+ {
+  "screen_id": "a4637cbc-688a-49e4-a56b-d8925d2e0232",
+  "lesson": "ielts-writing-essays",
+  "order": 1,
+  "title_ja": "4段落の骨格と、2大設問タイプ",
+  "body_ja": "Task 2は、どんなテーマが来てもこの骨格で書けます。\n\n①導入：設問の言い換え＋自分の立場（thesis）\n②本論1：理由その1＋具体例\n③本論2：理由その2＋具体例\n④結論：立場の再確認\n\nそして設問は2大タイプに分かれます。\n\n・意見型（agree or disagree?）：本論2つとも自分の立場を支える。または本論2で「反対意見への反論」\n\n・両論型（Discuss both views and give your own opinion）：本論1＝見方A、本論2＝見方B。自分の意見は導入と結論で明示\n\n両論型で片方の見方しか書かないのは最悪の失点パターン。both views は文字どおり「両方」です。"
+ },
+ {
+  "screen_id": "465fbc52-b0ff-4e76-be8b-2544995a451f",
+  "lesson": "ielts-writing-essays",
+  "order": 2,
+  "explanation_ja": "Discuss both views and give your own opinion が両論型の決まり文句。本論1でスーパー派の言い分、本論2で地元商店派の言い分を論じ、自分の意見を導入と結論に置きます。\n\nwhile others 〜 のように2つの立場が並んでいる設問文も、両論型のヒントです。",
+  "prompt_ja": "タイプを見極めてください。"
+ },
+ {
+  "screen_id": "9a5516d9-50eb-44f7-a922-9f8da5b7cd7f",
+  "lesson": "ielts-writing-essays",
+  "order": 3,
+  "title_ja": "thesis：導入の最後で結論を予告する",
+  "body_ja": "導入の最後の1文がthesis statement——「この答案の結論はこれです」という予告です。採点者はここで答案の地図を手に入れます。\n\n良いthesisの条件は2つ。\n\n①設問に直接答えている（賛成？反対？どちら寄り？）\n②理由をちらっと予告している\n\n意見型の例：I largely agree with this view, mainly because flexible work saves commuting time and improves family life.\n\n両論型の例：While supermarkets offer convenience, I believe small shops bring greater value to a community.\n\n避けたいのは This essay will discuss this topic. のような中身ゼロの文。立場も理由も見えないthesisは、ないのと同じです。"
+ },
+ {
+  "screen_id": "4117ba9f-47a3-4c03-ac62-7ef963807fd2",
+  "lesson": "ielts-writing-essays",
+  "order": 4,
+  "explanation_ja": "(C)は立場（largely agree）も理由の予告（通勤時間・柔軟性）も入った、地図として機能するthesisです。\n\n(A)は「論じます」と言っただけで何も答えていません。(B)は両論併記の宣言で、意見型への答えになっていない——agree or disagree? には、どちらかに寄って答えるのがルールです。",
+  "prompt_ja": "意見型のthesisとして最も良いのは？"
+ },
+ {
+  "screen_id": "84429a6a-515b-44cd-a9ff-a6835dd530d7",
+  "lesson": "ielts-writing-essays",
+  "order": 5,
+  "explanation_ja": "(B)は While 〜 の前半で見方A（スーパーの利点）を認め、後半で自分の立場（地元商店派）を明示。両論を扱う予告と意見表明が1文に収まった、両論型の理想形です。\n\n(A)は一般論で立場ゼロ。(C)は立場こそ明確ですが、見方Aを「論じる」気配がなく、disagreeする相手は人ではなく意見であるべき、という点でもズレています。",
+  "prompt_ja": "両論型のthesisとして最も良いのは？"
+ },
+ {
+  "screen_id": "3bfc3d90-8323-4cc0-8e36-3e2b525b5357",
+  "lesson": "ielts-writing-essays",
+  "order": 6,
+  "title_ja": "リンキング表現は道路標識",
+  "body_ja": "段落と段落、文と文のつなぎ目には道路標識を立てます。採点基準のCoherence and Cohesion（一貫性）はここを見ています。\n\n・本論の頭：Firstly, ／ Secondly, ／ The main reason is that…\n\n・対比・転換：However, ／ On the other hand,（両論型の本論2の頭はこれ）\n\n・具体例：For example, ／ For instance,\n\n・結論：In conclusion, ／ To sum up,\n\n注意点はひとつ、使いすぎないこと。毎文の頭に Moreover, Furthermore, Additionally…と並ぶと、かえって機械的で不自然になります。1段落に2〜3個、必要な角にだけ標識を。"
+ },
+ {
+  "screen_id": "729be82e-624a-4ca5-b829-a22d32d6152f",
+  "lesson": "ielts-writing-essays",
+  "order": 7,
+  "explanation_ja": "結論の合図は In conclusion,（または To conclude, ／ To sum up,）。この標識があるだけで、採点者は「ここから結論」と迷わず読めます。\n\n結論の中身は、thesisの言い換え＋ひとこと。新しい論点をここで出すのはNGです。",
+  "prompt_ja": "結論の段落の書き出しを完成させてください（2語で）。"
+ },
+ {
+  "screen_id": "4c4f1024-dd61-4456-8602-7c005dbd0d8c",
+  "lesson": "ielts-writing-essays",
+  "order": 8,
+  "title_ja": "まとめ：タイプ判定→骨格→thesis",
+  "body_ja": "・最初の10秒で設問タイプを判定：agree or disagree?＝意見型、Discuss both views＝両論型\n\n・骨格は4段落：導入＋thesis／本論1／本論2／結論\n\n・両論型は本論1＝見方A、本論2＝見方B。片方だけは致命傷\n\n・thesisは立場＋理由の予告。「This essay will discuss…」は禁止\n\n・リンキングは要所だけ：However ／ For example ／ In conclusion\n\nライティング攻略はここまで。最終レベルはスピーキングです。"
+ },
+ {
+  "screen_id": "d8156281-9940-4cc2-9bc1-5461e1461734",
+  "lesson": "ielts-speaking-part1",
+  "order": 0,
+  "explanation_ja": "(A)は文法的に完璧、でも会話が即死します。試験官が聞きたいのは Yes/No ではなく、あなたの英語。(C)は辞書の定義の暗唱で、質問に答えていません。\n\n(B)は答え（Yes）→理由（リラックスできる）→例（日曜に子どもとカレー）の3点セット。この「ひとこと伸ばす」習慣が、Part 1のすべてです。",
+  "prompt_ja": "まずは1問。試験官に好印象なのはどの答え？"
+ },
+ {
+  "screen_id": "f92850c7-1925-4b4c-b5c2-22bdf9d68510",
+  "lesson": "ielts-speaking-part1",
+  "order": 1,
+  "title_ja": "答え＋理由＋例 の3点セット",
+  "body_ja": "Part 1は身近な話題（住まい・仕事・趣味）への短い質問が続く、いわばウォームアップ。でも採点はもう始まっています。\n\n答え方の型はひとつだけ。\n\n①答える：Yes, I do. ／ Not really.\n②理由を足す：because ／ The main reason is…\n③例を足す：For example… ／ 固有名詞や数字があると強い\n\n2〜4文、時間にして15〜25秒が目安です。\n\n逆にやってはいけないのが、暗記したスピーチの暗唱。試験官は暗記口調をすぐ見抜き、予定外の質問で崩しにきます。型は暗記、中身はその場の本音——これが正解です。"
+ },
+ {
+  "screen_id": "602bb940-6dde-4de3-af34-3c31fc21e966",
+  "lesson": "ielts-speaking-part1",
+  "order": 2,
+  "explanation_ja": "(A)は答え（冬）→理由（スノボ好き）→例（長野に月1回）。固有名詞と頻度が入って、一気に生きた答えになっています。\n\n(B)は答えてはいるものの、理由も例もなく会話が止まる。(C)はまた辞書です。具体的な地名・数字・人名は、Part 1の答えを最も簡単に豊かにする材料です。",
+  "prompt_ja": "3点セットができている答えはどれ？"
+ },
+ {
+  "screen_id": "f3818792-f4bf-489f-a8b2-bfb0862d9f2e",
+  "lesson": "ielts-speaking-part1",
+  "order": 3,
+  "title_ja": "詰まったときの救急フレーズ",
+  "body_ja": "Part 1では、考えたこともない質問が飛んでくることがあります。「彫像は好きですか？」「鏡をよく見ますか？」——ここで黙り込むのが一番の失点です。\n\n救急フレーズを持っておきましょう。\n\n・That’s an interesting question.（考える時間を稼ぐ）\n・I’ve never really thought about it, but…（正直に認めてから答える）\n・It depends.（場合によります——から条件を説明）\n\n大事な心構え：内容は採点されません。彫像への深い見識は不要で、英語が流れているかだけが見られています。つまらない本音＋理由のほうが、立派な嘘より高得点です。"
+ },
+ {
+  "screen_id": "ed665932-588f-41d6-9553-fed9b0540ee2",
+  "lesson": "ielts-speaking-part1",
+  "order": 4,
+  "explanation_ja": "(C)は「考えたことなかった」と正直に時間を稼ぎ、そこから渋谷のハチ公という具体例に着地。完璧な救急対応です。\n\n(A)の沈黙は流暢さの採点に直撃。(B)は重要そうな名詞を並べただけで、何も言っていません。知らない話題ほど、正直＋身近な例で切り抜けましょう。",
+  "prompt_ja": "予想外の質問への対応として最も良いのは？"
+ },
+ {
+  "screen_id": "6b626bc0-8aa7-408b-8a3e-8c05a5d7f1fa",
+  "lesson": "ielts-speaking-part1",
+  "order": 5,
+  "explanation_ja": "No系の答えこそ伸ばしどころ。「バスはあまり——電車派なんです、速いし車内で本が読めるので」と、代わりの本当のことを話せば、否定の答えが会話の入り口に変わります。\n\nNot really. で切ると試験官が次の質問を探す沈黙が生まれ、(A)はまた定義、(C)は논외。No と答えるときは「代わりに何か」をセットで。",
+  "prompt_ja": "“Not really.” で終わらせず、ひとこと伸ばします。続ける文として最も良いのは？"
+ },
+ {
+  "screen_id": "08854f29-3028-48c6-8e30-936faa82ca62",
+  "lesson": "ielts-speaking-part1",
+  "order": 6,
+  "explanation_ja": "これはほぼ確実に聞かれる質問なので、3点セットを事前に組み立てておけます。(A)は仕事→場所→年数→中身まで、自然な2文に収まった理想形。\n\n(B)の一語回答は採点材料を出していないのと同じ。(C)のように質問を拒否すると、試験として成立しません。定番質問の答えだけは、型を準備しておきましょう（暗唱ではなく、部品の準備です）。",
+  "prompt_ja": "定番の最初の質問。最も良い答えは？"
+ },
+ {
+  "screen_id": "97bb9ce4-582c-4900-a57f-38a503d32f77",
+  "lesson": "ielts-speaking-part1",
+  "order": 7,
+  "explanation_ja": "理由をつなぐ because（as ／ since でも可）。「答え＋because＋理由」は、Part 1で一番よく使う接続です。\n\n口癖レベルまで体に入れましょう。Yes と言ったら、口が勝手に because を続けるくらいでちょうどいいです。",
+  "prompt_ja": "理由を導く1語を入れてください。"
+ },
+ {
+  "screen_id": "2191c770-1b71-47c8-b72d-086f62b93d51",
+  "lesson": "ielts-speaking-part1",
+  "order": 8,
+  "title_ja": "まとめ：Yes/Noで止まらない",
+  "body_ja": "・答え＋理由＋例の3点セット。2〜4文、15〜25秒\n\n・固有名詞・数字・人名が答えを生かす\n\n・詰まったら救急フレーズ：I’ve never really thought about it, but…\n\n・Noと答えるときは「代わりに何か」をセットで\n\n・内容は採点されない。正直＋理由が最強\n\n次は2分間の独演、Part 2キューカードの攻略です。"
+ },
+ {
+  "screen_id": "1d65e688-a4a3-41bf-bc83-794e6795dae7",
+  "lesson": "ielts-speaking-cue-card",
+  "order": 0,
+  "title_ja": "2分間、ひとりで話し続ける",
+  "body_ja": "Part 2では、トピックの書かれたキューカードを渡されます。準備1分、スピーチ1〜2分。試験官は相づちも助け舟も出しません。\n\n受験者の最大の恐怖は「30秒で話が尽きる」こと。でも実は、カードに解決策が印刷されています。\n\nDescribe a place you like to visit.\nYou should say:\n・where it is\n・how often you go there\n・what you do there\nand explain why you like it so much.\n\nこの4つの箇条書きが、そのままスピーチの設計図。4つ×20〜30秒で、ちょうど1分半〜2分になる計算です。カードは敵ではなく台本です。"
+ },
+ {
+  "screen_id": "ce91e8ab-3237-4de8-9b97-76f77011beeb",
+  "lesson": "ielts-speaking-cue-card",
+  "order": 1,
+  "title_ja": "準備の1分：4つの箇条書き＝4つのミニ段落",
+  "body_ja": "準備の1分でやることは決まっています。4つの箇条書きそれぞれに、キーワードを2〜3個メモする。\n\nDescribe a place you like to visit. なら：\n\n①どこ → 鎌倉・海沿い・電車で1時間\n②頻度 → 月1回・週末\n③何をする → 寺めぐり・海岸を散歩・カフェ\n④なぜ好き → 頭がリセットされる・学生時代の思い出\n\n書くのはキーワードだけ。文を書き始めると1分では2文しか書けず、しかもそれを読み上げてしまいます。\n\nメモは話す順番どおりに上から並べる。スピーチ中は、メモを上から順に消化していけば、迷子になりません。"
+ },
+ {
+  "screen_id": "a122f095-51e9-4b0c-aa9b-652a595caf87",
+  "lesson": "ielts-speaking-cue-card",
+  "order": 2,
+  "explanation_ja": "キーワード方式なら、1分で4パート全部に足場が組めます。\n\n(B)は最初の文しか準備できず、30秒後に白紙へ。(C)は2文書いた時点で1分が終わり、その2文を読み上げる不自然なスタートになります。メモは思い出すためのフックであって、原稿ではありません。",
+  "prompt_ja": "準備メモの取り方として最も良いのは？"
+ },
+ {
+  "screen_id": "f5e82b01-3115-401d-ade8-bad0987cab15",
+  "lesson": "ielts-speaking-cue-card",
+  "order": 3,
+  "title_ja": "始め方と終わり方を固定する",
+  "body_ja": "スピーチの最初と最後は、毎回同じ型でいいんです。\n\n始め：I’d like to talk about 〜（トピックを自分の言葉で）\nOK, so I’m going to tell you about the time I…\n\nこの1文で「何の話か」を宣言しつつ、頭を整える時間が稼げます。\n\n終わり：So, that’s why 〜 is so special to me.\nAnyway, that’s the story of how I…\n\n終わりの合図がないと、試験官は「まだ続く？」と待ち、気まずい沈黙が生まれます。So, that’s why… と締めれば、2分未満でも「話し終えた」ときれいに着地できます。\n\n箇条書きの間は、Moving on to why I love it… のようなつなぎがあると、さらに滑らかです。"
+ },
+ {
+  "screen_id": "edc1d6ff-21a9-4d55-9691-62ab5dc676d4",
+  "lesson": "ielts-speaking-cue-card",
+  "order": 4,
+  "explanation_ja": "(B)はトピックを自分の話（祖母）に引きつけて、すっと話し始めています。who 以下で背景まで添えて、次の箇条書きへの橋もできました。\n\n(A)(C)はスピーチコンテストか法廷のよう。Part 2は「面接官への発表」ではなく「ちょっと長めのおしゃべり」。肩の力を抜いた話し言葉が正解です。",
+  "prompt_ja": "話し始めの一文として自然なのは？"
+ },
+ {
+  "screen_id": "ac8d474c-3765-427b-aa34-828740190638",
+  "lesson": "ielts-speaking-cue-card",
+  "order": 5,
+  "explanation_ja": "余った時間は、細部と感情で埋めます。「そのとき祖母は何と言ったか」「終わったあとどう感じたか」「今でも続いているか」——どの話題にも足せる万能の延長パーツです。\n\n(A)の沈黙は流暢さに直撃、(B)の繰り返しは語彙・文法の評価機会を捨てています。4つ目の箇条書き and explain how you felt… が、まさにこの「感情パート」を用意してくれていることにも注目。",
+  "prompt_ja": "3つ目の箇条書きまで話して、まだ1分も経っていません。どうする？"
+ },
+ {
+  "screen_id": "12b92954-7816-4fd1-a65e-78ebd0338360",
+  "lesson": "ielts-speaking-cue-card",
+  "order": 6,
+  "explanation_ja": "how you felt（どう感じたか）を聞かれているので、感情の中身＋それを示す行動（親に電話・笑いが止まらない）を話します。具体的な行動は、感情を伝える最高の証拠です。\n\n(B)は場所の話で、別の箇条書きの内容。(C)は締めの一文で、感情パートを丸ごとスキップしています。カードの each bullet に、ちゃんと答えを返しましょう。",
+  "prompt_ja": "箇条書きとスピーチ内容を対応させましょう。"
+ },
+ {
+  "screen_id": "13063df0-9238-4b99-b6ab-3d8912b53c99",
+  "lesson": "ielts-speaking-cue-card",
+  "order": 7,
+  "explanation_ja": "So, that’s why 〜（そういうわけで〜なんです）が締めの合図。この1文で、スピーチが「終わった」ことが試験官に伝わります。\n\n始めの I’d like to talk about 〜 とセットで、毎回同じでOK。型を固定すれば、本番では中身だけに集中できます。",
+  "prompt_ja": "締めの定番フレーズを完成させてください（1語）。"
+ },
+ {
+  "screen_id": "5cd3a421-08f4-4497-8303-0d4a2610bfc4",
+  "lesson": "ielts-speaking-cue-card",
+  "order": 8,
+  "title_ja": "まとめ：カードが台本",
+  "body_ja": "・4つの箇条書き＝4つのミニ段落。1つ20〜30秒\n\n・準備の1分はキーワードのみ。文は書かない\n\n・始めと終わりは固定フレーズ：I’d like to talk about 〜 ／ So, that’s why 〜\n\n・時間が余ったら感情と細部で延長。沈黙と繰り返しはNG\n\n・どの箇条書きにも答えを返す\n\n最終レッスンは、Part 3の意見構築です。"
+ },
+ {
+  "screen_id": "b4b686dc-8d26-4bf5-8110-2caf63d3a94a",
+  "lesson": "ielts-speaking-part3",
+  "order": 0,
+  "explanation_ja": "Part 3は抽象的な意見を聞く、いわば「口頭のミニエッセイ」。(C)は立場（yes）→理由（生活スキル）→例（一人暮らしの食生活）→譲歩（学校側の事情次第）の4部構成で答えています。\n\n(A)はPart 1なら許される短さですが、Part 3では物足りない。(B)は単語を並べただけです。この4部構成の型を、今日のレッスンで体に入れます。",
+  "prompt_ja": "まずは1問。Part 3らしい答えはどれ？"
+ },
+ {
+  "screen_id": "5c608d47-6218-4742-861a-6aaa93fa67f9",
+  "lesson": "ielts-speaking-part3",
+  "order": 1,
+  "title_ja": "型：立場→理由→例→譲歩",
+  "body_ja": "Part 3の質問は「現代社会で〜はどうあるべきか」のような大きな話。何も持たずに挑むと迷子になります。持っていくのはこの型です。\n\n①立場：I’d say yes ／ I think it depends, but…\n②理由：The main reason is… ／ mainly because…\n③例：For instance… ／ In Japan, for example…\n④譲歩：Of course, … ／ Having said that, …\n\n④の譲歩（反対側にも一理あると認める）が、バンドを押し上げる隠し味。「物事を多面的に語れる」証拠になるからです。\n\n4ステップで30〜45秒。Task 2エッセイの段落を、口で話していると思えばちょうどいいです。"
+ },
+ {
+  "screen_id": "3e13b848-57dc-4490-8684-3c71619bbdbc",
+  "lesson": "ielts-speaking-part3",
+  "order": 2,
+  "explanation_ja": "The main reason is that… は理由パートの定番の入り方です。\n\n型の各パーツには、こうした合図のフレーズがあります。立場なら I’d say…、例なら For instance…、譲歩なら Having said that…。合図を口が覚えていれば、考えながらでも構造の通った答えになります。",
+  "prompt_ja": "この文は型のどのパーツ？"
+ },
+ {
+  "screen_id": "6fa9706e-2c89-4268-8587-208f5ef48445",
+  "lesson": "ielts-speaking-part3",
+  "order": 3,
+  "title_ja": "ヘッジ表現：断定しないのが上級者",
+  "body_ja": "日本語でも「絶対みんなそう」と断言する人より、「人によるけど、たぶん〜」と言う人のほうが知的に聞こえますよね。英語ではこの加減をヘッジと呼び、Part 3の評価に直結します。\n\n・I’d say…（〜だと思いますね）← I think より柔らかい\n・It depends on…（〜次第です）\n・In general… ／ tend to…（一般的には／〜しがち）\n・probably ／ perhaps\n\n× Young people always use social media too much.\n○ Younger people tend to spend more time online, but it really depends on the person.\n\n断定は反例ひとつで崩れますが、ヘッジした主張は崩れません。大きな質問ほど、柔らかく答えるのが正解です。"
+ },
+ {
+  "screen_id": "7d4c9638-aab2-442b-ab88-d9998db87bb0",
+  "lesson": "ielts-speaking-part3",
+  "order": 4,
+  "explanation_ja": "(A)は tend to と it depends で適度にヘッジしながら、世代比較というちゃんとした中身を述べています。\n\n(B)の always ／ 100 percent は反例ひとつ（ネットを使わない若者）で崩壊する断定。(C)はヘッジではなくただの迷子です——ヘッジは「柔らかく主張する」技術であって、主張しないことではありません。",
+  "prompt_ja": "Part 3の答え方として最も自然なのは？"
+ },
+ {
+  "screen_id": "77971a22-18b3-4719-ba17-e97c3be8e148",
+  "lesson": "ielts-speaking-part3",
+  "order": 5,
+  "explanation_ja": "立場を述べた直後に来るのは理由です。理由（中食が安く美味しくなっている）→例（いとこの話）→譲歲（料理好きは残る）の順に流すと、(A)(C)もこのあと全部使えます。\n\n例から先に話すと「なぜそう思うか」が宙に浮き、譲歩から入ると立場がぼやけます。立場→理由→例→譲歩、この順番が聞き手に一番親切です。",
+  "prompt_ja": "型の順番どおりに続けましょう。"
+ },
+ {
+  "screen_id": "01cc85e3-6e17-4518-aa45-9c24c67c9604",
+  "lesson": "ielts-speaking-part3",
+  "order": 6,
+  "explanation_ja": "It depends on 〜（〜次第です）は、Part 3最強の入り口フレーズ。二択を迫る質問に「場合分け」で答えられるので、即座に中身のある構造が生まれます。\n\nそのあとに for A …, but for B … と対比を続ければ、1つの質問で2つの意見を述べる高度な答えが完成します。",
+  "prompt_ja": "困ったときの万能フレーズを完成させてください（1語）。"
+ },
+ {
+  "screen_id": "d17857e6-cdd9-4f75-8b96-d0634a59f3b8",
+  "lesson": "ielts-speaking-part3",
+  "order": 7,
+  "explanation_ja": "②立場（読書は画面に移る）→④理由（電子書籍は安くて速い）→③例（自分の本棚は2年増えていない）→①譲歩（紙派のための図書館は残る）。\n\n(A)は理由から始まって立場が見えず、(B)は理由より先に例が来て「なぜ？」が宙ぶらりんに。型の順番は、聞き手が迷子にならないための道順です。",
+  "prompt_ja": "総仕上げ。4つの文を「立場→理由→例→譲歩」の順に並べたものはどれ？"
+ },
+ {
+  "screen_id": "215bd2d2-2bcc-4950-be27-5ac89077f28b",
+  "lesson": "ielts-speaking-part3",
+  "order": 8,
+  "title_ja": "まとめ：口で書くミニエッセイ",
+  "body_ja": "・Part 3の型：立場→理由→例→譲歩。30〜45秒\n\n・合図フレーズ：I’d say… ／ mainly because… ／ For instance… ／ Having said that…\n\n・断定よりヘッジ：tend to ／ It depends ／ in general\n\n・二択の質問は It depends で場合分け\n\nこれで全12レッスン完了です。リスニングの言い換え、TFNGの3段判定、手紙のレジスター、Part 3の型——学んだパターンを武器に、模試で腕試ししましょう。"
+ }
+]

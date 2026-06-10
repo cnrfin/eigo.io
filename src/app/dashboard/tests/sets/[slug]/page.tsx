@@ -255,7 +255,7 @@ export default function SetPage() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto px-4 pt-12 pb-8">
+    <div className="max-w-6xl mx-auto px-4 pt-12 pb-8">
       {error && (
         <div className="mb-4 p-3 rounded-lg text-sm" style={{ background: 'var(--accent-bg)', color: 'var(--danger)' }}>{error}</div>
       )}

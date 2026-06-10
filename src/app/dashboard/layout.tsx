@@ -38,7 +38,7 @@ function TopBar() {
   return (
     // Gradient (bg -> transparent) so content scrolling beneath fades out under the
     // bar. The fade layer is taller than the bar itself for a softer dissolve.
-    <div className="sticky top-0 z-20 flex items-center h-14 relative">
+    <div className="sticky top-0 z-40 flex items-center h-14 relative">
       <div
         aria-hidden
         className="absolute inset-x-0 top-0 pointer-events-none"

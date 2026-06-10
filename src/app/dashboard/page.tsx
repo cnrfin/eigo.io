@@ -1308,9 +1308,10 @@ function DashboardContent() {
   return (
     <>
       <section className="pt-12 pb-8">
-        {/* Shared content container — same width/padding as the tests page
-            (max-w-3xl mx-auto px-4) so every tab lines up consistently. */}
-        <div className="max-w-3xl mx-auto w-full px-4">
+        {/* Shared content container — constant width so switching tabs never
+            reflows. The Book tab narrows its OWN content (max-w-4xl) instead, so
+            navigation stays seamless (no visible shrink of the container). */}
+        <div className="max-w-6xl mx-auto w-full px-4">
             {/* Each tab renders its own heading inside its animated block so the
                 page (including the title) fades in/out together — Home has its
                 centered welcome, History/Phrases their title, Book none. */}
@@ -1357,7 +1358,7 @@ function DashboardContent() {
                 exit={{ opacity: 0, y: -8 }}
                 transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
               >
-              <div className="w-full">
+              <div className="w-full max-w-4xl mx-auto">
                 {/* Title row — title left, minutes-remaining badge right */}
                 <div className="flex items-center justify-between mb-8">
                   <h1 className="text-2xl sm:text-4xl font-bold" style={{ color: 'var(--text)' }}>

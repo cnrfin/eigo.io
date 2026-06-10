@@ -44,7 +44,10 @@ type DashItem = { key: DashboardTab; label: string; label_ja: string; icon: (p: 
 // animates its width and clips that panel, so the menu rows never narrow — which
 // is what was letting the inherited body rules (overflow-wrap: anywhere /
 // word-break: auto-phrase) break labels one letter per line. Labels just fade.
-const PANEL_W = 224 // px — expanded content width
+// Must equal the expanded aside width (w-56 = 14rem) so the panel fills it with
+// no right-side gap. Using rem (not px) keeps them matched when the root
+// font-size changes — a px value desyncs as soon as the base scales.
+const PANEL_W = '14rem' // expanded content width — matches the aside's w-56
 const navLabelStyle = (collapsed: boolean): React.CSSProperties => ({
   opacity: collapsed ? 0 : 1,
   whiteSpace: 'nowrap',
@@ -220,14 +223,25 @@ export default function DashboardSidebar() {
   const { mobileOpen, setMobileOpen } = useDashboardNav()
   const { locale } = useLanguage()
   const [collapsed, setCollapsed] = useState(false)
+  // The user's saved preference (their choice on a wide screen). Below the lg
+  // breakpoint the sidebar auto-collapses for space; at lg+ it returns to this
+  // preference. A ref so the resize listener always reads the latest value.
+  const prefRef = useRef(false)
 
   useEffect(() => {
+    const pref = typeof window !== 'undefined' && localStorage.getItem('eigo_sidebar_collapsed') === '1'
+    prefRef.current = pref
+    const mq = window.matchMedia('(min-width: 1024px)')
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    if (typeof window !== 'undefined' && localStorage.getItem('eigo_sidebar_collapsed') === '1') setCollapsed(true)
+    const apply = () => setCollapsed(mq.matches ? prefRef.current : true)
+    apply()
+    mq.addEventListener('change', apply)
+    return () => mq.removeEventListener('change', apply)
   }, [])
 
   const toggle = () => setCollapsed((c) => {
     const next = !c
+    prefRef.current = next
     try { localStorage.setItem('eigo_sidebar_collapsed', next ? '1' : '0') } catch { /* ignore */ }
     return next
   })

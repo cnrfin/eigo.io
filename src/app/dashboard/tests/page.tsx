@@ -95,6 +95,13 @@ export default function TestsPage() {
   const [selected, setSelected] = useState<string | null>(null) // category key
   // form_id -> the user's (single) attempt for it
   const [attempts, setAttempts] = useState<Record<string, { id: string; status: string }>>({})
+  // Mini courses (one per exam), keyed by exam_slug
+  type CourseSummary = {
+    slug: string; exam_slug: string; title: string; title_ja: string
+    description: string; description_ja: string; published: boolean
+    levels: { lessons: { id: string; progress: { status: string } | null }[] }[]
+  }
+  const [courses, setCourses] = useState<CourseSummary[]>([])
 
   useEffect(() => {
     if (!session?.access_token) return
@@ -110,9 +117,12 @@ export default function TestsPage() {
         if (!r.ok) throw new Error(d.error || 'attempts failed')
         return d
       }),
+      // Mini courses are optional decoration — never block the page on them
+      fetch('/api/courses', { headers }).then(r => (r.ok ? r.json() : { courses: [] })).catch(() => ({ courses: [] })),
     ])
-      .then(([cat, att]) => {
+      .then(([cat, att, crs]) => {
         setForms(cat.forms ?? [])
+        setCourses(crs.courses ?? [])
         const map: Record<string, { id: string; status: string }> = {}
         for (const a of att.attempts ?? []) {
           const fid = a.form?.id
@@ -232,7 +242,7 @@ export default function TestsPage() {
   }, [selectedCategory, locale, setCrumbs])
 
   return (
-    <div className="max-w-3xl mx-auto px-4 pt-12 pb-8">
+    <div className="max-w-6xl mx-auto px-4 pt-12 pb-8">
       {error && (
         <div className="mb-4 p-3 rounded-lg text-sm" style={{ background: 'var(--accent-bg)', color: 'var(--danger)' }}>
           {error}
@@ -292,6 +302,7 @@ export default function TestsPage() {
               {CATEGORIES.map(c => {
                 const counts = byCategory.get(c.key) ?? { practice: 0, full: 0, forms: [] }
                 const total = counts.practice + counts.full
+                const courseCount = courses.filter(cr => cr.exam_slug === c.key).length
                 const clickable = total > 0
                 return (
                   <SquircleBox key={c.key} cornerRadius={16}
@@ -312,7 +323,10 @@ export default function TestsPage() {
                       // Mock count only — practice tests are being replaced by
                       // prep mini-courses in a future update
                       <p className="text-xs mt-auto pt-2 flex items-center gap-2" style={{ color: 'var(--text-muted)' }}>
-                        {t(`模試 ${counts.full}`, `${counts.full} full ${counts.full === 1 ? 'test' : 'tests'}`)}
+                        {t(
+                          `模試 ${counts.full}${courseCount > 0 ? ` ・ コース ${courseCount}` : ''}`,
+                          `${counts.full} full ${counts.full === 1 ? 'test' : 'tests'}${courseCount > 0 ? ` · ${courseCount} course${courseCount === 1 ? '' : 's'}` : ''}`,
+                        )}
                         {counts.forms.length > 0 && counts.forms.every(f => f.locked) && (
                           <span className="px-2 py-0.5 rounded-full font-medium inline-flex items-center gap-1"
                             style={{ background: 'var(--card-inset)', color: 'var(--text-muted)' }}>
@@ -344,6 +358,49 @@ export default function TestsPage() {
           <p className="mb-6" style={{ color: 'var(--text-secondary)' }}>
             {t(selectedCategory.description[0], selectedCategory.description[1])}
           </p>
+
+          {/* ── Mini course (one per exam): Brilliant-style prep course ── */}
+          {(() => {
+            const course = courses.find(cr => cr.exam_slug === selectedCategory.key)
+            if (!course) return null
+            const lessons = course.levels.flatMap(l => l.lessons)
+            const done = lessons.filter(l => l.progress?.status === 'completed').length
+            return (
+              <>
+                <p className="text-[11px] font-semibold uppercase tracking-wider mb-3" style={{ color: 'var(--text-subtle)' }}>
+                  {t('コース', 'Course')}
+                </p>
+                <SquircleBox cornerRadius={16}
+                  className="p-5 mb-8 flex flex-col gap-2 cursor-pointer transition-all duration-[120ms] ease-out hover:scale-[1.02] active:scale-[0.98]"
+                  style={{ background: 'var(--panel)', border: '1px solid var(--hairline)', boxShadow: 'var(--card-shadow)' }}
+                  onClick={() => router.push(`/dashboard/courses/${course.slug}`)}>
+                  <div className="flex items-center gap-3">
+                    <p className="font-semibold truncate flex-1 min-w-0" style={{ color: 'var(--text)' }}>
+                      {locale === 'ja' ? course.title_ja : course.title}
+                    </p>
+                    {course.published === false && (
+                      <span className="text-xs shrink-0 px-2 py-0.5 rounded-full font-medium" style={{ background: 'var(--warning)', color: '#fff' }}>
+                        {t('下書き', 'Draft')}
+                      </span>
+                    )}
+                    <span className="text-xs shrink-0 px-2.5 py-1 rounded-full font-medium"
+                      style={{ background: done === lessons.length && lessons.length > 0 ? 'var(--accent)' : 'var(--card-inset)', color: done === lessons.length && lessons.length > 0 ? '#fff' : 'var(--text-muted)' }}>
+                      {done} / {lessons.length}
+                    </span>
+                  </div>
+                  <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                    {locale === 'ja' ? course.description_ja : course.description}
+                  </p>
+                  <div className="h-1.5 rounded-full overflow-hidden mt-1" style={{ background: 'var(--card-inset)' }}>
+                    <div className="h-full rounded-full" style={{ background: 'var(--accent)', width: `${lessons.length ? Math.round((done / lessons.length) * 100) : 0}%` }} />
+                  </div>
+                </SquircleBox>
+                <p className="text-[11px] font-semibold uppercase tracking-wider mb-3" style={{ color: 'var(--text-subtle)' }}>
+                  {t('模試', 'Mock tests')}
+                </p>
+              </>
+            )
+          })()}
 
           {/* Mock SETS: the per-skill sections of one full mock, sat separately.
               Sections grade instantly; the official combined score unlocks when

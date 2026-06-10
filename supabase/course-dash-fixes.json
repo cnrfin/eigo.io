@@ -1,0 +1,1557 @@
+[
+  {
+    "screen_id": "7827ceae-d2e1-4321-982f-7f9ffee811db",
+    "field": "body",
+    "after": "In Part 2 you hear the question only once and nothing is printed. So decide your listening priority in advance: the question word at the very start. Catch What / Where / When / Who / Why / How, and you already know what KIND of answer to expect: a place, a time, a person. Then simply match the responses against that kind."
+  },
+  {
+    "screen_id": "5bf79989-247b-4870-b90f-78d080e82382",
+    "field": "explanation",
+    "after": "Who asks for a person: Ms. Okada. A place (A) answers Where and a time (B) answers When. Pair each question word with its answer type."
+  },
+  {
+    "screen_id": "5a40144c-020d-4d56-aabf-95746261db58",
+    "field": "body",
+    "after": "You can never answer a WH question with Yes or No, yet Part 2 happily includes such options. Eliminate them instantly. The other classic trap is an option that repeats a word (or a similar sound) from the question: it FEELS right because you heard it. Treat it with suspicion instead."
+  },
+  {
+    "screen_id": "395c9fe0-c907-4ef2-9fff-93f31ff3e312",
+    "field": "explanation",
+    "after": "Why needs a reason: “Because the director is away.” (B) is a double trap: Yes to a WH question plus a repeated word (Friday). (C) just echoes “meeting”."
+  },
+  {
+    "screen_id": "310c6a65-2392-4e02-a5a1-728b114f1572",
+    "field": "explanation",
+    "after": "The first word is When, so the answer must give a time: “Tomorrow at ten.” (A) answers a Where question, and (C) starts with Yes. WH questions are never answered with yes or no."
+  },
+  {
+    "screen_id": "58a32533-32b4-4fd7-a5cb-4054b304b1a9",
+    "field": "explanation",
+    "after": "How many asks for a number: “About thirty.” (A) starts with Yes: gone. (B) answers When. Catch the first two words and this one is free."
+  },
+  {
+    "screen_id": "dbcbb95a-3c5f-49f1-8dd1-f568c66abbfc",
+    "field": "title",
+    "after": "Yes/No questions, but the answer is rarely yes or no"
+  },
+  {
+    "screen_id": "dbcbb95a-3c5f-49f1-8dd1-f568c66abbfc",
+    "field": "title_ja",
+    "after": "Yes/No疑問文、でも正解は Yes/No とは限らない"
+  },
+  {
+    "screen_id": "dbcbb95a-3c5f-49f1-8dd1-f568c66abbfc",
+    "field": "body",
+    "after": "With Do you...? / Have you...? / Is it...? you might expect a yes or a no, but in Part 2 the correct response often skips it entirely, just like real conversation: “Have you read the report?” “About halfway through.” Never eliminate an option just because it lacks a yes or no."
+  },
+  {
+    "screen_id": "e0f35e0e-d46b-424e-b44f-634f9affa9f2",
+    "field": "body",
+    "after": "A hugely common correct pattern is the indirect answer: “I haven’t checked yet.” / “Ask Maria. She organized it.” / “It depends on the budget.” If it works as conversation, it can be the answer, and suspiciously tidy answers are often the traps."
+  },
+  {
+    "screen_id": "e0f35e0e-d46b-424e-b44f-634f9affa9f2",
+    "field": "body_ja",
+    "after": "Part 2で頻出の正解パターンが、間接的な答えです。\n\n・I haven’t checked yet.（まだ確認していない）\n・Ask Maria. She organized it.（マリアに聞いて）\n・It depends on the budget.（予算次第だね）\n\n質問に正面から答えていなくても、会話として成立していればそれが正解。むしろ「きれいに答えすぎる」選択肢ほどワナだったりします。"
+  },
+  {
+    "screen_id": "c4f90fbc-9ed6-42d8-b61c-dd802f162d17",
+    "field": "explanation_ja",
+    "after": "「新しいカフェ、おいしい？」に「まだ行ってないんだ」。完璧に自然な会話です。質問に直接答えていなくてもOK、というのがPart 2の鉄則。\n\n(A)は across の繰り返し、(C)は Yes で始まりますが中身がかみ合っていません。"
+  },
+  {
+    "screen_id": "bd77e297-75cf-4d42-9058-55515d5dbf1c",
+    "field": "body",
+    "after": "Tags like isn’t it? / didn’t you? / right? just turn a statement into a light confirmation. Answer them exactly like a normal yes/no question: ignore the tag and listen to the main sentence. “The shipment arrived on time, didn’t it?” simply means “Did the shipment arrive on time?”"
+  },
+  {
+    "screen_id": "114c66bc-1e16-4113-8c1d-a9dd95c2a662",
+    "field": "body",
+    "after": "• Correct answers often skip yes/no entirely.\n\n• Indirect replies (“I haven’t checked”, “ask Maria”) are frequent winners.\n\n• Treat tag questions as ordinary yes/no questions.\n\n• “Actually...” signals a polite correction.\n\nNext: Part 2’s biggest trap, sound-alikes."
+  },
+  {
+    "screen_id": "085a2591-a671-4193-b4c7-9e437a289a05",
+    "field": "explanation",
+    "after": "“Almost. I just need the June figures.” answers naturally without a yes/no. (B) starts with Yes but makes no sense (and “reported” is a sound trap); (C) just echoes “sales”."
+  },
+  {
+    "screen_id": "e5c9b513-c270-4937-aabd-2f8e1837a12e",
+    "field": "explanation",
+    "after": "“His assistant would know.” redirects to someone who knows, a very common correct pattern. (A) is a money trap hooked to “budget”; (B) repeats “approved”."
+  },
+  {
+    "screen_id": "e5c9b513-c270-4937-aabd-2f8e1837a12e",
+    "field": "explanation_ja",
+    "after": "「伊藤さん、予算を承認した？」に「アシスタントの方が知ってるよ」。自分は知らないので、知っていそうな人を案内する。これも頻出の正解パターンです。\n\n(A)は budget に引っ張られた金額のワナ、(B)は approved の繰り返しワナです。"
+  },
+  {
+    "screen_id": "403a8aa2-3f63-4ced-996d-38dbd8311f53",
+    "field": "explanation",
+    "after": "“Actually, it was a day late.” politely corrects the assumption; “actually” is a high-frequency signal for that. (B) is a place; (C) is a sound trap on “ship”."
+  },
+  {
+    "screen_id": "5f570520-83a6-4ec8-98f5-b02e54118a38",
+    "field": "explanation",
+    "after": "“I wouldn’t miss it.” means “definitely coming” without saying yes. (A) is past tense (the party hasn’t happened); (C) answers Where."
+  },
+  {
+    "screen_id": "fdcf2d4d-cd5e-45a4-bd91-5e0c001d27fc",
+    "field": "explanation",
+    "after": "“Walk me through ~” is a request for an explanation, so (A) agrees to it. (B) is a sound trap: walk vs. work. Mixing in near-homophones is Part 2’s favourite trick."
+  },
+  {
+    "screen_id": "e080e5ba-3dc6-4757-a6d7-f8f76d9e2c47",
+    "field": "body_ja",
+    "after": "ここまでで気づいたかもしれません。Part 2の正解は、質問の単語を繰り返さない、地味な選択肢が多いんです。\n\n出題者の心理を想像してみましょう。聞き取れた単語をそのまま含む選択肢は「お、聞こえたぞ」と選ばせるエサ。正解はあえて別の単語で作っておく。こうすれば、本当に文全体を理解した人だけが正解できます。\n\nだから本番では、こう考えてください。「同じ単語・似た音 → 疑う」「地味だけど会話が成立 → 有力」。"
+  },
+  {
+    "screen_id": "9e28f00d-2378-4bcd-93a1-c859f5fb1388",
+    "field": "explanation",
+    "after": "(A) plays supplies → surprise and (B) supplies → sizes. Who needs a person: “That would be Mr. Tanaka.” A soft, very TOEIC-flavoured way to identify someone."
+  },
+  {
+    "screen_id": "acd95adf-e83b-4dba-8a96-02da2562277a",
+    "field": "body",
+    "after": "• Before the audio, decide WHOSE words and WHAT information to ambush.\n\n• Purpose questions → opening; next-action questions → ending.\n\n• Right content, wrong speaker = wrong answer.\n\n• In the real test, the ~8-second pauses are your previewing time.\n\nNext: the heart of Parts 3 & 4, paraphrasing."
+  },
+  {
+    "screen_id": "106b0645-34d9-44f4-9b67-770675734616",
+    "field": "body",
+    "after": "In Parts 3 and 4 you answer three printed questions about each conversation or talk. Low scorers start reading the questions AFTER the audio begins, and the audio ends before they know what to listen for. High scorers preview: they read the questions in the seconds beforehand and decide their listening targets. This lesson trains that habit on paper."
+  },
+  {
+    "screen_id": "e01d399e-c7e1-4363-b26a-b3589fd91118",
+    "field": "explanation",
+    "after": "Her opening line says it outright: “I’m calling to remind you...”. (D) describes what the MAN wants, a classic subject swap."
+  },
+  {
+    "screen_id": "f1e83574-eebd-4ba2-81bf-fb6992992e27",
+    "field": "explanation",
+    "after": "The man’s last line (“send the final deck on Wednesday”) is the evidence. Several days fly past in Part 3; previewing tells you which one to lock onto."
+  },
+  {
+    "screen_id": "9a8790d9-a83a-4a80-adf9-e51fe786b64e",
+    "field": "body",
+    "after": "The subject of the question matters more than it looks. If the question asks what the MAN offers, the conversation will usually contain a second offer, made by the woman. Wrong options are often things that WERE said, just by the other speaker. Track who said what, not just what was said."
+  },
+  {
+    "screen_id": "9a8790d9-a83a-4a80-adf9-e51fe786b64e",
+    "field": "body_ja",
+    "after": "先読みで意外と大事なのが、設問の主語です。\n\nWhat does the man offer to do?（男性は何を申し出ている？）という設問で、会話に「提案」が2つ出てきたら、片方は男性の提案、もう片方は女性の提案、という作りになっています。\n\n不正解の選択肢は「会話に出てきた内容だけど、主語が違う」ことが多い。聞こえた内容に飛びつかず、誰が言ったかをセットで追いましょう。"
+  },
+  {
+    "screen_id": "b1f597cc-255b-44d6-a1c9-2fa020ad8917",
+    "field": "explanation",
+    "after": "His offer is “I can ask building services to open it.” The woman chooses the fifth floor, but the question asks about HIS offer. Subject awareness wins."
+  },
+  {
+    "screen_id": "b1f597cc-255b-44d6-a1c9-2fa020ad8917",
+    "field": "prompt",
+    "after": "【会話】\nW: The printer on this floor is out of toner again. I need to print 40 copies of the agenda before 3.\nM: The supply closet is locked, but I can ask building services to open it. Or you could use the printer on the fifth floor.\nW: I’ll try the fifth floor. It’s faster.\n\nQ: What does the man offer to do?"
+  },
+  {
+    "screen_id": "da65b992-9b7a-4dab-a9f0-5fe08175ca13",
+    "field": "explanation",
+    "after": "“After we look at the room” means the room comes first, the parking area second. “Next” questions love to scramble the order: ambush the ending AND check the sequence."
+  },
+  {
+    "screen_id": "01d4a12f-ceda-434d-878c-b11f2a809aaf",
+    "field": "body",
+    "after": "Suppose the audio says “The shipment won’t arrive until Thursday.” The correct option will read “The delivery will come later this week.” Same meaning, almost every word swapped. That is TOEIC paraphrasing. Options that copy the audio word-for-word are usually traps, just like Part 2’s sound-alikes. Choose by meaning, not by matching words."
+  },
+  {
+    "screen_id": "01d4a12f-ceda-434d-878c-b11f2a809aaf",
+    "field": "body_ja",
+    "after": "Part 3・4で音声がこう言ったとします。The shipment won’t arrive until Thursday.\n\n正解の選択肢はこうなります。The delivery will come later this week.\n\nshipment は delivery に、not until Thursday は later this week に。同じ内容なのに、単語はほぼ総入れ替えです。これがTOEICの言い換え（パラフレーズ）。\n\n逆に、音声と同じ単語をそのまま使った選択肢はワナのことが多い。Part 2の「似た音のワナ」と同じ発想ですね。聞こえた単語ではなく、意味で選ぶ。これがこのレッスンのテーマです。"
+  },
+  {
+    "screen_id": "9d10edb3-e0d4-4873-b053-a5d6602050ed",
+    "field": "explanation",
+    "after": "“Free of charge” → “at no cost”; “fitness center” → “gym”. Memorise the free-trio: free / at no cost / complimentary. It pays off in Part 7 too."
+  },
+  {
+    "screen_id": "4daaea74-5670-4143-97d6-d6f58877d61f",
+    "field": "body",
+    "after": "• Correct options reword the audio.\n\n• Three patterns: general words / verb swaps / number conversions.\n\n• Word-for-word matches are suspect.\n\n• Learn paraphrase PAIRS (free → at no cost, push back → postpone).\n\nNext: one level deeper, speaker-intent questions."
+  },
+  {
+    "screen_id": "32bef74c-30d6-480e-92dc-d3af9790686d",
+    "field": "explanation",
+    "after": "“Go over” → review; “survey results” → findings, both high-frequency pairs. (A) keeps “survey” but swaps the verb to “distribute”."
+  },
+  {
+    "screen_id": "e56a7f91-98b1-41f7-b8a3-fb41ed36167f",
+    "field": "body",
+    "after": "Some questions ask: Why does the woman say, “It’s already five o’clock”? “To tell the time” is almost always a trap. In real life that sentence means “let’s hurry”, “it’s too late today”, or “time to go home”. Intent questions ask about the FUNCTION of the line in context, and the surrounding lines are everything."
+  },
+  {
+    "screen_id": "e56a7f91-98b1-41f7-b8a3-fb41ed36167f",
+    "field": "body_ja",
+    "after": "Part 3・4には、こんな設問があります。\n\nWhy does the woman say, “It’s already five o’clock”?（女性はなぜ「もう5時だ」と言っているのか）\n\n「時刻を伝えるため」。これはほぼ確実にワナです。実際の会話で「もう5時だよ」と言うとき、私たちは時刻ではなく「急ごう」「今日はもう無理」「帰ろう」といった気持ちを伝えていますよね。\n\n意図問題は、セリフの文字どおりの意味ではなく、その場での働き（機能）を聞いています。前後の流れがすべてです。"
+  },
+  {
+    "screen_id": "93ba8b00-0b2b-4f03-a5a1-d7e2172578fd",
+    "field": "explanation",
+    "after": "As a reply to an invitation, “I have a client call at noon” is a refusal, just like “I have plans that day”. The woman’s “we’ll save you a few slices” confirms it."
+  },
+  {
+    "screen_id": "93ba8b00-0b2b-4f03-a5a1-d7e2172578fd",
+    "field": "transcript",
+    "after": "W: We’re ordering pizza for the team lunch. Want to join?\nM: I have a client call at noon.\nW: No problem. We’ll save you a few slices."
+  },
+  {
+    "screen_id": "280f719c-cb8b-4d27-8eec-2f81ed46efd1",
+    "field": "explanation",
+    "after": "The build-up (gone within an hour last year, 300 prepared this year, “but I’d STILL come early”) implies even 300 may not be enough. The evidence sits in the line just before."
+  },
+  {
+    "screen_id": "280f719c-cb8b-4d27-8eec-2f81ed46efd1",
+    "field": "transcript",
+    "after": "M: ...and one more thing about Saturday’s sale. Last year, the doors opened at nine, and by ten the gift bags were gone. This year we’ve prepared three hundred, but I’d still come early."
+  },
+  {
+    "screen_id": "e9b7ec4a-42ea-4945-9c9e-22dc71c3235f",
+    "field": "body",
+    "after": "Intent questions almost always include a literal-meaning option (“to tell the time”, “to describe his schedule”). Eliminate it on sight. The test only asks “why does she say this?” when the line does something beyond its surface meaning. Then check the remaining options against the lines just before and after."
+  },
+  {
+    "screen_id": "ea1809ff-dfbc-4b5d-bd96-81508817c438",
+    "field": "explanation",
+    "after": "To a worried colleague, “you saw the survey results, didn’t you?” means “relax, the demand is there”. Her relieved “Oh, right” seals it. A question in form, a reassurance in function."
+  },
+  {
+    "screen_id": "ea1809ff-dfbc-4b5d-bd96-81508817c438",
+    "field": "explanation_ja",
+    "after": "不安がる女性に「アンケート結果、見たでしょ？」と返すのは、「心配いらないよ、需要はあるよ」と安心させるため。女性が Oh, right（あ、そうだった）と安心しているのが決め手です。\n\n疑問文の形でも、働きは「励まし」。これが意図問題の面白いところです。"
+  },
+  {
+    "screen_id": "ea1809ff-dfbc-4b5d-bd96-81508817c438",
+    "field": "transcript",
+    "after": "W: I’m worried no one will sign up for the new evening class.\nM: You saw the survey results, didn’t you?\nW: Oh, right. Over half asked for evening options."
+  },
+  {
+    "screen_id": "b42a301d-aaba-44f7-9345-4a8f9d8f7fd0",
+    "field": "body",
+    "after": "• Intent questions ask what the line DOES in context.\n\n• Four functions: suggest / decline / surprise / reassure.\n\n• Eliminate the literal-meaning option on sight.\n\n• Evidence lives in the lines just before and after.\n\nNext level: the scoring engine of Reading, Part 5 grammar."
+  },
+  {
+    "screen_id": "542ed501-f92e-4796-8b9b-2dfc5dac1986",
+    "field": "explanation",
+    "after": "The man’s reply (“Let’s send it as it is”) shows her line worked as “no time for changes”. (B) is the literal-meaning trap. Work backwards from the reaction."
+  },
+  {
+    "screen_id": "1f4e5813-9d1a-4145-9aec-4aa9663ec8c0",
+    "field": "explanation",
+    "after": "Stating the schedule means “so we can’t pay by Friday”. The man’s move (asking the venue to wait) confirms it. Schedule statements very often function as “therefore it’s impossible”."
+  },
+  {
+    "screen_id": "594d9255-ffee-4b78-8301-98633b731c76",
+    "field": "explanation",
+    "after": "The blank follows the verb “increased”, and verbs are modified by adverbs: “significantly”. No need to translate the sentence; the words around the blank decide everything."
+  },
+  {
+    "screen_id": "594d9255-ffee-4b78-8301-98633b731c76",
+    "field": "explanation_ja",
+    "after": "空所の前は increased（動詞）。動詞を修飾するのは副詞なので、-ly の significantly が正解です。\n\n実はこの問題、文全体を訳す必要はありません。空所の前後だけで品詞が決まる。これがPart 5最速の解き方です。"
+  },
+  {
+    "screen_id": "5822efc0-73c6-4b84-81e5-c1ce542c7c10",
+    "field": "title",
+    "after": "Don’t translate: look around the blank"
+  },
+  {
+    "screen_id": "5822efc0-73c6-4b84-81e5-c1ce542c7c10",
+    "field": "body",
+    "after": "About a third of Part 5 is word-form questions. You spot them when the options are one word in four costumes. You never need the sentence’s meaning; only the one or two words around the blank. the ___ of → noun; a ___ + noun → adjective; verb + ___ → adverb. Under 20 seconds each; the time you save here funds Part 7."
+  },
+  {
+    "screen_id": "8158fe84-8d08-4599-b630-1f68a7c0be32",
+    "field": "body",
+    "after": "Nouns: -tion / -ment / -ness / -ity. Adjectives: -ive / -ful / -able / -ous. Adverbs: adjective + -ly. Verbs: -ize / -ify. One caution: -ly is not always an adverb (friendly, timely are adjectives). Always combine the ending with the blank’s position."
+  },
+  {
+    "screen_id": "0da9cb99-2be4-488c-b0d6-494f6a7a011a",
+    "field": "explanation",
+    "after": "“The safety ___” needs a noun (and it is the object of “read”): instructions. Note that non-words like “instructly” appear as options; ending knowledge lets you cut them with confidence."
+  },
+  {
+    "screen_id": "80f83fce-e873-417e-9e07-c253d9b40c05",
+    "field": "explanation",
+    "after": "The blank sits before the noun “response” and is paired with the adjective “quick” by “and”. Coordinated words share a part of speech, so “efficient”. Coordination is a powerful clue."
+  },
+  {
+    "screen_id": "4bc5c6fe-6d2f-40dc-9953-5c39f0c1230a",
+    "field": "explanation",
+    "after": "The blank modifies the participle “designed”. Participles are verb-family words, so they take an adverb: “newly”. The “adverb + participle + noun” chain (newly designed, recently updated) is a Part 5 staple."
+  },
+  {
+    "screen_id": "24c24116-782c-4515-959c-531abe50c158",
+    "field": "body",
+    "after": "• One word in four costumes = a word-form question.\n\n• Never translate; the 1–2 words around the blank decide.\n\n• Judge by endings: -tion/-ment nouns, -ive/-able adjectives, -ly adverbs (with exceptions).\n\n• Collect position patterns: coordination, possessives, participles.\n\nNext: verb forms, the tense/voice/agreement checklist."
+  },
+  {
+    "screen_id": "24c24116-782c-4515-959c-531abe50c158",
+    "field": "body_ja",
+    "after": "・選択肢に同じ単語の変化形が並んだら品詞問題\n\n・文を訳さない。空所の前後1〜2語で決める\n\n・語尾で品詞を判定：-tion/-ment＝名詞、-ive/-able＝形容詞、-ly＝副詞（例外あり）\n\n・and の並列、所有格の後ろ、分詞の前など、「位置のパターン」を貯める\n\n次は動詞の形、時制・態・一致の3点チェックです。"
+  },
+  {
+    "screen_id": "50fcacd1-b34b-4b89-9101-196f90a52adc",
+    "field": "body",
+    "after": "When the options are one verb in four forms, run a fixed three-point check: 1) AGREEMENT: is the subject singular or plural? 2) TENSE: any time markers (yesterday, next week, for the past...)? 3) VOICE: does the subject act or get acted on? In that order, two or three options usually vanish instantly."
+  },
+  {
+    "screen_id": "572fa678-41ed-475c-93fb-83a3997b6fdc",
+    "field": "explanation",
+    "after": "The subject is “The list” (singular); “of approved vendors” is just a modifier planted to make you pick “are”. “Every quarter” signals a habitual present: “is”. The real subject comes BEFORE “of”."
+  },
+  {
+    "screen_id": "f0d726a5-6c15-45b2-89f9-952486673778",
+    "field": "explanation",
+    "after": "No object after the blank, and luggage gets inspected rather than inspecting anything: passive. After “must” we need the base form: “be inspected”. Modal + be + past participle is a recurring shape."
+  },
+  {
+    "screen_id": "35bcc6f8-cf51-4b83-b753-14c6b7cbce7a",
+    "field": "explanation_ja",
+    "after": "for the past five years（この5年間ずっと）は現在完了のサイン。has grown（または has been growing）が正解です。\n\nfor ／ since ／ over the past 〜 を見たら現在完了。この反射を作っておくと、時制問題が一気に楽になります。"
+  },
+  {
+    "screen_id": "64a15231-c697-4666-a5a7-dcea81b56a8a",
+    "field": "explanation",
+    "after": "“Anyone” is singular, and the verb after “who” agrees with its antecedent: “wishes”. Anyone / everyone / each are singular, a favourite TOEIC pressure point."
+  },
+  {
+    "screen_id": "986c7064-89e2-48f2-badf-2436d4c11212",
+    "field": "explanation",
+    "after": "Against the past moment “when the alarm went off”, the speech was in progress, and a speech is delivered, not delivering. Past progressive passive: “was being delivered”. Both checks, one question."
+  },
+  {
+    "screen_id": "ad7aeecc-d94f-4953-9754-f4290959e71f",
+    "field": "explanation",
+    "after": "After the blank comes a noun phrase: “the heavy rain”. Only the preposition “Despite” can take a bare noun; Although and While are conjunctions and need a subject + verb. Same meaning, different grammar: the FORM decides."
+  },
+  {
+    "screen_id": "ad7aeecc-d94f-4953-9754-f4290959e71f",
+    "field": "explanation_ja",
+    "after": "空所の後ろは the heavy rain。名詞のかたまりです。名詞を従えられるのは前置詞の Despite だけ。Although や While は接続詞なので、後ろに「主語＋動詞」が必要です。\n\n意味はどちらも「〜にもかかわらず」。決め手は意味ではなく、後ろの形なんです。"
+  },
+  {
+    "screen_id": "66a3f261-305f-4bae-8cb7-0efa52506827",
+    "field": "body",
+    "after": "Many preposition/conjunction pairs share a meaning: despite ⇔ although, because of ⇔ because, during ⇔ while. The single test: a bare noun after the blank → preposition; a subject + verb → conjunction. No meaning needed: the most mechanical points in Part 5."
+  },
+  {
+    "screen_id": "66a3f261-305f-4bae-8cb7-0efa52506827",
+    "field": "body_ja",
+    "after": "前置詞と接続詞には、意味がほぼ同じペアがたくさんあります。\n\n・despite ／ in spite of（前）⇔ although ／ though（接）「〜にもかかわらず」\n・because of ／ due to（前）⇔ because ／ since（接）「〜のため」\n・during（前）⇔ while（接）「〜の間」\n\n見分け方はただ1つ。空所の後ろが名詞だけなら前置詞、主語＋動詞（SV）が続くなら接続詞。\n\n意味で迷う必要はありません。形で解く。Part 5で最も「機械的に」得点できる問題です。"
+  },
+  {
+    "screen_id": "f105ff24-4eaa-43fa-946c-dba97ac7b248",
+    "field": "explanation",
+    "after": "A subject + verb follows (“Mr. Okafor was attending”), so we need the conjunction “While”. “During” has the same meaning but is a preposition; it could only take “the conference”."
+  },
+  {
+    "screen_id": "f105ff24-4eaa-43fa-946c-dba97ac7b248",
+    "field": "explanation_ja",
+    "after": "空所の後ろは Mr. Okafor was attending。主語＋動詞が続いています。だから接続詞の While が正解。\n\n「〜の間」という意味では During も浮かびますが、During は前置詞なので During the conference のように名詞しか従えられません。"
+  },
+  {
+    "screen_id": "a4075d0b-b06b-4af6-9fa3-e8de0b204906",
+    "field": "body",
+    "after": "The other battleground is time words. by = deadline (“submit by Friday”) vs. until = continuation (“open until 9”). for + a length (“for two weeks”) vs. during + an event (“during the meeting”). in + month/year, on + day/date, at + clock time. Japanese 「〜まで」 covers both by and until, which is exactly why TOEIC tests it constantly."
+  },
+  {
+    "screen_id": "553f8a32-142b-4082-9ad0-adf17b386bbe",
+    "field": "explanation_ja",
+    "after": "後ろが their stay という名詞なので、前置詞の during（または throughout）が正解。while を使うなら while they are staying とSVが必要です。\n\n「名詞なら during、SVなら while」。この型はそのまま本番で使えます。"
+  },
+  {
+    "screen_id": "b459c54f-3089-441f-9fb9-b697cacf350b",
+    "field": "body",
+    "after": "Part 7 has 54 questions, and running out of time is the default outcome, usually because people read each document top to bottom. Most questions are fact-finding: the answer sits in ONE spot. So search, don’t read: 1) read the question first, 2) pick a keyword, 3) scan the text for it, 4) read closely only around the hit. That four-step routine is scanning."
+  },
+  {
+    "screen_id": "d5750f2c-4339-4fd6-8537-3096a27b4fe5",
+    "field": "explanation",
+    "after": "Keywords: “members” + a price. The Fee line gives “(members $20)”. $30 is the general fee and 16 is the capacity, both bait for number-grabbers. Read the WHOLE line you land on."
+  },
+  {
+    "screen_id": "d5750f2c-4339-4fd6-8537-3096a27b4fe5",
+    "field": "explanation_ja",
+    "after": "キーワードは members と金額。Fee の行をスキャンすれば (members $20) が見つかります。\n\n$30 は一般料金、16 は定員。どちらも「数字だけ拾った人」を引っかける選択肢です。見つけた行は最後まで読む、が鉄則です。"
+  },
+  {
+    "screen_id": "d5750f2c-4339-4fd6-8537-3096a27b4fe5",
+    "field": "prompt",
+    "after": "【お知らせ】\nGREENFIELD COMMUNITY CENTER\nSpring Photography Workshop\nSaturday, April 12, 10:00 A.M.–3:00 P.M.\nFee: $30 (members $20); includes lunch\nRegistration opens March 1 on our website.\nSpace is limited to 16 participants.\n\nQ: How much do members pay for the workshop?"
+  },
+  {
+    "screen_id": "d83e12a3-3d78-4d20-aaa4-bed454e2be93",
+    "field": "explanation",
+    "after": "Keyword: “Cedar Street”. That sentence says “bring your employee ID to enter”, the whole answer in one line. Question → keyword → one close-read line."
+  },
+  {
+    "screen_id": "add05a1f-30d6-497e-bf81-da058be73ad8",
+    "field": "explanation",
+    "after": "“Limited to 16 participants” is the evidence. This little notice contains dates, times, prices AND a capacity. Always check what each number labels."
+  },
+  {
+    "screen_id": "add05a1f-30d6-497e-bf81-da058be73ad8",
+    "field": "prompt",
+    "after": "【お知らせ】（さっきと同じ文書です）\nGREENFIELD COMMUNITY CENTER\nSpring Photography Workshop\nSaturday, April 12, 10:00 A.M.–3:00 P.M.\nFee: $30 (members $20); includes lunch\nRegistration opens March 1 on our website.\nSpace is limited to 16 participants.\n\nQ: 参加できる人数は最大何人？（半角数字で）"
+  },
+  {
+    "screen_id": "734bdc32-a17b-454b-a408-cdfb8c46cc73",
+    "field": "body",
+    "after": "Questions have a best order too. Fact questions with names or numbers (How much / When / Who) scan fast. Do them first. Purpose and “What is suggested” questions need the whole picture. Save them for last. While you answer the scannable ones, you absorb the document’s outline, and the hard question quietly becomes easy."
+  },
+  {
+    "screen_id": "734bdc32-a17b-454b-a408-cdfb8c46cc73",
+    "field": "body_ja",
+    "after": "実は、設問にも解きやすい順番があります。\n\n・固有名詞や数字を含む設問（How much ／ When ／ Who）→ スキャンが速い。先に解く\n\n・What is the purpose...? ／ What is suggested...? → 全体理解が必要。後回し\n\n1つの文書に複数の設問が付いている場合、検索型を解くうちに文書の全体像がつかめて、結果的に purpose 型も速く解けます。\n\n「易 → 難の順に解くと、難が勝手に易しくなる」。Part 7の小さな裏ワザです。"
+  },
+  {
+    "screen_id": "23501f1e-aa77-41d2-b6f8-27872dd7e251",
+    "field": "explanation",
+    "after": "Keyword: “valid”. The line “valid weekdays only, April 1–30” settles it. (C) baits anyone who only caught “April”. Limiting words like “only” are answer gold; underline them mentally."
+  },
+  {
+    "screen_id": "23501f1e-aa77-41d2-b6f8-27872dd7e251",
+    "field": "prompt",
+    "after": "【広告】\nMOVE-IT RENTALS: Spring Special\nRent any moving van for a full day for $59 (regular price $79).\nOffer valid weekdays only, April 1–30.\nReservations: www.move-it.com or 555-0188.\nVans must be returned with a full tank.\n\nQ: When is the special price available?"
+  },
+  {
+    "screen_id": "ce99c60e-23ac-41f8-8562-36357125f00c",
+    "field": "explanation",
+    "after": "Keyword: “return”. “Returned with a full tank” is paraphrased as “fill the fuel tank”. The verbatim-looking phone number (B) belongs to reservations, a trap."
+  },
+  {
+    "screen_id": "ce99c60e-23ac-41f8-8562-36357125f00c",
+    "field": "prompt",
+    "after": "【広告】（同じ広告です）\nMOVE-IT RENTALS: Spring Special\nRent any moving van for a full day for $59 (regular price $79).\nOffer valid weekdays only, April 1–30.\nReservations: www.move-it.com or 555-0188.\nVans must be returned with a full tank.\n\nQ: What must customers do when returning a van?"
+  },
+  {
+    "screen_id": "1a8a7055-8335-4cf7-a490-e9487639e365",
+    "field": "body",
+    "after": "• Read the question first; pick numbers, names, dates as keywords.\n\n• Scan; close-read only around the hit.\n\n• Options paraphrase the text: compare carefully.\n\n• Fact questions first, purpose questions last.\n\nNext: the two time-eaters, NOT questions and inference questions."
+  },
+  {
+    "screen_id": "65359491-2623-4df1-805d-0a4eb3b37f41",
+    "field": "body",
+    "after": "“What is NOT mentioned about the hotel?” In a NOT question, three of the four options ARE in the text and the missing one is the answer. That means up to four matching passes, making it Part 7’s biggest time sink. The cure is a fixed, mechanical procedure. See the next screen."
+  },
+  {
+    "screen_id": "182e4603-bf11-47f8-b579-143d15bc1848",
+    "field": "body",
+    "after": "The procedure: 1) skim options A–D first, 2) read the text and cross off each option as it appears, 3) the survivor is the answer. Remember the options are PARAPHRASES (complimentary breakfast → free morning meal). And since the evidence is scattered, a NOT question is closer to a read-through than a scan. Do it last in its set."
+  },
+  {
+    "screen_id": "f1c9741b-fd1c-4894-b6c1-e2e2ba76362a",
+    "field": "explanation",
+    "after": "(A), (B) and (D) all appear in the ad; a driver’s license never does. Plausible-sounding options are exactly the trap: go by the text, never by common sense."
+  },
+  {
+    "screen_id": "f1c9741b-fd1c-4894-b6c1-e2e2ba76362a",
+    "field": "prompt",
+    "after": "【求人広告】\nSales Associate, Hartley Furniture\nWe are seeking a full-time sales associate for our downtown showroom. Duties include assisting customers, processing payments, and arranging product displays. Applicants should have at least one year of retail experience and be available on weekends. To apply, send a résumé to jobs@hartleyfurniture.com by June 20.\n\nQ: What is NOT a stated requirement for the position?"
+  },
+  {
+    "screen_id": "cb7c2142-9a87-4f57-ba9a-7413d0e740d4",
+    "field": "body",
+    "after": "Inference questions carry imply / suggest / most likely. The answer is never stated outright, but it is always derivable from stated facts: “members get free shipping” + “Mr. Soto’s invoice shows $0 shipping” → Mr. Soto is a member. The discipline is taking exactly ONE step from the facts, never a leap of plausible imagination."
+  },
+  {
+    "screen_id": "5b6c302b-b315-47ab-8a28-65e5954ec57f",
+    "field": "explanation_ja",
+    "after": "booked a table for ... next month（来月の予約を入れた）から、「また行くつもり」が導けます。\n\n(A)は every Friday for the past year と矛盾。(C)は「いつもパスタ」とはあっても、先週何を頼んだかは書かれていません。本文にない決めつけは、推測問題では不正解です。"
+  },
+  {
+    "screen_id": "81965727-7dae-43da-b187-e3a919c02158",
+    "field": "explanation",
+    "after": "The booking methods are listed in one breath: online, by phone, or at the front desk; no email. When a NOT question maps onto a list, the cross-off takes seconds."
+  },
+  {
+    "screen_id": "81965727-7dae-43da-b187-e3a919c02158",
+    "field": "explanation_ja",
+    "after": "予約方法は online ／ by phone ／ at the front desk の3つが列挙されています。email はありません。\n\nA, B, or C のような列挙を見つけたら、選択肢との照合は一瞬で終わります。NOT問題は「列挙箇所を探す」と速い。覚えておいて損はないコツです。"
+  },
+  {
+    "screen_id": "81965727-7dae-43da-b187-e3a919c02158",
+    "field": "prompt",
+    "after": "【案内】\nRiverside Library: Meeting Rooms\nRooms may be booked free of charge by library cardholders. Bookings can be made online, by phone, or at the front desk. Rooms are available from 9 A.M. to 8 P.M. and must be left clean. Food is not permitted; covered drinks are allowed.\n\nQ: What is NOT mentioned as a way to book a room?"
+  },
+  {
+    "screen_id": "c22ae51d-fe8f-43b9-bdff-0c90e2b786b7",
+    "field": "body",
+    "after": "• NOT questions: skim the options, cross off matches, keep the survivor.\n\n• Cross off through paraphrases (complimentary = free).\n\n• Inference: exactly one step from stated facts.\n\n• Never fill gaps with common sense: the text is the only evidence.\n\nFinal lesson: double passages."
+  },
+  {
+    "screen_id": "5e0938c1-d689-4c4f-9617-0dc10c1d9db4",
+    "field": "body",
+    "after": "Late in Part 7 come sets with two (or three) documents: an email plus a schedule, an ad plus an order form. The signature feature: one or two questions per set are CROSS questions that cannot be solved from either document alone. If the schedule says “Tuesday instructor: Hill” and the email says “I’ll attend Tuesday”, only the combination yields “her instructor is Hill”. Pick from one document only and you fall neatly into a plausible wrong answer."
+  },
+  {
+    "screen_id": "5e0938c1-d689-4c4f-9617-0dc10c1d9db4",
+    "field": "body_ja",
+    "after": "Part 7の後半には、2つ（または3つ）の文書を読んで答えるセットが登場します。メール＋予定表、広告＋申込書といった組み合わせです。\n\n最大の特徴は、5問中1〜2問が「両方の文書を見ないと解けない」クロス問題だということ。\n\nたとえば、予定表に「火曜の講師：Hill先生」、メールに「火曜に参加します」とあれば、「この人の講師はHill先生」という答えは、2つの文書を組み合わせて初めて出てきます。\n\n片方の文書だけで選ぶと、もっともらしい不正解にきれいにはまる。そういう作りになっています。"
+  },
+  {
+    "screen_id": "40ee5c43-721d-4872-8937-33c3c13d123c",
+    "field": "explanation",
+    "after": "The email rules out Monday and Friday and picks “the art class” of the remaining two: watercolor painting, not photography. The schedule puts P. Novak on Tuesday. One round trip: email → schedule."
+  },
+  {
+    "screen_id": "40ee5c43-721d-4872-8937-33c3c13d123c",
+    "field": "prompt",
+    "after": "【文書1: 予定表】\nMAPLEWOOD COMMUNITY CLASSES: May\nMon: Beginner Yoga (Instructor: R. Iwata)\nTue: Watercolor Painting (Instructor: P. Novak)\nThu: Digital Photography (Instructor: S. Hill)\nFri: Italian Cooking (Instructor: M. Greco)\n\n【文書2: メール】\nFrom: Aiko Mori\nTo: Maplewood Community Center\nHello, I’d like to register for a May class. I work until 6 P.M. on Mondays and Fridays, so those days are impossible. Between the other two options, I’ll choose the art class.\n\nQ: Who will most likely be Ms. Mori’s instructor?"
+  },
+  {
+    "screen_id": "e0e3c414-a466-467c-ad79-94b94ace1f5a",
+    "field": "explanation",
+    "after": "Document 2 alone answers this: “I work until 6 P.M. on Mondays and Fridays”, paraphrased as “works until the evening”. Not every question is a cross question. Knowing which document a question lives in cuts your reading dramatically."
+  },
+  {
+    "screen_id": "e0e3c414-a466-467c-ad79-94b94ace1f5a",
+    "field": "prompt",
+    "after": "（さっきと同じ2つの文書です）\n【文書1: 予定表】\nMAPLEWOOD COMMUNITY CLASSES: May\nMon: Beginner Yoga (Instructor: R. Iwata)\nTue: Watercolor Painting (Instructor: P. Novak)\nThu: Digital Photography (Instructor: S. Hill)\nFri: Italian Cooking (Instructor: M. Greco)\n\n【文書2: メール】\nFrom: Aiko Mori\nTo: Maplewood Community Center\nHello, I’d like to register for a May class. I work until 6 P.M. on Mondays and Fridays, so those days are impossible. Between the other two options, I’ll choose the art class.\n\nQ: Why can’t Ms. Mori attend the Friday class?"
+  },
+  {
+    "screen_id": "53ca6fe3-4bcf-420a-8672-42a54251b0df",
+    "field": "body",
+    "after": "Cross questions are predictable: how much a SPECIFIC person pays (price table × their conditions), when or where people will actually meet (schedule × a change email), and anything with “most likely”. Above all, watch for changes and exceptions: if the email says Tuesday’s class is cancelled, every option that trusts the original schedule is a trap. New information beats old information, always."
+  },
+  {
+    "screen_id": "53ca6fe3-4bcf-420a-8672-42a54251b0df",
+    "field": "body_ja",
+    "after": "どの設問がクロス問題かは、ある程度予測できます。\n\nクロスになりやすい設問：\n・特定の人が「いくら払うか」（料金表 × その人の条件）\n・「いつ・どこで会うか」（予定表 × 変更メール）\n・most likely を含む設問\n\n特に注意したいのが変更・例外の情報。文書2のメールに「火曜は休講になりました」とあれば、文書1の予定表をそのまま信じた選択肢はワナです。\n\n新しい情報が古い情報に勝つ。ダブルパッセージの鉄則です。"
+  },
+  {
+    "screen_id": "32e16e9b-469d-4832-aea2-5108b0b8cd10",
+    "field": "explanation",
+    "after": "The form’s note (“This is my first time using your service”) is reworded as “has never used Clearview before”. (A) says the exact opposite. Find the sentence, verify the paraphrase, collect the point."
+  },
+  {
+    "screen_id": "32e16e9b-469d-4832-aea2-5108b0b8cd10",
+    "field": "explanation_ja",
+    "after": "文書2の Notes に This is my first time using your service とあります。正解(D)はそれを has never used ... before と言い換えたもの。(A)はその正反対です。\n\nindicated 型の設問は、根拠の一文を見つけて言い換えを確認するだけ。落ち着いて取りましょう。"
+  },
+  {
+    "screen_id": "f7d260b7-eca8-4a77-88bf-08aef725a45b",
+    "field": "body",
+    "after": "• One or two questions per set are cross questions.\n\n• Routine: mark the specifics → start in the document that has them → verify in the other.\n\n• Price questions: base → surcharges → discounts.\n\n• Changes and exceptions beat the original table.\n\nAll twelve lessons complete. Take the patterns into a mock test and put them to work."
+  },
+  {
+    "screen_id": "cbc7d155-a430-4eef-a185-c750382af93a",
+    "field": "body",
+    "after": "In Section 1 you complete a form while listening to a phone call, heard ONCE. So before the audio starts, scan the gaps and predict what each needs: a spelled-out name, a price, a date. Prediction tells you exactly when to concentrate. And obey the instruction line: if it says ONE WORD AND/OR A NUMBER, two words score zero even when the content is right."
+  },
+  {
+    "screen_id": "aee1c102-b178-406d-b127-75fd38e21804",
+    "field": "body",
+    "after": "The most-missed distinction in the numbers game: -teen vs. -ty. Two cues: STRESS (fifTEEN vs. FIFty) and the ENDING (a long clear “-teen” vs. a short clipped “-ty”). Best of all, speakers often confirm digit by digit: “fifteen, that’s one five”. When you hear that confirmation, trust it over your first impression."
+  },
+  {
+    "screen_id": "aee1c102-b178-406d-b127-75fd38e21804",
+    "field": "body_ja",
+    "after": "数字の聞き取りで一番落とされるのが、-teen と -ty の区別です。fifteen（15）と fifty（50）、thirteen（13）と thirty（30）。\n\n聞き分けのポイントは2つ。\n\n①アクセント：-teen は後ろ（fifTEEN）、-ty は前（FIFty）にアクセント。\n\n②語尾：-teen は「ティーン」とはっきり伸び、-ty は「ティ」と短く落ちます。\n\nそして実は、話し手自身が間違いを防ごうとして “fifteen, that’s one five” のように数字を1桁ずつ言い直してくれることが多い。この確認が聞こえたら、必ずそちらを採用しましょう。"
+  },
+  {
+    "screen_id": "c6959473-b0b6-4f7f-9049-f0865ec52722",
+    "field": "explanation",
+    "after": "End-stressed thirTEEN plus the “one three” confirmation: 13 weeks. If you wrote 30, replay the stress rule: stress at the end means -teen."
+  },
+  {
+    "screen_id": "c6959473-b0b6-4f7f-9049-f0865ec52722",
+    "field": "transcript",
+    "after": "The evening course runs for thirteen weeks. One three, thirteen."
+  },
+  {
+    "screen_id": "221cd0a6-65e8-40f2-b1b7-5566a40e8a1b",
+    "field": "body",
+    "after": "Numbers follow reading conventions worth memorising: oh = 0 and double four = 44 in phone numbers; “nineteen ninety-nine” = £19.99; “the twenty-first of June” = 21 June; “half past six” = 6.30 and “quarter to five” = 4.45. Understanding the phrase is half the job; the mark only comes when you convert it to digits on the form."
+  },
+  {
+    "screen_id": "0a0da7d8-2fa7-4eb6-8e9e-ea20042e1d49",
+    "field": "explanation",
+    "after": "“Oh” = 0 and “double three” = 33, giving 077 33 096. Phone numbers are long. Transcribe them AS you listen. Master the two conversions (oh → 0, double → twice) and phone numbers become free marks."
+  },
+  {
+    "screen_id": "a3cd312e-647a-48cb-b1a8-e06899df46b1",
+    "field": "explanation",
+    "after": "The first date (the thirtieth) gets changed; the agreed answer is the thirteenth. Two traps in one: -ty/-teen AND “the first number you hear isn’t necessarily the answer”. Only confirmed information goes on the form; corrections are covered in a later lesson."
+  },
+  {
+    "screen_id": "f39503da-fe8e-4958-914a-390a15e5a14d",
+    "field": "body",
+    "after": "• Preview the form and predict each gap’s information type.\n\n• double + letter = write it twice; transcribe spellings letter by letter.\n\n• -teen stresses the end, -ty the front; digit-by-digit confirmations settle it.\n\n• Convert conventions to digits: oh = 0, half past six = 6.30.\n\n• Misspellings and extra words score zero, full stop.\n\nNext: the Listening test’s biggest device, paraphrase."
+  },
+  {
+    "screen_id": "c851ca1a-9331-4db1-b2cf-e07f95466a29",
+    "field": "explanation_ja",
+    "after": "double N は「Nを2回」という意味。T-A-N-N-E-R で Tanner です。\n\nIELTSリスニングのSection 1では、名前のスペルがほぼ必ず読み上げられます。最初の関門がこの double。「double＋文字」と聞こえたら、その文字を2回書く。今日はこのフォーム記入を徹底的に練習します。\n\nなお、スペルミスは容赦なく0点。Taner でも Tannar でも不正解です。"
+  },
+  {
+    "screen_id": "0176854d-95b1-409a-b656-aeda0c74277c",
+    "field": "explanation",
+    "after": "“Double S” gives M-O-S-S-L-E-Y. When letters are read out, write them in your head AS you hear them. Reconstructing the word afterwards almost always drops a letter."
+  },
+  {
+    "screen_id": "6e848c4e-a71e-4c6b-af7c-fc6cb2dc8a79",
+    "field": "explanation",
+    "after": "Front-stressed FIFty, sealed by the digit-by-digit “five zero”. When torn between 15 and 50, wait for the confirmation. Section 1 speakers repeat the numbers that matter."
+  },
+  {
+    "screen_id": "6e848c4e-a71e-4c6b-af7c-fc6cb2dc8a79",
+    "field": "transcript",
+    "after": "There’s a deposit to pay: fifty pounds. That’s five zero, fifty."
+  },
+  {
+    "screen_id": "638e3b49-f4bd-462d-9c9d-0e7ecfa44be3",
+    "field": "body",
+    "after": "Paraphrases come in recurring pairs. Collect them like savings: costs nothing → free; not until Thursday → later in the week; book in advance → reserve early; nearly all → most; once a month → monthly. The working habit: as you read each question, ask “how else could English say this?” When one of your candidates plays, that is your answer."
+  },
+  {
+    "screen_id": "c5fe8795-e5e8-4d55-ad24-eb67739caf20",
+    "field": "transcript",
+    "after": "I’m afraid the sports centre won’t reopen until the end of April. The roof repairs have taken longer than expected."
+  },
+  {
+    "screen_id": "421437e9-edf6-43fa-bd13-e82c6ea507d1",
+    "field": "explanation",
+    "after": "“Provided at no extra charge” = “included in the price”, with lunch → meal as a bonus general-word swap. Treat the free-family (free / at no charge / at no cost / complimentary / included) as one meaning with five faces."
+  },
+  {
+    "screen_id": "9c572c08-9d6e-49dc-a7b1-46bff88710b9",
+    "field": "explanation",
+    "after": "“Brought forward” means moved EARLIER. Its mirror twins (push back / put off → later, postponed) appear over and over in both Listening and Reading."
+  },
+  {
+    "screen_id": "80c40aa8-e723-466f-adcf-2a1b5bd714d1",
+    "field": "explanation",
+    "after": "“Must be accompanied by an adult” flips into “cannot visit on their own”, a positive-to-negative paraphrase. (C) contradicts “children are welcome”, and (A) was never mentioned. Flipping requirements into prohibitions is a staple conversion."
+  },
+  {
+    "screen_id": "74edb3fa-b4cf-436c-906a-f29a21f3ea95",
+    "field": "body",
+    "after": "• The printed words won’t play; their paraphrases will.\n\n• Pre-imagine the re-wordings before the audio starts.\n\n• Bank the pairs: costs nothing → free, not until → later, book → reserve.\n\n• Practise positive↔negative flips (must be accompanied = can’t go alone).\n\nNext: the trap where EVERY option gets mentioned."
+  },
+  {
+    "screen_id": "6da6eae7-74d5-4eb8-b5b3-edfeafc0ccae",
+    "field": "explanation",
+    "after": "“Free of charge” in the question becomes “costs nothing” in the audio. Spot the conversion and Monday evenings is the only candidate. Missing answers because “the word never came up” is the single most common way to lose marks. Ambush the meaning, not the word."
+  },
+  {
+    "screen_id": "6da6eae7-74d5-4eb8-b5b3-edfeafc0ccae",
+    "field": "explanation_ja",
+    "after": "設問の free of charge は、音声では costs nothing と言い換えられています。この変換に気づければ、答えは Monday evenings しかありません。\n\n「free という単語が聞こえなかったから答えがわからなかった」。これがリスニングで最も多い失点パターン。単語ではなく意味を待ち伏せしましょう。"
+  },
+  {
+    "screen_id": "f416bb8c-0859-464f-b000-ad1af4e3ecd8",
+    "field": "explanation",
+    "after": "“Early booking” → “reserve in advance”; book/reserve is a must-know pair. (B) traps anyone who grabbed the word “early” alone: the advice is to book early, not to show up early. Match meanings, not words."
+  },
+  {
+    "screen_id": "6d1693e2-ce84-4c66-bf8b-f275366c07c6",
+    "field": "body",
+    "after": "IELTS Listening follows one strict rule: the words printed in the question are almost never the words you hear. The question says “free”; the audio says “costs nothing”. The question says “weekly”; the audio says “every seven days”. Wait for the printed word and the answer sails past you. The fix: before listening, imagine how each question could be re-worded. That conversion skill is today’s training."
+  },
+  {
+    "screen_id": "cc23bbad-2069-498a-a15b-54d8e8688b82",
+    "field": "explanation",
+    "after": "Two, four AND three all get said. That is exactly how IELTS builds its options. The first proposal and the counter-proposal both fall; the agreement lands on three. Hearing a number in the audio does not make it the answer: only what the speakers finally AGREE on counts."
+  },
+  {
+    "screen_id": "cc23bbad-2069-498a-a15b-54d8e8688b82",
+    "field": "explanation_ja",
+    "after": "2時、4時、3時。選択肢の時刻が全部会話に出てきましたね。これがIELTSの選択問題の作り方です。最初の提案（2時）も対案（4時）も退けられ、最後に合意したのは3時。\n\nこのように、「聞こえた＝正解」はまったく通用しません。会話は最後まで聞いて、合意した内容だけを採用しましょう。"
+  },
+  {
+    "screen_id": "cc23bbad-2069-498a-a15b-54d8e8688b82",
+    "field": "transcript",
+    "after": "M: Shall we meet at two o’clock to go over the plans?\nW: I have a class until half past two. Could we say four?\nM: Four’s a bit late for me. I need to leave by five. How about three?\nW: Three o’clock works. See you then."
+  },
+  {
+    "screen_id": "f368d8d7-512d-489c-b568-069d73611a52",
+    "field": "body",
+    "after": "IELTS multiple choice and matching are built on a design rule: every wrong option is also mentioned somewhere. “I heard that word” proves nothing: assume ALL options will play. What decides the answer is HOW each one is mentioned: proposed but declined, true last year but not this year, said about somebody else. Listen with a mental pencil, crossing options off as they are raised and rejected. The survivor is your answer."
+  },
+  {
+    "screen_id": "961a0b32-d64a-4915-87a7-54be5b32091d",
+    "field": "explanation",
+    "after": "Oak: too small, crossed off. Cedar: already booked, crossed off. Garden: the survivor. A classic elimination race where all three names play. Track WHY each falls (too small / booked) and the cross-offs become certain."
+  },
+  {
+    "screen_id": "961a0b32-d64a-4915-87a7-54be5b32091d",
+    "field": "transcript",
+    "after": "W: For the workshop, there’s the Oak Room. It holds forty people.\nM: We’re expecting about sixty, though.\nW: Then the Cedar Room… ah, no, it’s booked all week. The Garden Room is free on Thursday, and it takes eighty.\nM: The Garden Room it is."
+  },
+  {
+    "screen_id": "f5adc18e-bb56-4b53-b1f0-75eb478ec711",
+    "field": "body",
+    "after": "The hardest version of this trap: the speakers correct THEMSELVES. A settled answer flips at the last moment: “Let’s meet at two… actually, could we make it three?” Learn the signals: Actually… / On second thought… / Oh wait / Sorry, my mistake / Let’s make it ~. When one plays, get ready to erase what you just wrote. The last speaker’s correction wins."
+  },
+  {
+    "screen_id": "437000db-06f9-4c87-9a51-45de57d21ccc",
+    "field": "explanation",
+    "after": "The coffee machine is proposed first, but the man counter-offers a water cooler and the woman agrees: “Let’s order one”, where “one” = the cooler. The decider is never the proposal itself but the REACTION to it: only suggestions that win agreement survive."
+  },
+  {
+    "screen_id": "0fb4fb93-46c4-4ac4-b306-146489f4ef53",
+    "field": "explanation",
+    "after": "The number after “sorry, my mistake” (309) is the confirmed one. If 306 was already on your paper, overwrite it instantly. Build the reflex: correction signal → replace with what follows."
+  },
+  {
+    "screen_id": "0fb4fb93-46c4-4ac4-b306-146489f4ef53",
+    "field": "transcript",
+    "after": "Your booking reference is three oh six. Sorry, my mistake, three oh nine. That’s three, zero, nine."
+  },
+  {
+    "screen_id": "01267c92-8045-4650-b4b8-ec2edd3176db",
+    "field": "explanation",
+    "after": "“Last year … but this year” is the whole game: the old venue (main tent) sits there as bait, and this year’s answer is the riverside area. Past-vs-present contrasts are the matching task’s favourite wrong-answer factory. Always check WHICH time the question asks about."
+  },
+  {
+    "screen_id": "e20b1d89-8cc6-497d-b0f3-22e5b2b00593",
+    "field": "body",
+    "after": "• Wrong options WILL be mentioned: hearing a word proves nothing.\n\n• Cross options off as they are raised and rejected.\n\n• Actually / my mistake / let’s make it ~ → overwrite with what follows.\n\n• A proposal only counts once someone agrees to it.\n\n• Watch the last-year/this-year contrast.\n\nThat wraps up Listening. Next level: Reading, starting with the big one, True/False/Not Given."
+  },
+  {
+    "screen_id": "d07c931d-f476-4dc3-b9fb-0f9b9c2f3cab",
+    "field": "explanation",
+    "after": "Friday: no deliveries; Wednesday: customer away; Thursday: agreed. All three days play, again. Date-and-time negotiations are Section 1’s bread and butter, and the FIRST proposed day almost never survives."
+  },
+  {
+    "screen_id": "d07c931d-f476-4dc3-b9fb-0f9b9c2f3cab",
+    "field": "transcript",
+    "after": "M: Could you deliver the desk on Friday?\nW: I’m afraid we don’t deliver on Fridays. We could do Wednesday?\nM: I’m away on Wednesday, unfortunately. What about Thursday?\nW: Thursday morning, yes, that’s fine."
+  },
+  {
+    "screen_id": "9c896b31-b858-41c8-9c5f-60262686e704",
+    "field": "explanation",
+    "after": "Twenty years in the job, surely he enjoys it? That instinct is exactly what the test hunts. The text states two facts: 20+ years of service and responsibility for a collection. Whether he ENJOYS it is never addressed. Not written → Not Given. The more plausible a statement feels, the more likely it is to be Not Given. That is the heart of this lesson."
+  },
+  {
+    "screen_id": "9c896b31-b858-41c8-9c5f-60262686e704",
+    "field": "explanation_ja",
+    "after": "20年も働いているなら、きっと仕事が好きなはず。そう考えてTrueを選びましたか？それこそが出題者の狙いです。\n\n本文にあるのは「20年以上働いている」「郷土史コレクションの担当」という事実だけ。楽しんでいるかどうかは一言も書かれていません。書いていない→Not Given。\n\n常識的に「たぶんそうだろう」と思える内容ほどNot Givenになる。これがTFNG最大のワナであり、このレッスンの核心です。"
+  },
+  {
+    "screen_id": "940ee317-bdb6-4f9c-a86a-16eebbc642b4",
+    "field": "body",
+    "after": "Judge TFNG with a fixed three-step procedure: 1) Does the text say the SAME thing (in other words)? → True. 2) Does the text say the OPPOSITE? → False. 3) Neither? The text is silent on the point → Not Given. The only admissible evidence is the sentences of the passage; your knowledge, experience and common sense are banned. Ask “which sentence proves this?” If you cannot point at one, it is Not Given."
+  },
+  {
+    "screen_id": "d9b89d3f-f0c1-46b2-8f67-3ff7d9219999",
+    "field": "explanation",
+    "after": "The text says the path closes in winter; the statement claims year-round use. Direct contradiction → False. You may only answer False when the text actively asserts the opposite, and you can point at the sentence that does it."
+  },
+  {
+    "screen_id": "53f4cd86-4ed3-4213-b2d1-676b6f62df33",
+    "field": "body",
+    "after": "Splitting False from Not Given is the hard part. False = the text asserts the opposite. Not Given = the text never addresses it. Plausibility is irrelevant: a statement that is almost certainly true in the real world is still Not Given if the passage is silent, and a bizarre claim is Not Given (not False) when the text simply doesn’t touch it. The setter’s trick is quietly ADDING a reason, feeling or comparison to the passage’s topic. Always check whether the added part is actually in the text."
+  },
+  {
+    "screen_id": "53f4cd86-4ed3-4213-b2d1-676b6f62df33",
+    "field": "body_ja",
+    "after": "FalseとNot Givenの区別こそ、このタイプの最難関です。\n\n・False ＝ 本文が設問の逆を言っている\n・Not Given ＝ 本文がその件に触れていない\n\n「もっともらしいかどうか」は関係ありません。現実世界でほぼ確実に正しいことでも、本文に書いていなければNot Given。逆に、明らかに変な内容でも、本文が触れていなければFalseではなくNot Givenです。\n\n出題者の典型パターンは、本文の話題に理由・感情・比較をこっそり足すこと。「人気がある→だから増設した？」「長く働いている→だから好き？」。足された部分が本文にあるか、必ず確認してください。"
+  },
+  {
+    "screen_id": "f35418b9-7546-4ffc-ae10-16c5fe59fb38",
+    "field": "explanation",
+    "after": "The text gives two facts: launched in 2019, popular with hospital staff. The statement adds a CAUSE (“because staff requested it”) that appears nowhere. Not Given. “Popular, so they must have asked for it” is a common-sense leap; shared topic does not mean the claim itself is stated."
+  },
+  {
+    "screen_id": "8f97f4fd-db5c-4241-8333-fd8a82fd9efb",
+    "field": "explanation",
+    "after": "The text says MOST; the statement says EVERY. “Most have one” entails that some do not: direct conflict → False. Extreme words (every / all / only / never) are classic TFNG levers: when you spot one in a statement, compare its strength against the text’s wording."
+  },
+  {
+    "screen_id": "8f97f4fd-db5c-4241-8333-fd8a82fd9efb",
+    "field": "explanation_ja",
+    "after": "本文は most（大半）、設問は every（すべて）。「大半にある」は「すべてにある」と両立しません。mostは「バルコニーのない部屋もある」ことを含むからです。よってFalse。\n\nevery ／ all ／ only ／ never のような極端な言葉は、TFNGの定番の仕掛け。設問に見つけたら、本文の表現と強さを比べてください。"
+  },
+  {
+    "screen_id": "1d72aba2-85cc-426d-8d36-dc35f55615da",
+    "field": "explanation",
+    "after": "“Must dismount and walk the bike” flips into “riding is not permitted”, an instruction and a prohibition with one meaning → True. The positive↔negative flip from the Listening lesson works here too."
+  },
+  {
+    "screen_id": "bf32737e-339c-4b17-a638-feff6fddd3d5",
+    "field": "explanation",
+    "after": "The text covers the schedule and a booklet; who TEACHES is never mentioned → Not Given. “A cookery school probably has professional chefs” is precisely the plausibility bait. Zero pointable evidence = Not Given, every single time."
+  },
+  {
+    "screen_id": "bf32737e-339c-4b17-a638-feff6fddd3d5",
+    "field": "explanation_ja",
+    "after": "本文にあるのは曜日とレシピ冊子の話だけ。誰が教えるかは一切書かれていません→Not Given。\n\n料理学校ならプロの講師がいそう。その「ありそう感」がワナです。指させる根拠ゼロ＝Not Given。この基準を最後まで貫けるかが、TFNGのスコアを決めます。"
+  },
+  {
+    "screen_id": "6369e5ea-0d3b-4859-9c2f-6e8862d69c21",
+    "field": "body",
+    "after": "• Three steps: match → True, contradict → False, silent → Not Given.\n\n• The text is the only evidence; common sense is banned.\n\n• Added reasons, feelings or causes → suspect Not Given.\n\n• Weigh extreme words (every / all / only) against the text.\n\n• True hides behind paraphrase: match meanings, not words.\n\nNext lesson: matching headings to paragraphs."
+  },
+  {
+    "screen_id": "7f131c28-c140-444a-890d-61bb13ddac20",
+    "field": "explanation",
+    "after": "The app IS in the text, for exactly one sentence. The through-line is runaway growth: half a million trips, tripled stations, “most successful in a decade”. Option (A) is the signature trap: a heading built from a single detail. Ask how many sentences each candidate heading covers, and the trap collapses."
+  },
+  {
+    "screen_id": "7f131c28-c140-444a-890d-61bb13ddac20",
+    "field": "explanation_ja",
+    "after": "アプリの話は確かに本文にあります。でも1文だけ。段落全体を貫いているのは「予想を超える成長」（50万回の利用、ステーション3倍、過去10年で最も成功）です。\n\n(A)のような「1つの詳細だけ拾った見出し」が、このタイプの代表的なワナ。見出し候補が段落の何文をカバーしているか、と考えると見破れます。"
+  },
+  {
+    "screen_id": "639653b8-772a-4428-a40f-d36d78ab4c64",
+    "field": "body",
+    "after": "The main act usually stands in a predictable spot: the FIRST sentence, since English paragraphs tend to run topic-sentence-then-support. Read sentence one, test it against the headings. The exception: paragraphs that open with a question or an anecdote as a hook: there the reveal often waits in the LAST sentence. Routine: read the first sentence → pencil in a heading → confirm with the last sentence. Only close-read the middle when two candidates survive."
+  },
+  {
+    "screen_id": "dbc2f5cb-d568-4d03-af73-221fa0117b7a",
+    "field": "explanation",
+    "after": "Sentence one (remote work has changed how neighbourhoods are used) IS the topic sentence; cafés, shops and gyms are all illustrations of it. (B) contradicts the text (cafés are busier, not emptier) and (C) promotes a supporting detail to the title role. The cleanest pattern: topic sentence first."
+  },
+  {
+    "screen_id": "698a49eb-f528-449d-b382-737c8489a1f0",
+    "field": "explanation",
+    "after": "The opener is a hook question; the reveal arrives in the last sentence (ordinary machines once had humans doing their job), with the knocker-up as the worked example. (A) is far too broad and (B) never happens in the text. In hook-style paragraphs, the final sentence holds the heading."
+  },
+  {
+    "screen_id": "2b52e418-7c42-4c6f-86f4-adae2285ec8a",
+    "field": "body",
+    "after": "Trap headings come in three species: 1) the DETAIL trap: matches one sentence or example (the most common); 2) the TOO-BROAD trap: contains the paragraph but at chapter scale; 3) the REVERSED trap: right topic, wrong direction (rise vs. fall, benefit vs. drawback). Final check before committing: does my heading cover nearly every sentence? Is it the right size? Does it point the right way? Three yeses → lock it in."
+  },
+  {
+    "screen_id": "c69e1191-083f-4234-bc51-5052a6f619a1",
+    "field": "explanation",
+    "after": "The through-line (announced by “Not all plastic recycling is equal”) is recycling’s limits and inequalities. (A) is a detail trap built on the bench example; (C) never appears. “Limits” covers the bottle/downcycling contrast and the final “rarely recycled again” in one word."
+  },
+  {
+    "screen_id": "291563fd-f39a-4534-a2fb-2e68f10077c7",
+    "field": "explanation",
+    "after": "Sentence one: reopened after three years. Middle: the restoration work. Last sentence: sales smash the target (success). (A) covers all three beats. (B) points the wrong way (revival, not decline) and (C) never appears. Only (A) passes all three checks: coverage, size, direction."
+  },
+  {
+    "screen_id": "291563fd-f39a-4534-a2fb-2e68f10077c7",
+    "field": "explanation_ja",
+    "after": "第1文で「3年の閉鎖を経て再開」、中間で修復の中身、最終文で「チケットが年間目標を2週間で突破」＝成功。見出し(A)は再開・修復・成功の3要素をすべてカバーします。\n\n(B)は方向が逆（衰退ではなく復活）、(C)は本文にない話。チェック3つ（カバー率・サイズ・方向）が全部Yesになるのは(A)だけです。"
+  },
+  {
+    "screen_id": "ad89dacf-c323-4fb6-bfb7-016b20d487cd",
+    "field": "body",
+    "after": "• A heading names the paragraph’s through-line, never a detail.\n\n• Detail-only headings are the most common trap.\n\n• First sentence → pencil in → confirm with the last; hooks reveal late.\n\n• Final check: coverage, size, direction.\n\nNext: the war with word limits, completion and summary tasks."
+  },
+  {
+    "screen_id": "ad89dacf-c323-4fb6-bfb7-016b20d487cd",
+    "field": "body_ja",
+    "after": "・見出しは段落の主役（全体を貫くテーマ）を言い当てる\n\n・1つの詳細と一致するだけの見出しは最多のワナ\n\n・第1文を読む → 仮置き → 最終文で確認。つかみ型は最終文に主役\n\n・最終チェック：カバー率・サイズ・方向\n\n次は、語数制限との戦い、空所補充と要約完成です。"
+  },
+  {
+    "screen_id": "b540cd9a-b458-4488-99ae-5ebaac715038",
+    "field": "body",
+    "after": "Heading matching looks simple and scores poorly, because wrong headings are engineered to match ONE detail inside the paragraph. Every paragraph has a main act (the through-line) and supporting cast (examples, data, asides). A heading must name the main act; a heading that matches only a supporting detail is wrong no matter how clearly that detail appears in the text. Same logic as Listening’s “mentioned ≠ correct”: present in the paragraph ≠ the heading."
+  },
+  {
+    "screen_id": "c570126f-5fd8-4dc6-8de3-26e268bb4bb8",
+    "field": "body",
+    "after": "The instruction line varies: ONE WORD ONLY; NO MORE THAN TWO WORDS (one is fine too); NO MORE THAN TWO WORDS AND/OR A NUMBER. Counting rules are fixed: articles (a/the) count as words; hyphenated forms (part-time) count as one; “20” counts as a number but “twenty” counts as a word, so digits are the safe choice. After writing, count on your fingers. Those five seconds save real marks."
+  },
+  {
+    "screen_id": "c570126f-5fd8-4dc6-8de3-26e268bb4bb8",
+    "field": "body_ja",
+    "after": "指示文には数パターンあります。\n\n・ONE WORD ONLY ＝ 1語だけ\n・NO MORE THAN TWO WORDS ＝ 2語以内（1語でもOK）\n・NO MORE THAN TWO WORDS AND/OR A NUMBER ＝ 2語以内＋数字も使える\n\n数え方のルールも決まっています。\n\n・a ／ the などの冠詞も1語と数える\n・ハイフンでつながった語（part-time）は1語\n・数字は 20 と書けば「a number」、twenty と書けば1語\n\nだから迷ったら数字は算用数字で書くのが安全。そして答えを書いたら、指を折って語数を数える。この5秒を惜しまないでください。"
+  },
+  {
+    "screen_id": "d37fa7ab-02e0-4606-81e3-30bd87ebca54",
+    "field": "body",
+    "after": "Before hunting in the passage, let the gap’s surroundings dictate the form: after a/the → a noun; after will/must → a base verb; after by/in/at → a noun; after two/many → a PLURAL noun. The completed sentence must be grammatical English, so always re-read the whole line with your candidate in place: “two photograph” loses the mark by itself. Decide the form first, and the passage hunt narrows dramatically."
+  },
+  {
+    "screen_id": "54435146-3df0-4cdd-84db-3ad701b1a09d",
+    "field": "explanation",
+    "after": "The summary’s “could not operate in bad weather” paraphrases “stopped running whenever the weather turned rough”, and the subject of that clause is the passenger ferry. After “by” we need a noun, within two words: “ferry” or “passenger ferry”. Summary completion is paraphrase-mapping: find the matching passage, then lift the words that are already there."
+  },
+  {
+    "screen_id": "0b8239f1-415b-442d-974e-e8cd44038e28",
+    "field": "explanation",
+    "after": "The text says “summer months”, so write “summer months”. Near-synonyms of your own invention, like (B) and (C), carry nothing but risk here. Paraphrase is a weapon in Writing; in completion tasks the rule is the opposite: the passage’s words, in the passage’s spelling."
+  },
+  {
+    "screen_id": "107306a9-a0f1-4b4c-847c-54c5575ccd57",
+    "field": "body",
+    "after": "• Word limits are law: count on your fingers (articles count; hyphenated = one).\n\n• Digits are the safe way to write numbers.\n\n• Let the gap’s grammar decide the form before you hunt.\n\n• Use the passage’s exact words, never your own paraphrase.\n\n• Re-read the completed sentence for number and grammar.\n\nThat completes Reading. Next level: Writing, starting with GT Task 1 letters."
+  },
+  {
+    "screen_id": "8c4ce9b1-1030-40f8-adc3-7d79548a6aae",
+    "field": "explanation",
+    "after": "“NO MORE THAN TWO WORDS” kills (A) on arrival: three words score zero however correct the content. (C) rearranges the text’s wording (and is also three words). The mark goes to the text’s own words trimmed to fit: “information desk”. Word limits are law, not guidance."
+  },
+  {
+    "screen_id": "8c4ce9b1-1030-40f8-adc3-7d79548a6aae",
+    "field": "explanation_ja",
+    "after": "NO MORE THAN TWO WORDS（2語以内）なので、3語の (A) はその時点で0点。内容が完璧でも、です。(C) も同じく3語ある上に、本文の表現を勝手に組み替えています。\n\n正解は本文の言葉をそのまま2語に収めた information desk。語数制限は「努力目標」ではなく絶対ルール。これが空所補充の第一歩です。"
+  },
+  {
+    "screen_id": "0e8325c7-8c03-4ac3-ab8f-d682b9089966",
+    "field": "explanation",
+    "after": "You are writing to a stranger at an organisation (a formal letter), and the standard opener when you don’t know the name is “Dear Sir or Madam,”. (A) greets a friend; (C) addresses a building. Register (matching your tone to the situation) is a major scoring criterion, and it starts on line one."
+  },
+  {
+    "screen_id": "3ba28bf9-8ef6-42f0-a4b1-59a199eb4e58",
+    "field": "explanation",
+    "after": "“Dear Sir or Madam,” pairs with “Yours faithfully,”. “Yours sincerely,” belongs to letters that open with a name. In the exam this pairing is a fixed convention: memorise the pairs whole."
+  },
+  {
+    "screen_id": "96172cc2-7428-4c4a-8166-32ca341893d6",
+    "field": "explanation",
+    "after": "A letter to a friend is informal: “Thanks a million” and contractions like “couldn’t” are exactly right. (A) and (B) are grammatical but absurdly stiff for a friend. The letter task grades situational fit, not just correctness. Writing to a friend in bureaucrat-speak costs Task Achievement marks."
+  },
+  {
+    "screen_id": "a108ce26-e75f-4134-a1db-c36bc32f1dee",
+    "field": "body",
+    "after": "Every letter prompt carries three bullet points, and they are a contract: cover ALL three or your Task Achievement band is capped, however beautiful the English. The reliable shape: one bullet = one body paragraph. Thirty seconds of planning (“① what broke ② how it affects me ③ what I want done”) and the structure writes itself."
+  },
+  {
+    "screen_id": "90a6cec1-c0b2-4b0a-b88b-0c65679561a6",
+    "field": "explanation",
+    "after": "Only (B) walks through problem → effect → request. (A) skips the “how it affects you” bullet and wanders into unrelated complaints; (C) misses both the effect and the request. After writing, point at each bullet and ask “did I cover this?” That one habit stabilises your Task Achievement score."
+  },
+  {
+    "screen_id": "90a6cec1-c0b2-4b0a-b88b-0c65679561a6",
+    "field": "explanation_ja",
+    "after": "(B)だけが「問題→影響→依頼」の3点をすべて踏んでいます。\n\n(A)は2つ目の箇条書き（自分への影響）が抜け、関係のない不満に脱線。(C)は影響と依頼が抜けています。書き終わったら箇条書きを1つずつ指差して「書いたか？」と確認する。この習慣だけでTask Achievementは安定します。"
+  },
+  {
+    "screen_id": "6c13cbb7-ced8-42cc-a74f-6d3739a45cab",
+    "field": "explanation",
+    "after": "(A) is boilerplate from a business letter; mid-letter it reads like suddenly putting on a suit. Tone consistency within one letter is something examiners actively check: keep the register you chose in line one all the way to the sign-off. For a friend, “If you want to know more, just ask!” does the job."
+  },
+  {
+    "screen_id": "b46c19e0-0283-48d7-8e9d-549a0a71cf69",
+    "field": "body",
+    "after": "• Choose register by relationship: stranger → formal, named → semi-formal, friend → informal.\n\n• Openings and closings come in pairs: Sir or Madam ↔ faithfully; a name ↔ sincerely; a friend ↔ see you soon.\n\n• The three bullets are a contract: one paragraph each.\n\n• Keep the tone consistent to the sign-off.\n\nNext: describing charts in Academic Task 1."
+  },
+  {
+    "screen_id": "32c3ad09-b75f-49a2-8ce5-1ddbd363def6",
+    "field": "body",
+    "after": "Letters split into three registers by relationship: FORMAL (no name known: company, council): Dear Sir or Madam, ↔ Yours faithfully. SEMI-FORMAL (named but not close: landlord, manager): Dear Mr Tanaka, ↔ Yours sincerely. INFORMAL (friend or family): Dear Ken, ↔ Best wishes / See you soon. Memory hook: no name → faithfully; a name → sincerely; and never “Yours faithfully” to a friend. Learn openings and closings as PAIRS: a mismatched pair loses marks by itself."
+  },
+  {
+    "screen_id": "13a4da0e-15c6-413f-ab51-0f6f51ccfe03",
+    "field": "explanation",
+    "after": "No name known → Dear Sir or Madam ↔ Yours faithfully. Mind the spelling: faithful + -ly gives the double L. A misspelled sign-off is a sour final note: finish clean."
+  },
+  {
+    "screen_id": "30ec17b3-cce8-46ea-9632-f5de352736c7",
+    "field": "explanation",
+    "after": "84,000 → 42,000 is exactly a halving. (C)’s “by a third” fails the arithmetic. (A) is the subtle trap: with only two data points, the path between them is unknown; “steadily throughout” claims more than the data shows. A Task 1 sentence must never outrun its evidence."
+  },
+  {
+    "screen_id": "a3d9703e-2313-4717-b365-480ca32290b6",
+    "field": "title",
+    "after": "Task 1 reads the instruments, with a small bank"
+  },
+  {
+    "screen_id": "a3d9703e-2313-4717-b365-480ca32290b6",
+    "field": "body",
+    "after": "Academic Task 1 is a 150-word report on a chart. Opinions (“I think people should…”) and invented causes (“probably because of prices…”) are banned: treat think / should / best as red flags.\n\nThe vocabulary is small and high-value: rises (rose / increased / climbed + sharply / steadily / slightly), falls (fell / dropped / declined + the same adverbs), flat lines (remained stable / levelled off), multiples (doubled / halved / more than doubled), extremes (peaked at ~ / fell to a low of ~).\n\nThe frame is SUBJECT + VERB + ADVERB + PERIOD. Slot the bank’s parts into the frame and any chart becomes writable."
+  },
+  {
+    "screen_id": "468afc6f-a599-41ad-bbf4-10c54eb13b68",
+    "field": "explanation",
+    "after": "200 → 850 is more than a fourfold rise, so rose / jumped / surged pair naturally with “sharply”. Verb + adverb together make one claim: match their energy to the data’s."
+  },
+  {
+    "screen_id": "c143c6de-b7af-4462-8709-65a852c37d08",
+    "field": "explanation",
+    "after": "Fell, declined or dropped + “steadily”. Each fall-verb has its own shade (declined slightly formal, slid gentle), and rotating two or three keeps a 150-word report from going monotone."
+  },
+  {
+    "screen_id": "6c93c956-652f-46a2-b3d9-301cfb434ef6",
+    "field": "body",
+    "after": "The overview separates band 6 from band 7. Position: right after your one-sentence paraphrase of the task. Opener: “Overall,”. Contents: the one or two biggest trends, with NO specific numbers; details belong to the body paragraphs. The overview says what the chart looks like from a distance, and without one the most numerically perfect answer still hits a Task Achievement ceiling.\n\nCaution: starting with “Overall,” does not make a sentence an overview. A number report or an opinion in that costume still fails. It is judged by function, not by its first word."
+  },
+  {
+    "screen_id": "6c93c956-652f-46a2-b3d9-301cfb434ef6",
+    "field": "body_ja",
+    "after": "Task 1の答案でバンド6と7を分けるのが、オーバービュー（全体観の1〜2文）です。\n\n・置き場所：書き出しの言い換え文（The chart shows…）のすぐあと\n\n・書き出し：Overall, が定番\n\n・中身：一番大きな傾向を1〜2個だけ。具体的な数字は入れない\n\n細かい数字は本文の段落の仕事です。オーバービューは「遠くから見たら何が起きているか」を言う文。これがない答案は、数字がどれだけ正確でも Task Achievement で頭打ちになります。\n\n注意：Overall, で始まっていても、数字の報告や意見になっていたらオーバービューではありません。形ではなく役割で判定されます。"
+  },
+  {
+    "screen_id": "9cd04fe5-3bf5-4007-9eb1-1920686e587c",
+    "field": "explanation",
+    "after": "(C) captures the two biggest movements with no numbers: the textbook overview. (A) opens with “Overall” but reports specific figures: body-paragraph work in disguise. (B) is an opinion about policy, banned in Task 1. Judge candidates by function, not by their first word."
+  },
+  {
+    "screen_id": "9cd04fe5-3bf5-4007-9eb1-1920686e587c",
+    "field": "explanation_ja",
+    "after": "(C)は最大の傾向（石炭→再エネへの移行、ガスは横ばい）だけを、数字なしでまとめています。これが教科書どおりのオーバービューです。\n\n(A)は Overall で始まっていますが、中身は具体的な数字の報告。本文の段落の仕事です。(B)は政策の評価という意見で、Task 1では書けません。"
+  },
+  {
+    "screen_id": "363a27ba-c81c-452b-8336-54d5039626f2",
+    "field": "explanation",
+    "after": "“Rose steadily”, “peaked at 40%”, “remained broadly stable”. “Rising” lacks the required past tense, “stability” is a noun where remain needs an adjective, and “fell” points the wrong way for car ownership (35% → 64%). Small forms, but they carry the accuracy half of the score."
+  },
+  {
+    "screen_id": "03a2bfd5-cf09-4860-90e5-2454d1e7718d",
+    "field": "body",
+    "after": "• Task 1 reports; it never opines or speculates (think / should / best = red flags).\n\n• Two data points cannot prove “steadily throughout”: write only what the data can defend.\n\n• The bank: rose / fell + sharply, steadily, slightly; remained stable; peaked at; more than doubled.\n\n• Frame: subject + verb + adverb + period.\n\n• Overview = “Overall,” + biggest trends, zero numbers, judged by function.\n\nNow cement the bank by writing a full mock Task 1."
+  },
+  {
+    "screen_id": "74889711-892a-4381-9bd2-bfd487b4fb16",
+    "field": "body",
+    "after": "One skeleton fits every Task 2: ① intro: paraphrase the question + your thesis; ② body 1: first reason + example; ③ body 2: second reason + example; ④ conclusion: restate your position.\n\nQuestions split into two big types. OPINION (“agree or disagree?”): both bodies support your side, or body 2 rebuts the opposition. DISCUSS-BOTH-VIEWS: body 1 = view A, body 2 = view B, with YOUR opinion declared in the intro and conclusion. Covering only one view in a discuss-both question is the deadliest scoring mistake: “both” means both."
+  },
+  {
+    "screen_id": "051d2e9d-7ea8-4f2e-b6d9-5f7b6c27b4e6",
+    "field": "explanation",
+    "after": "Intro → body 1 → body 2 → conclusion. A dictionary-definition opening takes no position and burns words, and a brand-new argument in the conclusion is a claim you never defend; both erode the examiner’s trust in the essay’s control."
+  },
+  {
+    "screen_id": "6034cc60-5a57-4318-99d8-5f59291ecabc",
+    "field": "body",
+    "after": "The last sentence of the intro is the thesis, the spoiler that hands the examiner a map. A good thesis does two things: answers the question directly (agree? disagree? leaning where?) and previews your reasons.\n\nFor discuss-both questions, a “While ~” opening nods to view A before declaring your camp: both views previewed and an opinion stated, in one sentence (below). The one to avoid: “This essay will discuss this topic.” A thesis with no position and no reasons is no thesis at all."
+  },
+  {
+    "screen_id": "6034cc60-5a57-4318-99d8-5f59291ecabc",
+    "field": "body_ja",
+    "after": "導入の最後に置く1文が thesis statement。「この答案の結論はこれです」という予告です。採点者はここで答案の地図を手に入れます。\n\n良い thesis の条件は2つ。\n\n①設問に直接答えている（賛成？反対？どちら寄り？）\n\n②理由をちらっと予告している\n\n両論型なら、While 〜（〜ではあるものの）で見方Aに目配りしてから自分の立場を述べると、1文で「両論を扱う予告＋意見表明」が完成します（下の例）。\n\n避けたいのは This essay will discuss this topic. のような中身ゼロの文。立場も理由も見えない thesis は、ないのと同じです。"
+  },
+  {
+    "screen_id": "0c1b7860-4595-4817-a8d3-24d11718e501",
+    "field": "explanation_ja",
+    "after": "While 〜（〜ではあるものの）で反対側に目配りし、largely agree で立場の度合いを示し、理由2つ（reduce 〜 ／ create 〜）を予告する。thesis の役割すべてが1文に収まりました。\n\nDespite の後ろには名詞句しか置けないので、節（uniforms can limit…）は続けられません。主語が they なので reduces ／ creates は数が合いません。"
+  },
+  {
+    "screen_id": "03b3eed1-c4f2-40cb-94c9-7ab5ea05113d",
+    "field": "explanation",
+    "after": "“On the other hand” signposts the second view, and “those who… argue that…” reports OTHER people’s position, a topic sentence opening body 2. A thesis would say “I believe”; the subject gives it away. A conclusion would carry its own signpost (“In conclusion”)."
+  },
+  {
+    "screen_id": "5c70dddb-b4da-4f39-ac40-1de48c394566",
+    "field": "body",
+    "after": "Plant signs at the joints: the Coherence and Cohesion criterion is graded right there. Body openers: Firstly / The main reason is that…; contrast: However / On the other hand (the natural opener for body 2 in a discuss-both essay); examples: For example / For instance; concession: Despite + noun phrase, Although + clause; conclusion: In conclusion / To sum up.\n\nOne warning: don’t over-sign the road. A Moreover-Furthermore-Additionally pile-up reads mechanical. Two or three per paragraph, only at the real corners."
+  },
+  {
+    "screen_id": "dab14eae-0d7f-490c-b38c-36df80a50ab1",
+    "field": "explanation_ja",
+    "after": "Despite ＋名詞句（その明らかな利便性にもかかわらず）。although は後ろに節（主語＋動詞）が必要なので、ここには置けません。\n\nDespite ／ In spite of ＋名詞、Although ＋節。この使い分けは、一貫性と文法の両方の基準で効きます。"
+  },
+  {
+    "screen_id": "0b300897-44d7-41a7-986a-efb8415518b6",
+    "field": "explanation",
+    "after": "“Alternatively,” fits best: it offers the second proposal as another route (Additionally / Moreover also work). In a solutions paragraph, one signpost at the second idea transforms readability."
+  },
+  {
+    "screen_id": "bc90187c-64ed-4249-b8c8-43ec4005c321",
+    "field": "body",
+    "after": "• Ten seconds first: opinion type (“agree or disagree?”) or discuss-both (“Discuss both views”)?\n\n• Four paragraphs: intro + thesis / body 1 / body 2 / conclusion, and no new arguments in the conclusion.\n\n• Thesis = position + previewed reasons; never “This essay will discuss…”.\n\n• Open a discuss-both body 2 with “On the other hand, those who… argue that…”.\n\n• Despite + noun phrase, Although + clause; signs at the corners only.\n\nThe skeleton is yours. Now rebuild it from memory in a mock Task 2."
+  },
+  {
+    "screen_id": "4aa445fe-716e-4009-bb52-c6a707a488ed",
+    "field": "explanation",
+    "after": "The decisive factor is range, not length. Y shows natural vocabulary (unwind, catch up with, switch off) and combines clauses with “once” and “which”. IELTS Speaking is scored on four criteria (fluency and coherence, vocabulary, grammar, pronunciation), and length itself is not one of them. X is short and accurate, but offers no evidence of range, which caps its score."
+  },
+  {
+    "screen_id": "4aa445fe-716e-4009-bb52-c6a707a488ed",
+    "field": "prompt",
+    "after": "【試験官】“Do you prefer mornings or evenings?”\n\n【答えX】“I prefer evenings. Evening is relax time. I watch TV and I rest.”\n【答えY】“Definitely evenings. Once dinner’s out of the way, I can finally unwind. I usually read or catch up with friends online, which helps me switch off before bed.”"
+  },
+  {
+    "screen_id": "84fe0195-cb32-47c4-9f55-04885991b8cd",
+    "field": "body",
+    "after": "Your Speaking band is the average of four equally weighted criteria: ① Fluency and Coherence: can you keep going, and does the answer hang together logically? ② Lexical Resource: a wide, precise vocabulary used appropriately. ③ Grammatical Range and Accuracy: varied structures with errors under control. ④ Pronunciation: effortless to follow, with natural stress and intonation.\n\nBecause the weights are equal, perfect grammar cannot rescue a vocabulary of repeated “nice”s, and lifting your weakest criterion moves the whole band. This level trains each criterion in turn, starting with the diagnostic skill: hearing an answer and naming WHICH criterion it loses."
+  },
+  {
+    "screen_id": "4d47d84c-ff31-4325-ba29-bab3f34693a0",
+    "field": "explanation",
+    "after": "The vocabulary (browse, compare different brands) is sound and there are no grammar errors. What suffers is the FLOW: constant fillers and restarts interrupt the answer again and again. That lands squarely on Fluency and Coherence. Learning to diagnose which criterion an answer loses is also how you prioritise your own practice."
+  },
+  {
+    "screen_id": "4d47d84c-ff31-4325-ba29-bab3f34693a0",
+    "field": "explanation_ja",
+    "after": "語彙は browse ／ compare different brands と悪くなく、文法ミスもありません。問題は er… の連発と同じ語句の言い直しで、話の流れが何度も止まっていること。これは Fluency and Coherence の減点対象です。\n\n「どの基準が削られているか」を聞き分けられるようになると、自分の練習の優先順位も決められます。"
+  },
+  {
+    "screen_id": "a7e082b0-51ed-4261-aa0e-1056453487a4",
+    "field": "explanation",
+    "after": "The answer flows and the grammar is accurate, but “nice” appears four times. Repeating one adjective leaves your range invisible: the classic Lexical Resource ceiling. The examiner is listening for a different word per target: welcoming people, delicious local dishes, leafy parks."
+  },
+  {
+    "screen_id": "a7e082b0-51ed-4261-aa0e-1056453487a4",
+    "field": "explanation_ja",
+    "after": "流れは止まっておらず、文法も正確です。しかし nice が4回。同じ形容詞の繰り返しは、語彙の幅が見えないという Lexical Resource の典型的な減点パターンです。\n\nwelcoming（温かい）／ delicious local dishes（おいしい地元料理）／ leafy parks（緑豊かな公園）のように、対象ごとに違う語を当てられるかが見られています。"
+  },
+  {
+    "screen_id": "be182004-cc13-4e47-ad9d-a40766b3dc9e",
+    "field": "explanation",
+    "after": "The delivery is fluent and the vocabulary fits the topic. What bleeds is grammatical ACCURACY: change → has changed, appear → appeared, tourists is → tourists are. Three tense/agreement errors in two sentences. GRA grades range and accuracy together; nobody demands zero errors, but this density hits the score directly."
+  },
+  {
+    "screen_id": "be182004-cc13-4e47-ad9d-a40766b3dc9e",
+    "field": "explanation_ja",
+    "after": "流れは良く、語彙も話題に合っています。削られているのは文法の正確さ。change → has changed、appear → appeared、tourists is → tourists are と、時制と主語・動詞の一致のミスが3連発です。\n\nGrammatical Range and Accuracy は「幅」と「正確さ」の両輪。ミスゼロは要求されませんが、この密度になると評価を直撃します。"
+  },
+  {
+    "screen_id": "54eb4863-8846-4568-9100-e47800a9957e",
+    "field": "body",
+    "after": "Compare the two sample answers below: both communicate. The difference: Band 5 strings short simple sentences with basic, repeated vocabulary; few errors, but no visible range. Band 7 shows less common phrasing (“nothing fancy”, “the queue tells you everything”), combined clauses, and detail with a personal voice.\n\nThe common misconception: Band 7 does not mean error-free. A few slips are fine if range and flexibility are there. Play it safe with simple correct sentences and you park at 5–6. The criteria pay for ambition, not caution."
+  },
+  {
+    "screen_id": "54eb4863-8846-4568-9100-e47800a9957e",
+    "field": "body_ja",
+    "after": "同じ質問への2つの答えを見比べてください（下の例）。どちらも「伝わる」答えです。違いはこうです。\n\n・Band 5：短い単文の連続。語彙は基本語の繰り返し。間違いは少ないが、幅も見えない\n\n・Band 7：less common な語彙（nothing fancy ／ the queue tells you everything）、複文、そして自分の感覚がにじむ細部\n\n誤解されがちですが、Band 7はノーミスではありません。多少のミスがあっても、幅と柔軟さがあれば届きます。逆に、ミスを恐れて簡単な文だけで答え続けると、正確でもBand 5〜6で止まります。\n\n「安全運転の正確さ」より「多少のリスクを取った幅」。採点基準は後者に報酬を出します。"
+  },
+  {
+    "screen_id": "54eb4863-8846-4568-9100-e47800a9957e",
+    "field": "example",
+    "after": "Q: “Do you often eat out?”\n【Band 5】“Yes, I eat out two times a week. I like the ramen shop near my house. It is cheap and good.”\n【Band 7】“Yes, a couple of times a week, usually when I’m too tired to cook. There’s a fantastic little ramen place near my flat. It’s nothing fancy, but the queue tells you everything.”"
+  },
+  {
+    "screen_id": "5fe080bf-15e1-461a-bc00-9d2ac1fd9d79",
+    "field": "body",
+    "after": "So how do you SHOW range? The most reliable habit: extend every answer to answer + reason + example. Fluency and Coherence: longer turns, with “because” and “for example” making the logic audible. Lexical Resource: examples drag concrete nouns and verbs in naturally. Grammar: reasons and examples generate complex sentences (because…, which…) by themselves.\n\nOne habit, three criteria paid at once: the best investment in the test. (Pronunciation is the exception; train it separately with reading aloud and shadowing.) Now assemble the shape yourself."
+  },
+  {
+    "screen_id": "60e0b234-233c-4088-a24a-c1eb5b3208f8",
+    "field": "text",
+    "after": "“Yes, I do, ___ because it helps me clear my head after work. ___, I walk along the river near my flat most evenings, ___ when it’s cold.”"
+  },
+  {
+    "screen_id": "e2e5aab6-5e09-4f3d-9dc4-b78ac029977c",
+    "field": "explanation",
+    "after": "“For EXAMPLE,” (or “for instance,”) is the signal that evidence is coming. The moment the examiner hears it, your answer registers as supported. Train the reflex of following every reason with one, and the three-part shape builds itself."
+  },
+  {
+    "screen_id": "34f0c5a7-b1a7-4a35-940c-4533826b9d9e",
+    "field": "explanation",
+    "after": "The language is flawless, but the question asked about your current NEIGHBOURHOOD, and the answer narrates a hometown’s history. An answer that doesn’t address the question is a coherence failure, scored under Fluency and Coherence. Steering every question toward a memorised topic is caught and penalised the same way, however fluent the delivery."
+  },
+  {
+    "screen_id": "34f0c5a7-b1a7-4a35-940c-4533826b9d9e",
+    "field": "explanation_ja",
+    "after": "語彙も文法も問題ありません。しかし質問は「今住んでいる地域は好きか」なのに、答えは故郷の歴史の話。質問に答えていない答えは、Coherence（一貫性）の問題として Fluency and Coherence で減点されます。\n\n準備したトピックに強引につなげる「暗記スピーチへの誘導」も、同じ理由で見抜かれて減点されます。流暢に話せていても、です。"
+  },
+  {
+    "screen_id": "bfc23378-253f-4e4f-8bcf-9b5013bf7227",
+    "field": "body",
+    "after": "• Four criteria at 25% each: fluency and coherence / vocabulary / grammar / pronunciation.\n\n• Length is not a criterion; range and naturalness are.\n\n• Band 7 ≠ error-free. Ambitious complex sentences beat cautious simple ones.\n\n• The answer + reason + example habit pays three criteria at once.\n\n• Fluent answers that dodge the question lose marks for coherence.\n\nNext lesson: the first pillar in detail, showing your lexical range."
+  },
+  {
+    "screen_id": "bfc23378-253f-4e4f-8bcf-9b5013bf7227",
+    "field": "body_ja",
+    "after": "・採点は4基準×25%：流暢さと一貫性／語彙／文法／発音\n\n・長さは基準にない。評価されるのは「幅」と「自然さ」\n\n・Band 7はノーミスではない。安全運転の単文より、リスクを取った複文\n\n・「答え＋理由＋例」の習慣が、3基準に同時に効く\n\n・質問に答えない流暢な答えは、一貫性で減点される\n\n次のレッスンでは、4基準のひとつ目の柱、語彙の幅の見せ方を鍛えます。"
+  },
+  {
+    "screen_id": "db8a0c24-2ad4-4763-a1b1-4f9d1aec6d6f",
+    "field": "explanation",
+    "after": "(B) uses natural, varied vocabulary: strict, endlessly patient, a knack for. (A) repeats “good” and shows no range. (C) stacks rare words nobody says in conversation; Lexical Resource rewards the RIGHT word for the situation, not the hardest word in the dictionary."
+  },
+  {
+    "screen_id": "db8a0c24-2ad4-4763-a1b1-4f9d1aec6d6f",
+    "field": "explanation_ja",
+    "after": "(B)は strict ／ endlessly patient ／ have a knack for（〜のコツを心得ている）と、自然で幅のある語彙を使っています。\n\n(A)は good の繰り返しで幅が見えません。(C)は難語を並べていますが、会話で paradigmatic pedagogue と言う人はいません。語彙力とは「難しい単語」ではなく「場面に合った的確な単語」です。"
+  },
+  {
+    "screen_id": "2f54ac7d-35eb-4c9f-9c16-d2f2d3ad513f",
+    "field": "body",
+    "after": "For vocabulary, the examiner listens for three things: ① range: a different word per target instead of one word recycled; ② precision: natural word partnerships (collocation); ③ paraphrase: talking your way around words you lack.\n\nThe starting point is knowing your crutch words. Everyone has them: good, nice, important, very. Prepare two or three stand-ins for each and range appears by itself. This lesson makes you PRODUCE those stand-ins: recalling a word yourself, not recognising it in a list, is the skill the test demands."
+  },
+  {
+    "screen_id": "2f54ac7d-35eb-4c9f-9c16-d2f2d3ad513f",
+    "field": "body_ja",
+    "after": "採点者が語彙について見ているのは、主に3点です。\n\n①幅：同じ語を繰り返さず、対象ごとに違う語を当てられるか\n\n②的確さ：語と語の相性（コロケーション）が自然か\n\n③言い換え力：知らない単語や設問の単語を、別の言い方で乗り切れるか\n\n対策の出発点は、自分の「口癖単語」を知ること。good ／ nice ／ important ／ very。誰にでも、つい頼ってしまう便利な単語があります。それぞれに代役を2〜3個ずつ準備しておけば、本番で自然に幅が出ます。\n\nこのレッスンでは、その代役を実際に「自分の口から出す」練習をします。選択肢から選ぶのではなく、思い出して言えるか。それが本番で問われる力だからです。"
+  },
+  {
+    "screen_id": "d7321f19-e4e6-4c0d-bba2-4353bbde1c6b",
+    "field": "explanation",
+    "after": "Essential, crucial and vital all fit naturally. “Important” is perfectly correct, but if it is your only word for the idea, your range stays invisible. Owning three ways to say “important” is exactly what the examiner is listening for."
+  },
+  {
+    "screen_id": "d7321f19-e4e6-4c0d-bba2-4353bbde1c6b",
+    "field": "explanation_ja",
+    "after": "essential ／ crucial ／ vital あたりが最も自然です。important 自体は正しい英語ですが、毎回 important では幅が見えません。\n\n「重要」を3通りで言える。それが採点者に見せたい語彙力です。"
+  },
+  {
+    "screen_id": "d7321f19-e4e6-4c0d-bba2-4353bbde1c6b",
+    "field": "prompt",
+    "after": "“Regular exercise is ______ for older people. It keeps both body and mind strong.”"
+  },
+  {
+    "screen_id": "d595d578-a451-4cb4-9218-5157dc9ae34f",
+    "field": "explanation",
+    "after": "Strong adjectives fit: delicious, superb, incredible. Note that “absolutely good” is impossible: absolutely pairs only with ungradable, already-extreme adjectives (delicious, freezing, exhausted). “Very good” but “absolutely delicious”: that pairing instinct is collocation."
+  },
+  {
+    "screen_id": "d595d578-a451-4cb4-9218-5157dc9ae34f",
+    "field": "explanation_ja",
+    "after": "delicious ／ superb ／ incredible などの「強い」形容詞が入ります。\n\n注意したいのは、absolutely good とは言えないこと。absolutely は「これ以上ない」レベルの形容詞（delicious ／ freezing ／ exhausted）とだけ組みます。very good ／ absolutely delicious。この組み合わせの感覚がコロケーションです。"
+  },
+  {
+    "screen_id": "d595d578-a451-4cb4-9218-5157dc9ae34f",
+    "field": "prompt",
+    "after": "“You have to try her cooking. The meal she made was absolutely ______.”"
+  },
+  {
+    "screen_id": "e72bcdba-633d-4939-b36a-15d513540ac3",
+    "field": "body",
+    "after": "The training is simple: pick your five most-used words and prepare two or three stand-ins each, tied to situations you would genuinely talk about, not copied from a thesaurus.\n\nTwo refinements: ① the stand-in depends on the target: “nice” for a person and “nice” for a place need different replacements (see below); ② antonym pairs also prove range: “My old flat was tiny, but the new one is spacious” shows two words’ worth in one sentence.\n\nThe finishing drill is the ban game: answer a question without once saying “good” or “nice”. You will know within seconds whether the stand-ins are truly yours."
+  },
+  {
+    "screen_id": "e72bcdba-633d-4939-b36a-15d513540ac3",
+    "field": "body_ja",
+    "after": "練習法は単純です。自分がよく使う単語を5つ選び、それぞれに代役を2〜3個ずつ。辞書の同義語を丸写しするのではなく、「自分が本当に言いそうな場面」とセットで覚えます。\n\nコツが2つあります。\n\n①同じ nice でも、対象で代役は変わる（下の例）。「人に使う nice」「場所に使う nice」を分けて準備する\n\n②反対語のペアも幅の証拠になる。My old flat was tiny, but the new one is spacious. のような対比は、1文で2語ぶんの幅を見せられます\n\n仕上げの練習は「禁止ゲーム」。1つの質問に、good ／ nice を一度も使わずに答えてみる。代役が体に入っているか、すぐ分かります。"
+  },
+  {
+    "screen_id": "c6583a46-585a-4f32-8b40-fb455a09a385",
+    "field": "explanation_ja",
+    "after": "人に使う nice の代役は friendly / welcoming / easy-going など。この文では「誰とでも仲良くなれる」と続くので、sociable や outgoing もぴったりです。\n\n前のページで覚えた代役を、覚えたその場で使う。この流れで言葉は定着します。"
+  },
+  {
+    "screen_id": "c6583a46-585a-4f32-8b40-fb455a09a385",
+    "field": "prompt",
+    "after": "【試験官】“What’s your best friend like?”\n【あなた】“She’s really ______. She gets along with everyone she meets.”"
+  },
+  {
+    "screen_id": "6626437a-39ec-4c6b-a0da-cb4256bf0655",
+    "field": "explanation",
+    "after": "For PLACES, nice becomes cosy, lively or picturesque. After “small but…”, cosy is the most natural, though lively and charming work too. Same word, different target, different substitutes. That is what context-dependent vocabulary means."
+  },
+  {
+    "screen_id": "6626437a-39ec-4c6b-a0da-cb4256bf0655",
+    "field": "explanation_ja",
+    "after": "場所に使う nice の代役は cosy / lively / picturesque など。「小さいけれど◯◯」という流れなので、cosy（居心地がいい）が特に自然ですが、lively や charming も使えます。\n\n同じ nice でも、人と場所で代役のリストが違う。これが「対象で代役は変わる」ということです。"
+  },
+  {
+    "screen_id": "6626437a-39ec-4c6b-a0da-cb4256bf0655",
+    "field": "prompt",
+    "after": "【試験官】“Tell me about a place you like in your town.”\n【あなた】“There’s a little café near the station. It’s small but really ______.”"
+  },
+  {
+    "screen_id": "d897e799-075e-4406-afd2-f35fae6efbe7",
+    "field": "explanation",
+    "after": "For CHANGES, big becomes dramatic or significant; major and profound also score well. You have now actively used all three sets from the previous screen, which is exactly how they will surface in the exam."
+  },
+  {
+    "screen_id": "d897e799-075e-4406-afd2-f35fae6efbe7",
+    "field": "explanation_ja",
+    "after": "変化を表す big の代役は dramatic / significant。major や profound も試験官に好印象です。\n\nこれで3点セット（nice（人）・nice（場所）・big（変化））を全部、自分の口（指）で使いました。本番でも同じ流れで出てきます。"
+  },
+  {
+    "screen_id": "7600917c-bd4e-43dc-83a3-65d4ec6e256e",
+    "field": "explanation",
+    "after": "Things are informative; PEOPLE are knowledgeable or educated. “A knowledgeable guide”, but “an informative documentary”. With near-synonyms, what separates them is usually what they can describe, and that precision is high-value Lexical Resource."
+  },
+  {
+    "screen_id": "7600917c-bd4e-43dc-83a3-65d4ec6e256e",
+    "field": "explanation_ja",
+    "after": "物事が「ためになる」は informative。knowledgeable と educated は「（人が）博識だ・教養がある」で、人にしか使えません。\n\na knowledgeable guide ／ an informative documentary。意味が近い語ほど、「何に使える語か」で区別します。この精度が、語彙の的確さの評価を分けます。"
+  },
+  {
+    "screen_id": "7600917c-bd4e-43dc-83a3-65d4ec6e256e",
+    "field": "prompt",
+    "after": "“The documentary was really ______. I came away knowing far more about the deep sea than before.”"
+  },
+  {
+    "screen_id": "e7f5840d-a852-4b6e-827d-07e8edabf29f",
+    "field": "prompt",
+    "after": "“My old flat was tiny, but my new place is wonderfully ______. There’s even room for a proper desk.”"
+  },
+  {
+    "screen_id": "c0f42be2-3a2d-469a-8583-174474132c72",
+    "field": "explanation",
+    "after": "“Keen ON photography” (interested takes IN, so it cannot fill that slot), “find it relaxing”, and “a hobby that doesn’t COST much”: people spend, things cost. Near-synonyms usually part ways at the preposition or the subject."
+  },
+  {
+    "screen_id": "5d20d938-5296-4e80-ac4c-49ec25325cb4",
+    "field": "explanation",
+    "after": "Shape, affect and sway all work. Echoing the examiner’s word back is not an error, but paraphrasing it proves range on the spot. Treat every content word in the question as an invitation to show an alternative."
+  },
+  {
+    "screen_id": "5d20d938-5296-4e80-ac4c-49ec25325cb4",
+    "field": "prompt",
+    "after": "【試験官】“Do you think advertising influences people?”\n【あなた】“Definitely. Adverts ______ our choices far more than we realise.”"
+  },
+  {
+    "screen_id": "612ddc4f-4ccf-4200-a614-9829eb4e4ff8",
+    "field": "body",
+    "after": "• Lexical Resource = range × precision × paraphrase, not rare-word recitals.\n\n• Give each crutch word (good / nice / important / very) two or three stand-ins.\n\n• Mind collocation: absolutely pairs only with extreme adjectives (absolutely delicious).\n\n• Contrast pairs (tiny → spacious) show double range in one sentence.\n\n• Paraphrase the examiner’s words back (influences → shape / sway).\n\nNext lesson: the other pillar, grammatical range."
+  },
+  {
+    "screen_id": "612ddc4f-4ccf-4200-a614-9829eb4e4ff8",
+    "field": "body_ja",
+    "after": "・語彙力＝幅×的確さ×言い換え力。難語の暗唱ではない\n\n・口癖単語（good ／ nice ／ important ／ very）に代役を2〜3個ずつ\n\n・コロケーションに注意：absolutely は極端な形容詞とだけ（absolutely delicious）\n\n・対比（tiny → spacious）は1文で2語ぶんの幅\n\n・試験官の単語は言い換えて返す（influences → shape ／ sway）\n\n次のレッスンは、もうひとつの柱、文法の幅の見せ方です。"
+  },
+  {
+    "screen_id": "8db1a638-ae0a-4c5c-a270-12226508e4b1",
+    "field": "body",
+    "after": "The criterion’s name says it all: ① RANGE: varied structures; an answer of all-simple-present, all-simple-sentences hits a ceiling even with zero errors. ② ACCURACY: error density; perfection is not required, and Band 7 tolerates minor slips.\n\nThe easiest way to show range is to travel across time inside one answer: present situation → experience so far (present perfect) → plans (future). That alone evidences three tenses. Join clauses with because / although / which and structural variety comes with it. Make the “time tour” below your default."
+  },
+  {
+    "screen_id": "8db1a638-ae0a-4c5c-a270-12226508e4b1",
+    "field": "body_ja",
+    "after": "Grammatical Range and Accuracy という基準名のとおり、見られているのは2つです。\n\n①幅：多様な構造を使えるか。すべて現在形・すべて単文の答えは、ノーミスでも頭打ちになります\n\n②正確さ：ミスの密度。ゼロは要求されません。Band 7でも minor errors は許容されます\n\n幅を出す一番簡単な方法は、答えの中で時間軸を行き来すること。現在の話→これまでの経験（現在完了）→これからの予定（未来）と動くだけで、3つの時制の証拠が出せます。\n\nさらに because ／ although ／ which で文をつなげば複文が生まれ、構造の幅も同時に示せます。下の例のような「時間軸ツアー」を、口癖にしてしまいましょう。"
+  },
+  {
+    "screen_id": "bf994897-d23d-4e51-bf8f-a659466b00e0",
+    "field": "explanation_ja",
+    "after": "since 2019（〜以来ずっと）なので現在完了の have lived（または have been living）。\n\n話すときは I’ve lived と短縮できると自然です。since・for ＋期間が聞こえたら現在完了。この反射を作りましょう。"
+  },
+  {
+    "screen_id": "9e584a35-b2df-4764-9655-1e23b4990b3c",
+    "field": "explanation",
+    "after": "A settled plan takes “be going to”: I’m going to start… One future-time sentence widens the answer’s time range: instant GRA evidence. Practise pivoting from present description to future plans on purpose."
+  },
+  {
+    "screen_id": "120aef8c-219e-487e-a488-48345d0310da",
+    "field": "explanation",
+    "after": "“I’ve worked there for five years” means you still do; “I worked there” implies you have left. (C)’s past continuous describes background action and sounds unfinished on its own. One auxiliary changes your employment status: tense is meaning, not decoration."
+  },
+  {
+    "screen_id": "120aef8c-219e-487e-a488-48345d0310da",
+    "field": "explanation_ja",
+    "after": "現在完了の I’ve worked 〜 は「5年勤めて、今も勤めている」。過去形の I worked は「（今は辞めている）」を含意します。(C)の過去進行形は背景描写の時制で、単独では落ち着きません。\n\n助動詞ひとつで「現職か離職か」が変わる。時制は飾りではなく、意味そのものです。"
+  },
+  {
+    "screen_id": "3eee14a8-ce1e-494b-bacf-18e908b1c7d7",
+    "field": "body",
+    "after": "After tenses, two boosters: ① the second conditional: “If I had more time, I’d take up the piano” (you don’t). Talking about unreal situations is strong evidence of range, and “what if” questions always come, so install the frame If I + past, I’d…; ② comparatives: “far more convenient than”, “not as quiet as”, “the best decision I’ve ever made”, which either-or questions (city or countryside?) will call for naturally.\n\nLearn both as whole frames and swap the contents."
+  },
+  {
+    "screen_id": "3eee14a8-ce1e-494b-bacf-18e908b1c7d7",
+    "field": "body_ja",
+    "after": "時制の次に効くブースターが2つあります。\n\n①仮定法：If I had more time, I’d take up the piano.（実際には時間がない）。「現実と違う話」ができることは、文法の幅の強い証拠です。「もし〜なら？」系の質問は必ず来るので、If I ＋過去形, I’d 〜 の型を体に入れておきます\n\n②比較：far more convenient than（〜よりはるかに便利）／ not as quiet as（〜ほど静かではない）／ the best decision I’ve ever made。二択の質問（都会と田舎、どちらが？）への答えで自然に活躍します\n\nどちらも「型ごと」覚えて、中身だけ差し替えるのがコツです。"
+  },
+  {
+    "screen_id": "3eee14a8-ce1e-494b-bacf-18e908b1c7d7",
+    "field": "example",
+    "after": "If I could live anywhere, I’d choose somewhere by the sea.\nCommuting by bike is far cheaper than driving, and honestly less stressful."
+  },
+  {
+    "screen_id": "72c51e9a-a241-4765-8161-b255d6a0c64e",
+    "field": "explanation",
+    "after": "An unreal present calls for the second conditional: If I HAD more time, I would… The simple present “if I have” describes a real possibility and clashes with “would” in the main clause. Past form in the if-clause, would in the main clause: memorise them as a pair."
+  },
+  {
+    "screen_id": "72c51e9a-a241-4765-8161-b255d6a0c64e",
+    "field": "explanation_ja",
+    "after": "現実には時間がない、という仮定の話なので仮定法過去：If I had 〜, I would…。\n\nIf I have と現在形にすると「実際にあり得る話」になり、後半の would と噛み合いません。前半が過去形・後半が would。この対応をワンセットで覚えます。"
+  },
+  {
+    "screen_id": "73211580-0624-4a61-8f43-055ce1ffd99d",
+    "field": "explanation",
+    "after": "Present (live) → past (grew up) → present perfect (have lived… for six years NOW, which rules out the simple past “lived”) → second conditional (if the chance AROSE, I’d stay; “will arise” cannot pair with “I’d”). One answer, four time frames: exactly what Grammatical Range means."
+  },
+  {
+    "screen_id": "73211580-0624-4a61-8f43-055ce1ffd99d",
+    "field": "explanation_ja",
+    "after": "現在（live）→過去（grew up）→現在完了（have lived 〜 for six years now）→仮定法（if the chance arose, I’d 〜）。\n\n3つ目の空所は now があるので、過去形の lived は入れません。4つ目は後半の I’d と組む仮定法過去なので、will arise は不可。ひとつの答えの中で時間軸を行き来する。これがGRAの理想形です。"
+  },
+  {
+    "screen_id": "cd9b8389-5454-4322-8cf2-dd766f7b4b09",
+    "field": "explanation",
+    "after": "“Far LESS stressful than”: comparison isn’t only “more… than”. Less, far less and “not as… as” give you three more tools, and “far + comparative” adds natural emphasis."
+  },
+  {
+    "screen_id": "8f03fa9d-5ff0-4cc6-8772-468b6ab7952a",
+    "field": "body",
+    "after": "• GRA = range × accuracy: ambitious complex sentences beat error-free monotony.\n\n• Since / for + period → present perfect (I’ve lived…).\n\n• Travel the timeline (present, past, perfect, future) inside one answer.\n\n• The conditional frame: If I + past, I’d…\n\n• Compare with less / not as… as / far + comparative, not just “more”.\n\nNext lesson: a bigger unit than the sentence, structuring the whole answer."
+  },
+  {
+    "screen_id": "8f03fa9d-5ff0-4cc6-8772-468b6ab7952a",
+    "field": "body_ja",
+    "after": "・GRA＝幅×正確さ。ノーミスの単文連発より、多少のリスクを取った複文\n\n・since ／ for ＋期間 → 現在完了（I’ve lived 〜）\n\n・現在→過去→現在完了→未来と、時間軸を行き来して幅を見せる\n\n・仮定法の型：If I ＋過去形, I’d 〜\n\n・比較は more だけでなく less ／ not as 〜 as ／ far ＋比較級\n\n次のレッスンでは、文より大きな単位、答え全体の組み立てを鍛えます。"
+  },
+  {
+    "screen_id": "d1ab8cba-bfa5-40e7-996f-9a93c3e5cb5d",
+    "field": "explanation",
+    "after": "X and Y contain nearly identical material: only the ORDER differs. X runs point → reason → example → wrap, so the listener always knows where they are. Y leads with an example (“why are we hearing about your father?”) and ends by circling back. Grammar (C) is roughly equal here; the gap is pure coherence."
+  },
+  {
+    "screen_id": "d1ab8cba-bfa5-40e7-996f-9a93c3e5cb5d",
+    "field": "explanation_ja",
+    "after": "XとYは、使っている材料がほぼ同じです。違いは並べ方だけ。Xは主張→理由→例→締めの順なので、聞き手は迷子になりません。\n\nYは例が先に来て「なぜお父さんの話？」となり、最後も主張を繰り返すだけでまとまりません。(C)については、両者に文法の差はほとんどなく、差がついているのは一貫性（Coherence）です。"
+  },
+  {
+    "screen_id": "d1ab8cba-bfa5-40e7-996f-9a93c3e5cb5d",
+    "field": "prompt",
+    "after": "【試験官】“Do you think people should keep learning after they leave school?”\n\n【答えX】“Definitely, mainly because the world keeps changing. My father, for example, learned video editing at sixty, and it gave him a whole new circle of friends. So yes, learning shouldn’t stop at graduation.”\n【答えY】“My father learned video editing at sixty. The world keeps changing, I think. Friends are important too. So… yes, people should learn, definitely.”"
+  },
+  {
+    "screen_id": "aa84293d-23b1-4754-98a7-b37246e6b19b",
+    "field": "body",
+    "after": "A good answer is a spoken mini-paragraph with four parts: ① POINT (conclusion first): “I’d say yes.” ② REASON: “mainly because…” ③ EXAMPLE: “For example…”, with names and numbers for weight. ④ WRAP (one landing sentence): “So overall…”. About thirty seconds.\n\nCoherence is graded on exactly this ordering. However good your reasons and examples are, putting them before the point puts the listener on a bus with no destination sign. The wrap can be dropped once you are comfortable; point-first is non-negotiable."
+  },
+  {
+    "screen_id": "aa84293d-23b1-4754-98a7-b37246e6b19b",
+    "field": "body_ja",
+    "after": "良い答えは、口で話す小さな段落です。部品は4つ。\n\n①主張：最初に結論。I’d say yes. ／ For me, it’s the train.\n\n②理由：mainly because 〜 ／ The main thing is 〜\n\n③例：For example, 〜（固有名詞・数字が入ると強い）\n\n④締め：So overall, 〜 と1文で着地\n\n時間にして30秒前後。Coherence の採点は、まさにこの「並び」を見ています。\n\n大事なのは順番です。理由や例がどれだけ良くても、主張より先に出てくると、聞き手は行き先のわからないバスに乗せられた状態になります。慣れてきたら④は省略できますが、①が先頭。これだけは絶対に崩さないでください。"
+  },
+  {
+    "screen_id": "3351ebd0-0aa7-43b7-9ed0-6ce7d5a31d0c",
+    "field": "explanation",
+    "after": "The opening sentence has one job: answer the question. (C) states a position first and even sets up curiosity. (B) is an excellent REASON, but it dives into support before answering “so what do you think?”. (A)’s example has the same problem: examples earn their place only after the point."
+  },
+  {
+    "screen_id": "cef701e6-cb14-4353-b8cd-a26b13ffd2e5",
+    "field": "explanation",
+    "after": "“Because” introduces the reason, “For example” the evidence, “whereas” contrasts paper with the phone inside one sentence, and “However” turns the whole answer toward a concession. Whereas compares two things mid-sentence; However redirects the argument from the front. Knowing which job each does is the advanced move."
+  },
+  {
+    "screen_id": "41ae77b8-1482-4fbb-9171-1a8ef20177c6",
+    "field": "body",
+    "after": "Plant signs where the talk changes direction: into the reason (“The main thing is…”), adding (“On top of that…”), conceding (“Having said that…”), landing (“So overall…”).\n\nOne warning: don’t over-sign. A Moreover-Furthermore-Additionally pile-up at every sentence head sounds like a recited template. Two or three per answer, only at genuine corners.\n\nSigns serve the listener, but they rescue the speaker too: saying “On top of that…” out loud buys a natural beat in which to find what comes next."
+  },
+  {
+    "screen_id": "c3977383-d432-4a4b-85f7-eadfba262248",
+    "field": "explanation",
+    "after": "② claims the reason is MOOD, but ③’s example is about membership FEES: evidence for a reason that was never given. An example only works as proof of the reason just stated. To talk about cost, open a second reason first (“Another reason is the cost”). The signpost was right; the cargo didn’t match."
+  },
+  {
+    "screen_id": "c3977383-d432-4a4b-85f7-eadfba262248",
+    "field": "explanation_ja",
+    "after": "②が「気分が上がるから」と理由を述べたのに、③の例はジムの料金の話。理由と例がつながっていません。例は、直前の理由の証拠になっていて初めて機能します。\n\n料金の話をしたいなら、Another reason is the cost. と2つ目の理由を立ててから。For example という標識が正しくても、積み荷が違えば一貫性は崩れます。"
+  },
+  {
+    "screen_id": "c3977383-d432-4a4b-85f7-eadfba262248",
+    "field": "prompt",
+    "after": "【試験官】“Is exercising outdoors better than going to a gym?”\n【受験者】\n①“For me, yes. Outdoor exercise wins.”\n②“The main reason is that fresh air genuinely lifts my mood.”\n③“For example, gym memberships have become surprisingly expensive in my city.”\n④“So overall, I’d choose the park over the treadmill.”"
+  },
+  {
+    "screen_id": "a05af84a-c838-416c-a248-c2fc7712a391",
+    "field": "explanation",
+    "after": "“HAVING said that,” adds the other side of what you just claimed, a spoken-register cousin of “However”. Positives → having said that → a realistic drawback: that single round trip proves you can see both sides."
+  },
+  {
+    "screen_id": "a05af84a-c838-416c-a248-c2fc7712a391",
+    "field": "prompt",
+    "after": "“I love the neighbourhood. It’s green, quiet and friendly. ______ said that, the rent is climbing every year.”"
+  },
+  {
+    "screen_id": "c4d204b6-de25-464b-8469-a0bd928e3c1b",
+    "field": "explanation",
+    "after": "(A) answers immediately, hedged with “on balance” and scoped with “at least the big public ones”, a model opener. (B) is a true statement that takes no position; (C) leads with an example again. Background feels safe to start with, but the first sentence’s job never changes: answer the question."
+  },
+  {
+    "screen_id": "f94ed66d-6792-4c0a-a90c-9bf2a6fa7c27",
+    "field": "explanation",
+    "after": "“On the OTHER hand”: the fundamental two-sides signpost. One benefit, then “on the other hand” plus a felt drawback: that single exchange gives any answer dimension."
+  },
+  {
+    "screen_id": "f94ed66d-6792-4c0a-a90c-9bf2a6fa7c27",
+    "field": "explanation_ja",
+    "after": "On the other hand（その一方で）。両面を語るときの、最も基本的な標識です。\n\n前半でメリット、On the other hand で実感のこもったデメリット。この1往復ができるだけで、答えに立体感が出ます。"
+  },
+  {
+    "screen_id": "bff62cc5-ed3b-4c00-b86a-36d29f297ffb",
+    "field": "body",
+    "after": "• Answers are mini-paragraphs: point → reason → example → wrap, ~30 seconds.\n\n• The first sentence answers the question: never open with an example or background.\n\n• An example must prove the reason just given; check the cargo, not just the signpost.\n\n• Two or three signposts per answer, at genuine corners only.\n\n• “Having said that” / “On the other hand” show the other side.\n\nNext: into the exam proper, the Part 2 cue card."
+  },
+  {
+    "screen_id": "bff62cc5-ed3b-4c00-b86a-36d29f297ffb",
+    "field": "body_ja",
+    "after": "・答えはミニ段落：主張→理由→例→締め、約30秒\n\n・最初の1文の仕事は「質問に答えること」。例や背景から始めない\n\n・例は直前の理由の証拠になっていること（標識が合っていても積み荷を確認）\n\n・標識は2〜3個、本当の曲がり角にだけ\n\n・Having said that ／ On the other hand で反対側にも目配りを\n\n次のレッスンから実戦編。Part 2キューカードの攻略です。"
+  },
+  {
+    "screen_id": "42d664af-d28f-40d5-a4fc-a99681fb8ae0",
+    "field": "explanation",
+    "after": "(B): the card’s four bullets ARE the speech plan. Two or three keywords per bullet scaffolds the whole two minutes (e.g. Aomori, night bus / two uni friends / stuck in heavy snow / strangers’ kindness). (A)’s vocabulary list builds no storyline, and (C) spends the minute producing two sentences you will then recite. Notes are hooks for memory, not a manuscript."
+  },
+  {
+    "screen_id": "47047060-9ad7-4bc0-b9db-c7320f655d54",
+    "field": "body",
+    "after": "The Part 2 routine: you receive a topic card, prepare for one minute, then speak for one to two minutes: no nods, no rescue from the examiner.\n\nThe universal fear is running dry at thirty seconds, but the solution is printed on the card: there are always four bullets, and 20–30 seconds per bullet lands you at 1.5–2 minutes by arithmetic alone.\n\nThe prep minute has one fixed job: two or three keywords per bullet, listed top-to-bottom in speaking order. While speaking, walk down the list. Getting lost becomes impossible. The card is not the enemy; it is the script."
+  },
+  {
+    "screen_id": "6707f139-aa75-4b75-97c6-9cdc6e17c317",
+    "field": "body",
+    "after": "Even at 20–30 seconds per bullet, you may finish early. The extension parts are always the same: what was said or thought at the time (quoting someone’s words is the strongest concretiser); sensory detail (sights, sounds, smells); what happened afterwards, and whether it continues today. They fit any topic. Keep entry phrases ready (below).\n\nThe two banned moves: silence, which hits Fluency directly, and repetition, which produces nothing new to grade. Notice that the card’s last line (“and explain why / how you felt…”) hands you the feelings section on purpose."
+  },
+  {
+    "screen_id": "4496ddbe-1951-4683-97d4-c5ddd24ac7b7",
+    "field": "explanation",
+    "after": "(C): expand with “What I remember most is…”, the aftermath, the feelings, fresh language all the way to the two-minute mark. (A) re-words material the examiner has already graded. Stopping early (B) isn’t penalised directly, but it hands back time you could have filled with scoreable English."
+  },
+  {
+    "screen_id": "c0b757a5-137d-40fd-acce-137e99428987",
+    "field": "explanation",
+    "after": "“So, that’s WHY ~” signals a finished talk and prevents the awkward is-there-more silence. Pair it with your fixed opener: the frame can be identical every time, and the more fixed it is, the easier the exam day."
+  },
+  {
+    "screen_id": "c8b3158c-991c-4f54-abf8-546dcf0ad851",
+    "field": "explanation",
+    "after": "(A) answers “why” with a lesson learned, an actual quoted catchphrase, and its effect today. Quoting someone’s words is a universally available way to make any story concrete. (B) answers a different bullet (where he lives), and (C) circles the word “important” three times without ever producing a reason."
+  },
+  {
+    "screen_id": "ee3af0c8-0d0b-4914-9ebd-b21ff8b2355a",
+    "field": "explanation",
+    "after": "“Looking BACK,” bridges the story from then to now, and shifts you naturally from past narration into present-tense reflection, which doubles as grammatical-range evidence. One phrase, two criteria served."
+  },
+  {
+    "screen_id": "1a3006ac-bbae-4abb-843c-ac4059630337",
+    "field": "body",
+    "after": "• Four bullets = the blueprint: 20–30 seconds each fills the two minutes.\n\n• Prep minute: keywords only, never sentences.\n\n• Fixed opener and closer: “I’d like to talk about ~” / “So, that’s why ~”.\n\n• Spare time → quoted words, sensory detail, the aftermath.\n\n• Never silence, never repetition.\n\nFinal lesson: the abstract finale, Part 3."
+  },
+  {
+    "screen_id": "64c6486e-430e-47e5-8ed0-3f8a792e1a6b",
+    "field": "explanation",
+    "after": "(B) runs the four moves: position → reason → example → concession. The closing “That said…” grants the other side its point, proof of multi-angle thinking. (A) is too thin for Part 3, and (C) is long and fluent but absolutist (“whatever it costs”, “simply don’t understand”), which makes it one-dimensional. Talking at length and building an argument are different skills."
+  },
+  {
+    "screen_id": "a4107b86-c9af-4272-8d4e-aa180a649c7b",
+    "field": "body",
+    "after": "Part 3 strings big questions about society and the future, a spoken mini-essay. The equipment to carry: ① position (“On the whole, I’d say…”), ② reason (“The main reason is…”), ③ example (“For instance…”), ④ concession (“That said…” / “Of course…”). Four moves, 30–45 seconds.\n\nThe concession is the strongest band-mover of the four: granting the other side its point doesn’t weaken your position; it upgrades it into a conclusion reached after seeing both sides. And once your mouth knows the signal phrases, the structure assembles itself while your brain works on content."
+  },
+  {
+    "screen_id": "a4107b86-c9af-4272-8d4e-aa180a649c7b",
+    "field": "body_ja",
+    "after": "Part 3は、社会や将来についての大きな質問が続く「口頭のミニエッセイ」です。手ぶらで挑むと迷子になります。持っていくのはこの型。\n\n①立場：On the whole, I’d say… ／ It depends, but…\n\n②理由：The main reason is… ／ mainly because…\n\n③例：For instance… ／ In Japan, for example…\n\n④譲歩：That said, … ／ Of course, …\n\n4ステップで30〜45秒。Part 4つのうち、バンドを最も押し上げるのが④の譲歩です。反対側を認めても立場は弱くなりません。むしろ「両面を見た上での結論」として強くなります。\n\n合図のフレーズを口が覚えていれば、頭が中身を考えている間も、構造は勝手に立ち上がります。"
+  },
+  {
+    "screen_id": "417937e5-0614-4f3b-81cb-52ae1093c1ce",
+    "field": "explanation",
+    "after": "“It DEPENDS on ~” converts an either-or question into a case-by-case answer, and the “while” contrast that follows delivers two perspectives in one breath, exactly the dimensionality Part 3 rewards."
+  },
+  {
+    "screen_id": "417937e5-0614-4f3b-81cb-52ae1093c1ce",
+    "field": "prompt",
+    "after": "【試験官】“Is it better to work for a large company or a small one?”\n【あなた】“Honestly, it ______ on what you value. Big firms offer stability, while small ones give you responsibility much earlier.”"
+  },
+  {
+    "screen_id": "c7145904-139f-43b6-b830-227b9f8a4693",
+    "field": "body",
+    "after": "Part 3 questions are big, so absolutes (always / everyone / 100%) collapse at the first counter-example. Assert softly: “tend to”, “generally”, “probably”, “I’d say…” (gentler than “I think”), “It depends on…”.\n\nThe other tool is buying time aloud: “That’s a tough one.” / “I’ve never really thought about that, but…” / “It’s hard to say, but on balance…”. Three seconds of silence costs you; three seconds of audible thinking is natural conversation, and the phrase itself is scoreable English."
+  },
+  {
+    "screen_id": "d943fb15-d83b-46f3-9a42-cd3d97ac9fe4",
+    "field": "explanation",
+    "after": "(A): position, reason and example are already in place. The missing move is the concession. One “Of course, it depends on the family’s circumstances” completes the frame and evidences balanced thinking. A second example (B) duplicates a job already done, and restating the position (C) adds volume, not value."
+  },
+  {
+    "screen_id": "d943fb15-d83b-46f3-9a42-cd3d97ac9fe4",
+    "field": "prompt",
+    "after": "【試験官】“Should children get pocket money?”\n【受験者】“I’d say yes, mainly because handling small amounts teaches budgeting early. My parents, for instance, gave me 500 yen a week, and I still remember saving for two months to buy a game.”"
+  },
+  {
+    "screen_id": "52195ef8-dd53-4f78-85e4-2e8aa11364d6",
+    "field": "explanation",
+    "after": "“That’s a TOUGH one” (difficult / tricky also work) buys thinking time out loud instead of in silence, and the phrase itself is natural, scoreable English. Time-buying isn’t a trick; it is what fluent speakers actually do."
+  },
+  {
+    "screen_id": "52195ef8-dd53-4f78-85e4-2e8aa11364d6",
+    "field": "prompt",
+    "after": "【試験官】“Will robots replace most human jobs?”\n【あなた】“That’s a ______ one. I suppose it comes down to the kind of job we’re talking about.”"
+  },
+  {
+    "screen_id": "46b13d51-d4f6-4089-9aae-88595f2ac615",
+    "field": "explanation",
+    "after": "(C)’s “I agree up to a point” concedes what deserves conceding, then argues back, the adult way to handle agree-or-disagree. Agreement isn’t all-or-nothing: (A) over-commits with “every possible way”, and (B) retreats into a platitude without ever answering."
+  },
+  {
+    "screen_id": "bc3e736d-cbaf-496d-bacc-94fba70d94da",
+    "field": "body",
+    "after": "• The Part 3 frame: position → reason → example → concession, 30–45 seconds.\n\n• The concession is the biggest band-booster: “That said” / “Of course”.\n\n• Hedge rather than absolutise: tend to / generally / I’d say.\n\n• Either-or → “It depends on ~”; agree-or-disagree → “I agree up to a point”.\n\n• Buy thinking time out loud: “That’s a tough one.”\n\nThat completes the Speaking level: criteria, vocabulary, grammar, structure, Part 2, Part 3, six frames to carry into your mock tests and the real thing."
+  },
+  {
+    "screen_id": "bc3e736d-cbaf-496d-bacc-94fba70d94da",
+    "field": "body_ja",
+    "after": "・Part 3の型：立場→理由→例→譲歩。30〜45秒\n\n・譲歩が最大のバンドブースター。That said ／ Of course で反対側を認める\n\n・断定よりヘッジ：tend to ／ generally ／ I’d say\n\n・二択は It depends on 〜 で場合分け、賛否は I agree up to a point で部分賛成\n\n・考える時間は That’s a tough one. と声に出して稼ぐ\n\nスピーキング攻略はこれで完了です。採点基準・語彙・文法・組み立て・Part 2・Part 3。6レッスンの型を、模試と本番で武器にしてください。"
+  }
+]

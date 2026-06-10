@@ -6,6 +6,7 @@ import { useAuth } from '@/context/AuthContext'
 import { useLanguage } from '@/context/LanguageContext'
 import { useTheme } from '@/context/ThemeContext'
 import { Squircle } from '@squircle-js/react'
+import { motion, AnimatePresence } from 'framer-motion'
 
 type Option = { id: string; label: string; content: string; order_index: number }
 type Question = {
@@ -411,6 +412,17 @@ export default function TakeTestPage() {
   const hasStimulus = !!(g && (g.passage_text || g.audio?.url || g.image?.url))
   const isLast = groupIdx >= groups.length - 1
 
+  // Navigator accordion: only the current part's section is open by default;
+  // moving into a new part focuses it (collapsing the rest). Headers still
+  // toggle manually until you cross into another part.
+  const currentSectionId = current?.section.id
+  const [openSections, setOpenSections] = useState<Set<string>>(new Set())
+  useEffect(() => {
+    if (currentSectionId) setOpenSections(new Set([currentSectionId]))
+  }, [currentSectionId])
+  const toggleSection = (id: string) =>
+    setOpenSections(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n })
+
   // Render helpers — plain functions (not components) so inputs keep focus across re-renders.
   const stimulusEl = () => g ? (
     <div className="flex flex-col gap-3">
@@ -435,40 +447,60 @@ export default function TakeTestPage() {
   ) : null
 
   const navigatorEl = () => (
-    <div className="flex flex-col gap-4">
-      {sections.map(section => (
-        <div key={section.id}>
-          <p className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: 'var(--text-muted)' }}>
-            {section.part_label || section.title}
-          </p>
-          <div className="grid grid-cols-5 gap-1.5">
-            {section.groups.flatMap(gr => gr.questions).map(q => {
-              const gi = qMeta.gi.get(q.id) ?? 0
-              const cur = gi === groupIdx
-              const ans = isAnswered(q)
-              return (
-                <button key={q.id} onClick={() => { setGroupIdx(gi); setNavOpen(false) }}
-                  className="text-xs text-center py-1.5 rounded-lg transition-colors"
-                  style={{
-                    background: ans ? 'var(--accent)' : 'transparent',
-                    color: ans ? '#fff' : cur ? 'var(--accent)' : 'var(--text-muted)',
-                    fontWeight: cur ? 600 : 400,
-                    boxShadow: cur ? '0 0 0 1.5px var(--accent)' : '0 0 0 1px var(--divider)',
-                  }}>
-                  {qMeta.num.get(q.id)}
-                </button>
-              )
-            })}
+    <div className="flex flex-col gap-1">
+      {sections.map(section => {
+        const qs = section.groups.flatMap(gr => gr.questions)
+        const open = openSections.has(section.id)
+        const secAnswered = qs.filter(isAnswered).length
+        const hasCurrent = qs.some(q => (qMeta.gi.get(q.id) ?? -1) === groupIdx)
+        // -mx-4 px-4 bleeds the divider to the navigator edges (both the aside
+        // and the mobile drawer use p-4) while content stays padded
+        return (
+          <div key={section.id} className="border-b -mx-4 px-4" style={{ borderColor: 'var(--divider)' }}>
+            <button onClick={() => toggleSection(section.id)}
+              className="w-full flex items-center justify-between gap-2 py-2.5 text-left">
+              <span className="text-xs font-semibold uppercase tracking-wide" style={{ color: hasCurrent ? 'var(--accent)' : 'var(--text-muted)' }}>
+                {section.part_label || section.title}
+              </span>
+              <span className="text-[11px] tabular-nums shrink-0" style={{ color: 'var(--text-subtle)' }}>{secAnswered}/{qs.length}</span>
+            </button>
+            <AnimatePresence initial={false}>
+              {open && (
+                <motion.div key="body" initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.2, ease: 'easeOut' }} className="overflow-hidden">
+                  {/* px-0.5 so the cell focus rings aren't clipped at the edges */}
+                  <div className="grid grid-cols-5 gap-1.5 px-0.5 pb-3 pt-0.5">
+                    {qs.map(q => {
+                      const gi = qMeta.gi.get(q.id) ?? 0
+                      const cur = gi === groupIdx
+                      const ans = isAnswered(q)
+                      return (
+                        <button key={q.id} onClick={() => { setGroupIdx(gi); setNavOpen(false) }}
+                          className="text-xs text-center py-1.5 rounded-lg transition-colors"
+                          style={{
+                            background: ans ? 'var(--accent)' : 'transparent',
+                            color: ans ? '#fff' : cur ? 'var(--accent)' : 'var(--text-muted)',
+                            fontWeight: cur ? 600 : 400,
+                            boxShadow: cur ? '0 0 0 1.5px var(--accent)' : '0 0 0 1px var(--divider)',
+                          }}>
+                          {qMeta.num.get(q.id)}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
-        </div>
-      ))}
-      <p className="text-xs text-center" style={{ color: 'var(--text-muted)' }}>{answeredCount} / {total} {t('回答済み', 'answered')}</p>
+        )
+      })}
+      <p className="text-xs text-center mt-3" style={{ color: 'var(--text-muted)' }}>{answeredCount} / {total} {t('回答済み', 'answered')}</p>
     </div>
   )
 
   // Speaking interview: one question at a time, forward-only, record-to-advance.
   const speakingInterviewEl = () => {
-    if (loading) return <p className="m-auto" style={{ color: 'var(--text-muted)' }}>{t('読み込み中...', 'Loading...')}</p>
+    if (loading) return null // the LoadingOverlay covers the screen
     const sp = flatQuestions[speakingStep]
     if (!sp) return null
     const recorded = speakingDone.has(sp.q.id)
@@ -609,9 +641,7 @@ export default function TakeTestPage() {
       <>
       <div className="flex-1 flex min-h-0">
         <main className="flex-1 min-w-0 flex">
-          {loading ? (
-            <p className="m-auto" style={{ color: 'var(--text-muted)' }}>{t('読み込み中...', 'Loading...')}</p>
-          ) : error && !current ? (
+          {loading ? null : error && !current ? (
             <p className="m-auto text-sm" style={{ color: 'var(--danger)' }}>{error}</p>
           ) : hasStimulus ? (
             <div className="grid grid-cols-1 md:grid-cols-2 flex-1 min-h-0">
@@ -693,6 +723,9 @@ export default function TakeTestPage() {
           </div>
         </div>
       )}
+      <AnimatePresence>
+        {loading && <LoadingOverlay key="loading" t={t} />}
+      </AnimatePresence>
       {submitting && <ScoringOverlay t={t} />}
     </div>
   )
@@ -701,18 +734,35 @@ export default function TakeTestPage() {
 // Full-screen "Scoring..." overlay shown while a submission is being graded:
 // the text slowly fades in/out and the dots count up one by one.
 function ScoringOverlay({ t }: { t: (ja: string, en: string) => string }) {
+  return <PulseOverlay text={t('採点中', 'Scoring')} />
+}
+
+// Same treatment for the initial test load, so entering a test matches the
+// submit experience (centered pulsing text over a full backdrop).
+function LoadingOverlay({ t }: { t: (ja: string, en: string) => string }) {
+  return <PulseOverlay text={t('読み込み中', 'Loading')} />
+}
+
+// Shared: centered pulsing label + counting dots over a dimmed backdrop.
+// Fades in on mount and out on unmount (wrap the usage in <AnimatePresence>),
+// so when loading finishes the backdrop dissolves to reveal the form rather
+// than snapping away.
+function PulseOverlay({ text }: { text: string }) {
   const [dots, setDots] = useState(1)
   useEffect(() => {
     const id = setInterval(() => setDots(d => (d % 3) + 1), 500)
     return () => clearInterval(id)
   }, [])
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center" style={{ background: 'rgba(0,0,0,0.85)' }} role="status" aria-live="polite">
+    <motion.div
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      transition={{ duration: 0.35, ease: 'easeOut' }}
+      className="fixed inset-0 z-[60] flex items-center justify-center" style={{ background: 'rgba(0,0,0,0.85)' }} role="status" aria-live="polite">
       <p className="scoring-pulse text-xl font-semibold" style={{ color: '#fff' }}>
-        {t('採点中', 'Scoring')}
+        {text}
         <span className="inline-block w-7 text-left" aria-hidden>{'.'.repeat(dots)}</span>
       </p>
-    </div>
+    </motion.div>
   )
 }
 
