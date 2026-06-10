@@ -471,9 +471,9 @@ export default function TestsPage() {
                       return skills.map(sk => (
                         <span key={`${f.id}-${sk}`} className="text-xs px-2.5 py-1 rounded-full"
                           style={{
-                            background: done ? 'var(--accent-bg)' : 'var(--card-inset)',
+                            background: 'transparent',
                             color: done ? 'var(--accent)' : 'var(--text-muted)',
-                            boxShadow: done ? '0 0 0 1px var(--accent)' : 'none',
+                            border: `1px solid ${done ? 'var(--accent)' : 'var(--edge)'}`,
                           }}>
                           {sk ? skillName(sk) : f.title}{done ? ' ✓' : ''}
                         </span>
