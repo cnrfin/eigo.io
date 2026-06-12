@@ -8,7 +8,6 @@ import { useLanguage } from '@/context/LanguageContext'
 import { useTheme } from '@/context/ThemeContext'
 import { Squircle } from '@squircle-js/react'
 import { useRiveFile } from '@rive-app/react-webgl2'
-import RiveIcon from '@/components/ui/RiveIcon'
 import MascotCelebrate from '@/components/courses/MascotCelebrate'
 import PronunciationExercise from '@/components/courses/PronunciationExercise'
 import ChallengeExercise from '@/components/courses/ChallengeExercise'
@@ -366,7 +365,17 @@ export default function LessonPlayerPage() {
           <button onClick={toggleTheme} aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
             className="w-8 h-8 rounded-full flex items-center justify-center transition-opacity hover:opacity-70"
             style={{ color: 'var(--text-muted)' }}>
-            <RiveIcon artboard="light" variant="muted" dark={theme === 'dark'} size={18} />
+            {/* static sun/moon, matching the dashboard header (no Rive light artboard) */}
+            {theme === 'dark' ? (
+              <svg width="18" height="18" viewBox="0 0 48 48" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                <circle cx="24" cy="24" r="10.5" />
+                <path d="M24 3v4.5M24 40.5V45M3 24h4.5M40.5 24H45M9 9l3 3M36 36l3 3M9 39l3-3M36 12l3-3" />
+              </svg>
+            ) : (
+              <svg width="18" height="18" viewBox="0 0 48 48" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                <path transform="matrix(0.232019 -0.232019 0.232019 0.232019 19.7812 19.7812)" strokeWidth="10" d="M0 18.1827C56 18.1828 56 -30.9279 56 0C56 30.9279 30.9279 56 0 56C-30.9279 56 -56 30.9279 -56 0C-56 -30.9279 -54.466 19.7168 0 18.1827Z" />
+              </svg>
+            )}
           </button>
         </div>
       </div>
