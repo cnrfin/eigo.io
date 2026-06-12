@@ -13,7 +13,9 @@ import { Squircle } from '@squircle-js/react'
 type Item = { display: string; accepted: string[]; hint?: string; hint_ja?: string }
 
 export const joinNorm = (s: string) => s.toLowerCase().replace(/[^a-z]/g, '')
-export const joinItemCorrect = (it: Item, typed: string) => it.accepted.some((a) => joinNorm(a) === joinNorm(typed))
+// Only needs the accepted list, so accept any item carrying it (the player passes
+// the raw screen content, which is typed loosely as { accepted: string[] }).
+export const joinItemCorrect = (it: { accepted: string[] }, typed: string) => it.accepted.some((a) => joinNorm(a) === joinNorm(typed))
 
 export default function JoinType({
   items, locale, values, onChange, revealed,
