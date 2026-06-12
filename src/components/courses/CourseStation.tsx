@@ -29,8 +29,8 @@ function roundedPolygon(cx: number, cy: number, r: number, sides: number, rot: n
 // next level's colour at an interchange (fill split top/bottom).
 // `isReview` swaps the circle for a rounded pentagon (the level-end review node).
 export default function CourseStation({
-  size = 64, color, color2, state, isReview = false,
-}: { size?: number; color: string; color2?: string; state: number; isReview?: boolean }) {
+  size = 64, color, color2, state, isReview = false, pulseClass = 'course-node-pulse',
+}: { size?: number; color: string; color2?: string; state: number; isReview?: boolean; pulseClass?: string }) {
   const c = size / 2
   const r = size * 0.22                    // circle radius (pentagon scales off this)
   const sw = Math.max(1, size * 0.016)     // ~1px ink outline
@@ -72,7 +72,7 @@ export default function CourseStation({
     const ro = size * 0.30
     const dotR = size * 0.14
     return (
-      <svg width={size} height={size} aria-hidden className="course-node-pulse">
+      <svg width={size} height={size} aria-hidden className={pulseClass}>
         {shape(ro, 'none', ink, sw)}
         {color2
           ? (<>

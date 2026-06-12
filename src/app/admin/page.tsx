@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, useEffect, useState, useCallback } from 'react'
+import { Suspense, useEffect, useState, useCallback, useMemo } from 'react'
 import { useAuth } from '@/context/AuthContext'
 import { useLanguage } from '@/context/LanguageContext'
 import { Squircle } from '@squircle-js/react'
@@ -10,7 +10,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 
 const ADMIN_EMAILS = ['cnrfin93@gmail.com']
 
-type Tab = 'overview' | 'students' | 'news' | 'grading' | 'settings' | 'ai-test'
+type Tab = 'overview' | 'students' | 'news' | 'grading' | 'settings' | 'testing'
 
 // One pending response in the tutor grading queue.
 type GradingItem = {
@@ -590,7 +590,7 @@ function AdminContent() {
     { key: 'news', label: 'News' },
     { key: 'grading', label: 'Grading' },
     { key: 'settings', label: 'Settings' },
-    { key: 'ai-test', label: 'AI Test' },
+    { key: 'testing', label: 'Testing' },
   ]
 
   return (
@@ -1393,9 +1393,9 @@ function AdminContent() {
             </div>
           )}
 
-          {/* ═══ AI TEST TAB ═══ */}
-          {activeTab === 'ai-test' && (
-            <AITestPanel session={session} locale={locale} />
+          {/* ═══ TESTING TAB ═══ */}
+          {activeTab === 'testing' && (
+            <TestingPanel session={session} />
           )}
         </section>
       </div>
@@ -1403,277 +1403,130 @@ function AdminContent() {
   )
 }
 
-// ─── AI Test Panel ───
-function AITestPanel({ session, locale }: { session: { access_token: string } | null; locale: string }) {
-  const [transcript, setTranscript] = useState(SAMPLE_TRANSCRIPT)
-  const [loading, setLoading] = useState(false)
-  const [result, setResult] = useState<{
-    summary: { summary_en: string; summary_ja: string; key_topics: string[]; mistake_patterns: { type: string; example_student: string; correction: string; explanation_ja: string; explanation_en: string }[] }
-    phrases: { id: string; phrase_en: string; example_en: string; translation_ja: string; explanation_ja: string; explanation_en: string; category: string }[]
-  } | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [seedStatus, setSeedStatus] = useState<string | null>(null)
-  const [seeding, setSeeding] = useState(false)
+// ─── Testing Panel ───
+// Self-service sandbox for the admin account: simulate a free user (so
+// gating, attempt counting and upsell flows behave as they do for real
+// users), preview the one-time modals with sample data, and wipe this
+// account's progress so flows can be rerun from zero.
+function TestingPanel({ session }: { session: { access_token: string } | null }) {
+  const [simulate, setSimulate] = useState<boolean | null>(null)
+  const [busy, setBusy] = useState<string | null>(null)
+  const [msg, setMsg] = useState<string | null>(null)
 
-  const seedTestData = async () => {
+  const headers = useMemo(() => ({
+    'Content-Type': 'application/json',
+    ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
+  }), [session?.access_token])
+
+  useEffect(() => {
     if (!session?.access_token) return
-    setSeeding(true)
-    setSeedStatus(null)
+    fetch('/api/admin/testing', { headers })
+      .then(r => r.json())
+      .then(d => setSimulate(!!d.simulate_free))
+      .catch(() => setSimulate(false))
+  }, [session?.access_token, headers])
+
+  const post = async (body: Record<string, unknown>, label: string, confirmText?: string) => {
+    if (confirmText && !window.confirm(confirmText)) return null
+    setBusy(label); setMsg(null)
     try {
-      const res = await fetch('/api/lessons/seed-test', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({}),
-      })
-      const data = await res.json()
-      setSeedStatus(data.message || data.error || 'Done')
-    } catch {
-      setSeedStatus('Failed to seed')
-    } finally {
-      setSeeding(false)
-    }
+      const r = await fetch('/api/admin/testing', { method: 'POST', headers, body: JSON.stringify(body) })
+      const d = await r.json()
+      if (!r.ok) throw new Error(d.error)
+      return d
+    } catch (e) {
+      setMsg(`${label}: ${e instanceof Error ? e.message : 'failed'}`)
+      return null
+    } finally { setBusy(null) }
   }
 
-  const clearTestData = async () => {
-    if (!session?.access_token) return
-    setSeeding(true)
-    setSeedStatus(null)
-    try {
-      await fetch('/api/lessons/seed-test', {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({}),
-      })
-      setSeedStatus('Test data cleared')
-    } catch {
-      setSeedStatus('Failed to clear')
-    } finally {
-      setSeeding(false)
-    }
-  }
-
-  const runTest = async () => {
-    if (!session?.access_token || !transcript.trim()) return
-    setLoading(true)
-    setError(null)
-    setResult(null)
-    try {
-      const res = await fetch('/api/lessons/analyze-test', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({ transcript: transcript.trim() }),
-      })
-      const data = await res.json()
-      if (data.error) {
-        setError(data.error)
-      } else {
-        setResult(data)
-      }
-    } catch (err) {
-      setError('Request failed')
-    } finally {
-      setLoading(false)
-    }
-  }
+  const previews = [
+    { label: 'Upsell modal (book a lesson)', href: '/dashboard/courses/pronunciation?preview=upsell' },
+    { label: 'Upsell modal (see plans)', href: '/dashboard/courses/pronunciation?preview=upsell-booked' },
+    { label: 'Course announcement', href: '/dashboard?preview=announce' },
+  ]
+  const clears = [
+    { action: 'clear_lesson_progress', label: 'Clear lesson progress', desc: 'Deletes all your course progress and best scores (resets pronunciation attempts to 0/3).' },
+    { action: 'clear_test_attempts', label: 'Clear test attempts', desc: 'Deletes all your mock-test attempts, responses and scores.' },
+    { action: 'reset_nudges', label: 'Re-arm one-time modals', desc: 'Clears the upsell-dismissed and announcement-seen flags so they can fire again.' },
+  ]
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
+      {/* simulate free user */}
       <SquircleBox cornerRadius={14} className="p-6" style={{ background: 'var(--surface)' }}>
-        <h3 className="text-lg font-semibold mb-1" style={{ color: 'var(--text)' }}>AI Analysis Test</h3>
-        <p className="text-xs mb-4" style={{ color: 'var(--text-muted)' }}>
-          Paste a transcript (or use the sample) and test the AI analysis without needing a real lesson.
-        </p>
-
-        <textarea
-          value={transcript}
-          onChange={(e) => setTranscript(e.target.value)}
-          rows={12}
-          className="w-full text-sm p-4 rounded-lg border-none outline-none resize-y mb-4"
-          style={{ background: 'var(--surface-hover)', color: 'var(--text)' }}
-          placeholder="Paste transcript here..."
-        />
-
-        <div className="flex items-center gap-3">
-          <Squircle asChild cornerRadius={10} cornerSmoothing={0.8}>
-            <button
-              onClick={runTest}
-              disabled={loading || !transcript.trim()}
-              className="px-5 py-2.5 text-sm font-medium transition-colors hover:opacity-90 disabled:opacity-50"
-              style={{ background: 'var(--accent)', color: 'var(--selected-text)' }}
-            >
-              {loading ? 'Analyzing...' : 'Run Analysis'}
-            </button>
-          </Squircle>
-          <button
-            onClick={() => setTranscript(SAMPLE_TRANSCRIPT)}
-            className="text-xs transition-colors hover:opacity-80"
-            style={{ color: 'var(--text-muted)' }}
-          >
-            Reset to sample
-          </button>
-          {error && <span className="text-sm" style={{ color: 'var(--danger)' }}>{error}</span>}
-        </div>
-
-        {/* Seed test data for student view */}
-        <div className="mt-4 pt-4" style={{ borderTop: '1px solid var(--border-subtle)' }}>
-          <p className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: 'var(--text-subtle)' }}>
-            Student View Test Data
-          </p>
-          <p className="text-xs mb-3" style={{ color: 'var(--text-muted)' }}>
-            Seed sample analysis data onto your most recent lesson so you can see how it looks from the student dashboard (History tab + Phrases tab).
-          </p>
-          <div className="flex items-center gap-3">
-            <Squircle asChild cornerRadius={10} cornerSmoothing={0.8}>
-              <button
-                onClick={seedTestData}
-                disabled={seeding}
-                className="px-4 py-2 text-xs font-medium transition-colors hover:opacity-90 disabled:opacity-50"
-                style={{ background: 'var(--accent)', color: 'var(--selected-text)' }}
-              >
-                {seeding ? '...' : 'Seed Test Data'}
-              </button>
-            </Squircle>
-            <Squircle asChild cornerRadius={10} cornerSmoothing={0.8}>
-              <button
-                onClick={clearTestData}
-                disabled={seeding}
-                className="px-4 py-2 text-xs font-medium transition-colors hover:opacity-90 disabled:opacity-50"
-                style={{ background: 'var(--surface-hover)', color: 'var(--text-muted)' }}
-              >
-                Clear Test Data
-              </button>
-            </Squircle>
-            {seedStatus && <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{seedStatus}</span>}
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <h3 className="text-base font-semibold mb-1" style={{ color: 'var(--text)' }}>Simulate free user</h3>
+            <p className="text-xs leading-relaxed" style={{ color: 'var(--text-subtle)' }}>
+              Entitlement checks treat this account as non-subscribed: course gating counts your attempts,
+              tests paywall, and upsells fire for real. Draft (unpublished) content stays visible.
+            </p>
           </div>
+          <button
+            onClick={async () => {
+              const next = !simulate
+              const d = await post({ simulate_free: next }, 'Simulate')
+              if (d) { setSimulate(next); setMsg(`Simulate free user: ${next ? 'ON' : 'OFF'}`) }
+            }}
+            disabled={simulate === null || busy !== null}
+            aria-pressed={!!simulate}
+            className="shrink-0 w-12 h-7 rounded-full relative transition-colors duration-150 disabled:opacity-40"
+            style={{ background: simulate ? 'var(--accent)' : 'var(--surface-hover)', border: '1px solid var(--border)' }}>
+            <span className="absolute top-0.5 w-5 h-5 rounded-full bg-white transition-all duration-150"
+              style={{ left: simulate ? 24 : 3, boxShadow: '0 1px 3px rgba(0,0,0,0.3)' }} />
+          </button>
         </div>
       </SquircleBox>
 
-      {/* Results */}
-      {result && (
-        <SquircleBox cornerRadius={14} className="p-6 space-y-5" style={{ background: 'var(--surface)' }}>
-          <h3 className="text-lg font-semibold" style={{ color: 'var(--text)' }}>Results</h3>
+      {/* modal previews */}
+      <SquircleBox cornerRadius={14} className="p-6" style={{ background: 'var(--surface)' }}>
+        <h3 className="text-base font-semibold mb-1" style={{ color: 'var(--text)' }}>Modal previews</h3>
+        <p className="text-xs mb-4" style={{ color: 'var(--text-subtle)' }}>
+          Force-show with sample data; nothing is stamped, so they stay repeatable.
+        </p>
+        <div className="flex flex-wrap gap-2">
+          {previews.map(p => (
+            <a key={p.href} href={p.href} target="_blank" rel="noreferrer"
+              className="text-sm px-4 py-2 rounded-full transition-colors"
+              style={{ background: 'var(--surface-hover)', color: 'var(--text)', border: '1px solid var(--border)' }}>
+              {p.label} ↗
+            </a>
+          ))}
+        </div>
+      </SquircleBox>
 
-          {/* Topics */}
-          {result.summary.key_topics.length > 0 && (
-            <div className="flex flex-wrap gap-1.5">
-              {result.summary.key_topics.map((t, i) => (
-                <span key={i} className="px-2 py-0.5 text-xs rounded-full" style={{ background: 'var(--surface-hover)', color: 'var(--text-muted)' }}>{t}</span>
-              ))}
-            </div>
-          )}
-
-          {/* Summary */}
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: 'var(--text-subtle)' }}>
-              {locale === 'ja' ? 'レッスン概要' : 'Summary'}
-            </p>
-            <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-              {locale === 'ja' ? result.summary.summary_ja : result.summary.summary_en}
-            </p>
-          </div>
-
-          {/* Mistakes */}
-          {result.summary.mistake_patterns.length > 0 && (
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: 'var(--text-subtle)' }}>
-                {locale === 'ja' ? '改善ポイント' : 'Mistakes'}
-              </p>
-              <div className="space-y-2">
-                {result.summary.mistake_patterns.map((m, i) => (
-                  <div key={i} className="text-sm rounded-lg p-3" style={{ background: 'var(--surface-hover)' }}>
-                    <div className="flex items-start gap-2 mb-1">
-                      <span className="shrink-0 flex items-center justify-center" style={{ width: '22px', height: '22px', fontSize: '14px', lineHeight: '22px' }}>❌</span>
-                      <span className="pt-0.5" style={{ color: 'var(--text-muted)', textDecoration: 'line-through' }}>{m.example_student}</span>
-                    </div>
-                    <div className="flex items-start gap-2 mb-1.5">
-                      <span className="shrink-0 flex items-center justify-center" style={{ width: '22px', height: '22px', fontSize: '14px', lineHeight: '22px' }}>✅</span>
-                      <span className="pt-0.5" style={{ color: 'var(--text)' }}>{m.correction}</span>
-                    </div>
-                    <p className="text-xs" style={{ color: 'var(--text)', paddingLeft: '30px' }}>
-                      {locale === 'ja' ? m.explanation_ja : m.explanation_en}
-                    </p>
-                  </div>
-                ))}
+      {/* data clearing */}
+      <SquircleBox cornerRadius={14} className="p-6" style={{ background: 'var(--surface)' }}>
+        <h3 className="text-base font-semibold mb-1" style={{ color: 'var(--text)' }}>Reset my data</h3>
+        <p className="text-xs mb-4" style={{ color: 'var(--text-subtle)' }}>
+          Acts on YOUR account only. Lets you replay gating and upsell flows from a clean slate.
+        </p>
+        <div className="space-y-3">
+          {clears.map(c => (
+            <div key={c.action} className="flex items-center justify-between gap-4">
+              <div>
+                <p className="text-sm font-medium" style={{ color: 'var(--text)' }}>{c.label}</p>
+                <p className="text-xs" style={{ color: 'var(--text-subtle)' }}>{c.desc}</p>
               </div>
+              <button
+                onClick={async () => {
+                  const d = await post({ action: c.action }, c.label, `${c.label} for your account?`)
+                  if (d) setMsg(`${c.label}: done${typeof d.cleared === 'number' ? ` (${d.cleared} rows)` : ''}`)
+                }}
+                disabled={busy !== null}
+                className="shrink-0 text-sm px-4 py-2 rounded-full transition-colors disabled:opacity-40"
+                style={{ background: 'transparent', color: 'var(--danger, #e5484d)', border: '1px solid var(--danger, #e5484d)' }}>
+                {busy === c.label ? '…' : c.label}
+              </button>
             </div>
-          )}
-
-          {/* Phrases */}
-          {result.phrases.length > 0 && (
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: 'var(--text-subtle)' }}>
-                {locale === 'ja' ? 'フレーズ' : 'Phrases'} ({result.phrases.length})
-              </p>
-              <div className="space-y-2">
-                {result.phrases.map((p, i) => (
-                  <div key={i} className="text-sm rounded-lg p-3" style={{ background: 'var(--surface-hover)' }}>
-                    <p className="font-medium" style={{ color: 'var(--text)' }}>{p.phrase_en} <span className="text-xs px-1.5 py-0.5 rounded-full ml-1" style={{ background: 'var(--surface)', color: 'var(--text-subtle)' }}>{p.category}</span></p>
-                    <p className="text-xs mt-1" style={{ color: 'var(--text-secondary)' }}>
-                      {locale === 'ja' ? '例' : 'Example'}: {p.example_en}
-                    </p>
-                    <p className="text-xs" style={{ color: 'var(--accent)' }}>
-                      {locale === 'ja' ? '訳' : 'Translation'}: {p.translation_ja}
-                    </p>
-                    <p className="text-xs mt-0.5" style={{ color: 'var(--text)' }}>
-                      {locale === 'ja' ? p.explanation_ja : p.explanation_en || p.explanation_ja}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </SquircleBox>
-      )}
+          ))}
+        </div>
+        {msg && <p className="text-xs mt-4" style={{ color: 'var(--text-muted)' }}>{msg}</p>}
+      </SquircleBox>
     </div>
   )
 }
-
-const SAMPLE_TRANSCRIPT = `Teacher: So, how was your weekend? Did you do anything fun?
-
-Student: Yes, I went to shopping with my friend on Saturday.
-
-Teacher: Nice! We usually say "I went shopping" — without the "to." Where did you go?
-
-Student: We went to Shibuya. There was so many people there.
-
-Teacher: Ah yeah, Shibuya is always busy! Just a small note — since "people" is plural, we say "there were so many people." "Was" is for singular things. So, did you find anything good?
-
-Student: Yes, I bought a new jacket. It was very cheap, only 3000 yen. I was looking for one since last month.
-
-Teacher: Great deal! And nice use of "I was looking for one." You could also say "I've been looking for one since last month" — that emphasizes that the search continued up until now. Both work though.
-
-Student: Ah I see. "I've been looking for." That's present perfect continuous?
-
-Teacher: Exactly! Present perfect continuous. You use it when something started in the past and continued until now. Like "I've been studying English for two years."
-
-Student: I've been studying English for two years... yes that makes sense. How about "I have studied English for two years"?
-
-Teacher: Good question! "I have studied" focuses on the result, while "I've been studying" focuses on the ongoing process. Both are correct, but the continuous form sounds more natural when you're still doing it.
-
-Student: OK, I understand. By the way, I have a business trip next week to Singapore.
-
-Teacher: Oh exciting! Is it your first time going there?
-
-Student: No, I went there before, two times. But this time I need to do presentation in English, so I'm a little nervous.
-
-Teacher: I can understand that. We say "give a presentation" rather than "do a presentation." And "I've been there before, twice" sounds more natural. Would you like to practice your presentation in our next lesson?
-
-Student: Yes, that would be very helpful! I want to make sure my pronunciation is clear.
-
-Teacher: Absolutely, let's do that. For now, try to think about the key points you want to cover. We can work on the structure and delivery next time.
-
-Student: OK, I will prepare the slides and practice before next lesson. Thank you!
-
-Teacher: Sounds like a plan. See you next week!`
 
 export default function Admin() {
   return (

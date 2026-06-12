@@ -27,11 +27,39 @@ export async function hasTestAccess(
   supabase: SupabaseClient,
   user: JwtUser,
 ): Promise<boolean> {
-  if (isAdminTestUser(user)) return true
+  if (isAdminTestUser(user)) {
+    // Admin testing override (admin page → Testing tab): simulate a free,
+    // non-subscribed user so gating/upsell flows can be tested first-hand.
+    // Draft visibility is handled separately and stays on.
+    const { data: prof } = await supabase
+      .from('profiles')
+      .select('admin_simulate_free')
+      .eq('id', user.id)
+      .maybeSingle()
+    return !prof?.admin_simulate_free
+  }
   const { data: sub } = await supabase
     .from('subscriptions')
     .select('status')
     .eq('user_id', user.id)
     .maybeSingle()
   return !!sub && sub.status !== 'cancelled'
+}
+
+/**
+ * Draft (unpublished) course visibility for non-admin TEST accounts.
+ * course_tester grants visibility only — never entitlement — so testers walk
+ * the real free-user gating on courses that are not public yet.
+ */
+export async function isCourseTester(
+  supabase: SupabaseClient,
+  user: JwtUser,
+): Promise<boolean> {
+  if (isAdminTestUser(user)) return true
+  const { data } = await supabase
+    .from('profiles')
+    .select('course_tester')
+    .eq('id', user.id)
+    .maybeSingle()
+  return !!data?.course_tester
 }

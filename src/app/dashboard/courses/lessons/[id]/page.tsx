@@ -10,6 +10,19 @@ import { Squircle } from '@squircle-js/react'
 import { useRiveFile } from '@rive-app/react-webgl2'
 import RiveIcon from '@/components/ui/RiveIcon'
 import MascotCelebrate from '@/components/courses/MascotCelebrate'
+import PronunciationExercise from '@/components/courses/PronunciationExercise'
+import ChallengeExercise from '@/components/courses/ChallengeExercise'
+import HvptPlayer from '@/components/courses/HvptPlayer'
+import ShadowGrid from '@/components/courses/ShadowGrid'
+import StressPick from '@/components/courses/StressPick'
+import SentenceStress from '@/components/courses/SentenceStress'
+import LinkPairs from '@/components/courses/LinkPairs'
+import WhichNatural from '@/components/courses/WhichNatural'
+import JoinType, { joinItemCorrect } from '@/components/courses/JoinType'
+import GlidePick from '@/components/courses/GlidePick'
+import TapT from '@/components/courses/TapT'
+import LinkLetters, { linkLettersCorrect } from '@/components/courses/LinkLetters'
+import SoundSorter from '@/components/courses/SoundSorter'
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 type Any = any
@@ -48,10 +61,23 @@ export default function LessonPlayerPage() {
   const [picked, setPicked] = useState<number | null>(null)
   const [typed, setTyped] = useState('')
   const [placed, setPlaced] = useState<(string | null)[]>([]) // drag_fill blanks
+  const [stressSel, setStressSel] = useState<Record<number, number>>({}) // stress_pick: word index -> chosen syllable
+  const [sentSel, setSentSel] = useState<Record<number, number[]>>({}) // sentence_stress: sentence index -> chosen word indices
+  const [linkSel, setLinkSel] = useState<Record<number, number[]>>({}) // link_pairs: item index -> chosen gap indices
+  const [whichSel, setWhichSel] = useState<Record<number, boolean>>({}) // which_natural: item index -> picked the natural take?
+  const [joinTyped, setJoinTyped] = useState<Record<number, string>>({}) // join_type: item index -> typed reduced form
+  const [glideSel, setGlideSel] = useState<Record<number, 'y' | 'w' | 'r'>>({}) // glide_pick: item index -> chosen bridge
+  const [tapTSel, setTapTSel] = useState<Record<number, number[]>>({}) // tap_t: item index -> tapped t-spot indices
+  const [linkLetSel, setLinkLetSel] = useState<Record<number, { from: [number, number]; to: [number, number] }[]>>({}) // link_letters: item index -> made links
   // …and a per-screen memory of submitted answers, so navigating back shows
   // the previous result instead of resetting the screen.
   const [answers, setAnswers] = useState<Record<string, { picked: number | null; typed: string; placed?: (string | null)[]; correct: boolean }>>({})
   const [explainOpen, setExplainOpen] = useState(false)
+  // Speak (record+grade) screens aren't pass/fail; we just track that the
+  // learner has had at least one attempt so Continue can unlock.
+  const [spoken, setSpoken] = useState<Record<string, boolean>>({})
+  const [lessonScore, setLessonScore] = useState<number | null>(null) // challenge result, shown on finish
+  const [sorterDone, setSorterDone] = useState<Record<string, boolean>>({}) // sound_sorter: screen id -> game finished (gates Continue)
   const loadedRef = useRef(false)
   // Preload the celebration rig during the lesson so it's ready (file + runtime
   // warm) the instant the complete screen appears — no missed dance frames.
@@ -114,12 +140,12 @@ export default function LessonPlayerPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session?.access_token, id])
 
-  const saveProgress = useCallback((screenIndex: number, completed = false) => {
+  const saveProgress = useCallback((screenIndex: number, completed = false, score?: number) => {
     if (!session?.access_token) return
     fetch(`/api/courses/lessons/${id}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
-      body: JSON.stringify({ screenIndex, completed }),
+      body: JSON.stringify({ screenIndex, completed, ...(score != null ? { score } : {}) }),
       keepalive: true,
     }).catch(() => {})
   }, [session?.access_token, id])
@@ -128,6 +154,12 @@ export default function LessonPlayerPage() {
   const screen = screens[idx]
   const isQuestion = screen?.type === 'question'
   const c = screen?.content ?? {}
+  const isSpeak = isQuestion && c.question_type === 'speak'
+  const isShadow = isQuestion && c.question_type === 'shadow'
+  const isChallenge = isQuestion && c.question_type === 'challenge'
+  const isSorter = isQuestion && c.question_type === 'sound_sorter'
+  // Practice screens (speak/shadow/challenge/sorter) skip the Check + correct/incorrect flow.
+  const isPractice = isSpeak || isShadow || isChallenge || isSorter
   // Saved answer for this screen (set once submitted; survives back/forward)
   const saved = screen ? answers[screen.id] : undefined
   const answered: boolean | null = saved ? saved.correct : null
@@ -191,6 +223,48 @@ export default function LessonPlayerPage() {
       const answer: string[] = c.answer ?? []
       correct = placed.every((p, i) => p === answer[i])
       setAnswers(a => ({ ...a, [screen.id]: { picked: null, typed: '', placed: [...placed], correct } }))
+    } else if (c.question_type === 'stress_pick') {
+      const wlist: { stressIndex: number }[] = c.words ?? []
+      if (!wlist.every((_, i) => stressSel[i] != null)) return
+      correct = wlist.every((w, i) => stressSel[i] === w.stressIndex)
+      setAnswers(a => ({ ...a, [screen.id]: { picked: null, typed: '', correct } }))
+    } else if (c.question_type === 'sentence_stress') {
+      const slist: { stressed: number[] }[] = c.sentences ?? []
+      if (!slist.every((_, i) => (sentSel[i]?.length ?? 0) > 0)) return
+      const same = (a: number[], b: number[]) => a.length === b.length && [...a].sort((x, y) => x - y).every((v, k) => v === [...b].sort((x, y) => x - y)[k])
+      correct = slist.every((s, i) => same(sentSel[i] ?? [], s.stressed))
+      setAnswers(a => ({ ...a, [screen.id]: { picked: null, typed: '', correct } }))
+    } else if (c.question_type === 'link_pairs') {
+      const ilist: { links: number[] }[] = c.items ?? []
+      const same = (a: number[], b: number[]) => a.length === b.length && [...a].sort((x, y) => x - y).every((v, k) => v === [...b].sort((x, y) => x - y)[k])
+      correct = ilist.every((it, i) => same(linkSel[i] ?? [], it.links))
+      setAnswers(a => ({ ...a, [screen.id]: { picked: null, typed: '', correct } }))
+    } else if (c.question_type === 'which_natural') {
+      const ilist: unknown[] = c.items ?? []
+      if (!ilist.every((_, i) => whichSel[i] != null)) return
+      correct = ilist.every((_, i) => whichSel[i] === true)
+      setAnswers(a => ({ ...a, [screen.id]: { picked: null, typed: '', correct } }))
+    } else if (c.question_type === 'join_type') {
+      const ilist: { accepted: string[] }[] = c.items ?? []
+      if (!ilist.every((_, i) => (joinTyped[i] ?? '').trim())) return
+      correct = ilist.every((it, i) => joinItemCorrect(it, joinTyped[i] ?? ''))
+      setAnswers(a => ({ ...a, [screen.id]: { picked: null, typed: '', correct } }))
+    } else if (c.question_type === 'glide_pick') {
+      const ilist: { answer: string }[] = c.items ?? []
+      if (!ilist.every((_, i) => glideSel[i] != null)) return
+      correct = ilist.every((it, i) => glideSel[i] === it.answer)
+      setAnswers(a => ({ ...a, [screen.id]: { picked: null, typed: '', correct } }))
+    } else if (c.question_type === 'tap_t') {
+      const ilist: { answer: number[] }[] = c.items ?? []
+      if (!ilist.every((_, i) => (tapTSel[i]?.length ?? 0) > 0)) return
+      const same = (a: number[], b: number[]) => a.length === b.length && [...a].sort((x, y) => x - y).every((v, k) => v === [...b].sort((x, y) => x - y)[k])
+      correct = ilist.every((it, i) => same(tapTSel[i] ?? [], it.answer))
+      setAnswers(a => ({ ...a, [screen.id]: { picked: null, typed: '', correct } }))
+    } else if (c.question_type === 'link_letters') {
+      const ilist = (c.items ?? []) as Parameters<typeof linkLettersCorrect>[0][]
+      if (!ilist.every((_, i) => (linkLetSel[i]?.length ?? 0) > 0)) return
+      correct = ilist.every((it, i) => linkLettersCorrect(it, linkLetSel[i] ?? []))
+      setAnswers(a => ({ ...a, [screen.id]: { picked: null, typed: '', correct } }))
     } else {
       if (picked === null) return
       correct = !!c.options?.[picked]?.is_correct
@@ -201,7 +275,7 @@ export default function LessonPlayerPage() {
 
   const next = () => {
     const nextIdx = idx + 1
-    setPicked(null); setTyped(''); setExplainOpen(false)
+    setPicked(null); setTyped(''); setExplainOpen(false); setStressSel({}); setSentSel({}); setLinkSel({}); setWhichSel({}); setJoinTyped({}); setGlideSel({}); setTapTSel({}); setLinkLetSel({})
     if (nextIdx >= screens.length) {
       play('lesson-finish')
       setFinished(true)
@@ -219,7 +293,7 @@ export default function LessonPlayerPage() {
     if (target === idx && !finished) return
     if (target > maxIdx) return
     play('click')
-    setPicked(null); setTyped(''); setExplainOpen(false); setFinished(false)
+    setPicked(null); setTyped(''); setExplainOpen(false); setFinished(false); setStressSel({}); setSentSel({}); setLinkSel({}); setWhichSel({}); setJoinTyped({}); setGlideSel({}); setTapTSel({}); setLinkLetSel({})
     setIdx(target)
   }
 
@@ -246,7 +320,9 @@ export default function LessonPlayerPage() {
 
 
   return (
-    <div className="fixed inset-0 z-40 flex flex-col" style={{ background: 'var(--dash-bg)' }}>
+    // z-50 matches the dashboard top bar; as the later sibling at equal z the
+    // player covers it (the lesson is fullscreen, X + progress is its own bar).
+    <div className="fixed inset-0 z-50 flex flex-col" style={{ background: 'var(--dash-bg)' }}>
       {/* ── Top bar: X + progress ── */}
       <div className="flex items-center gap-4 px-4 py-3 shrink-0">
         <button onClick={exit} aria-label={t('レッスンを終了', 'Exit the lesson')}
@@ -308,29 +384,41 @@ export default function LessonPlayerPage() {
                 <p className="text-sm mt-2" style={{ color: 'var(--text-secondary)' }}>
                   {locale === 'ja' ? data.lesson.title_ja : data.lesson.title}
                 </p>
-                <Squircle asChild cornerRadius={12} cornerSmoothing={0.8}>
-                  <button onClick={exit} className="mt-8 px-8 py-3 font-medium transition-all duration-[120ms] ease-out hover:scale-[1.03] active:scale-95"
-                    style={{ background: 'var(--accent)', color: '#fff' }}>
-                    {t('コースに戻る', 'Back to the course')}
-                  </button>
-                </Squircle>
+                {lessonScore != null && (
+                  <div className="mt-4 flex justify-center">
+                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full" style={{ background: 'var(--card-inset)' }}>
+                      <span className="text-sm" style={{ color: 'var(--text-muted)' }}>{t('発音スコア', 'Pronunciation')}</span>
+                      <span className="text-lg font-bold" style={{ color: 'var(--accent)' }}>{lessonScore}/100</span>
+                    </div>
+                  </div>
+                )}
+                <div className="mt-6 flex justify-center">
+                  <Squircle asChild cornerRadius={12} cornerSmoothing={0.8}>
+                    <button onClick={exit} className="px-8 py-3 font-medium transition-all duration-[120ms] ease-out hover:scale-[1.03] active:scale-95"
+                      style={{ background: 'var(--accent)', color: '#fff' }}>
+                      {t('コースに戻る', 'Back to the course')}
+                    </button>
+                  </Squircle>
+                </div>
               </motion.div>
             ) : screen && (
-              <motion.div key={screen.id} initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.22 }} className="py-8">
+              <motion.div key={screen.id} initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.22 }} className={`py-8 ${isChallenge ? 'flex-1 flex flex-col' : ''}`}>
                 {/* image / audio stimulus */}
                 {screen.image?.url && <img src={screen.image.url} alt="" className="rounded-xl w-full h-auto mb-6" />}
-                {screen.audio?.url && <audio controls src={screen.audio.url} className="w-full mb-6" />}
+                {/* speak screens have their own "Hear it" button for the model clip,
+                    so skip the generic player there; listening questions keep it. */}
+                {screen.audio?.url && !isSpeak && <audio controls src={screen.audio.url} className="w-full mb-6" />}
 
                 {!isQuestion ? (
                   <>
-                    <h2 className="text-xl sm:text-2xl font-bold mb-5" style={{ color: 'var(--text)' }}>
+                    <h2 className="text-2xl sm:text-3xl font-bold mb-5" style={{ color: 'var(--text)' }}>
                       {locale === 'ja' ? c.title_ja : (c.title ?? c.title_ja)}
                     </h2>
                     {String(locale === 'ja' ? c.body_ja : (c.body ?? c.body_ja) ?? '').split('\n\n').map((p: string, i: number) => (
-                      <p key={i} className="text-[15px] leading-relaxed mb-4 whitespace-pre-line" style={{ color: 'var(--text-secondary)' }}>{rich(p)}</p>
+                      <p key={i} className="text-[17px] leading-[1.85] mb-5 whitespace-pre-line" style={{ color: 'var(--text-secondary)' }}>{rich(p)}</p>
                     ))}
                     {c.example && (
-                      <div className="mt-2 p-4 rounded-xl text-[15px] leading-relaxed whitespace-pre-line"
+                      <div className="mt-2 p-4 rounded-xl text-[17px] leading-[1.85] whitespace-pre-line"
                         style={{ background: 'var(--card-inset)', color: 'var(--text)' }}>
                         {rich(c.example)}
                       </div>
@@ -341,7 +429,124 @@ export default function LessonPlayerPage() {
                     {c.prompt_ja && <p className="text-sm mb-2" style={{ color: 'var(--text-muted)' }}>{c.prompt_ja}</p>}
                     <h2 className="text-lg sm:text-xl font-semibold mb-6 whitespace-pre-line" style={{ color: 'var(--text)' }}>{c.prompt}</h2>
 
-                    {c.question_type === 'drag_fill' ? (
+                    {/* HVPT discrimination: a Listen control that rotates voices */}
+                    {Array.isArray(c.voiceUrls) && c.voiceUrls.length > 0 && (
+                      <div className="mb-6 -mt-2"><HvptPlayer urls={c.voiceUrls} locale={locale} /></div>
+                    )}
+
+                    {c.question_type === 'challenge' ? (
+                      <ChallengeExercise
+                        positions={c.positions ?? []}
+                        sentences={c.sentences ?? []}
+                        accent={c.accent === 'en-US' ? 'en-US' : 'en-GB'}
+                        mascotSrc={data?.lesson?.slug?.startsWith('ielts') ? '/rive/earl.riv' : '/rive/teri.riv'}
+                        lessonId={data?.lesson?.id}
+                        screenId={screen.id}
+                        token={session?.access_token}
+                        locale={locale}
+                        onFinish={(avg) => { setLessonScore(avg); play('lesson-finish'); setFinished(true); saveProgress(idx, true, avg) }}
+                      />
+                    ) : c.question_type === 'sound_sorter' ? (
+                      <SoundSorter
+                        key={screen.id}
+                        left={c.left}
+                        right={c.right}
+                        words={c.words ?? []}
+                        locale={locale}
+                        onRound={(ok: boolean) => play(ok ? 'correct' : 'wrong')}
+                        onDone={() => setSorterDone(d => ({ ...d, [screen.id]: true }))}
+                      />
+                    ) : c.question_type === 'shadow' ? (
+                      Array.isArray(c.words) && c.words.length > 0 ? (
+                        <ShadowGrid words={c.words} sounds={c.sounds} locale={locale} />
+                      ) : (
+                        <div className="flex flex-col items-center text-center py-4">
+                          <p className="text-3xl sm:text-4xl font-bold mb-3" style={{ color: 'var(--text)' }}>{c.displayText ?? c.text ?? ''}</p>
+                          <p className="text-sm max-w-sm" style={{ color: 'var(--text-secondary)' }}>
+                            {t('音声を聞いて、同じように声に出してまねしてみよう。', 'Listen, then say it out loud the same way.')}
+                          </p>
+                        </div>
+                      )
+                    ) : c.question_type === 'stress_pick' ? (
+                      <StressPick
+                        words={c.words}
+                        locale={locale}
+                        selections={stressSel}
+                        onSelect={(i, k) => { if (answered === null) { play('select'); setStressSel(s => ({ ...s, [i]: k })) } }}
+                        revealed={answered !== null}
+                      />
+                    ) : c.question_type === 'sentence_stress' ? (
+                      <SentenceStress
+                        sentences={c.sentences}
+                        locale={locale}
+                        selections={sentSel}
+                        onToggle={(si, wi) => { if (answered === null) { play('select'); setSentSel(s => { const cur = s[si] ?? []; return { ...s, [si]: cur.includes(wi) ? cur.filter(x => x !== wi) : [...cur, wi] } }) } }}
+                        revealed={answered !== null}
+                      />
+                    ) : c.question_type === 'link_pairs' ? (
+                      <LinkPairs
+                        items={c.items}
+                        locale={locale}
+                        selections={linkSel}
+                        onToggle={(i, g) => { if (answered === null) { play('select'); setLinkSel(s => { const cur = s[i] ?? []; return { ...s, [i]: cur.includes(g) ? cur.filter(x => x !== g) : [...cur, g] } }) } }}
+                        revealed={answered !== null}
+                      />
+                    ) : c.question_type === 'which_natural' ? (
+                      <WhichNatural
+                        items={c.items}
+                        locale={locale}
+                        selections={whichSel}
+                        onSelect={(i, isNat) => { if (answered === null) { play('select'); setWhichSel(s => ({ ...s, [i]: isNat })) } }}
+                        revealed={answered !== null}
+                      />
+                    ) : c.question_type === 'join_type' ? (
+                      <JoinType
+                        items={c.items}
+                        locale={locale}
+                        values={joinTyped}
+                        onChange={(i, v) => { if (answered === null) setJoinTyped(s => ({ ...s, [i]: v })) }}
+                        revealed={answered !== null}
+                      />
+                    ) : c.question_type === 'glide_pick' ? (
+                      <GlidePick
+                        items={c.items}
+                        locale={locale}
+                        selections={glideSel}
+                        onSelect={(i, b) => { if (answered === null) { play('select'); setGlideSel(s => ({ ...s, [i]: b })) } }}
+                        revealed={answered !== null}
+                      />
+                    ) : c.question_type === 'tap_t' ? (
+                      <TapT
+                        items={c.items}
+                        locale={locale}
+                        selections={tapTSel}
+                        onToggle={(i, sp) => { if (answered === null) { play('select'); setTapTSel(s => { const cur = s[i] ?? []; return { ...s, [i]: cur.includes(sp) ? cur.filter(x => x !== sp) : [...cur, sp] } }) } }}
+                        revealed={answered !== null}
+                      />
+                    ) : c.question_type === 'link_letters' ? (
+                      <LinkLetters
+                        items={c.items}
+                        locale={locale}
+                        selections={linkLetSel}
+                        onChange={(i, links) => { if (answered === null) { play('select'); setLinkLetSel(s => ({ ...s, [i]: links })) } }}
+                        revealed={answered !== null}
+                      />
+                    ) : c.question_type === 'speak' ? (
+                      <PronunciationExercise
+                        referenceText={c.referenceText ?? c.text ?? ''}
+                        displayText={c.displayText}
+                        targetLabel={c.targetLabel}
+                        targetPhonemeIndex={c.targetPhonemeIndex}
+                        accent={c.accent === 'en-US' ? 'en-US' : 'en-GB'}
+                        modelAudioUrl={screen.audio?.url}
+                        phonemeLabels={c.phonemeLabels}
+                        lessonId={data?.lesson?.id}
+                        screenId={screen.id}
+                        token={session?.access_token}
+                        locale={locale}
+                        onAttempted={() => setSpoken(s => ({ ...s, [screen.id]: true }))}
+                      />
+                    ) : c.question_type === 'drag_fill' ? (
                       <>
                         {/* text with drop-target blanks */}
                         <div className="text-[16px] leading-loose" style={{ color: 'var(--text)' }}>
@@ -424,15 +629,17 @@ export default function LessonPlayerPage() {
                         )}
                       </>
                     ) : c.question_type === 'gap_fill' ? (
-                      <input
-                        value={shownTyped}
-                        onChange={e => setTyped(e.target.value)}
-                        onKeyDown={e => { if (e.key === 'Enter') check() }}
-                        disabled={answered !== null}
-                        placeholder={t('答えを入力', 'Type your answer')}
-                        className="w-full px-4 py-3 rounded-xl text-[15px] outline-none"
-                        style={{ background: 'var(--card-inset)', color: 'var(--text)', border: '1px solid var(--edge)' }}
-                      />
+                      <Squircle asChild cornerRadius={12} cornerSmoothing={0.8}>
+                        <input
+                          value={shownTyped}
+                          onChange={e => setTyped(e.target.value)}
+                          onKeyDown={e => { if (e.key === 'Enter') check() }}
+                          disabled={answered !== null}
+                          placeholder={t('答えを入力', 'Type your answer')}
+                          className="w-full px-4 py-3 text-[15px] outline-none"
+                          style={{ background: 'var(--card-inset)', color: 'var(--text)', border: '1px solid var(--edge)' }}
+                        />
+                      </Squircle>
                     ) : (
                       // Horizontal chips sized to their content (Brilliant-style) —
                       // selecting highlights; grading waits for the Check button.
@@ -442,17 +649,19 @@ export default function LessonPlayerPage() {
                           const showCorrect = answered !== null && o.is_correct
                           const showWrong = answered !== null && isPicked && !o.is_correct
                           return (
-                            <button key={i} onClick={() => selectOption(i)} disabled={answered !== null}
-                              className="text-left w-fit max-w-full px-4 py-2.5 rounded-xl text-[15px] transition-all duration-[120ms] ease-out enabled:hover:scale-[1.02] enabled:active:scale-[0.97]"
-                              style={{
-                                background: showCorrect ? 'var(--accent)' : showWrong ? 'var(--danger)' : 'var(--card-inset)',
-                                color: showCorrect || showWrong ? '#fff' : 'var(--text)',
-                                border: '1.5px solid ' + (isPicked && answered === null ? 'var(--accent)' : showCorrect || showWrong ? 'transparent' : 'var(--edge)'),
-                              }}>
-                              {/* subtle letter label — the 解説 refers to options as (A)(B)(C) */}
-                              {o.label ? <span className="font-semibold mr-1.5 opacity-50">{o.label}</span> : null}
-                              {o.content}
-                            </button>
+                            <Squircle key={i} asChild cornerRadius={12} cornerSmoothing={0.8}>
+                              <button onClick={() => selectOption(i)} disabled={answered !== null}
+                                className="text-left w-fit max-w-full px-4 py-2.5 text-[15px] transition-all duration-[120ms] ease-out enabled:hover:scale-[1.02] enabled:active:scale-[0.97]"
+                                style={{
+                                  background: showCorrect ? 'var(--accent)' : showWrong ? 'var(--danger)' : 'var(--card-inset)',
+                                  color: showCorrect || showWrong ? '#fff' : 'var(--text)',
+                                  border: '1.5px solid ' + (isPicked && answered === null ? 'var(--accent)' : showCorrect || showWrong ? 'transparent' : 'var(--edge)'),
+                                }}>
+                                {/* subtle letter label — the 解説 refers to options as (A)(B)(C) */}
+                                {o.label ? <span className="font-semibold mr-1.5 opacity-50">{o.label}</span> : null}
+                                {o.content}
+                              </button>
+                            </Squircle>
                           )
                         })}
                       </div>
@@ -465,23 +674,37 @@ export default function LessonPlayerPage() {
         </div>
       </div>
 
-      {/* ── Footer: back + check/continue — or the result banner over it ── */}
-      {!finished && screen && (
+      {/* ── Footer: back + check/continue — or the result banner over it.
+          The challenge drives its own flow (walk + auto-advance), so no footer. ── */}
+      {!finished && screen && !isChallenge && (
         <div className="shrink-0 relative overflow-hidden">
           <div className="px-5 pb-6 pt-3"
-            style={{ borderTop: '1px solid var(--divider)', visibility: isQuestion && answered !== null ? 'hidden' : 'visible' }}>
+            style={{ borderTop: '1px solid var(--divider)', visibility: isQuestion && !isPractice && answered !== null ? 'hidden' : 'visible' }}>
             <div className="max-w-2xl mx-auto flex items-center gap-3">
               <Squircle asChild cornerRadius={12} cornerSmoothing={0.8}>
                 <button
-                  onClick={() => { if (isQuestion && answered === null) { check(); return } next() }}
-                  disabled={isQuestion && answered === null && (
-                    c.question_type === 'gap_fill' ? !typed.trim()
-                    : c.question_type === 'drag_fill' ? placed.length === 0 || placed.some(p => p === null)
-                    : picked === null
-                  )}
+                  onClick={() => { if (isQuestion && !isPractice && answered === null) { check(); return } next() }}
+                  disabled={
+                    isSpeak ? !spoken[screen.id]
+                    : isSorter ? !sorterDone[screen.id]
+                    : isShadow ? false
+                    : isQuestion && answered === null && (
+                      c.question_type === 'gap_fill' ? !typed.trim()
+                      : c.question_type === 'drag_fill' ? placed.length === 0 || placed.some(p => p === null)
+                      : c.question_type === 'stress_pick' ? !(c.words ?? []).every((_: unknown, i: number) => stressSel[i] != null)
+                      : c.question_type === 'sentence_stress' ? !(c.sentences ?? []).every((_: unknown, i: number) => (sentSel[i]?.length ?? 0) > 0)
+                      : c.question_type === 'link_pairs' ? false
+                      : c.question_type === 'which_natural' ? !(c.items ?? []).every((_: unknown, i: number) => whichSel[i] != null)
+                      : c.question_type === 'join_type' ? !(c.items ?? []).every((_: unknown, i: number) => (joinTyped[i] ?? '').trim())
+                      : c.question_type === 'glide_pick' ? !(c.items ?? []).every((_: unknown, i: number) => glideSel[i] != null)
+                      : c.question_type === 'tap_t' ? !(c.items ?? []).every((_: unknown, i: number) => (tapTSel[i]?.length ?? 0) > 0)
+                      : c.question_type === 'link_letters' ? !(c.items ?? []).every((_: unknown, i: number) => (linkLetSel[i]?.length ?? 0) > 0)
+                      : picked === null
+                    )
+                  }
                   className="flex-1 py-3.5 font-semibold transition-all duration-[120ms] ease-out enabled:hover:scale-[1.01] enabled:active:scale-[0.98] disabled:opacity-40"
                   style={{ background: 'var(--accent)', color: '#fff' }}>
-                  {isQuestion && answered === null
+                  {isQuestion && !isPractice && answered === null
                     ? t('答え合わせ', 'Check')
                     : idx + 1 >= screens.length ? t('完了', 'Finish') : t('続ける', 'Continue')}
                 </button>
@@ -495,7 +718,7 @@ export default function LessonPlayerPage() {
           {/* Result banner — slides up and covers the footer bar. The tint is
               layered over the OPAQUE page background so nothing bleeds through. */}
           <AnimatePresence>
-            {isQuestion && answered !== null && (
+            {isQuestion && !isPractice && answered !== null && (
               <motion.div key="result" initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
                 transition={{ type: 'spring', stiffness: 420, damping: 36 }}
                 className="absolute inset-0 px-5 flex items-center"
@@ -558,7 +781,7 @@ export default function LessonPlayerPage() {
                 <span className="font-semibold">{t('正解：', 'Answer: ')}</span>{c.accepted[0]}
               </p>
             )}
-            <p className="text-sm leading-relaxed whitespace-pre-line" style={{ color: 'var(--text-secondary)' }}>
+            <p className="text-[15px] leading-relaxed whitespace-pre-line" style={{ color: 'var(--text-secondary)' }}>
               {rich(locale === 'ja' ? c.explanation_ja : (c.explanation ?? c.explanation_ja))}
             </p>
             {c.transcript && (

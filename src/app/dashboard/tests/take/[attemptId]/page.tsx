@@ -347,21 +347,25 @@ export default function TakeTestPage() {
             {q.options.map(o => {
               const sel = (a?.selectedOptionIds ?? []).includes(o.id)
               return (
-                <button key={o.id} onClick={() => setChoice(q, o.id)}
-                  className={`option-row text-left px-4 py-2.5 rounded-xl flex items-center gap-3${sel ? ' is-selected' : ''}`}
-                  style={{ background: sel ? 'var(--accent-bg)' : undefined, color: 'var(--text)', boxShadow: sel ? '0 0 0 1.5px var(--accent)' : 'none' }}>
-                  {o.label && <span className="font-semibold" style={{ color: sel ? 'var(--accent)' : 'var(--text-muted)' }}>{o.label}</span>}
-                  <span>{o.content}</span>
-                </button>
+                <Squircle key={o.id} asChild cornerRadius={12} cornerSmoothing={0.8}>
+                  <button onClick={() => setChoice(q, o.id)}
+                    className={`option-row text-left px-4 py-2.5 flex items-center gap-3${sel ? ' is-selected' : ''}`}
+                    style={{ background: sel ? 'var(--accent-bg)' : undefined, color: 'var(--text)', border: `1.5px solid ${sel ? 'var(--accent)' : 'transparent'}` }}>
+                    {o.label && <span className="font-semibold" style={{ color: sel ? 'var(--accent)' : 'var(--text-muted)' }}>{o.label}</span>}
+                    <span>{o.content}</span>
+                  </button>
+                </Squircle>
               )
             })}
           </div>
         )}
 
         {isText && (
-          <input type="text" value={a?.textResponse ?? ''} onChange={e => setText(q, e.target.value)}
-            placeholder={t('答えを入力', 'Type your answer')} className="w-full px-4 py-2.5 rounded-xl outline-none"
-            style={{ background: 'var(--card-inset)', color: 'var(--text)' }} />
+          <Squircle asChild cornerRadius={12} cornerSmoothing={0.8}>
+            <input type="text" value={a?.textResponse ?? ''} onChange={e => setText(q, e.target.value)}
+              placeholder={t('答えを入力', 'Type your answer')} className="w-full px-4 py-2.5 outline-none"
+              style={{ background: 'var(--card-inset)', color: 'var(--text)' }} />
+          </Squircle>
         )}
 
         {isLong && (
@@ -549,12 +553,16 @@ export default function TakeTestPage() {
               {sp.section.part_label}{sp.section.part_label && sp.section.title ? ' · ' : ''}{sp.section.title} · {t('問題', 'Question')} {speakingStep + 1} / {flatQuestions.length}
             </p>
             {showPrompt && (
-              <div className="p-4 rounded-2xl text-sm whitespace-pre-line" style={{ background: 'var(--card)', color: 'var(--text)', border: '1px solid var(--hairline)', boxShadow: 'var(--card-shadow)' }}>{sp.group.prompt}</div>
+              <Squircle asChild cornerRadius={16} cornerSmoothing={0.8}>
+                <div className="p-4 text-sm whitespace-pre-line" style={{ background: 'var(--card)', color: 'var(--text)', border: '1px solid var(--hairline)', boxShadow: 'var(--card-shadow)' }}>{sp.group.prompt}</div>
+              </Squircle>
             )}
             {/* Group stimulus — the interview layout must also show passage
                 sheets (e.g. TOEIC S&W Q8-10 schedule) and picture-task images */}
             {sp.group.passage_text && (
-              <div className="p-4 rounded-2xl text-sm whitespace-pre-line" style={{ background: 'var(--card)', color: 'var(--text)', border: '1px solid var(--hairline)', boxShadow: 'var(--card-shadow)' }}>{sp.group.passage_text}</div>
+              <Squircle asChild cornerRadius={16} cornerSmoothing={0.8}>
+                <div className="p-4 text-sm whitespace-pre-line" style={{ background: 'var(--card)', color: 'var(--text)', border: '1px solid var(--hairline)', boxShadow: 'var(--card-shadow)' }}>{sp.group.passage_text}</div>
+              </Squircle>
             )}
             {sp.group.image?.url && (
               // eslint-disable-next-line @next/next/no-img-element

@@ -249,13 +249,13 @@ export default function HomeView(props: HomeViewProps) {
       <div className="p-5 rounded-2xl text-center" style={cardStyle}>
         <p className="font-medium" style={{ color: 'var(--text)' }}>
           {!trialCompleted
-            ? (locale === 'ja' ? '無料体験レッスンを予約しよう' : 'Book your free trial lesson')
+            ? (locale === 'ja' ? 'まずは15分、無料体験から' : 'Start with a free 15-minute trial')
             : (locale === 'ja' ? 'プランを選んでレッスンを始めよう' : 'Choose a plan to start booking')}
         </p>
         <p className="text-sm mt-1 mb-4" style={{ color: 'var(--text-muted)' }}>
           {!trialCompleted
-            ? (locale === 'ja' ? '15分の体験後、48時間以内の入会で最大45%オフ' : 'Up to 45% off if you subscribe within 48h of your trial')
-            : (locale === 'ja' ? 'レッスンの予約にはプランの登録が必要です' : 'A subscription is required to book lessons')}
+            ? (locale === 'ja' ? '体験後48時間は、入会が最大45%オフ' : 'Subscribe within 48 hours for up to 45% off')
+            : (locale === 'ja' ? 'プランはいつでも変更・解約できます' : 'Change or cancel your plan anytime')}
         </p>
         <motion.button
           {...pressAnimLarge}

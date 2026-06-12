@@ -5,6 +5,8 @@ import { createPortal } from 'react-dom'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 import { useLanguage } from '@/context/LanguageContext'
+import { useTheme } from '@/context/ThemeContext'
+import { pillTabStyle } from '@/lib/pill-tabs'
 import { isAdminEmail } from '@/lib/admin-redirect'
 import { renderMarkdown } from '@/lib/markdown'
 import { Squircle } from '@squircle-js/react'
@@ -15,6 +17,7 @@ import BookingCalendar, { type BookingResult } from '@/components/BookingCalenda
 import { motion, AnimatePresence } from 'framer-motion'
 import { formatNextReview, previewIntervals, type ReviewRating } from '@/lib/srs'
 import HomeView from '@/components/dashboard/HomeView'
+import PronAnnounceArt from '@/components/dashboard/PronAnnounceArt'
 import { useDashboardNav } from '@/context/DashboardNavContext'
 
 type Lesson = {
@@ -814,12 +817,29 @@ function HistoryLessonCard({
 function DashboardContent() {
   const { user, session, loading } = useAuth()
   const { t, locale } = useLanguage()
+  const { theme } = useTheme()
   const searchParams = useSearchParams()
   const durationParam = searchParams.get('duration')
+  const tabParam = searchParams.get('tab')
+  // ?preview=announce — force-show the course announcement (no flag stamped)
+  const previewParam = searchParams.get('preview')
 
   const isAdmin = isAdminEmail(user?.email)
+
+  // Deep link: /dashboard?tab=booking (used by the course upsell modal)
+  useEffect(() => {
+    if (tabParam === 'booking') setActiveTab('booking')
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tabParam])
+
+  useEffect(() => {
+    if (previewParam === 'announce') setPronAnnounce({ freeLessonId: null })
+  }, [previewParam])
   const router = useRouter()
   const { activeTab, setActiveTab, setIndicators } = useDashboardNav()
+  // One-time "How's your L & R?" announcement for the pronunciation course:
+  // shown once ever (profiles.pron_announce_seen_at), only while published.
+  const [pronAnnounce, setPronAnnounce] = useState<{ freeLessonId: string | null } | null>(null)
   const [lessons, setLessons] = useState<Lesson[]>([])
   const [historyLessons, setHistoryLessons] = useState<Lesson[]>([])
   const [loadingLessons, setLoadingLessons] = useState(true)
@@ -828,6 +848,34 @@ function DashboardContent() {
   const [lessonToCancel, setLessonToCancel] = useState<Lesson | null>(null)
   const [cancelAllFuture, setCancelAllFuture] = useState(false)
   const [news, setNews] = useState<NewsCard[]>([])
+
+  useEffect(() => {
+    if (!session?.access_token) return
+    const headers = { Authorization: `Bearer ${session.access_token}` }
+    fetch('/api/courses/pron-status', { headers })
+      .then(r => r.json())
+      .then(s => {
+        if (!s || s.error || s.announceSeen) return
+        // only announce a published course; the list API hides drafts
+        return fetch('/api/courses?exam=pronunciation', { headers })
+          .then(r => r.json())
+          .then(d => {
+            const c = (d.courses ?? []).find((x: { slug: string }) => x.slug === 'pronunciation')
+            if (!c) return
+            const free = c.levels?.flatMap((l: { lessons: { id: string; free: boolean }[] }) => l.lessons).find((le: { free: boolean }) => le.free)
+            setPronAnnounce({ freeLessonId: free?.id ?? null })
+            // stamp immediately: "only show once" means once, even if they
+            // close the tab instead of tapping a button
+            fetch('/api/courses/pron-status', {
+              method: 'POST',
+              headers: { ...headers, 'Content-Type': 'application/json' },
+              body: JSON.stringify({ announce_seen: true }),
+            }).catch(() => {})
+          })
+      })
+      .catch(() => {})
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session?.access_token])
   const [loadingNews, setLoadingNews] = useState(true)
   const [selectedNewsId, setSelectedNewsId] = useState<string | null>(null)
   const [readNewsIds, setReadNewsIds] = useState<Set<string>>(new Set())
@@ -1962,12 +2010,7 @@ function DashboardContent() {
                             key={f}
                             onClick={() => { setVocabFilter(f); setVocabVisible(20) }}
                             className="px-2.5 py-1 text-xs font-medium rounded-full transition-all duration-[120ms] ease-out hover:scale-105 active:scale-95"
-                            style={{
-                              background: vocabFilter === f ? 'var(--accent)' : 'var(--panel)',
-                              color: vocabFilter === f ? 'var(--selected-text)' : 'var(--text-muted)',
-                              border: vocabFilter === f ? '1px solid transparent' : '1px solid var(--hairline)',
-                              boxShadow: vocabFilter === f ? 'none' : 'var(--card-shadow)',
-                            }}
+                            style={pillTabStyle(vocabFilter === f, theme === 'dark' ? 'dark' : 'light')}
                           >
                             {f === 'all' ? (locale === 'ja' ? 'すべて' : 'All')
                               : f === 'learning' ? (locale === 'ja' ? '学習中' : 'Learning')
@@ -2119,6 +2162,34 @@ function DashboardContent() {
       )}
 
       {/* Booking result modal */}
+      {pronAnnounce && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 modal-backdrop py-6"
+          onClick={() => setPronAnnounce(null)}>
+          {/* Minimal announcement card: illustration → header → one line → CTA,
+              with a small NEW COURSE badge riding the top edge. */}
+          <div className="w-full max-w-sm mx-4 relative" onClick={(e) => e.stopPropagation()}>
+            <SquircleBox cornerRadius={24} className="modal-card px-7 pt-10 pb-7 text-center" style={{ background: 'var(--surface)' }}>
+              <PronAnnounceArt />
+              <p className="text-xl font-bold mt-5 mb-2" style={{ color: 'var(--text)' }}>
+                {locale === 'ja' ? 'L と R、自信ありますか？' : "How's your L & R?"}
+              </p>
+              <p className="text-sm leading-relaxed mb-6" style={{ color: 'var(--text-secondary)' }}>
+                {locale === 'ja' ? '新コース「発音 101」で、耳と口を鍛えよう！' : 'Train your ear and mouth in Pronunciation 101!'}
+              </p>
+              <button
+                onClick={() => { setPronAnnounce(null); router.push('/dashboard/courses/pronunciation') }}
+                className="w-full py-3.5 rounded-full font-semibold transition-transform duration-[120ms] ease-out hover:scale-[1.02] active:scale-[0.98]"
+                style={{ background: 'var(--accent)', color: '#fff' }}>
+                {locale === 'ja' ? 'コースを見る' : 'See course'}
+              </button>
+              <button onClick={() => setPronAnnounce(null)} className="block w-full mt-2 py-2 text-sm" style={{ color: 'var(--text-muted)' }}>
+                {locale === 'ja' ? 'あとで' : 'Later'}
+              </button>
+            </SquircleBox>
+          </div>
+        </div>
+      )}
+
       {bookingResultModal && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 modal-backdrop overflow-y-auto py-6"

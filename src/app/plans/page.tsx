@@ -192,6 +192,7 @@ export default function PlansPage() {
     locale === 'ja' ? '録画・文字起こし付き' : 'Recordings & transcripts',
     locale === 'ja' ? 'AI サマリー & フレーズ学習' : 'AI summaries & phrases',
     locale === 'ja' ? '模試も受け放題（模試パスの全機能）' : 'All mock exams included (full Exam Pass)',
+    locale === 'ja' ? '全コース＋発音採点も使い放題' : 'All courses with graded practice',
     locale === 'ja' ? 'いつでも変更・解約可能' : 'Change or cancel anytime',
   ]
 
@@ -487,8 +488,8 @@ export default function PlansPage() {
                 </h2>
                 <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
                   {locale === 'ja'
-                    ? 'TOEIC・IELTS・英検・Versantの本格模試が受け放題。AI採点と講師採点に対応。レッスンは含まれません。'
-                    : 'Unlimited full mock exams: TOEIC, IELTS, EIKEN and Versant, with AI or teacher grading. Lessons not included.'}
+                    ? 'TOEIC・IELTS・英検・Versantの本格模試が受け放題。AI採点と講師採点に対応。対策コースと発音コース（採点つき）もすべて使えます。講師とのレッスンは含まれません。'
+                    : 'Unlimited full mock exams: TOEIC, IELTS, EIKEN and Versant, with AI or teacher grading. Includes every prep course and graded pronunciation practice. Lessons with teachers not included.'}
                 </p>
               </div>
               <div className="flex items-center gap-5 shrink-0 relative z-10">

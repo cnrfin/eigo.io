@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { authenticate, isAdminTestUser } from '@/lib/test-auth'
-import { hasTestAccess } from '@/lib/test-entitlement'
+import { hasTestAccess, isCourseTester } from '@/lib/test-entitlement'
 
 /**
  * GET /api/courses[?exam=toeic]
@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
   let query = supabase.from('courses')
     .select('id, slug, exam_slug, title, title_ja, description, description_ja, published, order_index')
     .order('order_index')
-  if (!admin) query = query.eq('published', true)
+  if (!admin && !(await isCourseTester(supabase, user))) query = query.eq('published', true)
   if (exam) query = query.eq('exam_slug', exam)
   const [{ data: courses, error }, entitled] = await Promise.all([query, hasTestAccess(supabase, user)])
   if (error) {
@@ -38,9 +38,11 @@ export async function GET(request: NextRequest) {
         .in('level_id', levelIds).order('order_index')
     : { data: [] }
   const lessonIds = (lessons ?? []).map(l => l.id)
+  // best_score is the learner's best lesson run (set on challenge completion).
+  // Selected defensively so it works whether or not the column exists yet.
   const { data: progress } = lessonIds.length
     ? await supabase.from('lesson_progress')
-        .select('lesson_id, status, screen_index').eq('user_id', user.id).in('lesson_id', lessonIds)
+        .select('lesson_id, status, screen_index, best_score').eq('user_id', user.id).in('lesson_id', lessonIds)
     : { data: [] }
   const progByLesson = new Map((progress ?? []).map(p => [p.lesson_id, p]))
 
@@ -51,6 +53,7 @@ export async function GET(request: NextRequest) {
       lessons: (lessons ?? []).filter(x => x.level_id === l.id).map(x => ({
         ...x,
         progress: progByLesson.get(x.id) ?? null,
+        score: (progByLesson.get(x.id) as { best_score?: number } | undefined)?.best_score ?? null,
       })),
     })),
   }))

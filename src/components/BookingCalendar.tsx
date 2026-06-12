@@ -2,6 +2,8 @@
 
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react'
 import { useLanguage } from '@/context/LanguageContext'
+import { useTheme } from '@/context/ThemeContext'
+import { pillTabStyle } from '@/lib/pill-tabs'
 import { useAuth } from '@/context/AuthContext'
 import { Squircle } from '@squircle-js/react'
 import SquircleBox from '@/components/ui/SquircleBox'
@@ -15,6 +17,8 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
   const { t, locale } = useLanguage()
   const { session } = useAuth()
   const [currentDate, setCurrentDate] = useState(new Date())
+  const { theme } = useTheme()
+  const selectedStyle = pillTabStyle(true, theme === 'dark' ? 'dark' : 'light') // shared selected treatment (radius comes from each element)
   const [selectedDay, setSelectedDay] = useState<number | null>(null)
   const [duration, setDuration] = useState(selectedDuration || (hasSubscription ? 30 : 15))
   const [availableSlots, setAvailableSlots] = useState<string[]>([])
@@ -397,16 +401,16 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
                     onClick={() => handleSelectDay(day)}
                     className="aspect-square flex items-center justify-center text-sm transition-all duration-[120ms] ease-out relative hover:scale-105 active:scale-95 disabled:hover:scale-100 disabled:active:scale-100"
                     style={{
-                      background: day !== null && selectedDay === day
-                        ? 'var(--selected-bg)'
-                        : day !== null && isToday(day)
-                        ? 'var(--surface)'
-                        : 'transparent',
-                      color: day === null ? 'transparent'
-                        : isPast(day) ? 'var(--text-disabled)'
-                        : selectedDay === day ? 'var(--selected-text)'
-                        : isToday(day) ? 'var(--accent)'
-                        : 'var(--text-secondary)',
+                      border: '1px solid transparent',
+                      ...(day !== null && selectedDay === day
+                        ? selectedStyle
+                        : {
+                            background: day !== null && isToday(day) ? 'var(--surface)' : 'transparent',
+                            color: day === null ? 'transparent'
+                              : isPast(day) ? 'var(--text-disabled)'
+                              : isToday(day) ? 'var(--accent)'
+                              : 'var(--text-secondary)',
+                          }),
                       fontWeight: (day !== null && selectedDay === day) || (day !== null && isToday(day)) ? 600 : 400,
                     }}
                   >
@@ -453,10 +457,14 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
                           disabled={blocked}
                           className="px-2 py-2.5 text-sm transition-all duration-[120ms] ease-out hover:scale-[1.02] active:scale-[0.97] disabled:hover:scale-100 disabled:active:scale-100"
                           style={{
-                            background: selected ? 'var(--accent)' : 'var(--panel)',
-                            color: selected ? 'var(--selected-text)' : blocked ? 'var(--text-disabled)' : 'var(--text-secondary)',
-                            border: selected ? '1px solid transparent' : '1px solid var(--hairline)',
-                            boxShadow: selected ? 'none' : 'var(--card-shadow)',
+                            ...(selected
+                              ? { ...selectedStyle, boxShadow: 'none' }
+                              : {
+                                  background: 'var(--panel)',
+                                  color: blocked ? 'var(--text-disabled)' : 'var(--text-secondary)',
+                                  border: '1px solid var(--hairline)',
+                                  boxShadow: 'var(--card-shadow)',
+                                }),
                             opacity: blocked ? 0.4 : 1,
                           }}
                         >

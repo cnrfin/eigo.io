@@ -3,6 +3,7 @@
 import { useAuth } from '@/context/AuthContext'
 import { useLanguage } from '@/context/LanguageContext'
 import { useTheme } from '@/context/ThemeContext'
+import { pillTabStyle } from '@/lib/pill-tabs'
 import { useState, useEffect, useRef } from 'react'
 import SquircleCard from '@/components/ui/SquircleCard'
 import { motion } from 'framer-motion'
@@ -47,6 +48,10 @@ export default function SettingsPage() {
   const [savingContactEmail, setSavingContactEmail] = useState(false)
   const isLineUser = !!user?.user_metadata?.line_user_id
 
+  // Pronunciation grading accent (en-GB | en-US), default British
+  const [accent, setAccent] = useState<'en-GB' | 'en-US'>('en-GB')
+  const [savingAccent, setSavingAccent] = useState(false)
+
   // Google Calendar connection
   const gcalLoading = gcalConnected === null
   const [disconnectingGcal, setDisconnectingGcal] = useState(false)
@@ -69,10 +74,11 @@ export default function SettingsPage() {
         const { supabase } = await import('@/lib/supabase')
         const { data } = await supabase
           .from('profiles')
-          .select('contact_email')
+          .select('contact_email, pronunciation_accent')
           .eq('id', user?.id)
           .single()
         if (data?.contact_email) setContactEmail(data.contact_email)
+        if (data?.pronunciation_accent === 'en-US' || data?.pronunciation_accent === 'en-GB') setAccent(data.pronunciation_accent)
       } catch {
         // ignore
       }
@@ -125,6 +131,29 @@ export default function SettingsPage() {
       window.location.href = '/'
     }
   }, [user, loading])
+
+  const handleSetAccent = async (next: 'en-GB' | 'en-US') => {
+    if (next === accent || !session?.access_token) return
+    const prev = accent
+    setAccent(next) // optimistic
+    setSavingAccent(true)
+    setSaveMessage(null)
+    try {
+      const res = await fetch('/api/profile/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+        body: JSON.stringify({ pronunciation_accent: next }),
+      })
+      if (!res.ok) throw new Error()
+      setSaveMessage({ type: 'success', text: locale === 'ja' ? '採点アクセントを保存しました' : 'Grading accent saved' })
+    } catch {
+      setAccent(prev) // revert
+      setSaveMessage({ type: 'error', text: locale === 'ja' ? 'エラーが発生しました' : 'Something went wrong' })
+    } finally {
+      setSavingAccent(false)
+      setTimeout(() => setSaveMessage(null), 3000)
+    }
+  }
 
   const handleSaveContactEmail = async () => {
     if (!session?.access_token) return
@@ -566,6 +595,31 @@ export default function SettingsPage() {
                     }}
                   />
                 </button>
+              </div>
+
+              {/* Pronunciation grading accent */}
+              <div className="flex items-center justify-between pt-4" style={{ borderTop: '1px solid var(--hairline)' }}>
+                <div>
+                  <p className="text-sm font-medium" style={{ color: 'var(--text)' }}>
+                    {locale === 'ja' ? '発音の採点アクセント' : 'Pronunciation grading accent'}
+                  </p>
+                  <p className="text-xs mt-1" style={{ color: 'var(--text-subtle)' }}>
+                    {locale === 'ja' ? '発音コースの採点に使う英語' : 'Used to grade the Pronunciation course'}
+                  </p>
+                </div>
+                <div className="inline-flex gap-1.5 shrink-0">
+                  {(['en-GB', 'en-US'] as const).map((val) => (
+                    <button
+                      key={val}
+                      onClick={() => handleSetAccent(val)}
+                      disabled={savingAccent}
+                      className="px-3 py-1 text-xs font-medium rounded-full transition-all duration-[120ms] ease-out hover:scale-[1.03] active:scale-95 disabled:opacity-60"
+                      style={pillTabStyle(accent === val, theme === 'dark' ? 'dark' : 'light')}
+                    >
+                      {val === 'en-GB' ? 'UK 🇬🇧' : 'US 🇺🇸'}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           </SquircleCard>

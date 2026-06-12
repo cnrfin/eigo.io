@@ -36,6 +36,14 @@ const I = {
       <path d="M6 2h8l4 4v16H6z" /><path d="M14 2v4h4M9 13h6M9 17h6" />
     </svg>
   ),
+  // public/icons/course.svg, inlined so it themes via currentColor (no Rive icon yet)
+  course: (p: IconProps) => (
+    <svg viewBox="0 0 256 256" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="16" strokeLinecap="round" strokeLinejoin="round" {...p}>
+      <line x1="128" y1="128" x2="224" y2="32" />
+      <path d="M195.88,60.12a95.88,95.88,0,1,0,18.77,26.49" />
+      <path d="M161.94,94.06a48,48,0,1,0,14,31.2" />
+    </svg>
+  ),
 }
 
 type DashItem = { key: DashboardTab; label: string; label_ja: string; icon: (p: IconProps) => React.ReactElement; dot?: number; rive?: string }
@@ -61,6 +69,7 @@ function NavList({ onNavigate, collapsed = false }: { onNavigate?: () => void; c
   const router = useRouter()
   const onDashboard = pathname === '/dashboard'
   const onTests = pathname.startsWith('/dashboard/tests')
+  const onCourses = pathname.startsWith('/dashboard/courses')
 
   // `rive` = artboard name in public/icons.riv; items without it fall back to
   // the inline SVG. Add 'book' / 'lessons' / 'phrases' once they're in the export.
@@ -77,6 +86,10 @@ function NavList({ onNavigate, collapsed = false }: { onNavigate?: () => void; c
   }
   const goTests = () => {
     router.push('/dashboard/tests')
+    onNavigate?.()
+  }
+  const goCourses = () => {
+    router.push('/dashboard/courses')
     onNavigate?.()
   }
 
@@ -121,7 +134,23 @@ function NavList({ onNavigate, collapsed = false }: { onNavigate?: () => void; c
         )
       })}
 
-      {/* Tests lives in the Dashboard group (it's a route, not a tab) */}
+      {/* Courses + Tests are routes (not tabs), each with a Rive icon. */}
+      <button
+        onClick={goCourses}
+        onMouseEnter={() => riveRefs.current.courses?.fire()}
+        title={collapsed ? (locale === 'ja' ? 'コース' : 'Courses') : undefined}
+        className={itemBase}
+        style={{ color: 'var(--text)' }}
+      >
+        {hl(onCourses)}
+        <span className="relative shrink-0 flex items-center justify-center">
+          <RiveIcon ref={(h) => { riveRefs.current.courses = h }} artboard="course" />
+        </span>
+        <span className="relative text-sm font-medium" style={navLabelStyle(collapsed)}>
+          {locale === 'ja' ? 'コース' : 'Courses'}
+        </span>
+      </button>
+
       <button
         onClick={goTests}
         onMouseEnter={() => riveRefs.current.tests?.fire()}

@@ -9,12 +9,19 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json()
-    const { display_name, contact_email } = body
+    const { display_name, contact_email, pronunciation_accent } = body
 
     // At least one field must be provided
-    if (!display_name && contact_email === undefined) {
+    if (!display_name && contact_email === undefined && pronunciation_accent === undefined) {
       return NextResponse.json(
-        { error: 'display_name or contact_email is required' },
+        { error: 'display_name, contact_email or pronunciation_accent is required' },
+        { status: 400 }
+      )
+    }
+
+    if (pronunciation_accent !== undefined && !['en-GB', 'en-US'].includes(pronunciation_accent)) {
+      return NextResponse.json(
+        { error: 'pronunciation_accent must be en-GB or en-US' },
         { status: 400 }
       )
     }
@@ -58,6 +65,9 @@ export async function POST(request: NextRequest) {
     if (display_name) updateData.display_name = display_name.trim()
     if (contact_email !== undefined) {
       updateData.contact_email = contact_email === '' ? null : contact_email
+    }
+    if (pronunciation_accent !== undefined) {
+      updateData.pronunciation_accent = pronunciation_accent
     }
 
     // Update the user's profile in the profiles table

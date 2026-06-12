@@ -243,6 +243,31 @@ html {
   .course-node-pulse { animation: none; }
 }
 
+/* Challenge active node: a bigger, faster pulse so the current target pops. */
+@keyframes challenge-node-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.22); }
+}
+.challenge-node-pulse {
+  transform-origin: center;
+  animation: challenge-node-pulse 1.3s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .challenge-node-pulse { animation: none; }
+}
+
+/* Challenge goal (pentagon) node: a slow continuous spin. */
+@keyframes challenge-goal-spin {
+  to { transform: rotate(360deg); }
+}
+.challenge-goal-spin {
+  transform-origin: center;
+  animation: challenge-goal-spin 9s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .challenge-goal-spin { animation: none; }
+}
+
 /* Global focus ring: 1px, fades in. The transparent outline lives on every
    element so outline-color has something to transition from on focus.
    MUST be inside @layer base: un-layered rules beat ALL of Tailwind's layered
@@ -350,4 +375,10 @@ button:disabled {
 @media (max-width: 480px) {
   /* Carousel fade gradients — much narrower on small screens */
   .carousel-fade { width: 40px !important; }
+}
+
+/* link_letters: one-time discoverability wiggle on draggable consonants */
+@keyframes linkletters-lift {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
 }
