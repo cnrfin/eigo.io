@@ -92,9 +92,16 @@ export async function GET(
   const assetMap = new Map<string, { url: string | null }>()
   if (assetIds.length) {
     const { data: assets } = await supabase.from('assets').select('id, storage_path').in('id', assetIds)
-    for (const a of assets ?? []) {
-      const { data: signed } = await supabase.storage.from(BUCKET).createSignedUrl(a.storage_path, 3600)
-      assetMap.set(a.id, { url: signed?.signedUrl ?? null })
+    const rows = assets ?? []
+    // Batch-sign every clip in ONE request instead of a sequential round-trip per
+    // asset — a flow lesson can carry dozens of clips, and serial signing from a
+    // serverless function dominated lesson-open latency.
+    const paths = rows.map(a => a.storage_path)
+    if (paths.length) {
+      const { data: signed } = await supabase.storage.from(BUCKET).createSignedUrls(paths, 3600)
+      const urlByPath = new Map<string, string>()
+      for (const s of signed ?? []) { if (s.path && s.signedUrl) urlByPath.set(s.path, s.signedUrl) }
+      for (const a of rows) assetMap.set(a.id, { url: urlByPath.get(a.storage_path) ?? null })
     }
   }
   const sign = (id?: string) => (id ? (assetMap.get(id)?.url ?? null) : null)
