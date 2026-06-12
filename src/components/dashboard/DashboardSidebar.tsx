@@ -124,9 +124,14 @@ function NavList({ onNavigate, collapsed = false }: { onNavigate?: () => void; c
             style={{ color: 'var(--text)' }}
           >
             {hl(active)}
-            <span className="relative shrink-0 flex items-center justify-center">
-              {item.rive ? <RiveIcon ref={(h) => { riveRefs.current[item.key] = h }} artboard={item.rive} /> : <Icon />}
-              {item.dot && collapsed ? <span className="absolute -top-1 -right-1 w-1.5 h-1.5 rounded-full" style={{ background: 'var(--accent)' }} aria-hidden="true" /> : null}
+            {/* Collapsed: a 40px box pulled left by the button's px-2.5 so it lines
+                up with the 40px highlight, centering the icon in it. Inner span
+                stays icon-sized so the unread dot hugs the icon's corner. */}
+            <span className="shrink-0 flex items-center justify-center" style={collapsed ? { width: 40, marginLeft: -10 } : undefined}>
+              <span className="relative flex items-center justify-center">
+                {item.rive ? <RiveIcon ref={(h) => { riveRefs.current[item.key] = h }} artboard={item.rive} /> : <Icon />}
+                {item.dot && collapsed ? <span className="absolute -top-1 -right-1 w-1.5 h-1.5 rounded-full" style={{ background: 'var(--accent)' }} aria-hidden="true" /> : null}
+              </span>
             </span>
             <span className="relative text-sm font-medium" style={navLabelStyle(collapsed)}>{label}</span>
             {item.dot && !collapsed ? <span className="news-unread-dot relative ml-auto shrink-0 w-1.5 h-1.5 rounded-full" style={{ background: 'var(--accent)' }} aria-hidden="true" /> : null}
@@ -143,7 +148,7 @@ function NavList({ onNavigate, collapsed = false }: { onNavigate?: () => void; c
         style={{ color: 'var(--text)' }}
       >
         {hl(onCourses)}
-        <span className="relative shrink-0 flex items-center justify-center">
+        <span className="relative shrink-0 flex items-center justify-center" style={collapsed ? { width: 40, marginLeft: -10 } : undefined}>
           <RiveIcon ref={(h) => { riveRefs.current.courses = h }} artboard="course" />
         </span>
         <span className="relative text-sm font-medium" style={navLabelStyle(collapsed)}>
@@ -159,7 +164,7 @@ function NavList({ onNavigate, collapsed = false }: { onNavigate?: () => void; c
         style={{ color: 'var(--text)' }}
       >
         {hl(onTests)}
-        <span className="relative shrink-0 flex items-center justify-center">
+        <span className="relative shrink-0 flex items-center justify-center" style={collapsed ? { width: 40, marginLeft: -10 } : undefined}>
           <RiveIcon ref={(h) => { riveRefs.current.tests = h }} artboard="exam" />
         </span>
         <span className="relative text-sm font-medium" style={navLabelStyle(collapsed)}>
@@ -289,7 +294,7 @@ export default function DashboardSidebar() {
               aria-label={locale === 'ja' ? 'サイドバーを展開' : 'Expand sidebar'}
             >
               <span aria-hidden className="nav-hl absolute inset-y-0 left-0 rounded-xl" style={{ width: 40 }} />
-              <span className="relative"><CollapseIcon collapsed /></span>
+              <span className="relative flex items-center justify-center" style={{ width: 40, marginLeft: -10 }}><CollapseIcon collapsed /></span>
             </button>
           ) : (
             <div className="flex items-center justify-between mb-4 px-2.5 h-9">
