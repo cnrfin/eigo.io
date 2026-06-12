@@ -98,8 +98,10 @@ function NavList({ onNavigate, collapsed = false }: { onNavigate?: () => void; c
   const hl = (active: boolean) => (
     <span
       aria-hidden
-      className={`nav-hl absolute inset-y-0 left-0 rounded-xl${active ? ' is-active' : ''}`}
-      style={{ width: collapsed ? 40 : '100%', transition: 'width 200ms ease' }}
+      className={`nav-hl absolute left-0 rounded-xl${active ? ' is-active' : ''}`}
+      style={collapsed
+        ? { width: 40, height: 40, top: '50%', transform: 'translateY(-50%)' } // a centred square, not a tall bar
+        : { top: 0, bottom: 0, width: '100%', transition: 'width 200ms ease' }}
     />
   )
 
@@ -127,7 +129,7 @@ function NavList({ onNavigate, collapsed = false }: { onNavigate?: () => void; c
             {/* Collapsed: a 40px box pulled left by the button's px-2.5 so it lines
                 up with the 40px highlight, centering the icon in it. Inner span
                 stays icon-sized so the unread dot hugs the icon's corner. */}
-            <span className="shrink-0 flex items-center justify-center" style={collapsed ? { width: 40, marginLeft: -10 } : undefined}>
+            <span className="shrink-0 flex items-center justify-center" style={collapsed ? { width: 40, marginLeft: '-0.625rem' } : undefined}>
               <span className="relative flex items-center justify-center">
                 {item.rive ? <RiveIcon ref={(h) => { riveRefs.current[item.key] = h }} artboard={item.rive} /> : <Icon />}
                 {item.dot && collapsed ? <span className="absolute -top-1 -right-1 w-1.5 h-1.5 rounded-full" style={{ background: 'var(--accent)' }} aria-hidden="true" /> : null}
@@ -148,7 +150,7 @@ function NavList({ onNavigate, collapsed = false }: { onNavigate?: () => void; c
         style={{ color: 'var(--text)' }}
       >
         {hl(onCourses)}
-        <span className="relative shrink-0 flex items-center justify-center" style={collapsed ? { width: 40, marginLeft: -10 } : undefined}>
+        <span className="relative shrink-0 flex items-center justify-center" style={collapsed ? { width: 40, marginLeft: '-0.625rem' } : undefined}>
           <RiveIcon ref={(h) => { riveRefs.current.courses = h }} artboard="course" />
         </span>
         <span className="relative text-sm font-medium" style={navLabelStyle(collapsed)}>
@@ -164,7 +166,7 @@ function NavList({ onNavigate, collapsed = false }: { onNavigate?: () => void; c
         style={{ color: 'var(--text)' }}
       >
         {hl(onTests)}
-        <span className="relative shrink-0 flex items-center justify-center" style={collapsed ? { width: 40, marginLeft: -10 } : undefined}>
+        <span className="relative shrink-0 flex items-center justify-center" style={collapsed ? { width: 40, marginLeft: '-0.625rem' } : undefined}>
           <RiveIcon ref={(h) => { riveRefs.current.tests = h }} artboard="exam" />
         </span>
         <span className="relative text-sm font-medium" style={navLabelStyle(collapsed)}>
@@ -212,14 +214,20 @@ function SidebarUser({ collapsed = false }: { collapsed?: boolean }) {
         className="nav-btn relative w-full flex items-center gap-3 px-2.5 py-2"
         aria-label={locale === 'ja' ? 'アカウント' : 'Account'}
       >
-        <span aria-hidden className="nav-hl absolute inset-y-0 left-0 rounded-xl" style={{ width: collapsed ? 44 : '100%', transition: 'width 200ms ease' }} />
-        {avatarUrl ? (
-          <img src={avatarUrl} alt="" className="relative w-8 h-8 rounded-full object-cover shrink-0" referrerPolicy="no-referrer" />
-        ) : (
-          <div className="relative w-8 h-8 rounded-full shrink-0 flex items-center justify-center text-sm font-medium" style={{ background: 'var(--accent)', color: '#fff' }}>
-            {displayName.charAt(0).toUpperCase()}
-          </div>
-        )}
+        <span aria-hidden className="nav-hl absolute left-0 rounded-xl" style={collapsed
+          ? { width: 44, height: 44, top: '50%', transform: 'translateY(-50%)' }
+          : { top: 0, bottom: 0, width: '100%', transition: 'width 200ms ease' }} />
+        {/* Collapsed: a 44px box absolutely centred over the square highlight,
+            independent of the button's (rem-scaled) padding. */}
+        <span className="shrink-0 flex items-center justify-center" style={collapsed ? { width: 44, marginLeft: '-0.625rem' } : undefined}>
+          {avatarUrl ? (
+            <img src={avatarUrl} alt="" className="relative w-8 h-8 rounded-full object-cover shrink-0" referrerPolicy="no-referrer" />
+          ) : (
+            <div className="relative w-8 h-8 rounded-full shrink-0 flex items-center justify-center text-sm font-medium" style={{ background: 'var(--accent)', color: '#fff' }}>
+              {displayName.charAt(0).toUpperCase()}
+            </div>
+          )}
+        </span>
         <div className="relative flex-1 min-w-0 text-left" style={navLabelStyle(collapsed)}>
           <p className="text-sm font-medium truncate" style={{ color: 'var(--text)' }}>{displayName}</p>
           {email && <p className="text-xs truncate" style={{ color: 'var(--text-muted)' }}>{email}</p>}
@@ -293,8 +301,8 @@ export default function DashboardSidebar() {
               style={{ color: 'var(--text-muted)' }}
               aria-label={locale === 'ja' ? 'サイドバーを展開' : 'Expand sidebar'}
             >
-              <span aria-hidden className="nav-hl absolute inset-y-0 left-0 rounded-xl" style={{ width: 40 }} />
-              <span className="relative flex items-center justify-center" style={{ width: 40, marginLeft: -10 }}><CollapseIcon collapsed /></span>
+              <span aria-hidden className="nav-hl absolute left-0 rounded-xl" style={{ width: 40, height: 40, top: '50%', transform: 'translateY(-50%)' }} />
+              <span className="relative flex items-center justify-center" style={{ width: 40, marginLeft: '-0.625rem' }}><CollapseIcon collapsed /></span>
             </button>
           ) : (
             <div className="flex items-center justify-between mb-4 px-2.5 h-9">
@@ -321,8 +329,9 @@ export default function DashboardSidebar() {
         />
       </aside>
 
-      {/* Mobile drawer */}
-      <div className="md:hidden fixed inset-0 z-50" style={{ pointerEvents: mobileOpen ? 'auto' : 'none' }} aria-hidden={!mobileOpen}>
+      {/* Mobile drawer — above the dashboard header (z-50) so the backdrop + panel
+          cover it when open. The header stays z-50 to beat the course page's z-40. */}
+      <div className="md:hidden fixed inset-0 z-[60]" style={{ pointerEvents: mobileOpen ? 'auto' : 'none' }} aria-hidden={!mobileOpen}>
         <div
           className="absolute inset-0 transition-opacity duration-200"
           style={{ background: 'rgba(0,0,0,0.5)', opacity: mobileOpen ? 1 : 0 }}
