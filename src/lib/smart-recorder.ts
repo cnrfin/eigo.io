@@ -49,8 +49,10 @@ export interface SmartRecOptions {
   onStart?: () => void // fired the instant capture actually begins
 }
 
-/** Record from a warm mic; returns a manual stop(). */
-export function startSmartRecording(mic: Mic, onStop: (blob: Blob) => void, opts: SmartRecOptions = {}): () => void {
+/** Record from a warm mic; returns a manual stop(). `onStop` receives the clip
+ *  and `hadSpeech` — false when the level never crossed the speech threshold
+ *  (silent take / no speech), so callers can ask the learner to try again. */
+export function startSmartRecording(mic: Mic, onStop: (blob: Blob, hadSpeech: boolean) => void, opts: SmartRecOptions = {}): () => void {
   const silenceMs = opts.silenceMs ?? 700
   const maxMs = opts.maxMs ?? 7000
   const noSpeechMs = opts.noSpeechMs ?? 5000
@@ -66,7 +68,8 @@ export function startSmartRecording(mic: Mic, onStop: (blob: Blob) => void, opts
 
   let stopped = false
   let raf = 0
-  mr.onstop = () => { cancelAnimationFrame(raf); onStop(new Blob(chunks, { type: mr.mimeType || 'audio/webm' })) }
+  let heardSpeech = false // set once the level crosses the speech threshold long enough to arm
+  mr.onstop = () => { cancelAnimationFrame(raf); onStop(new Blob(chunks, { type: mr.mimeType || 'audio/webm' }), heardSpeech) }
   const finish = () => {
     if (stopped) return
     stopped = true
@@ -93,6 +96,7 @@ export function startSmartRecording(mic: Mic, onStop: (blob: Blob) => void, opts
 
     if (rms > threshold) { speechMs += dt; silenceStart = 0 }
     const armed = speechMs >= speechArmMs
+    if (armed) heardSpeech = true
     if (armed && rms <= threshold) {
       if (!silenceStart) silenceStart = now
       else if (now - silenceStart > silenceMs && now - t0 > minMs) { finish(); return }

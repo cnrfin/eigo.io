@@ -78,6 +78,7 @@ export default function ChallengeExercise({
   const [rec, setRec] = useState<RecState>('idle')
   const [moving, setMoving] = useState(false)
   const [notice, setNotice] = useState(false)
+  const [noHeard, setNoHeard] = useState(false) // last take had no speech — prompt a retry
   const [showSummary, setShowSummary] = useState(false)
   const scoresRef = useRef<Record<number, number>>({})
   const [results, setResults] = useState<Record<number, GradeResult>>({})
@@ -140,8 +141,12 @@ export default function ChallengeExercise({
     return d as GradeResult
   }, [accent, lessonId, screenId, token])
 
-  const handleStop = useCallback((blob: Blob) => {
+  const handleStop = useCallback((blob: Blob, hadSpeech: boolean) => {
     const nodeIdx = idxRef.current
+    // Silent take (no speech detected): don't advance or grade — keep Teri on
+    // this node and ask the learner to try again, so an empty recording can't
+    // pass them through with a 0.
+    if (!hadSpeech) { setRec('idle'); setNoHeard(true); return }
     const last = nodeIdx >= n - 1
     const url = URL.createObjectURL(blob)
     urlsRef.current[nodeIdx] = url
@@ -166,6 +171,7 @@ export default function ChallengeExercise({
 
   const start = useCallback(async () => {
     setRec('starting')
+    setNoHeard(false)
     try {
       if (!micRef.current) micRef.current = await createMic()
       stopRef.current = startSmartRecording(micRef.current, handleStop, { onStart: () => setRec('recording') })
@@ -348,6 +354,12 @@ export default function ChallengeExercise({
           </button>
         )}
       </div>
+
+      {noHeard && rec === 'idle' && (
+        <p className="text-center text-sm mt-2" style={{ color: 'var(--danger)' }}>
+          {t('音声が聞こえませんでした。もう一度話してみてください。', "We didn't hear you — tap Speak and try again.")}
+        </p>
+      )}
 
       <div className="flex-1" />
 
