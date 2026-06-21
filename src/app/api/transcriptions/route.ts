@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
 import { getRecordings, createTranscription, getTranscription, getTranscriptionAccessLink } from '@/lib/whereby'
+import { getUserPermissions } from '@/lib/user-permissions'
 
 /**
  * Helper: check transcription status, fetch content if ready, and cache in Supabase.
@@ -103,6 +104,12 @@ export async function GET(request: NextRequest) {
   // Verify ownership
   if (booking.user_id !== user.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
+  }
+
+  // Per-user feature permission: transcripts can be switched off for a user's
+  // plan (uses the same service-role client already created above).
+  if (!(await getUserPermissions(supabase, booking.user_id)).transcription_enabled) {
+    return NextResponse.json({ status: 'disabled', message: 'Transcripts are not included in this plan' }, { status: 403 })
   }
 
   // ── Case 0: Transcript already cached in Supabase — instant return ──

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { authenticate, isAdminTestUser } from '@/lib/test-auth'
 import { hasTestAccess, isCourseTester } from '@/lib/test-entitlement'
 import { pronLessonAllowed } from '@/lib/pron-gate'
+import { getUserPermissions } from '@/lib/user-permissions'
 
 const BUCKET = 'test-assets'
 
@@ -34,6 +35,12 @@ export async function GET(
   const admin = isAdminTestUser(user)
   if (!course || (!course.published && !admin && !(await isCourseTester(supabase, user)))) {
     return NextResponse.json({ error: 'Lesson not found' }, { status: 404 })
+  }
+  // Per-user feature permission: an admin can switch off course access entirely
+  // for a user (e.g. a custom plan that omits courses), independent of their
+  // subscription or a lesson's free flag. Admins themselves are never blocked.
+  if (!admin && !(await getUserPermissions(supabase, user.id)).courses_enabled) {
+    return NextResponse.json({ error: 'Courses are not included in your plan', code: 'feature_disabled' }, { status: 403 })
   }
   // NOTE: gating relies on hasTestAccess alone (admins normally pass inside
   // it; the admin_simulate_free override turns them into a free user here

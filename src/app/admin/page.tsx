@@ -10,7 +10,23 @@ import { motion, AnimatePresence } from 'framer-motion'
 
 const ADMIN_EMAILS = ['cnrfin93@gmail.com']
 
-type Tab = 'overview' | 'students' | 'news' | 'grading' | 'settings' | 'testing'
+type Tab = 'overview' | 'students' | 'news' | 'grading' | 'settings' | 'testing' | 'permissions'
+
+// Per-user feature access (Permissions tab)
+type FeaturePerms = {
+  courses_enabled: boolean
+  tests_enabled: boolean
+  recordings_enabled: boolean
+  transcription_enabled: boolean
+}
+type PermUser = {
+  id: string
+  email: string | null
+  display_name: string | null
+  avatar_url: string | null
+  customized: boolean
+  permissions: FeaturePerms
+}
 
 // One pending response in the tutor grading queue.
 type GradingItem = {
@@ -342,6 +358,16 @@ function AdminContent() {
   const [savingSettings, setSavingSettings] = useState(false)
   const [settingsMsg, setSettingsMsg] = useState('')
 
+  // Permissions (per-user feature access)
+  const [permUsers, setPermUsers] = useState<PermUser[]>([])
+  const [loadingPerms, setLoadingPerms] = useState(false)
+  const [permsFetched, setPermsFetched] = useState(false)
+  const [permSearch, setPermSearch] = useState('')
+  const [selectedPermUserId, setSelectedPermUserId] = useState<string | null>(null)
+  const [permDraft, setPermDraft] = useState<FeaturePerms | null>(null)
+  const [savingPerms, setSavingPerms] = useState(false)
+  const [permsMsg, setPermsMsg] = useState('')
+
   const isAdmin = user && ADMIN_EMAILS.includes(user.email || '')
 
   const headers = useCallback(() => ({
@@ -400,6 +426,21 @@ function AdminContent() {
       }
     } catch { /* */ }
     setLoadingSettings(false)
+  }, [session?.access_token, headers])
+
+  // Fetch per-user permissions (lazy — only when the tab opens)
+  const fetchPermissions = useCallback(async () => {
+    if (!session?.access_token) return
+    setLoadingPerms(true)
+    try {
+      const res = await fetch('/api/admin/permissions', { headers: headers() })
+      if (res.ok) {
+        const data = await res.json()
+        setPermUsers(data.users || [])
+      }
+    } catch { /* */ }
+    setLoadingPerms(false)
+    setPermsFetched(true)
   }, [session?.access_token, headers])
 
   useEffect(() => {
@@ -505,6 +546,13 @@ function AdminContent() {
     }
   }, [selectedStudentId, fetchStudentProgress])
 
+  // Fetch permissions when the tab is first opened
+  useEffect(() => {
+    if (activeTab === 'permissions' && !permsFetched && !loadingPerms) {
+      fetchPermissions()
+    }
+  }, [activeTab, permsFetched, loadingPerms, fetchPermissions])
+
   // Impersonate student — open their dashboard in a new tab
   const handleViewAs = useCallback(async (email: string) => {
     if (!session?.access_token) return
@@ -575,6 +623,29 @@ function AdminContent() {
     setSavingSettings(false)
   }
 
+  // Save per-user permissions
+  const savePermissions = async () => {
+    if (!selectedPermUserId || !permDraft) return
+    setSavingPerms(true)
+    setPermsMsg('')
+    const res = await fetch('/api/admin/permissions', {
+      method: 'PUT',
+      headers: headers(),
+      body: JSON.stringify({ userId: selectedPermUserId, permissions: permDraft }),
+    })
+    if (res.ok) {
+      const data = await res.json()
+      setPermsMsg('Saved ✓')
+      setTimeout(() => setPermsMsg(''), 2000)
+      setPermUsers(prev => prev.map(u => (
+        u.id === selectedPermUserId ? { ...u, permissions: data.permissions, customized: true } : u
+      )))
+    } else {
+      setPermsMsg('Failed to save')
+    }
+    setSavingPerms(false)
+  }
+
   if (loading) {
     return (
       <main className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg)' }}>
@@ -590,6 +661,7 @@ function AdminContent() {
     { key: 'news', label: 'News' },
     { key: 'grading', label: 'Grading' },
     { key: 'settings', label: 'Settings' },
+    { key: 'permissions', label: 'Permissions' },
     { key: 'testing', label: 'Testing' },
   ]
 
@@ -1071,6 +1143,124 @@ function AdminContent() {
                 </SquircleBox>
               ) : (
                 <p style={{ color: 'var(--text-muted)' }}>Could not load settings</p>
+              )}
+            </div>
+          )}
+
+          {/* ═══ PERMISSIONS TAB ═══ */}
+          {activeTab === 'permissions' && (
+            <div className="space-y-6">
+              <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+                Turn features on or off per user. Switching one off overrides their subscription — use it to tailor a custom (e.g. discounted) plan. A user you’ve never edited has everything on.
+              </p>
+              {loadingPerms ? (
+                <p style={{ color: 'var(--text-muted)' }}>Loading users...</p>
+              ) : (
+                <>
+                  <input
+                    type="text"
+                    value={permSearch}
+                    onChange={(e) => setPermSearch(e.target.value)}
+                    placeholder="Search by name or email"
+                    className="w-full text-sm px-4 py-2.5 rounded-lg border-none outline-none"
+                    style={{ background: 'var(--surface-hover)', color: 'var(--text)' }}
+                  />
+                  <div className="flex flex-wrap gap-2">
+                    {permUsers
+                      .filter((u) => {
+                        const q = permSearch.trim().toLowerCase()
+                        if (!q) return true
+                        return (u.email?.toLowerCase().includes(q) ?? false) || (u.display_name?.toLowerCase().includes(q) ?? false)
+                      })
+                      .slice(0, 60)
+                      .map((u) => (
+                        <Squircle key={u.id} asChild cornerRadius={10} cornerSmoothing={0.8}>
+                          <button
+                            onClick={() => {
+                              setSelectedPermUserId(u.id)
+                              setPermDraft({ ...u.permissions })
+                              setPermsMsg('')
+                            }}
+                            className="px-4 py-2.5 text-sm font-medium transition-all hover:opacity-90 flex items-center gap-2"
+                            style={{
+                              background: selectedPermUserId === u.id ? 'var(--accent)' : 'var(--surface)',
+                              color: selectedPermUserId === u.id ? 'var(--selected-text)' : 'var(--text)',
+                            }}
+                          >
+                            <span>{u.display_name || u.email || u.id.slice(0, 8)}</span>
+                            {u.customized && (
+                              <span className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: 'var(--surface-hover)', color: 'var(--text-muted)' }}>custom</span>
+                            )}
+                          </button>
+                        </Squircle>
+                      ))}
+                  </div>
+
+                  {selectedPermUserId && permDraft && (() => {
+                    const selUser = permUsers.find((u) => u.id === selectedPermUserId)
+                    const toggles: { key: keyof FeaturePerms; label: string; desc: string }[] = [
+                      { key: 'courses_enabled', label: 'Courses', desc: 'Pronunciation 101 and the course library' },
+                      { key: 'tests_enabled', label: 'Tests & exams', desc: 'TOEIC / IELTS / Eiken / Versant / CEFR practice' },
+                      { key: 'recordings_enabled', label: 'Lesson recordings', desc: 'New lessons are cloud-recorded and replayable' },
+                      { key: 'transcription_enabled', label: 'Transcripts', desc: 'Written transcript of each lesson' },
+                    ]
+                    return (
+                      <SquircleBox cornerRadius={14} className="p-6 space-y-5" style={{ background: 'var(--surface)' }}>
+                        <div>
+                          <p className="font-semibold" style={{ color: 'var(--text)' }}>{selUser?.display_name || selUser?.email || 'User'}</p>
+                          {selUser?.email && selUser?.display_name && (
+                            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{selUser.email}</p>
+                          )}
+                        </div>
+                        <div className="space-y-3">
+                          {toggles.map(({ key, label, desc }) => (
+                            <div key={key} className="flex items-center justify-between gap-4">
+                              <div>
+                                <p className="text-sm font-medium" style={{ color: 'var(--text)' }}>{label}</p>
+                                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{desc}</p>
+                              </div>
+                              <button
+                                onClick={() => setPermDraft({ ...permDraft, [key]: !permDraft[key] })}
+                                role="switch"
+                                aria-checked={permDraft[key]}
+                                aria-label={label}
+                                className="relative shrink-0 w-11 h-6 rounded-full transition-colors"
+                                style={{ background: permDraft[key] ? 'var(--accent)' : 'var(--surface-hover)' }}
+                              >
+                                <span
+                                  className="absolute top-0.5 w-5 h-5 rounded-full bg-white transition-transform"
+                                  style={{ left: 2, transform: permDraft[key] ? 'translateX(20px)' : 'translateX(0)' }}
+                                />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                        {!permDraft.recordings_enabled && (
+                          <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                            Recording is decided when a lesson is booked, so this applies to future bookings (past recordings stay hidden too).
+                          </p>
+                        )}
+                        <div className="flex items-center gap-3">
+                          <Squircle asChild cornerRadius={10} cornerSmoothing={0.8}>
+                            <button
+                              onClick={savePermissions}
+                              disabled={savingPerms}
+                              className="px-5 py-2.5 text-sm font-medium transition-colors hover:opacity-90 disabled:opacity-50"
+                              style={{ background: 'var(--accent)', color: 'var(--selected-text)' }}
+                            >
+                              {savingPerms ? '...' : 'Save'}
+                            </button>
+                          </Squircle>
+                          {permsMsg && (
+                            <span className="text-sm" style={{ color: permsMsg.includes('✓') ? 'var(--success)' : 'var(--danger)' }}>
+                              {permsMsg}
+                            </span>
+                          )}
+                        </div>
+                      </SquircleBox>
+                    )
+                  })()}
+                </>
               )}
             </div>
           )}

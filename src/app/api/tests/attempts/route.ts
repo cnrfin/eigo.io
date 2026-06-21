@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { authenticate, isAdminTestUser } from '@/lib/test-auth'
 import { hasTestAccess, isFreeExam } from '@/lib/test-entitlement'
+import { getUserPermissions } from '@/lib/user-permissions'
 
 /**
  * POST /api/tests/attempts
@@ -30,6 +31,12 @@ export async function POST(request: NextRequest) {
   const { formId, formSlug, retake } = body
   if (!formId && !formSlug) {
     return NextResponse.json({ error: 'formId or formSlug is required' }, { status: 400 })
+  }
+
+  // Per-user feature permission: an admin can switch off test access for a user
+  // (e.g. a custom plan that omits tests), independent of their subscription.
+  if (!isAdminTestUser(user) && !(await getUserPermissions(supabase, user.id)).tests_enabled) {
+    return NextResponse.json({ error: 'Tests are not included in your plan', code: 'feature_disabled' }, { status: 403 })
   }
 
   // Verify the form exists and is published.

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { authenticate, isAdminTestUser } from '@/lib/test-auth'
 import { hasTestAccess, isFreeExam } from '@/lib/test-entitlement'
+import { getUserPermissions } from '@/lib/user-permissions'
 
 /**
  * GET /api/tests/catalog
@@ -15,6 +16,12 @@ export async function GET(request: NextRequest) {
   const { user, supabase } = auth
 
   const admin = isAdminTestUser(user)
+  // Per-user feature permission: if an admin has switched off test access for
+  // this user, hide the catalogue entirely (the attempt route also blocks
+  // direct starts). Admins themselves always see tests.
+  if (!admin && !(await getUserPermissions(supabase, user.id)).tests_enabled) {
+    return NextResponse.json({ forms: [], testAccess: false })
+  }
 
   let query = supabase
     .from('test_forms')

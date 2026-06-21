@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { authenticate, isAdminTestUser } from '@/lib/test-auth'
 import { hasTestAccess, isCourseTester } from '@/lib/test-entitlement'
+import { getUserPermissions } from '@/lib/user-permissions'
 
 /**
  * GET /api/courses[?exam=toeic]
@@ -14,6 +15,12 @@ export async function GET(request: NextRequest) {
   const { user, supabase } = auth
 
   const admin = isAdminTestUser(user)
+  // Per-user feature permission: if an admin has switched off course access for
+  // this user, hide the catalogue entirely (lesson routes also block direct
+  // access). Admins themselves always see courses.
+  if (!admin && !(await getUserPermissions(supabase, user.id)).courses_enabled) {
+    return NextResponse.json({ courses: [], entitled: false })
+  }
   const exam = request.nextUrl.searchParams.get('exam')
 
   let query = supabase.from('courses')

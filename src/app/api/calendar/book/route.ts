@@ -6,6 +6,7 @@ import { sendAdminBookingNotification } from '@/lib/email'
 import { notifyBooking } from '@/lib/notify'
 import { createStudentCalendarEvent } from '@/lib/student-calendar'
 import { getUserSubscription, hasEnoughMinutes, recordMinuteUsage } from '@/lib/subscription'
+import { getUserPermissions } from '@/lib/user-permissions'
 
 // POST /api/calendar/book
 // Body: { date: '2026-03-23', time: '17:00', duration: 30, timezone: 'Europe/London' }
@@ -38,6 +39,11 @@ export async function POST(request: NextRequest) {
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
+
+    // Per-user feature permissions (service-role read — user_permissions is
+    // RLS-protected). Drives whether this lesson's Whereby room is cloud-recorded.
+    const permsClient = createClient(supabaseUrl, process.env.SUPABASE_SERVICE_ROLE_KEY!)
+    const perms = await getUserPermissions(permsClient, user.id)
 
     // Check subscription & minute balance (skip for trial lessons — 15 min with no subscription)
     const subscription = await getUserSubscription(user.id)
@@ -90,7 +96,8 @@ export async function POST(request: NextRequest) {
       const room = await createWherebyRoom({
         endDate: lessonEndJST.toISOString(),
         roomNamePrefix: 'eigo',
-        recording: true,
+        // Cloud recording only when the user's plan includes lesson recordings.
+        recording: perms.recordings_enabled,
       })
       wherebyMeetingId = room.meetingId
       // Append student display name so it shows in the Whereby room

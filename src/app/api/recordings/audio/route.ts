@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { getRecordings, getRecordingAccessLink } from '@/lib/whereby'
+import { getUserPermissions } from '@/lib/user-permissions'
 
 // GET /api/recordings/audio?bookingId=xxx
 // Returns a temporary access link for the lesson recording
@@ -49,6 +50,13 @@ export async function GET(request: NextRequest) {
 
   if (!booking.whereby_room_url) {
     return NextResponse.json({ error: 'No recording available for this lesson' }, { status: 404 })
+  }
+
+  // Per-user feature permission: if the lesson owner's plan doesn't include
+  // recordings, don't serve one (the room was created without recording anyway).
+  const svc = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
+  if (!(await getUserPermissions(svc, booking.user_id)).recordings_enabled) {
+    return NextResponse.json({ error: 'Recordings are not included in this plan', code: 'feature_disabled' }, { status: 403 })
   }
 
   try {

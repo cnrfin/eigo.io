@@ -1,10 +1,70 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { authenticate, isAdminTestUser } from '@/lib/test-auth'
 import { hasTestAccess } from '@/lib/test-entitlement'
+import { getUserPermissions } from '@/lib/user-permissions'
 import { toWav16k, assess, coach, praise, verdictFor, normalizeAccent, targetAssessment, sentenceScore, stressScore, stressCoach, sentenceStressScore, connectedScore, connectedCoach, flowGradeLLM, type TargetAssessment } from '@/lib/pronunciation'
 
 export const runtime = 'nodejs'
 export const maxDuration = 30
+
+/**
+ * GET /api/courses/pronunciation?lessonId=...
+ *   Returns the caller's graded items for a lesson (best attempt per item) plus
+ *   the overall average — drives the pronunciation results screen. Service-role
+ *   read (the table has no row policies); scoped to the authenticated user.
+ */
+export async function GET(request: NextRequest) {
+  const auth = await authenticate(request)
+  if (!auth.ok) return auth.response
+  const { user, supabase } = auth
+
+  // lessonId is preferred, but it can get dropped through an OAuth redirect, so
+  // fall back to the user's most recent pronunciation attempt (a fresh
+  // anon→sign-up user has only the lesson they just did).
+  let lessonId = request.nextUrl.searchParams.get('lessonId')
+  if (!lessonId) {
+    const { data: latest } = await supabase
+      .from('pronunciation_attempts')
+      .select('lesson_id')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+    lessonId = latest?.lesson_id ?? null
+  }
+  if (!lessonId) return NextResponse.json({ items: [], overall: null })
+
+  const { data: rows } = await supabase
+    .from('pronunciation_attempts')
+    .select('item_key, reference_text, target_label, score, verdict, audio_path, details, created_at')
+    .eq('user_id', user.id)
+    .eq('lesson_id', lessonId)
+    .order('created_at', { ascending: true })
+
+  // Keep the best attempt per item (mirrors how the lesson score is computed).
+  type Item = { itemKey: string; referenceText: string; targetLabel: string | null; score: number; verdict: string | null; audioPath: string | null; details: unknown; audioUrl?: string | null }
+  const best = new Map<string, Item>()
+  for (const r of rows ?? []) {
+    const prev = best.get(r.item_key)
+    if (!prev || r.score > prev.score) {
+      best.set(r.item_key, { itemKey: r.item_key, referenceText: r.reference_text, targetLabel: r.target_label, score: r.score, verdict: r.verdict, audioPath: r.audio_path ?? null, details: r.details ?? null })
+    }
+  }
+  const items = [...best.values()]
+
+  // Sign the stored recordings (funnel attempts only) for playback. Short TTL —
+  // the results screen is a one-time, immediate-after-sign-up view.
+  await Promise.all(
+    items.map(async (it) => {
+      if (!it.audioPath) return
+      const { data: signed } = await supabase.storage.from('pronunciation-audio').createSignedUrl(it.audioPath, 60 * 60)
+      it.audioUrl = signed?.signedUrl ?? null
+    }),
+  )
+
+  const overall = items.length ? Math.round(items.reduce((a, b) => a + b.score, 0) / items.length) : null
+  return NextResponse.json({ items: items.map(({ audioPath: _omit, ...rest }) => rest), overall })
+}
 
 /**
  * POST /api/courses/pronunciation   (multipart/form-data)
@@ -20,6 +80,12 @@ export async function POST(request: NextRequest) {
   const auth = await authenticate(request)
   if (!auth.ok) return auth.response
   const { user, supabase } = auth
+
+  // Per-user feature permission: an admin can switch off course access for a
+  // user; the pronunciation course is part of courses, so block grading too.
+  if (!isAdminTestUser(user) && !(await getUserPermissions(supabase, user.id)).courses_enabled) {
+    return NextResponse.json({ error: 'Courses are not included in your plan', code: 'feature_disabled' }, { status: 403 })
+  }
 
   let form: FormData
   try {
@@ -126,9 +192,40 @@ export async function POST(request: NextRequest) {
         ? praise(targetSound)
         : await coach(referenceText.trim(), result, targetLabel, target, verdict)
 
+  // The exact breakdown the client renders — also persisted (anon only) so the
+  // funnel results screen can rebuild the same card.
+  const payload = { ...result, verdict, score: Math.round(basis), target, coaching }
+
   // Record the attempt so the lesson can show a pronunciation score. Best-effort:
   // never fail grading if the table is missing or the insert errors.
   if (lessonId) {
+    // Funnel (anonymous) attempts upload the recording so the post-sign-up
+    // results screen can play it back; regular accounts keep using local blobs.
+    // The 24h prune cron cleans the bucket up afterwards. Best-effort.
+    let audioPath: string | null = null
+    if (user.isAnonymous) {
+      try {
+        const ext = audio.type.includes('mp4') ? 'mp4' : audio.type.includes('ogg') ? 'ogg' : 'webm'
+        const path = `${user.id}/${lessonId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`
+        const { error: upErr } = await supabase.storage
+          .from('pronunciation-audio')
+          .upload(path, buffer, { contentType: audio.type || 'audio/webm', upsert: false })
+        if (upErr) console.error('Could not upload pronunciation audio:', upErr.message)
+        else audioPath = path
+      } catch (e) {
+        console.error('Pronunciation audio upload failed:', e)
+      }
+    }
+
+    // Full breakdown for the funnel results screen (anon only) — the node render
+    // info (display text, model clip, syllable/stress data) + the grade.
+    let details: { node: unknown; grade: typeof payload } | null = null
+    if (user.isAnonymous) {
+      let node: unknown = null
+      try { const raw = form.get('node')?.toString(); if (raw) node = JSON.parse(raw) } catch { /* ignore */ }
+      details = { node, grade: payload }
+    }
+
     const { error: saveErr } = await supabase.from('pronunciation_attempts').insert({
       user_id: user.id,
       lesson_id: lessonId,
@@ -140,9 +237,11 @@ export async function POST(request: NextRequest) {
       overall: Math.round(result.overall),
       verdict,
       accent,
+      audio_path: audioPath,
+      details,
     })
     if (saveErr) console.error('Could not save pronunciation attempt:', saveErr.message)
   }
 
-  return NextResponse.json({ ...result, verdict, score: Math.round(basis), target, coaching })
+  return NextResponse.json(payload)
 }
