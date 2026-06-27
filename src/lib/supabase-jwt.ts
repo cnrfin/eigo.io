@@ -19,7 +19,7 @@ import { createRemoteJWKSet, jwtVerify, decodeProtectedHeader, errors as joseErr
  * we fall back to the old network check. Invalid/expired tokens always return
  * { ok: false } (-> 401 upstream).
  */
-export type JwtUser = { id: string; email: string | null }
+export type JwtUser = { id: string; email: string | null; isAnonymous: boolean }
 export type JwtResult = { ok: true; user: JwtUser } | { ok: false }
 
 const enc = new TextEncoder()
@@ -38,9 +38,9 @@ function getJwks() {
 
 // `sub` + role 'authenticated' distinguishes a user access token from the
 // anon/service-role API keys (which are also JWTs).
-function toResult(payload: { sub?: string; role?: unknown; email?: unknown }): JwtResult {
+function toResult(payload: { sub?: string; role?: unknown; email?: unknown; is_anonymous?: unknown }): JwtResult {
   if (typeof payload.sub === 'string' && payload.sub && payload.role === 'authenticated') {
-    return { ok: true, user: { id: payload.sub, email: typeof payload.email === 'string' ? payload.email : null } }
+    return { ok: true, user: { id: payload.sub, email: typeof payload.email === 'string' ? payload.email : null, isAnonymous: payload.is_anonymous === true } }
   }
   return { ok: false }
 }
@@ -53,7 +53,7 @@ async function networkCheck(token: string): Promise<JwtResult> {
   )
   const { data: { user }, error } = await supabase.auth.getUser(token)
   if (error || !user) return { ok: false }
-  return { ok: true, user: { id: user.id, email: user.email ?? null } }
+  return { ok: true, user: { id: user.id, email: user.email ?? null, isAnonymous: user.is_anonymous === true } }
 }
 
 export async function verifySupabaseToken(token: string): Promise<JwtResult> {
