@@ -12,6 +12,7 @@ const LESSON_TYPES = [
   { key: 'lesson30' as const, duration: 30 },
   { key: 'lesson45' as const, duration: 45 },
   { key: 'lesson60' as const, duration: 60 },
+  { key: 'lesson75' as const, duration: 75 },
 ]
 
 export default function BookingSection() {

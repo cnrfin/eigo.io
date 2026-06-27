@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS bookings (
   user_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
   date DATE NOT NULL,
   start_time TIME NOT NULL,
-  duration_minutes INTEGER NOT NULL CHECK (duration_minutes IN (15, 30, 45, 60)),
+  duration_minutes INTEGER NOT NULL CHECK (duration_minutes IN (15, 30, 45, 60, 75)),
   status TEXT DEFAULT 'confirmed' CHECK (status IN ('confirmed', 'cancelled', 'completed')),
   google_event_id TEXT,
   notes TEXT,

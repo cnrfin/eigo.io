@@ -56,6 +56,7 @@ export const translations = {
     lesson30: '30分',
     lesson45: '45分',
     lesson60: '60分',
+    lesson75: '75分',
     bookLesson: '予約する',
 
     // Info
@@ -68,7 +69,7 @@ export const translations = {
     hours: 'レッスン時間',
     hoursValue: '毎日 06:00 - 08:00 / 16:00 - 02:00 JST',
     duration: '時間',
-    durationValue: '15分 / 30分 / 45分 / 60分',
+    durationValue: '15分 / 30分 / 45分 / 60分 / 75分',
     level: 'レベル',
     levelValue: '初級〜上級',
     type: '形式',
@@ -197,6 +198,7 @@ export const translations = {
     lesson30: '30 min',
     lesson45: '45 min',
     lesson60: '60 min',
+    lesson75: '75 min',
     bookLesson: 'Book',
 
     // Info
@@ -209,7 +211,7 @@ export const translations = {
     hours: 'Hours',
     hoursValue: 'Daily 06:00–08:00 / 16:00–02:00 JST',
     duration: 'Duration',
-    durationValue: '15 / 30 / 45 / 60 min',
+    durationValue: '15 / 30 / 45 / 60 / 75 min',
     level: 'Level',
     levelValue: 'Beginner to Advanced',
     type: 'Format',

@@ -338,7 +338,7 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
 
       {/* Duration selector */}
       <div className="flex gap-2 mb-3 justify-center">
-        {[15, 30, 45, 60].map((d) => {
+        {[15, 30, 45, 60, 75].map((d) => {
           const locked = !hasSubscription && d !== 15
           return (
             <Squircle key={d} asChild cornerRadius={8} cornerSmoothing={0.8}>
