@@ -1750,7 +1750,7 @@ function DashboardContent() {
                             lesson={lesson}
                             locale={locale}
                             session={session}
-                            onViewTranscript={(l, content, cleanedContent) => { setSelectedTranscript({ lesson: l, content, cleanedContent }); setTranscriptView(cleanedContent ? 'clean' : 'original') }}
+                            onViewTranscript={(l, content, cleanedContent) => setSelectedTranscript({ lesson: l, content, cleanedContent })}
                             onAddToDeck={addToDeck}
                             deckPhraseIds={deckPhraseIds}
                           />
