@@ -1,7 +1,10 @@
 'use client'
 
 import { Fragment, useEffect, useRef, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import Lenis from 'lenis'
+import { useAuth } from '@/context/AuthContext'
+import { getPostLoginPath } from '@/lib/admin-redirect'
 import { useLanguage } from '@/context/LanguageContext'
 import { localizedHref } from '@/lib/i18n'
 import { useTheme } from '@/context/ThemeContext'
@@ -59,6 +62,24 @@ export default function LandingClient() {
   const bentoSlotRef = useRef<HTMLDivElement>(null)
   const progressRef = useRef(0)
   const [p, setP] = useState(0)
+
+  /* Signed-in users don't need the marketing page, so bounce them to their
+     dashboard (admins to /admin).
+
+     Two deliberate details:
+     - `is_anonymous` is excluded. The free pronunciation funnel mints a GUEST
+       session on this very page, so redirecting on any truthy `user` would
+       throw every guest straight out of the funnel they just started.
+     - The gate is `user`, not `loading`. Blocking render while auth resolves
+       would blank the page for crawlers and anonymous visitors too, which
+       would undo the SSR the guide/landing SEO work depends on. Signed-in
+       users see a brief flash of landing instead; that trade is on purpose. */
+  const { user, loading: authLoading } = useAuth()
+  const router = useRouter()
+  const signedIn = !!user && !user.is_anonymous
+  useEffect(() => {
+    if (!authLoading && signedIn) router.replace(getPostLoginPath(user?.email))
+  }, [authLoading, signedIn, user?.email, router])
 
   const { locale, toggleLocale } = useLanguage()
   const { theme, toggleTheme } = useTheme()
