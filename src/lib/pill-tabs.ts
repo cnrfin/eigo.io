@@ -6,12 +6,14 @@ import type { CSSProperties } from 'react'
  *   light + active → solid accent with white text (pop against pale surfaces)
  *   dark + active  → tinted: accent text on accent-bg with an accent border
  *                    (solid accent glares on dark panels)
- *   inactive       → inset surface, hairline edge, muted text
+ *   inactive       → transparent, hairline edge, muted text (the edge alone
+ *                    carries the shape, so tabs recede against any surface
+ *                    they sit on, in both themes)
  */
 export function pillTabStyle(active: boolean, theme: 'light' | 'dark'): CSSProperties {
   if (!active) {
     return {
-      background: 'var(--card-inset)',
+      background: 'transparent',
       color: 'var(--text-muted)',
       border: '1px solid var(--edge)',
     }

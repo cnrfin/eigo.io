@@ -7,6 +7,8 @@ import { useLanguage } from '@/context/LanguageContext'
 import { useTheme } from '@/context/ThemeContext'
 import { Squircle } from '@squircle-js/react'
 import { motion, AnimatePresence } from 'framer-motion'
+import FreeGate from '@/components/lp/FreeGate'
+import { GATE_COPY } from '@/lib/lp-funnel'
 
 type Option = { id: string; label: string; content: string; order_index: number }
 type Question = {
@@ -69,6 +71,15 @@ export default function TakeTestPage() {
   const [autoRecState, setAutoRecState] = useState<RecState | null>(null) // current machine-paced item's recorder state
   const autoStopRef = useRef<(() => void) | null>(null) // stop function of the current machine-paced recorder
 
+  // Free-funnel gate mode (?gate=1): a guest took this test; instead of routing
+  // to the results page on finish, we show the sign-up gate. Read from the URL
+  // directly (not useSearchParams) to avoid the Suspense-boundary requirement.
+  const [gate, setGate] = useState(false)
+  const [showGate, setShowGate] = useState(false)
+  useEffect(() => {
+    if (typeof window !== 'undefined') setGate(new URLSearchParams(window.location.search).get('gate') === '1')
+  }, [])
+
   const answersRef = useRef(answers)
   answersRef.current = answers
   const submittedRef = useRef(false)
@@ -89,6 +100,11 @@ export default function TakeTestPage() {
       .then(async r => { const d = await r.json(); if (!r.ok) throw new Error(d.error || 'failed'); return d })
       .then(d => {
         if (d.attempt?.status && d.attempt.status !== 'in_progress') {
+          // Already submitted. A gate-mode guest re-entering should see the
+          // sign-up gate again (results stay behind it), not be dropped on the
+          // dashboard results page.
+          const isGate = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('gate') === '1'
+          if (isGate) { setShowGate(true); return }
           router.replace(`/dashboard/tests/results/${attemptId}`)
           return
         }
@@ -216,6 +232,9 @@ export default function TakeTestPage() {
         body: JSON.stringify({ responses: buildResponses(), reviewMode }),
       })
       if (!res.ok) { const d = await res.json().catch(() => ({})); throw new Error(d.error || 'failed') }
+      // Gate mode: grading is running in the background — show the sign-up gate
+      // instead of going to results (the payoff is behind the account).
+      if (gate) { setSubmitting(false); setShowGate(true); return }
       router.push(`/dashboard/tests/results/${attemptId}`)
     } catch {
       submittedRef.current = false
@@ -223,7 +242,7 @@ export default function TakeTestPage() {
       setError(t('提出できませんでした。もう一度お試しください。', 'Could not submit — please try again.'))
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [session?.access_token, attemptId, buildResponses, router])
+  }, [session?.access_token, attemptId, buildResponses, router, gate])
 
   // Leave the test: save answers + elapsed time explicitly (don't rely on the
   // debounced autosave surviving navigation), then return to the tests page.
@@ -238,16 +257,21 @@ export default function TakeTestPage() {
         })
       }
     } catch { /* the periodic save has us mostly covered anyway */ }
-    router.push('/dashboard/tests')
-  }, [session?.access_token, attemptId, buildResponses, router])
+    // Gate-mode guests came from the v2 landing — send them back there, not into
+    // the dashboard (which they haven't signed up for).
+    router.push(gate ? '/' : '/dashboard/tests')
+  }, [session?.access_token, attemptId, buildResponses, router, gate])
 
   // Tests with audio (speaking) ask the student to choose teacher vs AI review;
   // writing-only tests go straight to AI grading; objective tests grade instantly.
   const onSubmitClick = useCallback(() => {
+    // Gate mode forces AI grading (skip the teacher-vs-AI chooser): grading runs
+    // in the background while the guest signs up at the gate.
+    if (gate) { submit(hasAi || hasSpeaking ? 'ai' : undefined); return }
     if (hasSpeaking) setReviewOpen(true)
     else if (hasAi) submit('ai')
     else submit()
-  }, [hasSpeaking, hasAi, submit])
+  }, [gate, hasSpeaking, hasAi, submit])
 
   const timerRunning = timeLeft !== null
   const timeExpired = timeLeft !== null && timeLeft <= 0
@@ -735,6 +759,17 @@ export default function TakeTestPage() {
         {loading && <LoadingOverlay key="loading" t={t} />}
       </AnimatePresence>
       {submitting && <ScoringOverlay t={t} />}
+
+      {/* Free-funnel sign-up gate (guest finished the test in ?gate=1 mode). */}
+      {showGate && (
+        <FreeGate
+          destination={`/dashboard/tests/results/${attemptId}`}
+          copy={GATE_COPY.cefr}
+          // Closing without signing up returns to the landing — the results stay
+          // behind the gate.
+          onClose={() => router.push('/')}
+        />
+      )}
     </div>
   )
 }

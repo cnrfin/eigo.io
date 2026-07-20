@@ -6,6 +6,7 @@ import CourseMascot from '@/components/courses/CourseMascot'
 import CourseStation from '@/components/courses/CourseStation'
 import { startSmartRecording, createMic, type Mic } from '@/lib/smart-recorder'
 import { CUE } from '@/lib/sound-cues'
+import PronResultCard, { type GradeResult } from '@/components/courses/PronResultCard'
 
 /**
  * Challenge capstone: the learner says each word to walk Teri to the finish.
@@ -21,23 +22,10 @@ import { CUE } from '@/lib/sound-cues'
 
 type Node = { referenceText: string; displayText?: string; targetLabel?: string; targetSound?: string; targetPhonemeIndex?: number; audioUrl?: string | null; syllables?: string[]; stressIndex?: number; words?: string[]; stressed?: number[]; connected?: boolean }
 type Position = { pairs: Node[][] }
-type Phoneme = { label: string; score: number }
-type Syllable = { label: string; score: number }
-type WordScore = { word: string; accuracy: number; errorType: string; phonemes: Phoneme[]; syllables: Syllable[] }
-type GradeResult = {
-  recognized: string
-  score: number
-  verdict: 'great' | 'good' | 'retry'
-  words: WordScore[]
-  target: { index: number; label?: string; score: number; detected?: string } | null
-  coaching: { en: string; ja: string } | null
-}
 type RecState = 'idle' | 'starting' | 'recording' | 'grading'
 
 const C1 = '#00c2b8'
 const C2 = '#3ad6a0'
-const COLOR = (v?: string) => (v === 'great' ? 'var(--accent)' : v === 'good' ? '#e0982e' : v === 'retry' ? 'var(--danger)' : 'var(--text-muted)')
-const phColor = (score: number) => (score >= 80 ? 'var(--accent)' : score >= 60 ? '#e0982e' : 'var(--danger)')
 function lerpColor(a: string, b: string, t: number): string {
   const pa = parseInt(a.slice(1), 16), pb = parseInt(b.slice(1), 16)
   const r = Math.round(((pa >> 16) & 255) + (((pb >> 16) & 255) - ((pa >> 16) & 255)) * t)
@@ -47,7 +35,7 @@ function lerpColor(a: string, b: string, t: number): string {
 }
 
 export default function ChallengeExercise({
-  positions, sentences, accent = 'en-US', mascotSrc = '/rive/teri.riv', lessonId, screenId, token, locale, onFinish,
+  positions, sentences, accent = 'en-US', mascotSrc = '/rive/teri.riv', lessonId, screenId, token, locale, onFinish, hideResults = false,
 }: {
   positions: Position[]
   sentences: Node[]
@@ -57,7 +45,13 @@ export default function ChallengeExercise({
   screenId?: string
   token?: string
   locale: 'ja' | 'en'
-  onFinish: (avgScore: number) => void
+  /** null when nothing could be graded (e.g. the scorer was down) — the
+   *  caller must not treat that as a score of zero. */
+  onFinish: (avgScore: number | null) => void
+  // Funnel gate mode: never reveal the per-item results breakdown — once the
+  // last word is graded, finish straight away so the sign-up gate is shown
+  // before the guest sees any scores.
+  hideResults?: boolean
 }) {
   const t = (ja: string, en: string) => (locale === 'ja' ? ja : en)
   // Build the run once: one random minimal pair per position + one random
@@ -86,6 +80,14 @@ export default function ChallengeExercise({
   const urlsRef = useRef<string[]>([])
   const stopRef = useRef<null | (() => void)>(null)
   const micRef = useRef<Mic | null>(null)
+  // Grading runs behind a queue. Teri advances optimistically after ~620ms, so
+  // the learner records the next word while the previous is still being graded —
+  // which means overlapping requests. Azure's assessment endpoint hangs when
+  // they overlap (measured: sequential 3/3 succeed in ~1.2s, concurrent 2/3 with
+  // one never returning), and that is exactly why the normal one-at-a-time
+  // course lesson grades fine while this screen did not. Chaining keeps the walk
+  // feeling instant while only ever having one request in flight.
+  const gradeQueue = useRef<Promise<void>>(Promise.resolve())
 
   // Pre-warm the mic on entry so even the first attempt sees a settled signal
   // (a fresh stream's gain control takes a second or two to stabilise).
@@ -135,7 +137,21 @@ export default function ChallengeExercise({
     else if (node.connected) fd.append('mode', 'connected')
     if (lessonId) fd.append('lessonId', lessonId)
     if (screenId) fd.append('screenId', screenId)
-    const res = await fetch('/api/courses/pronunciation', { method: 'POST', headers: token ? { Authorization: `Bearer ${token}` } : undefined, body: fd })
+    // Node render info, persisted (anon only) so the funnel results screen can
+    // rebuild this card later: display text, model clip, syllable/stress data.
+    fd.append('node', JSON.stringify({
+      displayText: node.displayText, referenceText: node.referenceText, audioUrl: node.audioUrl,
+      syllables: node.syllables, stressIndex: node.stressIndex, stressed: node.stressed, words: node.words,
+    }))
+    // On the final node the walk waits for this promise before finishing, so a
+    // request that never returns strands the learner on "採点中…" with no way
+    // out. Abort rather than wait: the caller's .catch keeps the run moving.
+    const res = await fetch('/api/courses/pronunciation', {
+      method: 'POST',
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      body: fd,
+      signal: AbortSignal.timeout(45_000),
+    })
     const d = await res.json()
     if (!res.ok) throw new Error(d.error || 'grading failed')
     return d as GradeResult
@@ -160,14 +176,26 @@ export default function ChallengeExercise({
       setIdx(next)
       window.setTimeout(() => { setMoving(false); setNotice(true); setRec('idle') }, 620)
     }
-    gradeOne(blob, nodes[nodeIdx])
+    gradeQueue.current = gradeQueue.current
+      .then(() => gradeOne(blob, nodes[nodeIdx]))
       .then((r) => {
         scoresRef.current[nodeIdx] = Math.max(scoresRef.current[nodeIdx] ?? 0, r.score)
         setResults((res) => ({ ...res, [nodeIdx]: r }))
       })
       .catch(() => { /* keep going; the row just shows no score */ })
-      .finally(() => { if (last) { setRec('idle'); setNotice(true); setShowSummary(true) } })
-  }, [n, nodes, gradeOne])
+      .finally(() => {
+        if (last) {
+          setRec('idle'); setNotice(true)
+          // Gate mode: skip the results breakdown entirely and finish, so the
+          // sign-up gate appears before any scores are revealed.
+          if (hideResults) {
+            onFinish(avgScore())
+          } else {
+            setShowSummary(true)
+          }
+        }
+      })
+  }, [n, nodes, gradeOne, hideResults, onFinish])
 
   const start = useCallback(async () => {
     setRec('starting')
@@ -178,9 +206,11 @@ export default function ChallengeExercise({
     } catch { setRec('idle') }
   }, [handleStop])
 
-  const avgScore = () => {
+  // No graded nodes means grading failed outright, not that the learner scored
+  // zero. Report null so the lesson records "not scored" instead of 0/100.
+  const avgScore = (): number | null => {
     const vals = nodes.map((_, i) => scoresRef.current[i]).filter((s): s is number => typeof s === 'number')
-    return vals.length ? Math.round(vals.reduce((a, b) => a + b, 0) / vals.length) : 0
+    return vals.length ? Math.round(vals.reduce((a, b) => a + b, 0) / vals.length) : null
   }
 
   const idxC = Math.min(idx, n - 1)
@@ -197,112 +227,9 @@ export default function ChallengeExercise({
         </p>
 
         <div className="flex flex-col gap-3">
-          {nodes.map((node, i) => {
-            const res = results[i]
-            const uurl = userUrls[i]
-            const fw = res?.words?.[0]
-            // Decide from the node (reliable), not from what Azure heard.
-            const isSentence = (node.referenceText ?? '').trim().includes(' ')
-            return (
-              <Squircle key={i} asChild cornerRadius={16} cornerSmoothing={0.8}>
-              <div className="block p-4" style={{ background: 'var(--card)', border: '1px solid var(--hairline)' }}>
-                <div className="flex items-center justify-between gap-2 mb-3">
-                  <p className="font-semibold min-w-0 truncate" style={{ color: 'var(--text)' }}>{node.displayText ?? node.referenceText}</p>
-                  {res && <span className="text-sm font-bold shrink-0" style={{ color: COLOR(res.verdict) }}>{Math.round(res.score)}/100</span>}
-                </div>
-
-                {/* players */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
-                  <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--text-subtle)' }}>{t('お手本', 'Model')}</p>
-                    {node.audioUrl ? <audio controls src={node.audioUrl} className="w-full h-9" /> : <p className="text-xs" style={{ color: 'var(--text-subtle)' }}>—</p>}
-                  </div>
-                  <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--text-subtle)' }}>{t('あなた', 'You')}</p>
-                    {uurl ? <audio controls src={uurl} className="w-full h-9" /> : <p className="text-xs" style={{ color: 'var(--text-subtle)' }}>—</p>}
-                  </div>
-                </div>
-
-                {/* sentence-stress: show which words should carry the beat (target) */}
-                {res && node.stressed && node.words && (
-                  <div className="flex flex-wrap items-center gap-1.5 mb-2">
-                    {node.words.map((w, k) => {
-                      const on = node.stressed?.includes(k)
-                      return (
-                        <Squircle key={k} asChild cornerRadius={8} cornerSmoothing={0.8}>
-                          <span className="px-2 py-1 text-sm" style={{ background: on ? 'var(--accent)' : 'var(--card-inset)', color: on ? '#fff' : 'var(--text-secondary)', fontWeight: on ? 700 : 500, border: on ? 'none' : '1px solid var(--edge)' }}>{w}</span>
-                        </Squircle>
-                      )
-                    })}
-                  </div>
-                )}
-                {/* feedback */}
-                {res && isSentence && !node.stressed && (
-                  <div className="flex flex-wrap gap-1.5 mb-2">
-                    {res.words.filter((w) => w.errorType !== 'Insertion').map((w, k) => {
-                      const bad = w.errorType === 'Mispronunciation' || w.accuracy < 60
-                      const near = !bad && w.accuracy < 80
-                      return (
-                        <Squircle key={k} asChild cornerRadius={8} cornerSmoothing={0.8}>
-                          <span className="px-2 py-0.5 text-sm" style={{ background: 'var(--card-inset)', color: bad ? 'var(--danger)' : near ? '#e0982e' : 'var(--text)', border: `1px solid ${bad ? 'var(--danger)' : near ? '#e0982e' : 'var(--edge)'}` }}>{w.word}</span>
-                        </Squircle>
-                      )
-                    })}
-                  </div>
-                )}
-                {/* phoneme strip: each sound in IPA, coloured by score; the target
-                    sound is outlined, and shows "→ /x/" if it came out as another sound */}
-                {/* stress: a syllable strip — the stressed beat filled, each
-                    syllable tinted by how well it was produced (reduction shows here) */}
-                {res && node.syllables && node.syllables.length > 0 && (
-                  <div className="flex flex-wrap items-center gap-1.5 mb-2">
-                    {node.syllables.map((syl, k) => {
-                      const sc = fw?.syllables?.[k]?.score
-                      const isStress = node.stressIndex === k
-                      return (
-                        <Squircle key={k} asChild cornerRadius={8} cornerSmoothing={0.8}>
-                          <span className="px-2.5 py-1 text-sm" style={{
-                            background: isStress ? COLOR(res.verdict) : 'var(--card-inset)',
-                            color: isStress ? '#fff' : (sc != null ? phColor(sc) : 'var(--text)'),
-                            fontWeight: isStress ? 700 : 500,
-                            border: isStress ? 'none' : '1px solid var(--edge)',
-                          }}>{syl}</span>
-                        </Squircle>
-                      )
-                    })}
-                  </div>
-                )}
-                {res && !isSentence && !node.syllables && fw && fw.phonemes.length > 0 && fw.phonemes.every(p => p.label) && (
-                  <div className="flex flex-wrap items-center gap-1.5 mb-2">
-                    {fw.phonemes.map((p, k) => {
-                      const isTarget = res.target?.index === k
-                      if (isTarget) {
-                        const sub = res.target?.detected
-                        return (
-                          <Squircle key={k} asChild cornerRadius={8} cornerSmoothing={0.8}>
-                            <span className="px-2 py-1 text-sm font-bold" style={{ background: COLOR(res.verdict), color: '#fff' }}>
-                              /{p.label}/{sub ? ` → /${sub}/` : ''}
-                            </span>
-                          </Squircle>
-                        )
-                      }
-                      return (
-                        <Squircle key={k} asChild cornerRadius={8} cornerSmoothing={0.8}>
-                          <span className="px-2 py-1 text-sm font-medium" style={{ background: 'var(--card-inset)', color: phColor(p.score), border: '1px solid var(--edge)' }}>
-                            /{p.label}/
-                          </span>
-                        </Squircle>
-                      )
-                    })}
-                  </div>
-                )}
-                {res?.coaching && (
-                  <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{locale === 'ja' ? res.coaching.ja : res.coaching.en}</p>
-                )}
-              </div>
-              </Squircle>
-            )
-          })}
+          {nodes.map((node, i) => (
+            <PronResultCard key={i} node={node} result={results[i]} userAudioUrl={userUrls[i]} locale={locale} />
+          ))}
         </div>
 
         <button onClick={() => onFinish(avgScore())}

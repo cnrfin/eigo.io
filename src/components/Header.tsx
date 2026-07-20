@@ -1,6 +1,7 @@
 'use client'
 
 import { useLanguage } from '@/context/LanguageContext'
+import { localizedHref } from '@/lib/i18n'
 import { useAuth } from '@/context/AuthContext'
 import { useTheme } from '@/context/ThemeContext'
 import { useState, useRef, useEffect } from 'react'
@@ -80,7 +81,7 @@ export default function Header({ hideLogin = false, wide = false }: { hideLogin?
                 </button>
               </div>
 
-              <Link href="/" className="text-xl font-bold tracking-tight text-center" style={{ color: 'var(--text)' }}>
+              <Link href={localizedHref('/', locale)} className="text-xl font-bold tracking-tight text-center" style={{ color: 'var(--text)' }}>
                 eigo.io
               </Link>
 
@@ -101,7 +102,7 @@ export default function Header({ hideLogin = false, wide = false }: { hideLogin?
           ) : (
             <>
               {/* Dashboard: logo left, controls right */}
-              <Link href="/" className="text-xl font-bold tracking-tight" style={{ color: 'var(--text)' }}>
+              <Link href={localizedHref('/', locale)} className="text-xl font-bold tracking-tight" style={{ color: 'var(--text)' }}>
                 eigo.io
               </Link>
 

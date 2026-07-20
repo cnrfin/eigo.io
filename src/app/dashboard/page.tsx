@@ -884,7 +884,6 @@ function DashboardContent() {
   const [historySort, setHistorySort] = useState<'newest' | 'oldest'>('newest')
   const [lessonToReschedule, setLessonToReschedule] = useState<Lesson | null>(null)
   const [selectedTranscript, setSelectedTranscript] = useState<{ lesson: Lesson; content: string; cleanedContent?: string } | null>(null)
-  const [transcriptView, setTranscriptView] = useState<'clean' | 'original'>('clean')
   const [cleaningTranscript, setCleaningTranscript] = useState(false)
   const [copiedTranscript, setCopiedTranscript] = useState(false)
   const [bookingResultModal, setBookingResultModal] = useState<BookingResult | null>(null)
@@ -1508,9 +1507,7 @@ function DashboardContent() {
                           <Squircle asChild cornerRadius={8} cornerSmoothing={0.8}>
                             <button
                               onClick={() => {
-                                const text = transcriptView === 'clean' && selectedTranscript.cleanedContent
-                                  ? selectedTranscript.cleanedContent
-                                  : selectedTranscript.content
+                                const text = selectedTranscript.cleanedContent || selectedTranscript.content
                                 navigator.clipboard.writeText(text)
                                 setCopiedTranscript(true)
                                 setTimeout(() => setCopiedTranscript(false), 1500)
@@ -1535,9 +1532,7 @@ function DashboardContent() {
                           <Squircle asChild cornerRadius={8} cornerSmoothing={0.8}>
                             <button
                               onClick={() => {
-                                const text = transcriptView === 'clean' && selectedTranscript.cleanedContent
-                                  ? selectedTranscript.cleanedContent
-                                  : selectedTranscript.content
+                                const text = selectedTranscript.cleanedContent || selectedTranscript.content
                                 const dateStr = selectedTranscript.lesson.date
                                 const blob = new Blob([text], { type: 'text/markdown' })
                                 const url = URL.createObjectURL(blob)
@@ -1558,36 +1553,11 @@ function DashboardContent() {
                               </svg>
                             </button>
                           </Squircle>
-                          {/* Clean / Original toggle or Clean up button */}
-                          {selectedTranscript.cleanedContent ? (
-                            <div
-                              className="flex h-8 p-0.5 ml-1 items-center rounded-lg"
-                              style={{ background: 'var(--inset)', border: '1px solid var(--edge)' }}
-                            >
-                              <button
-                                onClick={() => setTranscriptView('clean')}
-                                className="h-full px-3 text-xs font-medium flex items-center rounded-md"
-                                style={{
-                                  background: transcriptView === 'clean' ? 'var(--card)' : 'transparent',
-                                  boxShadow: transcriptView === 'clean' ? 'var(--card-shadow)' : 'none',
-                                  color: transcriptView === 'clean' ? 'var(--text)' : 'var(--text-muted)',
-                                }}
-                              >
-                                {locale === 'ja' ? '整理済み' : 'Clean'}
-                              </button>
-                              <button
-                                onClick={() => setTranscriptView('original')}
-                                className="h-full px-3 text-xs font-medium flex items-center rounded-md"
-                                style={{
-                                  background: transcriptView === 'original' ? 'var(--card)' : 'transparent',
-                                  boxShadow: transcriptView === 'original' ? 'var(--card-shadow)' : 'none',
-                                  color: transcriptView === 'original' ? 'var(--text)' : 'var(--text-muted)',
-                                }}
-                              >
-                                {locale === 'ja' ? 'オリジナル' : 'Original'}
-                              </button>
-                            </div>
-                          ) : cleaningTranscript ? (
+                          {/* Cleaning status, or a manual trigger if the automatic pass
+                              never ran. Once a cleaned transcript exists it is simply
+                              shown — there is no raw/clean selector, since the raw
+                              version is strictly worse to read. */}
+                          {selectedTranscript.cleanedContent ? null : cleaningTranscript ? (
                             <Squircle asChild cornerRadius={8} cornerSmoothing={0.8}>
                               <span
                                 className="h-8 px-3 text-xs font-medium flex items-center gap-1.5 shrink-0"
@@ -1615,7 +1585,6 @@ function DashboardContent() {
                                     const data = await res.json()
                                     if (data.status === 'ready' && data.cleanedContent) {
                                       setSelectedTranscript(prev => prev ? { ...prev, cleanedContent: data.cleanedContent } : prev)
-                                      setTranscriptView('clean')
                                     }
                                   } catch { /* ignore */ }
                                   setCleaningTranscript(false)
@@ -1635,10 +1604,8 @@ function DashboardContent() {
 
                       {/* Transcript content */}
                       <div className="space-y-4">
-                        {(transcriptView === 'clean' && selectedTranscript.cleanedContent
-                          ? selectedTranscript.cleanedContent
-                          : selectedTranscript.content
-                        ).split('\n').filter(line => line.trim()).map((line, i) => {
+                        {(selectedTranscript.cleanedContent || selectedTranscript.content)
+                          .split('\n').filter(line => line.trim()).map((line, i) => {
                           // Try to parse "Speaker: text" format
                           const speakerMatch = line.match(/^([^:]{1,30}):\s*(.+)/)
                           if (speakerMatch) {

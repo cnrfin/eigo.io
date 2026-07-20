@@ -4,6 +4,7 @@ import { Suspense } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import DashboardSidebar from '@/components/dashboard/DashboardSidebar'
 import AppsMenu from '@/components/dashboard/AppsMenu'
+import TrialBookingFinalizer from '@/components/lp/TrialBookingFinalizer'
 import { DashboardNavProvider, useDashboardNav, type Crumb } from '@/context/DashboardNavContext'
 import { useLanguage } from '@/context/LanguageContext'
 import { useTheme } from '@/context/ThemeContext'
@@ -128,7 +129,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const pathname = usePathname()
   // Full-screen flows (taking a test, viewing results) render without the
   // dashboard chrome — they bring their own header.
-  const bare = pathname.includes('/dashboard/tests/take/') || pathname.includes('/dashboard/tests/results/')
+  const bare = pathname.includes('/dashboard/tests/take/') || pathname.includes('/dashboard/tests/results/') || pathname.includes('/dashboard/courses/pronunciation/result')
   if (bare) return <>{children}</>
 
   return (
@@ -152,6 +153,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
         </div>
       </div>
+      {/* Finalizes a trial booking picked on the v2 landing once the guest signs up. */}
+      <TrialBookingFinalizer />
     </DashboardNavProvider>
   )
 }

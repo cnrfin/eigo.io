@@ -1,10 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useLanguage } from '@/context/LanguageContext'
 import { useAuth } from '@/context/AuthContext'
 import { Squircle } from '@squircle-js/react'
 import SquircleBox from './ui/SquircleBox'
+import InvisibleHCaptcha, { type HCaptchaHandle } from './InvisibleHCaptcha'
 
 export default function AuthModal({ onClose }: { onClose: () => void }) {
   const { t } = useLanguage()
@@ -17,6 +18,7 @@ export default function AuthModal({ onClose }: { onClose: () => void }) {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState('')
+  const captchaRef = useRef<HCaptchaHandle>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -24,9 +26,12 @@ export default function AuthModal({ onClose }: { onClose: () => void }) {
     setSuccess('')
     setLoading(true)
 
+    // hCaptcha token (null if captcha isn't configured) for Supabase bot protection.
+    const captchaToken = await (captchaRef.current?.getToken() ?? Promise.resolve(null))
+
     const { error } = isLogin
-      ? await signIn(email, password)
-      : await signUp(email, password, firstName, lastName)
+      ? await signIn(email, password, captchaToken)
+      : await signUp(email, password, firstName, lastName, captchaToken)
 
     setLoading(false)
 
@@ -48,9 +53,9 @@ export default function AuthModal({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 modal-backdrop overflow-y-auto py-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center modal-backdrop overflow-y-auto py-6" style={{ background: 'var(--overlay)' }}>
       <div className="modal-card w-full flex items-center justify-center min-h-0">
-      <SquircleBox cornerRadius={20} className="p-6 sm:p-8 w-full max-w-sm mx-4 relative shadow-[0_0_0_1px_var(--border)]" style={{ background: 'var(--surface)' }}>
+      <SquircleBox cornerRadius={20} className="p-6 sm:p-8 w-full max-w-sm mx-4 relative shadow-[inset_0_0_0_1px_var(--border)]" style={{ background: 'var(--card)' }}>
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-xl hover:opacity-80"
@@ -110,9 +115,9 @@ export default function AuthModal({ onClose }: { onClose: () => void }) {
         </div>
 
         <div className="flex items-center gap-3 mb-4">
-          <div className="flex-1 h-px" style={{ background: 'var(--border-subtle)' }}></div>
+          <div className="flex-1 h-px" style={{ background: 'var(--border)' }}></div>
           <span className="text-xs" style={{ color: 'var(--text-muted)' }}>or</span>
-          <div className="flex-1 h-px" style={{ background: 'var(--border-subtle)' }}></div>
+          <div className="flex-1 h-px" style={{ background: 'var(--border)' }}></div>
         </div>
 
         {/* Email/Password Form */}
@@ -126,7 +131,7 @@ export default function AuthModal({ onClose }: { onClose: () => void }) {
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
                   className="w-full px-4 py-3 focus:outline-none transition-colors"
-                  style={{ background: 'var(--surface-hover)', color: 'var(--text)', '--placeholder-color': 'var(--text-muted)' } as React.CSSProperties}
+                  style={{ background: 'var(--card-inset)', color: 'var(--text)', boxShadow: 'inset 0 0 0 1px var(--edge)', '--placeholder-color': 'var(--text-muted)' } as React.CSSProperties}
                   required={!isLogin}
                 />
               </Squircle>
@@ -137,7 +142,7 @@ export default function AuthModal({ onClose }: { onClose: () => void }) {
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
                   className="w-full px-4 py-3 focus:outline-none transition-colors"
-                  style={{ background: 'var(--surface-hover)', color: 'var(--text)', '--placeholder-color': 'var(--text-muted)' } as React.CSSProperties}
+                  style={{ background: 'var(--card-inset)', color: 'var(--text)', boxShadow: 'inset 0 0 0 1px var(--edge)', '--placeholder-color': 'var(--text-muted)' } as React.CSSProperties}
                   required={!isLogin}
                 />
               </Squircle>
@@ -150,7 +155,7 @@ export default function AuthModal({ onClose }: { onClose: () => void }) {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full px-4 py-3 focus:outline-none transition-colors"
-              style={{ background: 'var(--surface-hover)', color: 'var(--text)', '--placeholder-color': 'var(--text-muted)' } as React.CSSProperties}
+              style={{ background: 'var(--card-inset)', color: 'var(--text)', boxShadow: 'inset 0 0 0 1px var(--edge)', '--placeholder-color': 'var(--text-muted)' } as React.CSSProperties}
               required
             />
           </Squircle>
@@ -161,19 +166,20 @@ export default function AuthModal({ onClose }: { onClose: () => void }) {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full px-4 py-3 focus:outline-none transition-colors"
-              style={{ background: 'var(--surface-hover)', color: 'var(--text)' }}
+              style={{ background: 'var(--card-inset)', color: 'var(--text)', boxShadow: 'inset 0 0 0 1px var(--edge)' }}
               required
               minLength={6}
             />
           </Squircle>
           {error && <p className="text-sm" style={{ color: 'var(--danger)' }}>{error}</p>}
           {success && <p className="text-sm" style={{ color: 'var(--success)' }}>{success}</p>}
+          <InvisibleHCaptcha ref={captchaRef} />
           <Squircle asChild cornerRadius={12} cornerSmoothing={0.8}>
             <button
               type="submit"
               disabled={loading}
               className="w-full py-3 font-medium transition-colors disabled:opacity-50 hover:opacity-90"
-              style={{ background: 'var(--surface-alt)', color: 'var(--text)' }}
+              style={{ background: 'var(--text)', color: 'var(--bg)' }}
             >
               {loading ? '...' : isLogin ? t('loginButton') : t('signupButton')}
             </button>
@@ -190,7 +196,7 @@ export default function AuthModal({ onClose }: { onClose: () => void }) {
               setLastName('')
             }}
             className="underline hover:no-underline"
-            style={{ color: 'var(--text)' }}
+            style={{ color: 'var(--accent)' }}
           >
             {isLogin ? t('signupButton') : t('loginButton')}
           </button>

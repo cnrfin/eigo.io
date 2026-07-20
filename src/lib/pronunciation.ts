@@ -72,13 +72,59 @@ export function normalizeAccent(v: unknown): Accent {
 }
 
 /** Run Azure pronunciation assessment on a WAV buffer against the reference text. */
-export function assess(wav: Buffer, referenceText: string, locale: Accent): Promise<PronResult> {
+/**
+ * Overlapping assessment requests hang on this endpoint: measured sequentially
+ * 3/3 succeed in ~1.2s, but fired concurrently one of three never returns and
+ * never even reaches sessionStarted. Callers serialise their requests (see the
+ * queue in ChallengeExercise), so this retry is the safety net for the residual
+ * case rather than the main defence.
+ *
+ * A short deadline beats a long one: a real answer always lands well inside the
+ * cap, and a hung connection is worthless however long we wait, so waiting only
+ * delays the retry that will actually work.
+ */
+const ASSESS_TIMEOUT_MS = 8_000
+const ASSESS_ATTEMPTS = 3
+
+/** Marks a hung connection, which is worth retrying — unlike a cancellation
+ *  (bad key, quota), which will fail identically every time. */
+class AssessTimeout extends Error {}
+
+export async function assess(wav: Buffer, referenceText: string, locale: Accent): Promise<PronResult> {
+  let last: unknown
+  for (let attempt = 1; attempt <= ASSESS_ATTEMPTS; attempt++) {
+    try {
+      return await assessOnce(wav, referenceText, locale)
+    } catch (e) {
+      last = e
+      // Only hangs are worth another go; anything else is deterministic.
+      if (!(e instanceof AssessTimeout)) throw e
+      if (attempt < ASSESS_ATTEMPTS) {
+        console.warn(`Azure assessment hung (attempt ${attempt}/${ASSESS_ATTEMPTS}); retrying`)
+      }
+    }
+  }
+  console.error(`Azure assessment hung on all ${ASSESS_ATTEMPTS} attempts`)
+  throw last
+}
+
+function assessOnce(wav: Buffer, referenceText: string, locale: Accent): Promise<PronResult> {
   const key = process.env.AZURE_SPEECH_KEY
   const region = process.env.AZURE_SPEECH_REGION
   if (!key || !region) throw new Error('Missing AZURE_SPEECH_KEY / AZURE_SPEECH_REGION')
   const enableProsody = locale === 'en-US' // prosody scoring is en-US only
 
   return new Promise((resolve, reject) => {
+    // recognizeOnceAsync settles via callbacks: if Azure never calls back (a
+    // stalled connection rather than a refused one), neither fires and this
+    // promise hangs forever, taking the whole grading request with it. Cap it so
+    // the route can return a 502 the client already handles.
+    // Held in an object because the timer is armed after the recognizer exists,
+    // while `finish` closes over it from above.
+    let settled = false
+    const t: { id?: ReturnType<typeof setTimeout> } = {}
+    const finish = (fn: () => void) => { if (settled) return; settled = true; clearTimeout(t.id); fn() }
+
     const speechConfig = sdk.SpeechConfig.fromSubscription(key, region)
     speechConfig.speechRecognitionLanguage = locale
     const audioConfig = sdk.AudioConfig.fromWavFileInput(wav)
@@ -97,12 +143,32 @@ export function assess(wav: Buffer, referenceText: string, locale: Accent): Prom
     pa.enableProsodyAssessment = enableProsody
     const reco = new sdk.SpeechRecognizer(speechConfig, audioConfig)
     pa.applyTo(reco)
+    t.id = setTimeout(() => finish(() => {
+      try { reco.close() } catch { /* already closed */ }
+      reject(new AssessTimeout('Azure pronunciation assessment timed out'))
+    }), ASSESS_TIMEOUT_MS)
 
     reco.recognizeOnceAsync(
       (r) => {
         try {
-          if (r.reason === sdk.ResultReason.NoMatch || r.reason === sdk.ResultReason.Canceled) {
-            resolve({ recognized: '', overall: 0, accuracy: 0, fluency: 0, completeness: 0, words: [] })
+          // Canceled means Azure could not run the assessment at all — bad key,
+          // exhausted quota, throttling, network. It is NOT a bad attempt, so it
+          // must never resolve as a score: doing so recorded a real 0/100 against
+          // the learner every time the service faltered. Reject instead, so the
+          // route answers 502, nothing is persisted, and the reason is logged.
+          if (r.reason === sdk.ResultReason.Canceled) {
+            const c = sdk.CancellationDetails.fromResult(r)
+            const detail = `${sdk.CancellationReason[c.reason]}${c.ErrorCode ? ` code=${sdk.CancellationErrorCode[c.ErrorCode]}` : ''}${c.errorDetails ? ` — ${c.errorDetails}` : ''}`
+            console.error('Azure assessment canceled:', detail)
+            finish(() => reject(new Error(`Azure assessment canceled: ${detail}`)))
+            return
+          }
+          // NoMatch is a genuine outcome: speech was received but none of the
+          // reference text was recognised. That is a real zero, but log it —
+          // a run of them usually means the audio or locale config is wrong.
+          if (r.reason === sdk.ResultReason.NoMatch) {
+            console.warn('Azure assessment: NoMatch for', JSON.stringify(referenceText))
+            finish(() => resolve({ recognized: '', overall: 0, accuracy: 0, fluency: 0, completeness: 0, words: [] }))
             return
           }
           const res = sdk.PronunciationAssessmentResult.fromResult(r)
@@ -121,7 +187,7 @@ export function assess(wav: Buffer, referenceText: string, locale: Accent): Prom
             })),
             syllables: (w.Syllables ?? []).map((s) => ({ label: s.Syllable ?? '', score: s.PronunciationAssessment?.AccuracyScore ?? 0 })),
           }))
-          resolve({
+          const payload = {
             recognized: r.text ?? '',
             overall: res.pronunciationScore ?? 0,
             accuracy: res.accuracyScore ?? 0,
@@ -129,20 +195,26 @@ export function assess(wav: Buffer, referenceText: string, locale: Accent): Prom
             completeness: res.completenessScore ?? 0,
             prosody: enableProsody ? res.prosodyScore : undefined,
             words,
-          })
+          }
+          finish(() => resolve(payload))
         } catch (e) {
-          reject(e instanceof Error ? e : new Error(String(e)))
+          finish(() => reject(e instanceof Error ? e : new Error(String(e))))
         } finally {
-          reco.close()
+          try { reco.close() } catch { /* already closed by the timeout */ }
         }
       },
       (e) => {
-        reco.close()
-        reject(new Error(String(e)))
+        finish(() => {
+          try { reco.close() } catch { /* already closed */ }
+          reject(new Error(String(e)))
+        })
       },
     )
   })
 }
+
+/** The coaching line is optional; never let it outlast the grade itself. */
+const COACH_TIMEOUT_MS = 8_000
 
 export type Verdict = 'great' | 'good' | 'retry'
 export type TargetAssessment = { index: number; label?: string; score: number; detected?: string }
@@ -360,14 +432,21 @@ Target: "${referenceText}"
 Score: ${target ? Math.round(target.score) : result.overall}/100${result.prosody != null ? ` | rhythm: ${Math.round(result.prosody)}` : ''}
 ${target?.detected ? `It sounded more like "${target.detected}".` : ''}
 Sound to watch: ${targetLabel ?? '(whole word)'}`
-    const r = await getOpenAI().chat.completions.create({
-      model: process.env.OPENAI_COACH_MODEL || 'gpt-5.4-nano',
-      messages: [
-        { role: 'system', content: sys },
-        { role: 'user', content: user },
-      ],
-      response_format: { type: 'json_object' },
-    })
+    // Coaching is a bonus line on top of the score, so it must never hold up a
+    // grade. The OpenAI SDK defaults to a 10-minute timeout, which is
+    // indistinguishable from a hang for a learner waiting on a result; cap it
+    // and fall through to `null` (the caller renders the score without a tip).
+    const r = await getOpenAI().chat.completions.create(
+      {
+        model: process.env.OPENAI_COACH_MODEL || 'gpt-5.4-nano',
+        messages: [
+          { role: 'system', content: sys },
+          { role: 'user', content: user },
+        ],
+        response_format: { type: 'json_object' },
+      },
+      { timeout: COACH_TIMEOUT_MS, maxRetries: 1 },
+    )
     const raw = r.choices[0]?.message?.content
     if (!raw) return null
     const j = JSON.parse(raw)

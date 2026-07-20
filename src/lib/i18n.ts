@@ -1,5 +1,36 @@
 export type Locale = 'ja' | 'en'
 
+// Public marketing paths served in Japanese at the root. English lives at
+// '/en' + path. Everything else (dashboard, prototype landings) is not
+// URL-scoped and keeps the browser/profile preference.
+export const PUBLIC_JA_PATHS = ['/', '/plans', '/privacy', '/terms'] as const
+
+// URL-driven locale for the public marketing pages, so the active language is a
+// function of the URL (for SEO): '/' is always Japanese and '/en' always
+// English, regardless of the visitor's browser. Returns null off the public
+// tree, where the browser/profile preference applies.
+export function urlLocaleFor(pathname: string): Locale | null {
+  if (pathname === '/en' || pathname.startsWith('/en/')) return 'en'
+  if ((PUBLIC_JA_PATHS as readonly string[]).includes(pathname)) return 'ja'
+  return null
+}
+
+// Prefix a public path for the given locale (/plans -> /en/plans, / -> /en).
+export function localizedHref(path: string, locale: Locale): string {
+  if (locale !== 'en') return path
+  if (path === '/') return '/en'
+  const alreadyEn = path === '/en' || path.startsWith('/en/')
+  return alreadyEn ? path : `/en${path}`
+}
+
+// The same page in the other language — used by the toggle on public routes.
+export function otherLocalePath(pathname: string): string {
+  if (pathname === '/en') return '/'
+  if (pathname.startsWith('/en/')) return pathname.slice(3) // drop the '/en' prefix
+  if (pathname === '/') return '/en'
+  return `/en${pathname}`
+}
+
 export const translations = {
   ja: {
     // Header

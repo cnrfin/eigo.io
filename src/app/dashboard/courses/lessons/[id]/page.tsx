@@ -22,6 +22,8 @@ import GlidePick from '@/components/courses/GlidePick'
 import TapT from '@/components/courses/TapT'
 import LinkLetters, { linkLettersCorrect } from '@/components/courses/LinkLetters'
 import SoundSorter from '@/components/courses/SoundSorter'
+import FreeGate from '@/components/lp/FreeGate'
+import { GATE_COPY } from '@/lib/lp-funnel'
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 type Any = any
@@ -53,6 +55,14 @@ export default function LessonPlayerPage() {
   const [data, setData] = useState<Any>(null)
   const [idx, setIdx] = useState(0)
   const [maxIdx, setMaxIdx] = useState(0) // furthest screen reached — segments up to here are navigable
+  // Free-funnel gate mode (?gate=1): a guest ran this free lesson from the v2
+  // landing. On finish we show the sign-up gate instead of "Back to course".
+  const [gate, setGate] = useState(false)
+  useEffect(() => {
+    if (typeof window !== 'undefined') setGate(new URLSearchParams(window.location.search).get('gate') === '1')
+  }, [])
+  // Remaining lessons in this course (for the gate's "{num} more lessons" line).
+  const [remaining, setRemaining] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [finished, setFinished] = useState(false)
@@ -138,6 +148,25 @@ export default function LessonPlayerPage() {
       .finally(() => setLoading(false))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session?.access_token, id])
+
+  // Count the course's lessons for the gate's "{num} more lessons" line (just
+  // the one they did is done → total - 1). Only when the gate will be shown.
+  useEffect(() => {
+    if (!finished || !gate || !session?.access_token) return
+    const slug: string = data?.course?.course?.slug ?? ''
+    if (!slug) return
+    let cancelled = false
+    fetch('/api/courses', { headers: { Authorization: `Bearer ${session.access_token}` } })
+      .then(r => r.json())
+      .then(d => {
+        if (cancelled) return
+        const course = (d.courses ?? []).find((c: Any) => c.slug === slug)
+        const total = (course?.levels ?? []).reduce((a: number, l: Any) => a + (l.lessons?.length ?? 0), 0)
+        setRemaining(Math.max(0, total - 1))
+      })
+      .catch(() => {})
+    return () => { cancelled = true }
+  }, [finished, gate, session?.access_token, data])
 
   const saveProgress = useCallback((screenIndex: number, completed = false, score?: number) => {
     if (!session?.access_token) return
@@ -298,6 +327,8 @@ export default function LessonPlayerPage() {
 
   const exit = () => {
     saveProgress(idx, finished)
+    // Gate-mode guests came from the v2 landing — send them back there.
+    if (gate) { router.push('/'); return }
     router.push(`/dashboard/courses/${data?.course?.course?.slug ?? ''}`)
   }
 
@@ -393,7 +424,9 @@ export default function LessonPlayerPage() {
                 <p className="text-sm mt-2" style={{ color: 'var(--text-secondary)' }}>
                   {locale === 'ja' ? data.lesson.title_ja : data.lesson.title}
                 </p>
-                {lessonScore != null && (
+                {/* In gate mode the score is hidden — the result lives behind the
+                    sign-up gate (shown as an overlay below). */}
+                {lessonScore != null && !gate && (
                   <div className="mt-4 flex justify-center">
                     <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full" style={{ background: 'var(--card-inset)' }}>
                       <span className="text-sm" style={{ color: 'var(--text-muted)' }}>{t('発音スコア', 'Pronunciation')}</span>
@@ -401,14 +434,16 @@ export default function LessonPlayerPage() {
                     </div>
                   </div>
                 )}
-                <div className="mt-6 flex justify-center">
-                  <Squircle asChild cornerRadius={12} cornerSmoothing={0.8}>
-                    <button onClick={exit} className="px-8 py-3 font-medium transition-all duration-[120ms] ease-out hover:scale-[1.03] active:scale-95"
-                      style={{ background: 'var(--accent)', color: '#fff' }}>
-                      {t('コースに戻る', 'Back to the course')}
-                    </button>
-                  </Squircle>
-                </div>
+                {!gate && (
+                  <div className="mt-6 flex justify-center">
+                    <Squircle asChild cornerRadius={12} cornerSmoothing={0.8}>
+                      <button onClick={exit} className="px-8 py-3 font-medium transition-all duration-[120ms] ease-out hover:scale-[1.03] active:scale-95"
+                        style={{ background: 'var(--accent)', color: '#fff' }}>
+                        {t('コースに戻る', 'Back to the course')}
+                      </button>
+                    </Squircle>
+                  </div>
+                )}
               </motion.div>
             ) : screen && (
               <motion.div key={screen.id} initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.22 }} className={`py-8 ${isChallenge ? 'flex-1 flex flex-col' : ''}`}>
@@ -453,7 +488,8 @@ export default function LessonPlayerPage() {
                         screenId={screen.id}
                         token={session?.access_token}
                         locale={locale}
-                        onFinish={(avg) => { setLessonScore(avg); play('lesson-finish'); setFinished(true); saveProgress(idx, true, avg) }}
+                        hideResults={gate}
+                        onFinish={(avg) => { setLessonScore(avg); play('lesson-finish'); setFinished(true); saveProgress(idx, true, avg ?? undefined) }}
                       />
                     ) : c.question_type === 'sound_sorter' ? (
                       <SoundSorter
@@ -809,6 +845,26 @@ export default function LessonPlayerPage() {
           </div>
         </div>
       )}
+
+      {/* Free-funnel sign-up gate — guest finished a free lesson in ?gate=1 mode.
+          Pronunciation lands on the pron course page (the dedicated results
+          screen is a follow-up); other courses land on the course page. */}
+      {finished && gate && (() => {
+        const courseSlug: string = data?.course?.course?.slug ?? ''
+        const isPron = courseSlug === 'pronunciation'
+        const copy = isPron ? GATE_COPY.pron : GATE_COPY.lesson
+        // Pronunciation lands on the results-once screen (test-grading template);
+        // other courses land on the course page.
+        const dest = isPron ? `/dashboard/courses/pronunciation/result?lesson=${id}` : `/dashboard/courses/${courseSlug}`
+        return (
+          <FreeGate
+            destination={dest}
+            copy={copy}
+            remaining={remaining}
+            onClose={() => router.push('/')}
+          />
+        )
+      })()}
     </div>
   )
 }

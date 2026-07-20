@@ -10,10 +10,17 @@ type AuthContextType = {
   loading: boolean
   avatarUrl: string | null
   gcalConnected: boolean | null
-  signIn: (email: string, password: string) => Promise<{ error: Error | null }>
-  signUp: (email: string, password: string, firstName?: string, lastName?: string) => Promise<{ error: Error | null }>
+  // captchaToken (optional) satisfies Supabase's global hCaptcha protection when
+  // it's enabled; harmless when it isn't.
+  signIn: (email: string, password: string, captchaToken?: string | null) => Promise<{ error: Error | null }>
+  signUp: (email: string, password: string, firstName?: string, lastName?: string, captchaToken?: string | null) => Promise<{ error: Error | null }>
   signInWithGoogle: () => Promise<{ error: Error | null }>
   signInWithLine: () => Promise<{ error: Error | null }>
+  // Free-funnel: mint a guest session, then convert the SAME user to permanent
+  // on sign-up so the work they did as a guest survives with zero data migration.
+  signInAnonymously: (captchaToken?: string | null) => Promise<{ error: Error | null; session: Session | null }>
+  convertAnonUser: (email: string, password: string, firstName?: string, lastName?: string) => Promise<{ error: Error | null }>
+  linkGoogleIdentity: (redirectTo?: string) => Promise<{ error: Error | null }>
   signOut: () => Promise<void>
   refreshAvatar: () => Promise<void>
   setGcalConnected: (connected: boolean) => void
@@ -103,12 +110,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
+  const signIn = async (email: string, password: string, captchaToken?: string | null) => {
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+      options: captchaToken ? { captchaToken } : undefined,
+    })
     return { error: error as Error | null }
   }
 
-  const signUp = async (email: string, password: string, firstName?: string, lastName?: string) => {
+  const signUp = async (email: string, password: string, firstName?: string, lastName?: string, captchaToken?: string | null) => {
     const fullName = `${firstName || ''} ${lastName || ''}`.trim()
     const { error } = await supabase.auth.signUp({
       email,
@@ -118,6 +129,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           full_name: fullName || undefined,
           display_name: fullName || undefined,
         },
+        ...(captchaToken ? { captchaToken } : {}),
       },
     })
     return { error: error as Error | null }
@@ -142,6 +154,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  // Mint a guest (anonymous) user. Returns the session so callers can use the
+  // access token immediately without waiting for onAuthStateChange to land.
+  const signInAnonymously = async (captchaToken?: string | null) => {
+    const { data, error } = await supabase.auth.signInAnonymously({
+      options: captchaToken ? { captchaToken } : undefined,
+    })
+    return { error: error as Error | null, session: data?.session ?? null }
+  }
+
+  // Convert the current anonymous user to a permanent email/password account.
+  // user.id is preserved, so every guest row (attempts, responses, audio) is
+  // already theirs — no migration. Email gets a confirmation per Supabase.
+  const convertAnonUser = async (email: string, password: string, firstName?: string, lastName?: string) => {
+    const fullName = `${firstName || ''} ${lastName || ''}`.trim()
+    const { error } = await supabase.auth.updateUser({
+      email,
+      password,
+      data: { full_name: fullName || undefined, display_name: fullName || undefined },
+    })
+    return { error: error as Error | null }
+  }
+
+  // Attach a Google identity to the current (anonymous) user — same user.id.
+  // Redirects through OAuth; redirectTo should be the funnel's payoff page.
+  const linkGoogleIdentity = async (redirectTo?: string) => {
+    const { error } = await supabase.auth.linkIdentity({
+      provider: 'google',
+      options: { redirectTo: redirectTo || `${window.location.origin}/dashboard` },
+    })
+    return { error: error as Error | null }
+  }
+
   const signOut = async () => {
     try {
       await supabase.auth.signOut()
@@ -158,7 +202,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [user, fetchAvatar])
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, avatarUrl, gcalConnected, signIn, signUp, signInWithGoogle, signInWithLine, signOut, refreshAvatar, setGcalConnected }}>
+    <AuthContext.Provider value={{ user, session, loading, avatarUrl, gcalConnected, signIn, signUp, signInWithGoogle, signInWithLine, signInAnonymously, convertAnonUser, linkGoogleIdentity, signOut, refreshAvatar, setGcalConnected }}>
       {children}
     </AuthContext.Provider>
   )

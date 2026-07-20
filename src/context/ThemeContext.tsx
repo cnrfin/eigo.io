@@ -13,8 +13,11 @@ type ThemeContextType = {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
+  // The applied theme (data-theme on <html>) is set before paint by an inline
+  // script in the root layout, so the page renders server-side with real HTML
+  // and no theme flash. Here we only sync React state (for the JS bits that
+  // branch on theme) and the signed-in user's saved preference.
   const [theme, setTheme] = useState<Theme>('dark')
-  const [mounted, setMounted] = useState(false)
 
   // Load theme: check Supabase profile first, then localStorage fallback
   useEffect(() => {
@@ -43,10 +46,8 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
           }
         }
       } catch {
-        // Silently fail — localStorage value is fine
+        // Silently fail; the localStorage value is fine
       }
-
-      setMounted(true)
     }
 
     loadTheme()
@@ -65,9 +66,6 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       }
     })
   }, [theme])
-
-  // Prevent flash of wrong theme
-  if (!mounted) return null
 
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme }}>

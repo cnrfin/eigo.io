@@ -41,11 +41,14 @@ interface RiveIconProps {
   /** Syncs the "dark" boolean input (light artboard). The state machine plays
    *  the morph one-shot whenever this flips. */
   dark?: boolean
+  /** Optional explicit stroke colour, overriding `variant` (e.g. white on a dark
+   *  pill). Pass a stable reference to avoid re-running the colour effect. */
+  colorRgb?: [number, number, number]
 }
 
 // Renders one artboard from icons.riv. The hover one-shot is fired by the
 // PARENT container (e.g. the nav row's onMouseEnter) via the imperative ref.
-const RiveIcon = forwardRef<RiveIconHandle, RiveIconProps>(function RiveIcon({ artboard, size = 22, variant = 'text', dark }, ref) {
+const RiveIcon = forwardRef<RiveIconHandle, RiveIconProps>(function RiveIcon({ artboard, size = 22, variant = 'text', dark, colorRgb }, ref) {
   const { theme } = useTheme()
   const { rive, RiveComponent } = useRive({
     src: SRC,
@@ -74,10 +77,10 @@ const RiveIcon = forwardRef<RiveIconHandle, RiveIconProps>(function RiveIcon({ a
   const { setRgb: setColorProperty } = useViewModelInstanceColor('colorProperty', viewModelInstance)
 
   useEffect(() => {
-    const [r, g, b] = VARIANT_RGB[variant][theme === 'dark' ? 'dark' : 'light']
+    const [r, g, b] = colorRgb ?? VARIANT_RGB[variant][theme === 'dark' ? 'dark' : 'light']
     setIconColor(r, g, b)
     setColorProperty(r, g, b)
-  }, [theme, variant, setIconColor, setColorProperty])
+  }, [theme, variant, colorRgb, setIconColor, setColorProperty])
 
   useImperativeHandle(ref, () => ({ fire: () => trigger?.fire() }), [trigger])
 

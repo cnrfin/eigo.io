@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { authenticate, isAdminTestUser } from '@/lib/test-auth'
 import { hasTestAccess, isFreeExam } from '@/lib/test-entitlement'
 import { getUserPermissions } from '@/lib/user-permissions'
+import { guestRateLimit } from '@/lib/guest-rate-limit'
 
 /**
  * POST /api/tests/attempts
@@ -90,6 +91,17 @@ export async function POST(request: NextRequest) {
       { error: 'A subscription is required for this test', code: 'payment_required' },
       { status: 402 },
     )
+  }
+
+  // Abuse guard for landing-funnel guests: only counts genuine new-attempt
+  // creations (existing attempts return above). Per-form-per-user is already
+  // bounded, so this mainly caps a script rotating cheap anon users from one IP.
+  if (user.isAnonymous) {
+    const limited = await guestRateLimit(request, user.id, 'test_attempt', {
+      perUser: [10, 3600],
+      perIp: [30, 3600],
+    })
+    if (limited) return limited
   }
 
   const { data: attempt, error: insertError } = await supabase

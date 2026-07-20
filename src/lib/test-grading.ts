@@ -268,7 +268,7 @@ export async function gradeWithRubric(opts: {
 
   const systemPrompt = `You are an experienced, calibrated examiner grading a ${opts.skill} response on an English proficiency practice test.
 
-Grade ONLY against the supplied rubric. Be fair and consistent. Do not reward content unrelated to the task.
+Grade ONLY against the supplied rubric. Be fair and consistent, and calibrate conservatively — do not over-reward. When a response sits between two bands, award the LOWER band unless it clearly meets the higher band's descriptors. A clear and accurate but simple answer, with a limited range of vocabulary and sentence structure, belongs mid-scale; reserve the upper bands for genuine range, flexibility and precision. Do not reward content unrelated to the task.
 
 You will receive the task prompt, the scoring rubric (as JSON), and the student's response${opts.skill === 'speaking' ? ' (a transcript of their spoken answer — judge content/coherence/grammar/vocabulary from the transcript, and do not penalise transcription artefacts)' : ''}.
 

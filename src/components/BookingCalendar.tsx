@@ -347,7 +347,7 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
                 disabled={locked}
                 className="px-5 py-2.5 text-sm font-medium transition-all duration-[120ms] ease-out hover:scale-[1.02] active:scale-[0.97] disabled:hover:scale-100 disabled:active:scale-100"
                 style={{
-                  background: duration === d ? 'var(--selected-bg)' : 'var(--panel)',
+                  background: duration === d ? 'var(--text)' : 'var(--panel)',
                   color: locked ? 'var(--text-disabled)' : duration === d ? 'var(--selected-text)' : 'var(--text-secondary)',
                   border: duration === d ? '1px solid transparent' : '1px solid var(--hairline)',
                   boxShadow: duration === d ? 'none' : 'var(--card-shadow)',

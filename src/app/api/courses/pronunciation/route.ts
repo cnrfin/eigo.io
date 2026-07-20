@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { authenticate, isAdminTestUser } from '@/lib/test-auth'
 import { hasTestAccess } from '@/lib/test-entitlement'
 import { getUserPermissions } from '@/lib/user-permissions'
+import { guestRateLimit } from '@/lib/guest-rate-limit'
 import { toWav16k, assess, coach, praise, verdictFor, normalizeAccent, targetAssessment, sentenceScore, stressScore, stressCoach, sentenceStressScore, connectedScore, connectedCoach, flowGradeLLM, type TargetAssessment } from '@/lib/pronunciation'
 
 export const runtime = 'nodejs'
@@ -85,6 +86,18 @@ export async function POST(request: NextRequest) {
   // user; the pronunciation course is part of courses, so block grading too.
   if (!isAdminTestUser(user) && !(await getUserPermissions(supabase, user.id)).courses_enabled) {
     return NextResponse.json({ error: 'Courses are not included in your plan', code: 'feature_disabled' }, { status: 403 })
+  }
+
+  // Abuse guard for landing-funnel guests: grading spends money on every call
+  // (Azure assessment + occasional LLM coaching), and anonymous users are free
+  // to mint. Cap them per-user and per-IP; real signed-in accounts are exempt.
+  // Generous enough for an honest run through the free lesson (with retries).
+  if (user.isAnonymous) {
+    const limited = await guestRateLimit(request, user.id, 'pron_attempt', {
+      perUser: [60, 3600],
+      perIp: [150, 3600],
+    })
+    if (limited) return limited
   }
 
   let form: FormData

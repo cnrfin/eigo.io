@@ -1,7 +1,8 @@
 'use client'
 
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react'
-import { Locale, translations, TranslationKey } from '@/lib/i18n'
+import { usePathname, useRouter } from 'next/navigation'
+import { Locale, translations, TranslationKey, urlLocaleFor, otherLocalePath } from '@/lib/i18n'
 import { supabase } from '@/lib/supabase'
 
 type LanguageContextType = {
@@ -19,8 +20,20 @@ function getBrowserLocale(): Locale {
 }
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocale] = useState<Locale>(getBrowserLocale)
+  // `prefLocale` is the browser/profile preference (used on the dashboard and
+  // the prototype landings). On URL-scoped public routes the path wins, so the
+  // effective locale below is `urlLocale ?? prefLocale`.
+  const [prefLocale, setPrefLocale] = useState<Locale>(getBrowserLocale)
   const [userId, setUserId] = useState<string | null>(null)
+  const pathname = usePathname()
+  const router = useRouter()
+  const urlLocale = urlLocaleFor(pathname)
+  const locale: Locale = urlLocale ?? prefLocale
+
+  // Keep <html lang> in sync with the active language for accessibility + SEO.
+  useEffect(() => {
+    document.documentElement.lang = locale
+  }, [locale])
 
   // Load preferred language from Supabase profile on auth
   useEffect(() => {
@@ -37,7 +50,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
         .single()
 
       if (data?.preferred_language && (data.preferred_language === 'ja' || data.preferred_language === 'en')) {
-        setLocale(data.preferred_language)
+        setPrefLocale(data.preferred_language)
       }
     }
 
@@ -53,7 +66,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
           .single()
           .then(({ data }) => {
             if (data?.preferred_language && (data.preferred_language === 'ja' || data.preferred_language === 'en')) {
-              setLocale(data.preferred_language)
+              setPrefLocale(data.preferred_language)
             }
           })
       } else {
@@ -69,7 +82,14 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   }
 
   const toggleLocale = useCallback(() => {
-    setLocale(prev => {
+    // On URL-scoped public routes, switching language means navigating to the
+    // other-language URL (/plans <-> /en/plans). Off the public tree (dashboard,
+    // prototype landings) we flip the stored preference instead.
+    if (urlLocale) {
+      router.push(otherLocalePath(pathname))
+      return
+    }
+    setPrefLocale(prev => {
       const next = prev === 'ja' ? 'en' : 'ja'
 
       // Persist to Supabase if logged in
@@ -85,7 +105,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 
       return next
     })
-  }, [userId])
+  }, [urlLocale, pathname, router, userId])
 
   return (
     <LanguageContext.Provider value={{ locale, t, toggleLocale }}>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useLanguage } from '@/context/LanguageContext'
+import { localizedHref } from '@/lib/i18n'
 
 export default function Footer() {
   const { t, locale } = useLanguage()
@@ -10,11 +11,11 @@ export default function Footer() {
       <div className="max-w-xl mx-auto flex flex-col items-center gap-5">
         {/* Legal links */}
         <div className="flex items-center gap-4 text-xs">
-          <a href="/privacy" className="transition-opacity hover:opacity-70" style={{ color: 'var(--text-subtle)' }}>
+          <a href={localizedHref('/privacy', locale)} className="transition-opacity hover:opacity-70" style={{ color: 'var(--text-subtle)' }}>
             {locale === 'ja' ? 'プライバシーポリシー' : 'Privacy Policy'}
           </a>
           <span style={{ color: 'var(--text-subtle)' }}>·</span>
-          <a href="/terms" className="transition-opacity hover:opacity-70" style={{ color: 'var(--text-subtle)' }}>
+          <a href={localizedHref('/terms', locale)} className="transition-opacity hover:opacity-70" style={{ color: 'var(--text-subtle)' }}>
             {locale === 'ja' ? '利用規約' : 'Terms of Service'}
           </a>
         </div>
