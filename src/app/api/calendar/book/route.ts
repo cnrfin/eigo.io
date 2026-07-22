@@ -7,6 +7,7 @@ import { notifyBooking } from '@/lib/notify'
 import { createStudentCalendarEvent } from '@/lib/student-calendar'
 import { getUserSubscription, hasEnoughMinutes, recordMinuteUsage } from '@/lib/subscription'
 import { getUserPermissions } from '@/lib/user-permissions'
+import { isAdminEmail } from '@/lib/admin-redirect'
 
 // POST /api/calendar/book
 // Body: { date: '2026-03-23', time: '17:00', duration: 30, timezone: 'Europe/London' }
@@ -48,8 +49,13 @@ export async function POST(request: NextRequest) {
     // Check subscription & minute balance (skip for trial lessons — 15 min with no subscription)
     const subscription = await getUserSubscription(user.id)
     const isTrial = duration === 15 && !subscription
+    // Admin accounts can book any duration for testing, bypassing the
+    // subscription and minute-balance gates. Duration is still capped at 75 by
+    // the DB CHECK constraint. Admins have no subscription, so no minutes are
+    // recorded either (recordMinuteUsage requires a subscription).
+    const isAdmin = isAdminEmail(user.email)
 
-    if (!isTrial) {
+    if (!isTrial && !isAdmin) {
       if (!subscription || subscription.status === 'cancelled') {
         return NextResponse.json(
           { error: 'No active subscription. Please subscribe first.', code: 'NO_SUBSCRIPTION' },
