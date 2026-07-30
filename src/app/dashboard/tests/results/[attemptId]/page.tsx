@@ -234,7 +234,7 @@ export default function ResultsPage() {
                     <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{skillLabel(s.skill)}</p>
                     <p className="text-lg font-semibold" style={{ color: 'var(--text)' }}>
                       {overall?.model === 'cefr_level'
-                        ? cefrLabel(s.scaled_score)
+                        ? (s.scaled_score === 0 && s.raw_score === 0 ? '—' : cefrLabel(s.scaled_score))
                         : s.scaled_score != null ? s.scaled_score : `${s.raw_score} / ${s.max_score}`}
                     </p>
                   </SquircleBox>

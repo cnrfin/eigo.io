@@ -45,7 +45,7 @@ const { data: questions } = await supabase
   .in('group_id', (groups ?? []).map(g => g.id))
 
 const { data: responses } = await supabase
-  .from('responses').select('question_id, score, graded_by, ai_feedback')
+  .from('responses').select('question_id, selected_option_ids, text_response, audio_asset_id, score, graded_by, ai_feedback')
   .eq('attempt_id', attemptId)
 const responseMap = new Map((responses ?? []).map(r => [r.question_id, r]))
 
@@ -56,7 +56,13 @@ const items = (questions ?? []).map(q => {
   const max = Number(q.max_score) || 1
   const r = responseMap.get(q.id)
   const score = r && r.score !== null && r.score !== undefined ? Number(r.score) : null
-  return { skill, score, max_score: max, weight: Number(q.payload?.weight) || 1, pending: score === null }
+  // Only "pending" if student actually submitted content but it's ungraded
+  const hasContent = r && (
+    (Array.isArray(r.selected_option_ids) && r.selected_option_ids.length > 0) ||
+    (typeof r.text_response === 'string' && r.text_response.trim().length > 0) ||
+    !!r.audio_asset_id
+  )
+  return { skill, score, max_score: max, weight: Number(q.payload?.weight) || 1, pending: score === null && !!hasContent }
 })
 
 // Per-skill aggregation
@@ -191,7 +197,7 @@ for (const skill of ['reading', 'listening']) {
 }
 for (const [skill, band] of [['writing', writing], ['speaking', speaking]]) {
   const pool = cefrItems.filter(it => !it.objective && it.skill === skill)
-  if (pool.length === 0) continue
+  if (pool.length === 0 || band === null) continue
   per_skill.push({
     skill, label: cefrBandLabel(band),
     numeric: band === null ? null : Math.round(band * 100) / 100,
@@ -239,6 +245,8 @@ const skillScoreRows = per_skill.map(p => ({
 const status = pendingHuman ? 'submitted' : 'scored'
 const now = new Date().toISOString()
 
+// Delete stale rows (e.g. unattempted speaking) before upserting
+await supabase.from('attempt_skill_scores').delete().eq('attempt_id', attemptId)
 if (skillScoreRows.length > 0) {
   await supabase.from('attempt_skill_scores').upsert(skillScoreRows, { onConflict: 'attempt_id,skill' })
 }
