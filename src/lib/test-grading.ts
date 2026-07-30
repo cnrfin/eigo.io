@@ -247,6 +247,7 @@ export interface AiGrade {
     strengths_en: string
     improvements_en: string
     improvements_ja: string
+    corrections?: { original: string; corrected: string; explanation_en: string; explanation_ja: string }[]
   }
 }
 
@@ -266,12 +267,14 @@ export async function gradeWithRubric(opts: {
   const max = Number(opts.maxScore) || Number(opts.rubric?.max_score) || Number((opts.rubric?.criteria as Json)?.max_score) || 9
   const criteria = opts.rubric?.criteria ?? {}
 
+  const isWriting = opts.skill === 'writing'
   const systemPrompt = `You are an experienced, calibrated examiner grading a ${opts.skill} response on an English proficiency practice test.
 
 Grade ONLY against the supplied rubric. Be fair and consistent, and calibrate conservatively — do not over-reward. When a response sits between two bands, award the LOWER band unless it clearly meets the higher band's descriptors. A clear and accurate but simple answer, with a limited range of vocabulary and sentence structure, belongs mid-scale; reserve the upper bands for genuine range, flexibility and precision. Do not reward content unrelated to the task.
 
 You will receive the task prompt, the scoring rubric (as JSON), and the student's response${opts.skill === 'speaking' ? ' (a transcript of their spoken answer — judge content/coherence/grammar/vocabulary from the transcript, and do not penalise transcription artefacts)' : ''}.
-
+${isWriting ? `
+For writing responses, you MUST also provide specific corrections. For each sentence or phrase that contains an error or could be improved, show the original text, a corrected version, and a brief explanation in both English and Japanese. Focus on grammar mistakes, unnatural phrasing, vocabulary upgrades, and structural improvements. Include up to 8 corrections, prioritising the most impactful ones.` : ''}
 Return ONLY valid JSON with this shape:
 {
   "overall_score": number,            // 0..${max}, may be a half value where the rubric uses half-bands
@@ -279,7 +282,15 @@ Return ONLY valid JSON with this shape:
   "criteria": [ { "name": string, "score": number, "comment": string } ],
   "strengths_en": string,             // 1-2 sentences
   "improvements_en": string,          // concrete, actionable, 2-3 sentences
-  "improvements_ja": string           // same advice in natural, friendly Japanese
+  "improvements_ja": string${isWriting ? `,          // same advice in natural, friendly Japanese
+  "corrections": [                    // specific corrections for the student's writing
+    {
+      "original": string,             // the student's exact text (sentence or phrase)
+      "corrected": string,            // your corrected/improved version
+      "explanation_en": string,       // why, in English (1 sentence)
+      "explanation_ja": string        // why, in natural Japanese (1 sentence)
+    }
+  ]` : '           // same advice in natural, friendly Japanese'}
 }`
 
   const userContent = `MAX SCORE: ${max}
@@ -301,7 +312,7 @@ ${opts.studentText?.trim() || '(empty response)'}`
     ],
     response_format: { type: 'json_object' },
     temperature: 0.2,
-    max_completion_tokens: 1500,
+    max_completion_tokens: isWriting ? 3000 : 1500,
   })
 
   const raw = completion.choices[0]?.message?.content
@@ -325,6 +336,16 @@ ${opts.studentText?.trim() || '(empty response)'}`
       strengths_en: String(parsed.strengths_en ?? ''),
       improvements_en: String(parsed.improvements_en ?? ''),
       improvements_ja: String(parsed.improvements_ja ?? ''),
+      ...(Array.isArray(parsed.corrections) && parsed.corrections.length > 0
+        ? {
+            corrections: parsed.corrections.map((c: Json) => ({
+              original: String(c.original ?? ''),
+              corrected: String(c.corrected ?? ''),
+              explanation_en: String(c.explanation_en ?? ''),
+              explanation_ja: String(c.explanation_ja ?? ''),
+            })),
+          }
+        : {}),
     },
   }
 }
@@ -648,18 +669,19 @@ export function computeCefrResult(config: Json, items: CefrItem[]): CefrResult {
     return out
   }
 
-  // Walk up the ladder: each cleared basket = +1; partial progress into the
-  // first uncleared basket adds a capped fraction. 1.0 = solid A1.
+  // Walk up the ladder: each cleared basket = +1; a failed basket adds a
+  // partial fraction but does NOT stop the walk — the student may demonstrate
+  // ability at higher levels even if they missed a question at a lower one
+  // (important when there are only 1–2 questions per level).
   const walk = (fr: Record<string, number | null>): number | null => {
     let any = false
     let n = 0
     for (const lv of levels) {
       const f = fr[lv]
-      if (f === null) break // no evidence at this level -> can't climb further
+      if (f === null) continue // no items at this level — skip, don't stop
       any = true
       if (f >= pass) { n += 1; continue }
       n += Math.min(0.99, f / pass)
-      break
     }
     return any ? n : null
   }
@@ -707,7 +729,7 @@ export function computeCefrResult(config: Json, items: CefrItem[]): CefrResult {
   }
   for (const [skill, band] of [['writing', writing], ['speaking', speaking]] as [Skill, number | null][]) {
     const pool = items.filter(it => !it.objective && it.skill === skill)
-    if (pool.length === 0) continue
+    if (pool.length === 0 || band === null) continue // skip unattempted sections entirely
     per_skill.push({
       skill,
       label: cefrBandLabel(band),

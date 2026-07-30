@@ -47,14 +47,23 @@ export async function POST(
 
   // Persist any final answers passed with the submit.
   if (Array.isArray(body.responses) && body.responses.length > 0) {
-    const rows = body.responses.map(r => ({
-      attempt_id: attemptId,
-      question_id: r.questionId,
-      selected_option_ids: r.selectedOptionIds ?? [],
-      text_response: r.textResponse ?? '',
-      audio_asset_id: r.audioAssetId ?? null,
-    }))
-    await supabase.from('responses').upsert(rows, { onConflict: 'attempt_id,question_id' })
+    const rows = body.responses.map(r => {
+      const row: Record<string, unknown> = {
+        attempt_id: attemptId,
+        question_id: r.questionId,
+        selected_option_ids: r.selectedOptionIds ?? [],
+        text_response: r.textResponse ?? '',
+      }
+      // Only set audio_asset_id when explicitly provided — omitting it
+      // preserves the value saved by the SpeakingRecorder.
+      if (r.audioAssetId !== undefined) row.audio_asset_id = r.audioAssetId ?? null
+      return row
+    })
+    const { error: upsertError } = await supabase.from('responses').upsert(rows, { onConflict: 'attempt_id,question_id' })
+    if (upsertError) {
+      console.error('Submit: failed to save responses:', upsertError)
+      return NextResponse.json({ error: 'Could not save answers — please try again' }, { status: 500 })
+    }
   }
 
   // Human review: grade the objective parts now, leave writing/speaking pending

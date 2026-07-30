@@ -149,7 +149,7 @@ export async function gradeAndFinalize(
           if (q.question_type === 'speaking_response') {
             const r = await gradeSpeaking(q, skill, taskPrompt)
             if (!r) {
-              return { question_id: q.id, is_correct: null, score: 0, max_score: max, graded_by: 'ai', ai_feedback: { note: 'no_recording', needs_human_review: needsHuman } }
+              return { question_id: q.id, is_correct: null, score: null, max_score: max, graded_by: null, ai_feedback: { note: 'no_recording', skipped: true } }
             }
             return { question_id: q.id, is_correct: null, score: r.score, max_score: r.max_score, graded_by: 'ai', ai_feedback: { ...r.feedback, needs_human_review: needsHuman } }
           }

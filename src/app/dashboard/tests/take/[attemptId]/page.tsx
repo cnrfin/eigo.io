@@ -208,6 +208,19 @@ export default function TakeTestPage() {
       questionId, selectedOptionIds: a.selectedOptionIds ?? [], textResponse: a.textResponse ?? '',
     })), [])
 
+  // Flush any pending debounced save immediately (returns a promise).
+  const flushSave = useCallback(async () => {
+    if (saveTimer.current) { clearTimeout(saveTimer.current); saveTimer.current = null }
+    if (!session?.access_token || !attemptId) return
+    const responses = buildResponses()
+    if (responses.length === 0) return
+    await fetch(`/api/tests/attempts/${attemptId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+      body: JSON.stringify({ responses, timeSpentSeconds: elapsedRef.current }),
+    }).catch(() => {})
+  }, [session?.access_token, attemptId, buildResponses])
+
   const scheduleSave = useCallback(() => {
     if (!session?.access_token || !attemptId) return
     if (saveTimer.current) clearTimeout(saveTimer.current)
@@ -226,10 +239,14 @@ export default function TakeTestPage() {
     setReviewOpen(false)
     setSubmitting(true)
     try {
+      // Cancel any pending debounced save — the submit carries all answers.
+      if (saveTimer.current) { clearTimeout(saveTimer.current); saveTimer.current = null }
+
+      const responses = buildResponses()
       const res = await fetch(`/api/tests/attempts/${attemptId}/submit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
-        body: JSON.stringify({ responses: buildResponses(), reviewMode }),
+        body: JSON.stringify({ responses, reviewMode }),
       })
       if (!res.ok) { const d = await res.json().catch(() => ({})); throw new Error(d.error || 'failed') }
       // Gate mode: grading is running in the background — show the sign-up gate
@@ -244,19 +261,11 @@ export default function TakeTestPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session?.access_token, attemptId, buildResponses, router, gate])
 
-  // Leave the test: save answers + elapsed time explicitly (don't rely on the
+  // Leave the test: flush pending answers explicitly (don't rely on the
   // debounced autosave surviving navigation), then return to the tests page.
   const leaveTest = useCallback(async () => {
     setLeaving(true)
-    try {
-      if (session?.access_token) {
-        await fetch(`/api/tests/attempts/${attemptId}`, {
-          method: 'PATCH', keepalive: true,
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
-          body: JSON.stringify({ responses: buildResponses(), timeSpentSeconds: elapsedRef.current }),
-        })
-      }
-    } catch { /* the periodic save has us mostly covered anyway */ }
+    try { await flushSave() } catch { /* the periodic save has us mostly covered anyway */ }
     // Gate-mode guests came from the v2 landing — send them back there, not into
     // the dashboard (which they haven't signed up for).
     router.push(gate ? '/' : '/dashboard/tests')

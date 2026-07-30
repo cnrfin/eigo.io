@@ -51,6 +51,22 @@ type GradingItem = {
   provisional: { score: number | null; max_score: number | null; graded_by: string | null; ai_feedback: Record<string, unknown> | null }
 }
 
+// Answer editor: view and fix a student's test responses.
+type EditorOption = { id: string; label: string; content: string; is_correct: boolean }
+type EditorQuestion = {
+  id: string; prompt: string; question_type: string; scoring_method: string; max_score: number
+  options: EditorOption[]
+  response: { id: string; selected_option_ids: string[]; text_response: string; is_correct: boolean | null; score: number | null; max_score: number | null; graded_by: string | null; ai_feedback: Record<string, unknown> | null } | null
+}
+type EditorGroup = { id: string; passage_text: string | null; prompt: string; audio_url: string | null; questions: EditorQuestion[] }
+type EditorSection = { id: string; skill: string; part_label: string | null; title: string | null; groups: EditorGroup[] }
+type EditorData = {
+  attempt: { id: string; status: string; submitted_at: string | null }
+  student: { name: string }
+  form: { title: string; track: unknown }
+  sections: EditorSection[]
+}
+
 type StudentProfile = {
   id: string
   display_name: string | null
@@ -352,6 +368,16 @@ function AdminContent() {
   const [gradingMsg, setGradingMsg] = useState('')
   const [expandedAttempts, setExpandedAttempts] = useState<Set<string>>(new Set())
 
+  // Answer editor (edit a specific attempt's responses)
+  const [editorAttemptId, setEditorAttemptId] = useState('')
+  const [editorData, setEditorData] = useState<EditorData | null>(null)
+  const [editorLoading, setEditorLoading] = useState(false)
+  const [editorError, setEditorError] = useState('')
+  const [editorDirty, setEditorDirty] = useState<Record<string, string[]>>({}) // questionId → selectedOptionIds
+  const [editorScoreDirty, setEditorScoreDirty] = useState<Record<string, { score: string; feedback: string }>>({}) // questionId → score+feedback
+  const [editorSaving, setEditorSaving] = useState(false)
+  const [editorMsg, setEditorMsg] = useState('')
+
   // Settings
   const [settings, setSettings] = useState<Settings | null>(null)
   const [loadingSettings, setLoadingSettings] = useState(true)
@@ -492,6 +518,51 @@ function AdminContent() {
     }
     setSavingAttempt(null)
   }, [gradingItems, gradeInputs, headers])
+
+  // Load an attempt into the answer editor
+  const loadAttemptEditor = useCallback(async (id: string) => {
+    if (!session?.access_token || !id.trim()) return
+    setEditorLoading(true)
+    setEditorError('')
+    setEditorData(null)
+    setEditorDirty({})
+    setEditorScoreDirty({})
+    setEditorMsg('')
+    try {
+      const res = await fetch(`/api/admin/tests/attempts/${id.trim()}/edit`, { headers: headers() })
+      if (!res.ok) { setEditorError(res.status === 404 ? 'Attempt not found' : 'Failed to load'); return }
+      setEditorData(await res.json())
+    } catch { setEditorError('Network error') }
+    setEditorLoading(false)
+  }, [session?.access_token, headers])
+
+  // Save edited answers and regrade
+  const saveEditorChanges = useCallback(async () => {
+    if (!session?.access_token || !editorData) return
+    const updates = Object.entries(editorDirty).map(([questionId, selectedOptionIds]) => ({ questionId, selectedOptionIds }))
+    const scoreUpdates = Object.entries(editorScoreDirty)
+      .filter(([, v]) => v.score !== '')
+      .map(([questionId, v]) => ({ questionId, score: Number(v.score), feedback: v.feedback || undefined }))
+    if (updates.length === 0 && scoreUpdates.length === 0) { setEditorMsg('No changes to save'); return }
+    setEditorSaving(true)
+    setEditorMsg('')
+    try {
+      const res = await fetch(`/api/admin/tests/attempts/${editorData.attempt.id}/edit`, {
+        method: 'POST', headers: headers(),
+        body: JSON.stringify({
+          ...(updates.length > 0 ? { updates } : {}),
+          ...(scoreUpdates.length > 0 ? { scoreUpdates } : {}),
+        }),
+      })
+      if (!res.ok) throw new Error('failed')
+      const total = updates.length + scoreUpdates.length
+      setEditorMsg(`Saved ${total} change${total === 1 ? '' : 's'} and regraded.`)
+      setEditorDirty({})
+      setEditorScoreDirty({})
+      await loadAttemptEditor(editorData.attempt.id)
+    } catch { setEditorMsg('Save failed — please try again.') }
+    setEditorSaving(false)
+  }, [session?.access_token, editorData, editorDirty, editorScoreDirty, headers, loadAttemptEditor])
 
   // Fetch student list
   const fetchStudents = useCallback(async () => {
@@ -693,6 +764,9 @@ function AdminContent() {
           {/* ═══ OVERVIEW ═══ */}
           {activeTab === 'overview' && (
             <div className="space-y-8">
+              <a href="/admin/vocab-scenes" style={{ display: 'inline-block', padding: '10px 16px', borderRadius: 999, background: '#1a1a1a', color: '#fff', fontWeight: 600, textDecoration: 'none' }}>
+                Open Vocab scene editor →
+              </a>
               {loadingStats ? (
                 <p style={{ color: 'var(--text-muted)' }}>Loading...</p>
               ) : stats ? (
@@ -855,6 +929,231 @@ function AdminContent() {
           {/* ═══ GRADING (tutor review queue) ═══ */}
           {activeTab === 'grading' && (
             <div className="space-y-4">
+              {/* ─── Answer Editor: look up + fix a student's responses ─── */}
+              <SquircleBox cornerRadius={14} className="p-5 space-y-4" style={{ background: 'var(--surface)' }}>
+                <p className="text-sm font-medium" style={{ color: 'var(--text)' }}>Edit student answers</p>
+                <div className="flex gap-2">
+                  <input
+                    type="text" value={editorAttemptId}
+                    onChange={e => setEditorAttemptId(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter') loadAttemptEditor(editorAttemptId) }}
+                    placeholder="Paste attempt ID…"
+                    className="flex-1 px-3 py-2 rounded-lg text-sm outline-none"
+                    style={{ background: 'var(--surface-hover)', color: 'var(--text)' }}
+                  />
+                  <Squircle asChild cornerRadius={10} cornerSmoothing={0.8}>
+                    <button
+                      onClick={() => loadAttemptEditor(editorAttemptId)}
+                      disabled={editorLoading || !editorAttemptId.trim()}
+                      className="px-4 py-2 text-sm font-medium transition-colors hover:opacity-90 disabled:opacity-40"
+                      style={{ background: 'var(--accent)', color: 'var(--selected-text)' }}
+                    >
+                      {editorLoading ? 'Loading…' : 'Load'}
+                    </button>
+                  </Squircle>
+                </div>
+
+                {editorError && <p className="text-sm" style={{ color: 'var(--danger)' }}>{editorError}</p>}
+                {editorMsg && <p className="text-sm" style={{ color: 'var(--accent)' }}>{editorMsg}</p>}
+
+                {editorData && (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>{editorData.student.name}</p>
+                        <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                          {editorData.form.title} · Status: {editorData.attempt.status}
+                        </p>
+                      </div>
+                      <div className="flex gap-2">
+                        {(Object.keys(editorDirty).length + Object.keys(editorScoreDirty).length) > 0 && (
+                          <Squircle asChild cornerRadius={10} cornerSmoothing={0.8}>
+                            <button
+                              onClick={saveEditorChanges}
+                              disabled={editorSaving}
+                              className="px-4 py-2 text-sm font-medium transition-colors hover:opacity-90 disabled:opacity-40"
+                              style={{ background: 'var(--success)', color: '#fff' }}
+                            >
+                              {editorSaving ? 'Saving…' : `Save & regrade (${Object.keys(editorDirty).length + Object.keys(editorScoreDirty).length})`}
+                            </button>
+                          </Squircle>
+                        )}
+                        <button
+                          onClick={() => { setEditorData(null); setEditorDirty({}); setEditorScoreDirty({}); setEditorMsg('') }}
+                          className="text-sm px-3 py-1.5 rounded-lg transition-colors hover:opacity-80"
+                          style={{ color: 'var(--text-muted)', boxShadow: '0 0 0 1px var(--border)' }}
+                        >
+                          Close
+                        </button>
+                      </div>
+                    </div>
+
+                    {editorData.sections.map(section => (
+                      <div key={section.id}>
+                        <p className="text-xs font-semibold uppercase tracking-wide mb-2 px-1" style={{ color: 'var(--text-muted)' }}>
+                          {section.skill}{section.part_label ? ` · ${section.part_label}` : ''}{section.title ? ` — ${section.title}` : ''}
+                        </p>
+                        {section.groups.map(group => (
+                          <div key={group.id} className="space-y-3 mb-4">
+                            {group.passage_text && (
+                              <details className="text-xs">
+                                <summary className="cursor-pointer" style={{ color: 'var(--text-muted)' }}>Show passage</summary>
+                                <p className="mt-1 whitespace-pre-line p-2 rounded text-xs" style={{ background: 'var(--surface-hover)', color: 'var(--text-secondary)' }}>{group.passage_text}</p>
+                              </details>
+                            )}
+                            {group.audio_url && (
+                              <audio controls src={group.audio_url} className="w-full h-8" preload="none" />
+                            )}
+                            {group.questions.map(q => {
+                              // ── Auto-choice: clickable options ──
+                              if (q.scoring_method === 'auto_choice') {
+                                const currentSelection = editorDirty[q.id] ?? q.response?.selected_option_ids ?? []
+                                const isDirty = q.id in editorDirty
+                                const origScore = q.response?.score
+                                const origCorrect = q.response?.is_correct
+                                return (
+                                  <div key={q.id} className="rounded-lg p-3 space-y-2" style={{ background: isDirty ? 'var(--accent-faint, rgba(0,180,160,0.06))' : 'transparent', border: isDirty ? '1px solid var(--accent)' : '1px solid var(--border)' }}>
+                                    <div className="flex items-center justify-between">
+                                      <p className="text-sm" style={{ color: 'var(--text)' }}>{q.prompt}</p>
+                                      <span className="text-xs shrink-0 ml-2" style={{ color: origCorrect ? 'var(--success)' : origScore === 0 ? 'var(--danger)' : 'var(--text-muted)' }}>
+                                        {origScore !== null && origScore !== undefined ? `${origScore}/${q.max_score}` : 'ungraded'}
+                                      </span>
+                                    </div>
+                                    <div className="space-y-1">
+                                      {q.options.map(opt => {
+                                        const isSelected = currentSelection.includes(opt.id)
+                                        const isCorrect = opt.is_correct
+                                        return (
+                                          <button
+                                            key={opt.id}
+                                            onClick={() => {
+                                              const newSel = isSelected ? currentSelection.filter(id => id !== opt.id) : [...currentSelection, opt.id]
+                                              setEditorDirty(prev => ({ ...prev, [q.id]: newSel }))
+                                            }}
+                                            className="w-full text-left flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors"
+                                            style={{
+                                              background: isSelected ? 'var(--accent)' : 'var(--surface-hover)',
+                                              color: isSelected ? 'var(--selected-text)' : 'var(--text-secondary)',
+                                              opacity: 1,
+                                            }}
+                                          >
+                                            <span className="font-medium shrink-0 w-5">{opt.label}</span>
+                                            <span className="flex-1">{opt.content}</span>
+                                            {isCorrect && <span className="text-xs shrink-0" style={{ color: isSelected ? 'var(--selected-text)' : 'var(--success)' }}>✓ correct</span>}
+                                          </button>
+                                        )
+                                      })}
+                                    </div>
+                                    {isDirty && (
+                                      <button
+                                        onClick={() => setEditorDirty(prev => { const n = { ...prev }; delete n[q.id]; return n })}
+                                        className="text-xs" style={{ color: 'var(--text-muted)' }}
+                                      >
+                                        ↩ Undo change
+                                      </button>
+                                    )}
+                                  </div>
+                                )
+                              }
+
+                              // ── Writing / speaking: editable score + feedback ──
+                              if (!q.response) return null
+                              const scoreDirty = editorScoreDirty[q.id]
+                              const isDirtyScore = q.id in editorScoreDirty
+                              const currentScore = scoreDirty?.score ?? (q.response.score !== null && q.response.score !== undefined ? String(q.response.score) : '')
+                              const existingFeedback = q.response.ai_feedback ?? {}
+                              const currentFeedback = scoreDirty?.feedback ?? (existingFeedback.tutor_comment as string || '')
+                              const aiStrengths = existingFeedback.strengths_en as string || ''
+                              const aiImprovements = existingFeedback.improvements_en as string || ''
+                              return (
+                                <div key={q.id} className="rounded-lg p-3 space-y-2" style={{ background: isDirtyScore ? 'var(--accent-faint, rgba(0,180,160,0.06))' : 'transparent', border: isDirtyScore ? '1px solid var(--accent)' : '1px solid var(--border)' }}>
+                                  <div className="flex items-center justify-between">
+                                    <p className="text-sm font-medium" style={{ color: 'var(--text)' }}>
+                                      <span className="uppercase text-[10px] tracking-wide mr-2 px-1.5 py-0.5 rounded" style={{ background: 'var(--surface-hover)', color: 'var(--text-muted)' }}>
+                                        {q.scoring_method.replace('_', ' ')}
+                                      </span>
+                                      {q.prompt}
+                                    </p>
+                                    <span className="text-xs shrink-0 ml-2" style={{ color: 'var(--text-muted)' }}>
+                                      {q.response.score !== null && q.response.score !== undefined ? `${q.response.score}/${q.max_score}` : 'ungraded'}
+                                    </span>
+                                  </div>
+
+                                  {/* Student's answer */}
+                                  <div className="text-sm whitespace-pre-wrap p-3 rounded-lg" style={{ background: 'var(--surface-hover)', color: 'var(--text-secondary)' }}>
+                                    {q.response.text_response || <em style={{ color: 'var(--text-muted)' }}>(no answer)</em>}
+                                  </div>
+
+                                  {/* AI feedback (read-only reference) */}
+                                  {(aiStrengths || aiImprovements) && (
+                                    <details className="text-xs">
+                                      <summary className="cursor-pointer" style={{ color: 'var(--text-muted)' }}>AI feedback</summary>
+                                      <div className="mt-1 p-2 rounded space-y-1" style={{ background: 'var(--surface-hover)' }}>
+                                        {aiStrengths && <p style={{ color: 'var(--text-secondary)' }}><strong>Strengths:</strong> {aiStrengths}</p>}
+                                        {aiImprovements && <p style={{ color: 'var(--text-secondary)' }}><strong>To improve:</strong> {aiImprovements}</p>}
+                                      </div>
+                                    </details>
+                                  )}
+
+                                  {/* Editable score + tutor feedback */}
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-xs shrink-0" style={{ color: 'var(--text-muted)' }}>Score</span>
+                                    <input
+                                      type="number" min={0} max={q.max_score} step={0.5} value={currentScore}
+                                      onChange={e => setEditorScoreDirty(prev => ({ ...prev, [q.id]: { score: e.target.value, feedback: currentFeedback } }))}
+                                      placeholder={`0–${q.max_score}`}
+                                      className="w-20 px-3 py-2 rounded-lg text-sm outline-none"
+                                      style={{ background: 'var(--surface-hover)', color: 'var(--text)' }}
+                                    />
+                                    <span className="text-xs shrink-0" style={{ color: 'var(--text-muted)' }}>/ {q.max_score}</span>
+                                  </div>
+                                  <div>
+                                    <span className="text-xs block mb-1" style={{ color: 'var(--text-muted)' }}>Tutor feedback (visible to student)</span>
+                                    <textarea
+                                      value={currentFeedback}
+                                      onChange={e => setEditorScoreDirty(prev => ({ ...prev, [q.id]: { score: currentScore, feedback: e.target.value } }))}
+                                      placeholder="Explain the score or provide specific feedback…"
+                                      rows={3}
+                                      className="w-full px-3 py-2 rounded-lg text-sm outline-none resize-y"
+                                      style={{ background: 'var(--surface-hover)', color: 'var(--text)' }}
+                                    />
+                                  </div>
+                                  {isDirtyScore && (
+                                    <button
+                                      onClick={() => setEditorScoreDirty(prev => { const n = { ...prev }; delete n[q.id]; return n })}
+                                      className="text-xs" style={{ color: 'var(--text-muted)' }}
+                                    >
+                                      ↩ Undo change
+                                    </button>
+                                  )}
+                                </div>
+                              )
+                            })}
+                          </div>
+                        ))}
+                      </div>
+                    ))}
+
+                    {/* Floating save bar */}
+                    {(Object.keys(editorDirty).length + Object.keys(editorScoreDirty).length) > 0 && (
+                      <div className="sticky bottom-4 flex justify-end">
+                        <Squircle asChild cornerRadius={12} cornerSmoothing={0.8}>
+                          <button
+                            onClick={saveEditorChanges}
+                            disabled={editorSaving}
+                            className="px-5 py-3 text-sm font-semibold shadow-lg transition-colors hover:opacity-90 disabled:opacity-40"
+                            style={{ background: 'var(--accent)', color: 'var(--selected-text)' }}
+                          >
+                            {editorSaving ? 'Saving…' : `Save & regrade (${Object.keys(editorDirty).length + Object.keys(editorScoreDirty).length} changed)`}
+                          </button>
+                        </Squircle>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </SquircleBox>
+
+              {/* ─── Existing tutor grading queue ─── */}
               <div className="flex items-center justify-between">
                 <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
                   {gradingItems.length > 0

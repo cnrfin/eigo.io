@@ -71,7 +71,7 @@ export async function finalizeAttempt(
 
   const { data: responses } = await supabase
     .from('responses')
-    .select('question_id, score, graded_by, ai_feedback')
+    .select('question_id, selected_option_ids, text_response, audio_asset_id, score, graded_by, ai_feedback')
     .eq('attempt_id', attemptId)
   const responseMap = new Map((responses ?? []).map(r => [r.question_id, r]))
 
@@ -83,7 +83,15 @@ export async function finalizeAttempt(
     const weight = Number((q.payload as { weight?: number } | null)?.weight) || 1
     const r = responseMap.get(q.id)
     const score = r && r.score !== null && r.score !== undefined ? Number(r.score) : null
-    return { skill, score, max_score: max, weight, pending: score === null }
+    // A response is "pending" only if the student actually submitted content
+    // but it hasn't been graded yet. Unattempted questions (no response, or
+    // empty response with no content) are simply unscored, not pending.
+    const hasContent = r && (
+      (Array.isArray(r.selected_option_ids) && r.selected_option_ids.length > 0) ||
+      (typeof r.text_response === 'string' && r.text_response.trim().length > 0) ||
+      !!r.audio_asset_id
+    )
+    return { skill, score, max_score: max, weight, pending: score === null && !!hasContent }
   })
 
   const perSkill = new Map<Skill, { raw: number; max: number }>()
@@ -241,6 +249,8 @@ export async function finalizeAttempt(
     }
   }
 
+  // Replace skill scores: delete stale rows (e.g. unattempted speaking) then upsert.
+  await supabase.from('attempt_skill_scores').delete().eq('attempt_id', attemptId)
   if (skillScoreRows.length > 0) {
     await supabase.from('attempt_skill_scores').upsert(skillScoreRows, { onConflict: 'attempt_id,skill' })
   }
