@@ -61,7 +61,13 @@ export default function ResultsPage() {
   // CEFR check: per-skill scaled scores are continuous level numbers (1=A1..6=C2).
   const cefrLabel = (n: number | null | undefined) => {
     if (n === null || n === undefined || !Number.isFinite(Number(n))) return '—'
-    return ['Pre-A1', 'A1', 'A2', 'B1', 'B2', 'C1', 'C2'][Math.min(6, Math.max(0, Math.floor(Number(n))))]
+    const v = Number(n)
+    const i = Math.min(6, Math.max(0, Math.floor(v)))
+    const band = ['Pre-A1', 'A1', 'A2', 'B1', 'B2', 'C1', 'C2'][i]
+    if (i === 0 || i === 6) return band
+    const frac = v - i
+    const suffix = frac < 1 / 3 ? '−' : frac < 2 / 3 ? '' : '+'
+    return `${band}${suffix}`
   }
   const skillLabel = (s: string) => {
     const m: Record<string, [string, string]> = {
@@ -98,15 +104,14 @@ export default function ResultsPage() {
       )
     }
     if (overall.model === 'cefr_level') {
-      // EN reads "High A2"; JA reads 「A2 上位」 (level first, position after).
-      const sj: Record<string, string> = { low: '下位', mid: '中位', high: '上位' }
-      const se: Record<string, string> = { low: 'Low', mid: 'Mid', high: 'High' }
       const st = overall.strength as string | null
+      const suffix: Record<string, string> = { low: '−', mid: '', high: '+' }
+      const levelWithStrength = st ? `${overall.level}${suffix[st]}` : overall.level
       return (
         <>
-          <p className="text-4xl font-bold" style={{ color: 'var(--accent)' }}>{overall.level ?? '—'}</p>
+          <p className="text-4xl font-bold" style={{ color: 'var(--accent)' }}>{levelWithStrength ?? '—'}</p>
           <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
-            {st ? (locale === 'ja' ? `${overall.level} ${sj[st]}` : `${se[st]} ${overall.level}`) : overall.level}
+            {levelWithStrength}
             {overall.cefr_j ? ` · CEFR-J ${overall.cefr_j}${locale === 'ja' ? ' 相当' : ''}` : ''}
           </p>
           <p className="text-xs mt-2" style={{ color: 'var(--text-muted)' }}>

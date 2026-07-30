@@ -632,8 +632,13 @@ const CEFR_BAND_LABELS = ['Pre-A1', 'A1', 'A2', 'B1', 'B2', 'C1', 'C2']
 
 export function cefrBandLabel(numeric: number | null | undefined): string {
   if (numeric === null || numeric === undefined || !Number.isFinite(Number(numeric))) return '—'
-  const idx = Math.min(6, Math.max(0, Math.floor(Number(numeric))))
-  return CEFR_BAND_LABELS[idx]
+  const v = Number(numeric)
+  const idx = Math.min(6, Math.max(0, Math.floor(v)))
+  const band = CEFR_BAND_LABELS[idx]
+  if (idx === 0 || idx === 6) return band
+  const frac = v - idx
+  const suffix = frac < 1 / 3 ? '−' : frac < 2 / 3 ? '' : '+'
+  return `${band}${suffix}`
 }
 
 function cefrJLabel(band: string, strength: 'low' | 'mid' | 'high' | null): string | null {

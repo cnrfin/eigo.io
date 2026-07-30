@@ -178,8 +178,8 @@ function cefrBandLabel(n) {
   if (n === null) return null
   const i = Math.min(6, Math.floor(n))
   const f = n - i
-  const s = i === 0 || i === 6 ? null : f < 1/3 ? 'low' : f < 2/3 ? 'mid' : 'high'
-  return CEFR_BAND_LABELS[i] + (s ? ` ${s}` : '')
+  const suffix = i === 0 || i === 6 ? '' : f < 1/3 ? '−' : f < 2/3 ? '' : '+'
+  return CEFR_BAND_LABELS[i] + suffix
 }
 
 // Per-skill
