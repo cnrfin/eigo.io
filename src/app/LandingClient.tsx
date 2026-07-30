@@ -66,19 +66,28 @@ export default function LandingClient() {
   /* Signed-in users don't need the marketing page, so bounce them to their
      dashboard (admins to /admin).
 
-     Two deliberate details:
-     - `is_anonymous` is excluded. The free pronunciation funnel mints a GUEST
-       session on this very page, so redirecting on any truthy `user` would
-       throw every guest straight out of the funnel they just started.
-     - The gate is `user`, not `loading`. Blocking render while auth resolves
-       would blank the page for crawlers and anonymous visitors too, which
-       would undo the SSR the guide/landing SEO work depends on. Signed-in
-       users see a brief flash of landing instead; that trade is on purpose. */
+     `is_anonymous` is excluded: the free pronunciation funnel mints a GUEST
+     session on this very page, so redirecting on any truthy `user` would throw
+     every guest straight out of the funnel they just started.
+
+     No flash of landing: a pre-paint probe in the root layout sets
+     `html[data-authed]` when a session token is in localStorage, and CSS hides
+     the page (showing a spinner) until this redirect fires. Because that marker
+     is only visual, a wrong guess is harmless — when auth resolves to a
+     non-permanent session (anonymous guest, stale token, or genuinely logged
+     out) we clear the marker and the real SSR landing shows. Crawlers and
+     logged-out visitors have no token, so they never see the cover at all. */
   const { user, loading: authLoading } = useAuth()
   const router = useRouter()
   const signedIn = !!user && !user.is_anonymous
   useEffect(() => {
-    if (!authLoading && signedIn) router.replace(getPostLoginPath(user?.email))
+    if (authLoading) return
+    if (signedIn) {
+      router.replace(getPostLoginPath(user?.email))
+    } else {
+      // Not a permanent session — reveal the landing the cover was hiding.
+      document.documentElement.removeAttribute('data-authed')
+    }
   }, [authLoading, signedIn, user?.email, router])
 
   const { locale, toggleLocale } = useLanguage()
@@ -224,7 +233,10 @@ export default function LandingClient() {
   )
 
   return (
-    <main style={{ background: 'var(--bg)', color: 'var(--text)' }}>
+    // `.lp-shell` is the hook for the head-level hide rule: a signed-in visitor's
+    // landing is held invisible (themed body background showing) until the
+    // redirect fires, so the page never flashes. See src/app/layout.tsx.
+    <main className="lp-shell" style={{ background: 'var(--bg)', color: 'var(--text)' }}>
       {/* pinned morph stage — taller on mobile so the reveal + morph aren't rushed */}
       <div ref={wrapRef} style={{ height: mobile ? '360vh' : '300vh', position: 'relative', zIndex: 1 }}>
         <div style={{ position: 'sticky', top: 0, height: '100vh', overflow: 'hidden' }}>

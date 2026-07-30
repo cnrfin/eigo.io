@@ -121,6 +121,32 @@ export default function RootLayout({
               "(function(){try{var t=localStorage.getItem('eigo-theme');document.documentElement.setAttribute('data-theme',t==='light'?'light':'dark')}catch(e){document.documentElement.setAttribute('data-theme','dark')}})()",
           }}
         />
+        {/* Signed-in users are redirected off the landing, but that decision needs
+            React + validated auth, which is too late to stop the marketing page
+            painting first. This probe runs during head parse: if a Supabase session
+            token is in localStorage it marks the document, so CSS can hide the page
+            and show a spinner until the redirect fires — no flash of landing.
+            Anonymous/logged-out visitors and crawlers have no token, so the marker
+            is never set and they get the full SSR page (SEO intact). LandingClient
+            clears the marker once auth resolves to a non-permanent session, so a
+            returning guest or a stale token falls back to the landing. Scoped to the
+            landing paths ('' is '/' after the trailing-slash strip). */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "(function(){try{var p=location.pathname.replace(/\\/+$/,'');if(p!==''&&p!=='/en')return;for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(k&&k.indexOf('sb-')===0&&k.indexOf('-auth-token')>-1){document.documentElement.setAttribute('data-authed','1');return}}}catch(e){}})()",
+          }}
+        />
+        {/* Paired with the probe above. Kept inline in <head> rather than in
+            globals.css on purpose: it ships with the HTML and applies before the
+            first paint, so it can't be missed or served stale by the bundler.
+            `.lp-shell` only exists on the landing, so this never affects other
+            routes even though the marker persists across client navigations. The
+            body background shows through, so the hidden state is a clean themed
+            blank until the redirect (or until LandingClient clears the marker). */}
+        <style
+          dangerouslySetInnerHTML={{ __html: 'html[data-authed] .lp-shell{visibility:hidden}' }}
+        />
       </head>
       <body className="antialiased" style={{ background: 'var(--bg)', color: 'var(--text)', fontFamily: 'var(--font-outfit), sans-serif' }}>
         <JsonLd />
