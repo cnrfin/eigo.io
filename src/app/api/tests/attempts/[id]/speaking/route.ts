@@ -36,7 +36,9 @@ export async function POST(
     .from('test_attempts').select('id, user_id, form_id, status').eq('id', attemptId).single()
   if (aErr || !attempt) return NextResponse.json({ error: 'Attempt not found' }, { status: 404 })
   if (attempt.user_id !== user.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
-  if (attempt.status !== 'in_progress') {
+  // Accept recordings while the test is open OR while it's re-opened for a
+  // speaking-only finish (awaiting_speaking).
+  if (attempt.status !== 'in_progress' && attempt.status !== 'awaiting_speaking') {
     return NextResponse.json({ error: 'Attempt is already submitted' }, { status: 409 })
   }
 

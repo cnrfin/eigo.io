@@ -51,7 +51,9 @@ export default function ResultsPage() {
   // While AI grading is still running, poll until results are ready.
   const pending = data && data.attempt?.status !== 'scored'
   useEffect(() => {
-    if (!pending || data?.attempt?.review_mode !== 'ai') return
+    // awaiting_speaking waits on the student to record — nothing grades in the
+    // background, so don't poll.
+    if (!pending || data?.attempt?.status === 'awaiting_speaking' || data?.attempt?.review_mode !== 'ai') return
     const id = setInterval(load, 8000)
     return () => clearInterval(id)
   }, [pending, data?.attempt?.review_mode, load])
@@ -195,7 +197,15 @@ export default function ResultsPage() {
               {locale === 'ja' ? data.form?.title_ja || data.form?.title : data.form?.title}
             </h1>
             <SquircleBox cornerRadius={18} className="p-8 my-4 text-center" style={{ background: 'var(--surface)' }}>
-              {data.attempt?.review_mode === 'human' ? (
+              {data.attempt?.status === 'awaiting_speaking' ? (
+                <>
+                  <p className="text-lg font-semibold" style={{ color: 'var(--text)' }}>{t('スピーキングの録音が残っています', 'Your speaking section still needs recording')}</p>
+                  <p className="text-sm mt-2" style={{ color: 'var(--text-secondary)' }}>{t('リーディング・リスニング・ライティングは採点済みです。スピーキングを録音すると、総合スコアが確定します。', 'Your reading, listening and writing are already graded. Record your speaking answers to complete your overall score.')}</p>
+                  <Link href={`/dashboard/tests/take/${attemptId}`} className="inline-block text-sm font-medium mt-4 px-5 py-2.5 rounded-lg transition-all duration-[120ms] ease-out hover:scale-[1.02] active:scale-[0.95]" style={{ background: 'var(--accent)', color: '#fff' }}>
+                    {t('スピーキングを録音する', 'Finish speaking')} →
+                  </Link>
+                </>
+              ) : data.attempt?.review_mode === 'human' ? (
                 <>
                   <p className="text-lg font-semibold" style={{ color: 'var(--text)' }}>{t('講師が採点中です', 'A teacher is reviewing your answers')}</p>
                   <p className="text-sm mt-2" style={{ color: 'var(--text-secondary)' }}>{t('採点が終わると、こことダッシュボードに結果が表示されます。', "You'll find your results here and in your dashboard once grading is complete.")}</p>

@@ -1,10 +1,68 @@
 import { NextRequest, NextResponse } from 'next/server'
+import type { SupabaseClient } from '@supabase/supabase-js'
 import { authenticate } from '@/lib/test-auth'
 import { gradeAndFinalize } from '@/lib/test-grade-attempt'
 import { sendAdminTestGradingNotification } from '@/lib/email'
 import { waitUntil } from '@vercel/functions'
 
 export const maxDuration = 120
+
+type SubmitResponse = { questionId: string; selectedOptionIds?: string[]; textResponse?: string; audioAssetId?: string | null }
+
+/** Upsert final answers. Returns false on DB error. */
+async function persistResponses(
+  supabase: SupabaseClient,
+  attemptId: string,
+  responses: SubmitResponse[]
+): Promise<boolean> {
+  const rows = responses.map(r => {
+    const row: Record<string, unknown> = {
+      attempt_id: attemptId,
+      question_id: r.questionId,
+      selected_option_ids: r.selectedOptionIds ?? [],
+      text_response: r.textResponse ?? '',
+    }
+    // Only set audio_asset_id when explicitly provided — omitting it preserves
+    // the value saved by the SpeakingRecorder.
+    if (r.audioAssetId !== undefined) row.audio_asset_id = r.audioAssetId ?? null
+    return row
+  })
+  const { error } = await supabase.from('responses').upsert(rows, { onConflict: 'attempt_id,question_id' })
+  if (error) {
+    console.error('Submit: failed to save responses:', error)
+    return false
+  }
+  return true
+}
+
+/**
+ * Speaking questions in this form that have no recording yet.
+ * Used to block a full submit until the student has recorded every spoken
+ * answer (a missing recording would otherwise drop speaking out of the score).
+ */
+async function missingSpeakingAudio(
+  supabase: SupabaseClient,
+  formId: string,
+  attemptId: string
+): Promise<string[]> {
+  const { data: sections } = await supabase
+    .from('sections').select('id').eq('form_id', formId).eq('skill', 'speaking')
+  const sectionIds = (sections ?? []).map(s => s.id)
+  if (!sectionIds.length) return []
+  const { data: groups } = await supabase
+    .from('question_groups').select('id').in('section_id', sectionIds)
+  const groupIds = (groups ?? []).map(g => g.id)
+  if (!groupIds.length) return []
+  const { data: questions } = await supabase
+    .from('questions').select('id, question_type').in('group_id', groupIds)
+  const speakingIds = (questions ?? [])
+    .filter(q => q.question_type === 'speaking_response').map(q => q.id)
+  if (!speakingIds.length) return []
+  const { data: responses } = await supabase
+    .from('responses').select('question_id, audio_asset_id').eq('attempt_id', attemptId).in('question_id', speakingIds)
+  const recorded = new Set((responses ?? []).filter(r => r.audio_asset_id).map(r => r.question_id))
+  return speakingIds.filter(id => !recorded.has(id))
+}
 
 /**
  * POST /api/tests/attempts/[id]/submit
@@ -35,35 +93,45 @@ export async function POST(
 
   const { data: attempt, error: attemptError } = await supabase
     .from('test_attempts')
-    .select('id, user_id, status')
+    .select('id, user_id, status, form_id')
     .eq('id', attemptId)
     .single()
 
   if (attemptError || !attempt) return NextResponse.json({ error: 'Attempt not found' }, { status: 404 })
   if (attempt.user_id !== user.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
+
+  // Re-opened for a speaking-only finish: the audio was saved incrementally by
+  // the SpeakingRecorder, so just grade the missing (speaking) questions and
+  // re-fuse. Already-graded sections are left untouched (onlyMissing).
+  if (attempt.status === 'awaiting_speaking') {
+    if (Array.isArray(body.responses) && body.responses.length > 0) {
+      await persistResponses(supabase, attemptId, body.responses)
+    }
+    const result = await gradeAndFinalize(supabase, attemptId, { onlyMissing: true })
+    if (!result) return NextResponse.json({ error: 'Saving the result failed' }, { status: 500 })
+    return NextResponse.json({ ...result, finished_section: 'speaking' })
+  }
+
   if (attempt.status !== 'in_progress') {
     return NextResponse.json({ error: 'Attempt already submitted' }, { status: 409 })
   }
 
   // Persist any final answers passed with the submit.
   if (Array.isArray(body.responses) && body.responses.length > 0) {
-    const rows = body.responses.map(r => {
-      const row: Record<string, unknown> = {
-        attempt_id: attemptId,
-        question_id: r.questionId,
-        selected_option_ids: r.selectedOptionIds ?? [],
-        text_response: r.textResponse ?? '',
-      }
-      // Only set audio_asset_id when explicitly provided — omitting it
-      // preserves the value saved by the SpeakingRecorder.
-      if (r.audioAssetId !== undefined) row.audio_asset_id = r.audioAssetId ?? null
-      return row
-    })
-    const { error: upsertError } = await supabase.from('responses').upsert(rows, { onConflict: 'attempt_id,question_id' })
-    if (upsertError) {
-      console.error('Submit: failed to save responses:', upsertError)
+    const saved = await persistResponses(supabase, attemptId, body.responses)
+    if (!saved) {
       return NextResponse.json({ error: 'Could not save answers — please try again' }, { status: 500 })
     }
+  }
+
+  // Guardrail: every speaking answer must be recorded before a full submit,
+  // otherwise the missing recording drops speaking out of the CEFR score.
+  const missingSpeaking = await missingSpeakingAudio(supabase, attempt.form_id, attemptId)
+  if (missingSpeaking.length) {
+    return NextResponse.json(
+      { error: 'Please record all speaking answers before submitting.', missingSpeaking },
+      { status: 422 }
+    )
   }
 
   // Human review: grade the objective parts now, leave writing/speaking pending

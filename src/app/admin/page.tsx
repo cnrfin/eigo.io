@@ -564,6 +564,26 @@ function AdminContent() {
     setEditorSaving(false)
   }, [session?.access_token, editorData, editorDirty, editorScoreDirty, headers, loadAttemptEditor])
 
+  // Re-open an attempt for a speaking-only finish: recovers the score now
+  // (clears any stale skill row) and lets the student return to record the
+  // audio they skipped. Grading the rest is untouched.
+  const [reopeningSpeaking, setReopeningSpeaking] = useState(false)
+  const reopenSpeaking = useCallback(async () => {
+    if (!session?.access_token || !editorData) return
+    if (!confirm('Re-open this attempt so the student can record their speaking section? Their current score is recomputed now, and speaking is graded when they submit.')) return
+    setReopeningSpeaking(true)
+    setEditorMsg('')
+    try {
+      const res = await fetch(`/api/admin/tests/attempts/${editorData.attempt.id}/reopen-speaking`, {
+        method: 'POST', headers: headers(),
+      })
+      if (!res.ok) throw new Error('failed')
+      setEditorMsg('Re-opened for speaking. The student can now return to their test to record and submit.')
+      await loadAttemptEditor(editorData.attempt.id)
+    } catch { setEditorMsg('Could not re-open — please try again.') }
+    setReopeningSpeaking(false)
+  }, [session?.access_token, editorData, headers, loadAttemptEditor])
+
   // Fetch student list
   const fetchStudents = useCallback(async () => {
     if (!session?.access_token) return
@@ -975,6 +995,22 @@ function AdminContent() {
                               style={{ background: 'var(--success)', color: '#fff' }}
                             >
                               {editorSaving ? 'Saving…' : `Save & regrade (${Object.keys(editorDirty).length + Object.keys(editorScoreDirty).length})`}
+                            </button>
+                          </Squircle>
+                        )}
+                        {editorData.attempt.status !== 'in_progress' && (
+                          <Squircle asChild cornerRadius={10} cornerSmoothing={0.8}>
+                            <button
+                              onClick={reopenSpeaking}
+                              disabled={reopeningSpeaking || editorData.attempt.status === 'awaiting_speaking'}
+                              className="px-4 py-2 text-sm font-medium transition-colors hover:opacity-90 disabled:opacity-40"
+                              style={{ background: 'var(--accent)', color: 'var(--selected-text)' }}
+                            >
+                              {reopeningSpeaking
+                                ? 'Re-opening…'
+                                : editorData.attempt.status === 'awaiting_speaking'
+                                  ? 'Awaiting speaking'
+                                  : 'Reopen speaking'}
                             </button>
                           </Squircle>
                         )}

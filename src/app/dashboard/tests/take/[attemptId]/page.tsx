@@ -67,6 +67,7 @@ export default function TakeTestPage() {
   const [leaveOpen, setLeaveOpen] = useState(false)
   const [leaving, setLeaving] = useState(false)
   const [speakingStep, setSpeakingStep] = useState(0) // linear index for speaking interview mode
+  const [reopenSpeaking, setReopenSpeaking] = useState(false) // attempt re-opened to finish speaking only
   const [instrAck, setInstrAck] = useState<Set<string>>(new Set()) // sections whose instruction screen was dismissed
   const [autoRecState, setAutoRecState] = useState<RecState | null>(null) // current machine-paced item's recorder state
   const autoStopRef = useRef<(() => void) | null>(null) // stop function of the current machine-paced recorder
@@ -99,7 +100,11 @@ export default function TakeTestPage() {
     fetch(`/api/tests/attempts/${attemptId}`, { headers: { Authorization: `Bearer ${session.access_token}` } })
       .then(async r => { const d = await r.json(); if (!r.ok) throw new Error(d.error || 'failed'); return d })
       .then(d => {
-        if (d.attempt?.status && d.attempt.status !== 'in_progress') {
+        // Re-opened to finish the speaking section only: don't redirect to
+        // results. Keep just the speaking questions so the interview UI runs;
+        // submitting grades only that section and re-fuses the score.
+        const reopen = d.attempt?.status === 'awaiting_speaking'
+        if (d.attempt?.status && d.attempt.status !== 'in_progress' && !reopen) {
           // Already submitted. A gate-mode guest re-entering should see the
           // sign-up gate again (results stay behind it), not be dropped on the
           // dashboard results page.
@@ -108,12 +113,22 @@ export default function TakeTestPage() {
           router.replace(`/dashboard/tests/results/${attemptId}`)
           return
         }
-        setSections(d.sections ?? [])
+        setReopenSpeaking(reopen)
+        const speakingOnly = (s: Section) => ({
+          ...s,
+          groups: s.groups
+            .map(g => ({ ...g, questions: g.questions.filter(q => q.question_type === 'speaking_response') }))
+            .filter(g => g.questions.length > 0),
+        })
+        const secs: Section[] = reopen
+          ? (d.sections ?? []).map(speakingOnly).filter((s: Section) => s.groups.length > 0)
+          : (d.sections ?? [])
+        setSections(secs)
         setFormTitle(locale === 'ja' ? d.form?.title_ja || d.form?.title || '' : d.form?.title || '')
         // Speaking is self-paced (each answer has its own recording cap), so it
         // never gets a whole-test countdown — regardless of the form's value.
-        const allSpeaking = (d.sections ?? []).length > 0 &&
-          (d.sections ?? []).every((s: Section) => s.groups.every(g => g.questions.every(q => q.question_type === 'speaking_response')))
+        const allSpeaking = secs.length > 0 &&
+          secs.every((s: Section) => s.groups.every(g => g.questions.every(q => q.question_type === 'speaking_response')))
         if (d.form?.time_limit_seconds && !allSpeaking) {
           const spent = d.attempt?.time_spent_seconds ?? 0
           // Resume the clock from the stored total. elapsedRef must ALSO start
@@ -125,7 +140,7 @@ export default function TakeTestPage() {
         }
         const seeded: Record<string, Answer> = {}
         const done = new Set<string>()
-        for (const s of d.sections ?? [])
+        for (const s of secs)
           for (const g of s.groups ?? [])
             for (const q of g.questions ?? []) {
               if (!q.response) continue
@@ -145,7 +160,7 @@ export default function TakeTestPage() {
         if (allSpeaking) {
           let idx = 0
           let firstUnrecorded = -1
-          for (const s of d.sections ?? [])
+          for (const s of secs)
             for (const g of s.groups ?? [])
               for (const q of g.questions ?? []) {
                 if (firstUnrecorded === -1 && !done.has(q.id)) firstUnrecorded = idx
@@ -248,7 +263,20 @@ export default function TakeTestPage() {
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
         body: JSON.stringify({ responses, reviewMode }),
       })
-      if (!res.ok) { const d = await res.json().catch(() => ({})); throw new Error(d.error || 'failed') }
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}))
+        // Guardrail: a speaking answer wasn't recorded. Send the student to the
+        // first missing one instead of failing with a generic error.
+        if (res.status === 422 && Array.isArray(d.missingSpeaking) && d.missingSpeaking.length) {
+          submittedRef.current = false
+          setSubmitting(false)
+          const gi = qMeta.gi.get(d.missingSpeaking[0])
+          if (gi !== undefined) setGroupIdx(gi)
+          setError(t('提出する前に、すべてのスピーキングの解答を録音してください。', 'Please record every speaking answer before submitting.'))
+          return
+        }
+        throw new Error(d.error || 'failed')
+      }
       // Gate mode: grading is running in the background — show the sign-up gate
       // instead of going to results (the payoff is behind the account).
       if (gate) { setSubmitting(false); setShowGate(true); return }
@@ -274,13 +302,17 @@ export default function TakeTestPage() {
   // Tests with audio (speaking) ask the student to choose teacher vs AI review;
   // writing-only tests go straight to AI grading; objective tests grade instantly.
   const onSubmitClick = useCallback(() => {
+    // Finishing a re-opened speaking section: the rest is already graded, so
+    // skip the teacher-vs-AI chooser and just grade the speaking (server grades
+    // only the missing section and re-fuses).
+    if (reopenSpeaking) { submit(); return }
     // Gate mode forces AI grading (skip the teacher-vs-AI chooser): grading runs
     // in the background while the guest signs up at the gate.
     if (gate) { submit(hasAi || hasSpeaking ? 'ai' : undefined); return }
     if (hasSpeaking) setReviewOpen(true)
     else if (hasAi) submit('ai')
     else submit()
-  }, [gate, hasSpeaking, hasAi, submit])
+  }, [gate, hasSpeaking, hasAi, submit, reopenSpeaking])
 
   const timerRunning = timeLeft !== null
   const timeExpired = timeLeft !== null && timeLeft <= 0

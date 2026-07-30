@@ -27,8 +27,12 @@ import { transcodeToMp3, gradeSpeakingFromAudio } from '@/lib/test-speaking'
 export async function gradeAndFinalize(
   supabase: SupabaseClient,
   attemptId: string,
-  opts: { skipAi?: boolean } = {}
+  opts: { skipAi?: boolean; onlyMissing?: boolean } = {}
 ): Promise<FinalizeResult | null> {
+  // onlyMissing: grade ONLY questions that have no score yet (e.g. a speaking
+  // section recorded after the rest of the test was already graded). Already-
+  // scored objective / writing answers — and tutor edits — are left untouched;
+  // finalize then re-fuses with the new section included.
   const { data: attempt } = await supabase
     .from('test_attempts').select('id, form_id').eq('id', attemptId).single()
   if (!attempt) return null
@@ -75,9 +79,9 @@ export async function gradeAndFinalize(
 
   const { data: savedResponses } = await supabase
     .from('responses')
-    .select('question_id, selected_option_ids, text_response, transcript, audio_asset_id, graded_by')
+    .select('question_id, selected_option_ids, text_response, transcript, audio_asset_id, graded_by, score')
     .eq('attempt_id', attemptId)
-  type Saved = ResponseRow & { audio_asset_id?: string | null; graded_by?: string | null }
+  type Saved = ResponseRow & { audio_asset_id?: string | null; graded_by?: string | null; score?: number | null }
   const responseMap = new Map<string, Saved>(
     (savedResponses ?? []).map(r => [r.question_id, r as Saved])
   )
@@ -125,6 +129,8 @@ export async function gradeAndFinalize(
 
       // Never overwrite a tutor's manual score on re-grade.
       if (response?.graded_by === 'tutor') return null as unknown as Graded
+      // onlyMissing: leave already-scored questions exactly as they are.
+      if (opts.onlyMissing && response?.score != null) return null as unknown as Graded
 
       if (q.scoring_method === 'auto_choice' || q.scoring_method === 'auto_text') {
         const r = gradeAuto(q, optionsByQuestion.get(q.id) ?? [], response)
