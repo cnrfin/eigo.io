@@ -69,7 +69,7 @@ function ProgressRing({ answered, total, status }: { answered: number; total: nu
       </svg>
       <span className="absolute inset-0 flex items-center justify-center text-[11px] font-semibold"
         style={{ color: done ? 'var(--success)' : started ? 'var(--text)' : 'var(--text-muted)' }}>
-        {done ? '100%' : status === 'submitted' ? '…' : status === 'in_progress' ? `${Math.round(pct)}%` : '—'}
+        {done ? '100%' : status === 'submitted' ? '…' : (status === 'in_progress' || status === 'awaiting_speaking') ? `${Math.round(pct)}%` : '—'}
       </span>
     </div>
   )
@@ -139,7 +139,8 @@ export default function SetPage() {
   // Start / resume / open results for one section.
   const go = useCallback(async (formId: string, attempt: { id: string; status: string } | null) => {
     if (attempt) {
-      router.push(attempt.status === 'in_progress' ? `/dashboard/tests/take/${attempt.id}` : `/dashboard/tests/results/${attempt.id}`)
+      const resume = attempt.status === 'in_progress' || attempt.status === 'awaiting_speaking'
+      router.push(resume ? `/dashboard/tests/take/${attempt.id}` : `/dashboard/tests/results/${attempt.id}`)
       return
     }
     if (!session?.access_token) return
@@ -185,6 +186,14 @@ export default function SetPage() {
   }, [session?.access_token, retakeForm, router])
 
   const combined = data?.combined
+
+  // Single-section set re-opened to finish speaking: reading/listening/writing
+  // are already graded, but the overall level waits on the recording. Show the
+  // partial per-skill scores rather than a blank "0 / 1 completed".
+  const soleAttempt = (data?.sections?.length ?? 0) <= 1 ? data?.sections?.[0]?.attempt : null
+  const awaitingSpeaking = soleAttempt?.status === 'awaiting_speaking'
+  const partial = awaitingSpeaking ? (soleAttempt?.overall_score as Any) : null
+  const shownSkills = combined?.per_skill ?? partial?.per_skill ?? null
 
   function Headline() {
     if (!combined) return null
@@ -286,6 +295,15 @@ export default function SetPage() {
               <div className="p-4 pb-6 text-center">
                 {data.complete ? (
                   <Headline />
+                ) : awaitingSpeaking ? (
+                  <>
+                    <p className="text-2xl font-bold" style={{ color: 'var(--text)' }}>
+                      {t('あと少しで完了です', 'Almost there')}
+                    </p>
+                    <p className="text-sm mt-2" style={{ color: 'var(--text-secondary)' }}>
+                      {t('スピーキングを録音すると、総合レベルが確定します。', 'Record your speaking answers to unlock your overall level.')}
+                    </p>
+                  </>
                 ) : (
                   <>
                     <p className="text-4xl font-bold" style={{ color: 'var(--text)' }}>
@@ -301,10 +319,11 @@ export default function SetPage() {
                 )}
               </div>
 
-              {/* Per-skill scores once combined */}
-              {Array.isArray(combined?.per_skill) && combined.per_skill.length > 0 && (
+              {/* Per-skill scores — the combined result, or the partial graded
+                  skills while speaking is still outstanding. */}
+              {Array.isArray(shownSkills) && shownSkills.length > 0 && (
                 <div className="grid grid-cols-2 gap-x-4 gap-y-3 px-4 py-6" style={{ borderTop: '1px solid var(--divider)' }}>
-                  {combined.per_skill.map((p: Any) => (
+                  {shownSkills.map((p: Any) => (
                     <div key={p.skill}>
                       <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{skillLabel(p.skill)}</p>
                       <p className="text-lg font-semibold" style={{ color: 'var(--text)' }}>{p.band ?? p.cse ?? p.scaled ?? p.gse ?? p.label ?? '—'}</p>
@@ -340,9 +359,10 @@ export default function SetPage() {
                   : !s.attempt && data.locked ? t('プランを見る', 'See plans')
                   : !s.attempt ? (single ? t('テストを開始', 'Start the test') : t(`${name}を開始`, `Start ${name}`))
                   : status === 'in_progress' ? (single ? t('続きから再開', 'Resume the test') : t(`${name}を再開`, `Resume ${name}`))
+                  : status === 'awaiting_speaking' ? t('続ける', 'Continue')
                   : status === 'submitted' ? t('採点中', 'In review')
                   : t('結果を見る', 'View results')
-                const done = s.attempt && status !== 'in_progress'
+                const done = s.attempt && status !== 'in_progress' && status !== 'awaiting_speaking'
                 return (
                   <SquircleBox key={s.form.id} cornerRadius={14} className="p-4 flex flex-col gap-3"
                     style={{ background: 'var(--panel)', border: '1px solid var(--hairline)', boxShadow: 'var(--card-shadow)' }}>

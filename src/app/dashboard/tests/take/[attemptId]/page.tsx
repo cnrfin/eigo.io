@@ -60,6 +60,7 @@ export default function TakeTestPage() {
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [notice, setNotice] = useState<string | null>(null) // transient toast (e.g. "record speaking first")
   const [groupIdx, setGroupIdx] = useState(0)
   const [navOpen, setNavOpen] = useState(false)
   const [reportOpen, setReportOpen] = useState(false)
@@ -272,7 +273,7 @@ export default function TakeTestPage() {
           setSubmitting(false)
           const gi = qMeta.gi.get(d.missingSpeaking[0])
           if (gi !== undefined) setGroupIdx(gi)
-          setError(t('提出する前に、すべてのスピーキングの解答を録音してください。', 'Please record every speaking answer before submitting.'))
+          setNotice(t('提出する前に、すべてのスピーキングの解答を録音してください。', 'Please record every speaking answer before submitting.'))
           return
         }
         throw new Error(d.error || 'failed')
@@ -306,13 +307,30 @@ export default function TakeTestPage() {
     // skip the teacher-vs-AI chooser and just grade the speaking (server grades
     // only the missing section and re-fuses).
     if (reopenSpeaking) { submit(); return }
+    // Require every speaking answer before submitting — check up front so we
+    // don't open the review chooser only to be blocked by the server. Jump to
+    // the first unrecorded speaking question and surface a notice.
+    const missingSpeaking = flatQuestions.filter(f => f.q.question_type === 'speaking_response' && !speakingDone.has(f.q.id))
+    if (missingSpeaking.length > 0) {
+      const gi = qMeta.gi.get(missingSpeaking[0].q.id)
+      if (gi !== undefined) { setGroupIdx(gi); setNavOpen(false) }
+      setNotice(t('提出する前に、すべてのスピーキングの解答を録音してください。', 'Please record every speaking answer before submitting.'))
+      return
+    }
     // Gate mode forces AI grading (skip the teacher-vs-AI chooser): grading runs
     // in the background while the guest signs up at the gate.
     if (gate) { submit(hasAi || hasSpeaking ? 'ai' : undefined); return }
     if (hasSpeaking) setReviewOpen(true)
     else if (hasAi) submit('ai')
     else submit()
-  }, [gate, hasSpeaking, hasAi, submit, reopenSpeaking])
+  }, [gate, hasSpeaking, hasAi, submit, reopenSpeaking, flatQuestions, speakingDone, qMeta, t])
+
+  // Transient toast auto-dismisses after a few seconds.
+  useEffect(() => {
+    if (!notice) return
+    const id = setTimeout(() => setNotice(null), 5000)
+    return () => clearTimeout(id)
+  }, [notice])
 
   const timerRunning = timeLeft !== null
   const timeExpired = timeLeft !== null && timeLeft <= 0
@@ -796,6 +814,23 @@ export default function TakeTestPage() {
           </div>
         </div>
       )}
+      {/* Transient notice (e.g. "record your speaking answers first") */}
+      <AnimatePresence>
+        {notice && (
+          <motion.div
+            key="notice"
+            initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2, ease: 'easeOut' }}
+            className="fixed left-1/2 -translate-x-1/2 top-16 z-[55] px-4 py-2.5 rounded-xl text-sm font-medium shadow-lg max-w-[90vw] text-center"
+            style={{ background: 'var(--danger)', color: '#fff' }}
+            role="alert"
+            onClick={() => setNotice(null)}
+          >
+            {notice}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <AnimatePresence>
         {loading && <LoadingOverlay key="loading" t={t} />}
       </AnimatePresence>

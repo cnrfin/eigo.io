@@ -83,13 +83,15 @@ export async function GET(
     if (fid) totalByForm.set(fid, (totalByForm.get(fid) ?? 0) + 1)
   }
 
-  const inProgressIds = (attempts ?? []).filter(a => a.status === 'in_progress').map(a => a.id)
+  // Answered counts for attempts the student is still working through — both
+  // in-progress and re-opened-for-speaking, so the progress ring is accurate.
+  const activeIds = (attempts ?? []).filter(a => a.status === 'in_progress' || a.status === 'awaiting_speaking').map(a => a.id)
   const answeredByAttempt = new Map<string, number>()
-  if (inProgressIds.length) {
+  if (activeIds.length) {
     const { data: respRows } = await supabase
       .from('responses')
       .select('attempt_id, selected_option_ids, text_response, audio_asset_id')
-      .in('attempt_id', inProgressIds)
+      .in('attempt_id', activeIds)
     for (const r of respRows ?? []) {
       const answered =
         (Array.isArray(r.selected_option_ids) && r.selected_option_ids.length > 0) ||
@@ -99,12 +101,15 @@ export async function GET(
     }
   }
 
-  const scoredAttemptIds = (attempts ?? []).filter(a => a.status === 'scored').map(a => a.id)
-  const { data: skillRows } = scoredAttemptIds.length
+  // Per-skill scores exist after finalize for any non-in-progress attempt —
+  // include awaiting_speaking / submitted so partial results can be shown while
+  // speaking is still outstanding.
+  const gradedAttemptIds = (attempts ?? []).filter(a => a.status !== 'in_progress').map(a => a.id)
+  const { data: skillRows } = gradedAttemptIds.length
     ? await supabase
         .from('attempt_skill_scores')
         .select('attempt_id, skill, raw_score, scaled_score, max_score')
-        .in('attempt_id', scoredAttemptIds)
+        .in('attempt_id', gradedAttemptIds)
     : { data: [] as Array<{ attempt_id: string; skill: string; raw_score: number; scaled_score: number | null; max_score: number }> }
 
   const sections = forms.map(f => {
@@ -112,12 +117,12 @@ export async function GET(
     const total = totalByForm.get(f.id) ?? 0
     return {
       form: { id: f.id, slug: f.slug, title: f.title, title_ja: f.title_ja, mode: f.mode, time_limit_seconds: f.time_limit_seconds, set_order: f.set_order, published: f.published, form_skills: skillsByForm.get(f.id) ?? [] },
-      attempt: a ? { id: a.id, status: a.status, review_mode: a.review_mode, scored_at: a.scored_at } : null,
+      attempt: a ? { id: a.id, status: a.status, review_mode: a.review_mode, scored_at: a.scored_at, overall_score: a.overall_score ?? null } : null,
       // How far through the section the student is (for the progress ring).
       progress: {
         total,
         answered: a
-          ? a.status === 'in_progress' ? answeredByAttempt.get(a.id) ?? 0 : total
+          ? (a.status === 'in_progress' || a.status === 'awaiting_speaking') ? answeredByAttempt.get(a.id) ?? 0 : total
           : 0,
       },
       skills: a
