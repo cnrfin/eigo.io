@@ -1,0 +1,15 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["7UGDZLV97K.io.eigo.app"],
+        "components": [
+          {
+            "/": "/c/*",
+            "comment": "Challenge links (eigo.io/c/{id}) open the app"
+          }
+        ]
+      }
+    ]
+  }
+}
