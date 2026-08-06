@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
   const auth = await authenticate(request)
   if (!auth.ok) return auth.response
 
-  let body: { imageBase64?: unknown }
+  let body: { imageBase64?: unknown; level?: unknown }
   try {
     body = await request.json()
   } catch {
@@ -50,19 +50,31 @@ export async function POST(request: NextRequest) {
   if (!imageBase64) {
     return NextResponse.json({ error: 'Missing imageBase64' }, { status: 400 })
   }
+  const level = typeof body.level === 'string' && /^[ABC][12]$/.test(body.level) ? body.level : 'A2'
 
   try {
     const dataUrl = `data:image/jpeg;base64,${imageBase64}`
+
+    const levelGuidance: Record<string, string> = {
+      A1: 'The learner is CEFR A1 (beginner): choose only the most common, concrete everyday words (basic nouns).',
+      A2: 'The learner is CEFR A2 (elementary): common everyday words, with a few useful adjectives or actions.',
+      B1: 'The learner is CEFR B1 (intermediate): go beyond the obvious nouns — include useful adjectives, verbs, and less common items in the scene.',
+      B2: 'The learner is CEFR B2 (upper-intermediate): favour more precise, less common, and descriptive vocabulary (materials, textures, specific objects, evocative adjectives).',
+      C1: 'The learner is CEFR C1 (advanced): surface nuanced, specific, and sophisticated vocabulary a native would use to describe the scene, not beginner words.',
+    }
 
     const system =
       'You help a Japanese person learning English turn a personal photo into vocabulary and a friendly chat. ' +
       'Look at the image and return ONLY a JSON object: ' +
       '{ "context": string, "objects": [ { "term": string, "gloss": string, "pos": string, "example": string, "exampleGloss": string, "x": number, "y": number } ] }. ' +
       '"context" = one natural English sentence describing the scene/memory (what it shows and its mood), suitable for starting a warm conversation. ' +
-      '"objects" = 4 to 8 clear, useful English vocabulary items visibly present in the photo. Prefer concrete, learnable words; skip anything you are unsure is in the image. ' +
+      '"objects" = 4 to 8 useful English vocabulary items that are clearly and unambiguously VISIBLE in the photo. ' +
+      (levelGuidance[level] ?? levelGuidance.A2) + ' Skip anything you are not sure is in the image. ' +
       'For each: "term" = the English word (lowercase, singular), "gloss" = its Japanese meaning, "pos" = one of noun/verb/adj/adv/phrase, ' +
-      '"example" = a short natural English sentence using the word, "exampleGloss" = its natural Japanese translation, ' +
-      '"x" and "y" = the approximate CENTER of that object in the image as fractions from 0 (left/top) to 1 (right/bottom). ' +
+      '"example" = a short natural English sentence using the word, "exampleGloss" = its natural Japanese translation. ' +
+      'PLACEMENT — "x" and "y" locate the object so the app can pin a label on it, so accuracy matters: ' +
+      'give the CENTRE of the object as fractions of the image, where x=0 is the far left, x=1 the far right, y=0 the very top, y=1 the very bottom (origin top-left). ' +
+      'Only include an object if you can confidently point to where it is; put x,y on the object itself, not on empty space. ' +
       'No markdown, no code fences, no text outside the JSON object.'
 
     const completion = await openai().chat.completions.create({
