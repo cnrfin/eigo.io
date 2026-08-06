@@ -1,0 +1,125 @@
+import { NextRequest, NextResponse } from 'next/server'
+import OpenAI from 'openai'
+import { authenticate } from '@/lib/test-auth'
+
+export const runtime = 'nodejs'
+export const maxDuration = 30
+
+let _openai: OpenAI | null = null
+function openai(): OpenAI {
+  if (!_openai) {
+    const apiKey = process.env.OPENAI_API_KEY
+    if (!apiKey) throw new Error('Missing OPENAI_API_KEY environment variable')
+    _openai = new OpenAI({ apiKey })
+  }
+  return _openai
+}
+
+const MODEL = process.env.OPENAI_GENERATION_MODEL || 'gpt-5.4-mini'
+
+// Soft cap on how many questions the mascot asks before wrapping up.
+const MAX_TURNS = 5
+
+/**
+ * POST /api/memory/converse
+ *
+ * Drives the mascot (Teri) conversation about a personal memory. Given the
+ * memory context, the conversation so far, and the learner's level, it returns
+ * the NEXT adaptive question plus three predicted replies (scaffolds) with gap
+ * words — or a warm closing line when the arc is complete.
+ *
+ * Request:  { context?: string, level?: string, history?: { q: string, a: string }[] }
+ * Response: {
+ *   done: boolean,
+ *   question: { en: string, ja: string },
+ *   replies: { en: string, ja: string, gap: { term, gloss, pos }[] }[]
+ * }
+ */
+export async function POST(request: NextRequest) {
+  const auth = await authenticate(request)
+  if (!auth.ok) return auth.response
+
+  let body: { context?: unknown; level?: unknown; history?: unknown }
+  try {
+    body = await request.json()
+  } catch {
+    return NextResponse.json({ error: 'Expected JSON body' }, { status: 400 })
+  }
+
+  const context = typeof body.context === 'string' && body.context.trim() ? body.context.trim() : 'a personal photo the learner shared'
+  const level = typeof body.level === 'string' && body.level.trim() ? body.level.trim() : 'A2'
+  const history = Array.isArray(body.history)
+    ? body.history
+        .map((h) => ({ q: String((h as { q?: unknown })?.q ?? '').trim(), a: String((h as { a?: unknown })?.a ?? '').trim() }))
+        .filter((h) => h.q || h.a)
+    : []
+  const turn = history.length
+
+  const system =
+    'You are Teri, a warm, curious teacup mascot having a friendly spoken conversation with a Japanese person learning English, about a personal memory (a photo they shared). ' +
+    'Ask ONE short, natural question at a time, and ADAPT it to what they just told you — refer back to their earlier answers when it feels natural. ' +
+    'Never ask something that does not fit their answer (e.g. do not ask how they "met" a family member). Never repeat a question already asked. ' +
+    `Keep the whole chat to about ${MAX_TURNS} questions with a gentle arc: who → what happened → one specific detail → how it felt → a warm wrap-up. ` +
+    'Also provide THREE predicted replies the learner could plausibly give — natural SPOKEN English, each distinct and opening a different direction, short (a few words to one sentence). ' +
+    `Match everything to the learner's CEFR level (${level}): simpler words and shorter sentences at A1/A2. ` +
+    'Return ONLY a JSON object of this exact shape: ' +
+    '{ "done": boolean, "question": { "en": string, "ja": string }, "replies": [ { "en": string, "ja": string, "gap": [ { "term": string, "gloss": string, "pos": string } ] } ] }. ' +
+    '"question.ja" is a natural Japanese translation of the question. Each reply\'s "ja" is a natural Japanese translation of that reply. ' +
+    '"gap" = up to 2 useful words/phrases FROM that reply worth learning (skip trivial words like a/the/is); "gloss" is Japanese, "pos" is one of noun/verb/adj/adv/phrase; use [] if none. ' +
+    'Set "done" to true ONLY when it is time to wrap up: then "question" is a short, warm closing line (a statement is fine) and "replies" is an empty array. ' +
+    'No markdown, no code fences, no text outside the JSON object.'
+
+  const convo = history.length
+    ? history.map((h) => `Teri: ${h.q}\nLearner: ${h.a}`).join('\n')
+    : '(the conversation has not started yet — ask your first question about the memory)'
+
+  const user =
+    `Memory: ${context}\n` +
+    `Learner level: ${level}\n` +
+    `Questions asked so far: ${turn} (aim for about ${MAX_TURNS} total)\n\n` +
+    `Conversation so far:\n${convo}\n\n` +
+    'Give the next turn as JSON.'
+
+  try {
+    const completion = await openai().chat.completions.create({
+      model: MODEL,
+      messages: [
+        { role: 'system', content: system },
+        { role: 'user', content: user },
+      ],
+      response_format: { type: 'json_object' },
+      temperature: 0.7,
+      max_completion_tokens: 700,
+    })
+
+    const raw = completion.choices[0]?.message?.content ?? '{}'
+    const parsed = JSON.parse(raw) as {
+      done?: unknown
+      question?: { en?: unknown; ja?: unknown }
+      replies?: { en?: unknown; ja?: unknown; gap?: { term?: unknown; gloss?: unknown; pos?: unknown }[] }[]
+    }
+
+    const question = {
+      en: String(parsed.question?.en ?? '').trim(),
+      ja: String(parsed.question?.ja ?? '').trim(),
+    }
+    if (!question.en) return NextResponse.json({ error: 'No question produced' }, { status: 502 })
+
+    const done = !!parsed.done
+    const replies = done || !Array.isArray(parsed.replies)
+      ? []
+      : parsed.replies.slice(0, 3).map((r) => ({
+          en: String(r.en ?? '').trim(),
+          ja: String(r.ja ?? '').trim(),
+          gap: Array.isArray(r.gap)
+            ? r.gap.slice(0, 2).map((g) => ({ term: String(g.term ?? '').trim(), gloss: String(g.gloss ?? '').trim(), pos: String(g.pos ?? '').trim() || 'word' })).filter((g) => g.term)
+            : [],
+        })).filter((r) => r.en)
+
+    return NextResponse.json({ done, question, replies })
+  } catch (err) {
+    console.error('memory/converse error:', err)
+    const detail = err instanceof Error ? err.message : String(err)
+    return NextResponse.json({ error: 'Conversation failed', detail }, { status: 500 })
+  }
+}
