@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import OpenAI, { toFile } from 'openai'
+import OpenAI from 'openai'
 import { authenticate } from '@/lib/test-auth'
+import { transcodeToMp3 } from '@/lib/test-speaking'
 
 export const runtime = 'nodejs'
 export const maxDuration = 30
@@ -15,6 +16,11 @@ function openai(): OpenAI {
   return _openai
 }
 
+// Reuse the audio model the rest of the app already runs (gpt-audio). The
+// transcription-only SKUs (whisper-1 / gpt-4o-*-transcribe) aren't enabled on
+// this project — chat/audio here is gpt-5.4-mini / gpt-audio.
+const AUDIO_MODEL = process.env.OPENAI_AUDIO_MODEL || 'gpt-audio'
+
 /**
  * POST /api/memory/transcribe
  *
@@ -22,10 +28,12 @@ function openai(): OpenAI {
  * to know WHAT the learner said so it can compare it to the target sentence and,
  * if it differs, gently ask "did you mean …?".
  *
- * Request: multipart/form-data
- *   - audio:    the recorded clip (m4a / mp4 / wav …)
- *   - language: optional ISO code to bias recognition (default 'en')
+ * Request: multipart/form-data { audio: <m4a/mp4/webm clip> }
  * Response: { text: string }
+ *
+ * The clip is transcoded to mp3 (bundled ffmpeg) and transcribed by gpt-audio —
+ * the same pipeline the speaking tests use, so it works with this project's
+ * model access.
  */
 export async function POST(request: NextRequest) {
   const auth = await authenticate(request)
@@ -42,22 +50,47 @@ export async function POST(request: NextRequest) {
   if (!(audio instanceof Blob)) {
     return NextResponse.json({ error: 'Missing audio file' }, { status: 400 })
   }
-  const language = (form.get('language') as string | null)?.trim() || 'en'
 
   try {
-    const file = await toFile(Buffer.from(await audio.arrayBuffer()), 'clip.m4a', {
-      type: audio.type || 'audio/m4a',
-    })
-    const res = await openai().audio.transcriptions.create({
-      file,
-      model: 'whisper-1',
-      language,
-      // Nudge Whisper toward a clean, punctuated short English sentence.
-      prompt: 'A short spoken English sentence.',
-    })
-    return NextResponse.json({ text: (res.text ?? '').trim() })
+    const input = Buffer.from(await audio.arrayBuffer())
+    if (input.length === 0) return NextResponse.json({ error: 'Empty recording' }, { status: 400 })
+
+    // gpt-audio accepts mp3/wav — transcode the m4a clip first.
+    const mp3 = await transcodeToMp3(input)
+    const mp3Base64 = mp3.toString('base64')
+
+    const messages = [
+      {
+        role: 'system',
+        content:
+          'You are a speech-to-text engine. Transcribe the English audio EXACTLY as spoken. ' +
+          'Return ONLY the transcript text — no quotation marks, no commentary, no explanation. ' +
+          'If the audio is empty, silent or unintelligible, return an empty string.',
+      },
+      {
+        role: 'user',
+        content: [
+          { type: 'text', text: 'Transcribe this audio.' },
+          { type: 'input_audio', input_audio: { data: mp3Base64, format: 'mp3' } },
+        ],
+      },
+    ]
+
+    const completion = (await openai().chat.completions.create({
+      model: AUDIO_MODEL,
+      modalities: ['text'],
+      messages,
+    } as unknown as Parameters<OpenAI['chat']['completions']['create']>[0])) as OpenAI.Chat.Completions.ChatCompletion
+
+    const text = (completion.choices[0]?.message?.content ?? '').trim()
+    return NextResponse.json({ text })
   } catch (err) {
     console.error('memory/transcribe error:', err)
-    return NextResponse.json({ error: 'Transcription failed' }, { status: 500 })
+    // Surface the real cause to the client (dev prototype) so we can diagnose
+    // without reading Vercel logs.
+    const detail = err instanceof Error ? err.message : String(err)
+    const status = (err as { status?: number })?.status ?? null
+    const code = (err as { code?: string })?.code ?? null
+    return NextResponse.json({ error: 'Transcription failed', detail, status, code }, { status: 500 })
   }
 }
