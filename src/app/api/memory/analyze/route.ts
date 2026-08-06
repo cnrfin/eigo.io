@@ -28,7 +28,8 @@ const VISION_MODEL = process.env.OPENAI_VISION_MODEL || process.env.OPENAI_GENER
  * part of speech, an example sentence, and an approximate position so the app
  * can drop CapWords-style stickers on the image.
  *
- * Request:  multipart/form-data { image: <jpeg/png> }
+ * Request:  JSON { imageBase64: string }  (JPEG bytes, base64 — the client sends
+ *           the picker's JPEG base64 so HEIC iPhone photos are already converted)
  * Response: {
  *   context: string,
  *   objects: [{ term, gloss, pos, example, exampleGloss, x, y }]
@@ -38,23 +39,20 @@ export async function POST(request: NextRequest) {
   const auth = await authenticate(request)
   if (!auth.ok) return auth.response
 
-  let form: FormData
+  let body: { imageBase64?: unknown }
   try {
-    form = await request.formData()
+    body = await request.json()
   } catch {
-    return NextResponse.json({ error: 'Expected multipart/form-data' }, { status: 400 })
+    return NextResponse.json({ error: 'Expected JSON body' }, { status: 400 })
   }
 
-  const image = form.get('image')
-  if (!(image instanceof Blob)) {
-    return NextResponse.json({ error: 'Missing image file' }, { status: 400 })
+  const imageBase64 = typeof body.imageBase64 === 'string' ? body.imageBase64.replace(/^data:[^,]+,/, '').trim() : ''
+  if (!imageBase64) {
+    return NextResponse.json({ error: 'Missing imageBase64' }, { status: 400 })
   }
 
   try {
-    const buf = Buffer.from(await image.arrayBuffer())
-    if (buf.length === 0) return NextResponse.json({ error: 'Empty image' }, { status: 400 })
-    const mime = image.type || 'image/jpeg'
-    const dataUrl = `data:${mime};base64,${buf.toString('base64')}`
+    const dataUrl = `data:image/jpeg;base64,${imageBase64}`
 
     const system =
       'You help a Japanese person learning English turn a personal photo into vocabulary and a friendly chat. ' +
