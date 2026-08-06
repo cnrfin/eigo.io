@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import OpenAI from 'openai'
+import { spawn } from 'node:child_process'
+import { writeFile, unlink } from 'node:fs/promises'
+import { existsSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+import { randomUUID } from 'node:crypto'
 import { authenticate } from '@/lib/test-auth'
-import { transcodeToMp3 } from '@/lib/test-speaking'
 
 export const runtime = 'nodejs'
 export const maxDuration = 30
@@ -21,6 +26,44 @@ function openai(): OpenAI {
 // this project — chat/audio here is gpt-5.4-mini / gpt-audio.
 const AUDIO_MODEL = process.env.OPENAI_AUDIO_MODEL || 'gpt-audio'
 
+function ffmpegPath(): string {
+  const bundled = join(process.cwd(), 'bin', 'ffmpeg')
+  return existsSync(bundled) ? bundled : 'ffmpeg'
+}
+
+/**
+ * Transcode an audio clip to mono 16kHz mp3.
+ *
+ * IMPORTANT: we transcode from a TEMP FILE, not stdin. The phone records m4a
+ * (an MP4 container), which ffmpeg can't demux from a non-seekable pipe — the
+ * moov atom can live at the end of the file. Writing to disk gives ffmpeg a
+ * seekable input. (The web tests pipe webm, which is streamable, so they can
+ * use stdin — this route can't.)
+ */
+async function transcodeToMp3(input: Buffer): Promise<Buffer> {
+  const tmpIn = join(tmpdir(), `mem-${randomUUID()}`)
+  await writeFile(tmpIn, input)
+  try {
+    return await new Promise<Buffer>((resolve, reject) => {
+      const ff = spawn(ffmpegPath(), ['-i', tmpIn, '-f', 'mp3', '-ac', '1', '-ar', '16000', '-b:a', '64k', 'pipe:1'], {
+        stdio: ['ignore', 'pipe', 'pipe'],
+      })
+      const out: Buffer[] = []
+      const err: Buffer[] = []
+      ff.stdout.on('data', (c) => out.push(c as Buffer))
+      ff.stderr.on('data', (c) => err.push(c as Buffer))
+      ff.on('error', reject)
+      ff.on('close', (code) =>
+        code === 0
+          ? resolve(Buffer.concat(out))
+          : reject(new Error(`ffmpeg exited ${code}: ${Buffer.concat(err).toString().slice(-400)}`)),
+      )
+    })
+  } finally {
+    unlink(tmpIn).catch(() => {})
+  }
+}
+
 /**
  * POST /api/memory/transcribe
  *
@@ -30,10 +73,6 @@ const AUDIO_MODEL = process.env.OPENAI_AUDIO_MODEL || 'gpt-audio'
  *
  * Request: multipart/form-data { audio: <m4a/mp4/webm clip> }
  * Response: { text: string }
- *
- * The clip is transcoded to mp3 (bundled ffmpeg) and transcribed by gpt-audio —
- * the same pipeline the speaking tests use, so it works with this project's
- * model access.
  */
 export async function POST(request: NextRequest) {
   const auth = await authenticate(request)
@@ -55,7 +94,6 @@ export async function POST(request: NextRequest) {
     const input = Buffer.from(await audio.arrayBuffer())
     if (input.length === 0) return NextResponse.json({ error: 'Empty recording' }, { status: 400 })
 
-    // gpt-audio accepts mp3/wav — transcode the m4a clip first.
     const mp3 = await transcodeToMp3(input)
     const mp3Base64 = mp3.toString('base64')
 
@@ -86,8 +124,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ text })
   } catch (err) {
     console.error('memory/transcribe error:', err)
-    // Surface the real cause to the client (dev prototype) so we can diagnose
-    // without reading Vercel logs.
     const detail = err instanceof Error ? err.message : String(err)
     const status = (err as { status?: number })?.status ?? null
     const code = (err as { code?: string })?.code ?? null
