@@ -400,7 +400,10 @@ function HistoryLessonCard({
     if (transcriptContent) return // already loaded
     if (transcriptState !== 'idle' && transcriptState !== 'ready') return
     try {
-      const res = await fetch(`/api/transcriptions?bookingId=${lesson.id}`, {
+      // cachedOnly: warm the viewer only if this lesson was already transcribed.
+      // Without it, a hover would trigger a full (paid) transcription for a
+      // lesson the student may never open.
+      const res = await fetch(`/api/transcriptions?bookingId=${lesson.id}&cachedOnly=1`, {
         headers: { Authorization: `Bearer ${session.access_token}` },
       })
       const data = await res.json()
@@ -412,7 +415,8 @@ function HistoryLessonCard({
       } else if (data.status === 'no_recording') {
         setTranscriptState('none')
       }
-      // Ignore 'processing' or 'failed' on prefetch — don't poll silently
+      // 'not_cached' (not yet transcribed) and 'processing'/'failed': do nothing
+      // on prefetch — the transcription runs when the student actually opens it.
     } catch {
       // Silent fail
     }

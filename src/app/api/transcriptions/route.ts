@@ -1,67 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient, SupabaseClient } from '@supabase/supabase-js'
-import { getRecordings, createTranscription, getTranscription, getTranscriptionAccessLink } from '@/lib/whereby'
+import { createClient } from '@supabase/supabase-js'
+import { getRecordings, getRecordingAccessLink } from '@/lib/whereby'
+import { extractCompactAudio, transcribeAudio } from '@/lib/transcribe'
 import { getUserPermissions } from '@/lib/user-permissions'
 
-/**
- * Helper: check transcription status, fetch content if ready, and cache in Supabase.
- */
-async function resolveTranscription(
-  transcriptionId: string,
-  bookingId: string,
-  supabase: SupabaseClient,
-): Promise<{ status: string; content?: string; cleanedContent?: string; message?: string }> {
-  const transcription = await getTranscription(transcriptionId)
-
-  if (!transcription) {
-    console.error('getTranscription returned null for:', transcriptionId)
-    await supabase.from('bookings').update({ transcription_id: null }).eq('id', bookingId)
-    return { status: 'error', message: 'Could not check transcription — tap to retry' }
-  }
-
-  if (transcription.state === 'finished' || transcription.state === 'ready') {
-    const accessLink = await getTranscriptionAccessLink(transcriptionId)
-    if (accessLink) {
-      const contentRes = await fetch(accessLink)
-      const content = await contentRes.text()
-
-      // Cache transcript text in Supabase so we don't need to fetch from Whereby again
-      await supabase
-        .from('bookings')
-        .update({ transcript_text: content })
-        .eq('id', bookingId)
-
-      // Check if we already have a cleaned version
-      const { data: booking } = await supabase
-        .from('bookings')
-        .select('cleaned_transcript')
-        .eq('id', bookingId)
-        .single()
-
-      return {
-        status: 'ready',
-        content,
-        cleanedContent: booking?.cleaned_transcript || undefined,
-      }
-    }
-    return { status: 'error', message: 'Could not fetch transcript content' }
-  }
-
-  if (transcription.state === 'failed') {
-    await supabase.from('bookings').update({ transcription_id: null }).eq('id', bookingId)
-    return { status: 'failed', message: 'Transcription failed — tap to retry' }
-  }
-
-  return { status: 'processing' }
-}
+// Transcription pulls the recording, transcodes it and calls OpenAI, so it
+// needs the long timeout (matches the audio-extract route).
+export const runtime = 'nodejs'
+export const maxDuration = 300
 
 /**
- * GET /api/transcriptions?bookingId=xxx
+ * GET /api/transcriptions?bookingId=xxx[&cachedOnly=1]
  *
- * On-demand transcription flow:
- * 1. If transcript_text cached in Supabase → return immediately (no Whereby call)
- * 2. If booking has a transcription_id → check status in Whereby → cache & return if ready
- * 3. If no transcription_id → find recording → request transcription → cache & return
+ * On-demand transcription (OpenAI, not Whereby):
+ * 1. If transcript_text is cached in Supabase → return it immediately.
+ * 2. If `cachedOnly` is set (hover prefetch) → return not_cached, never transcribe.
+ *    This stops a hover from generating a paid transcript nobody reads.
+ * 3. Otherwise (explicit open) → pull the recording, transcribe it, cache & return.
  */
 export async function GET(request: NextRequest) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
@@ -121,44 +76,43 @@ export async function GET(request: NextRequest) {
     })
   }
 
+  // Hover prefetch: only serve an already-transcribed lesson; never kick off a
+  // new (paid, ~1-minute) transcription. Explicit opens omit cachedOnly.
+  const cachedOnly = new URL(request.url).searchParams.get('cachedOnly')
+  if (cachedOnly) {
+    return NextResponse.json({ status: 'not_cached' })
+  }
+
   if (!booking.whereby_room_url) {
-    return NextResponse.json({ error: 'No recording available for this lesson' }, { status: 404 })
+    return NextResponse.json({ status: 'no_recording', message: 'No recording available for this lesson' })
   }
 
   try {
-    // ── Case 1: We already have a transcription ID stored ──
-    if (booking.transcription_id) {
-      const result = await resolveTranscription(booking.transcription_id, bookingId, supabase)
-      return NextResponse.json(result)
-    }
-
-    // ── Case 2: No transcription yet — find recording and request one ──
+    // Find the recording for this lesson's room.
     const roomName = new URL(booking.whereby_room_url).pathname
     const recordings = await getRecordings(roomName)
-
     if (recordings.length === 0) {
       return NextResponse.json({ status: 'no_recording', message: 'No recording found for this lesson' })
     }
 
-    // Request transcription (handles 403 "already exists" by looking it up)
-    const recordingId = recordings[0].recordingId
-    const transcriptionId = await createTranscription(recordingId, roomName)
-
-    if (!transcriptionId) {
-      return NextResponse.json({ status: 'error', message: 'Could not start transcription' })
+    const accessLink = await getRecordingAccessLink(recordings[0].recordingId)
+    if (!accessLink) {
+      return NextResponse.json({ status: 'error', message: 'Could not access the recording' })
     }
 
-    // Store the transcription ID
-    await supabase
-      .from('bookings')
-      .update({ transcription_id: transcriptionId })
-      .eq('id', bookingId)
+    // Pull the recording, strip to compact audio, transcribe via OpenAI.
+    const audio = await extractCompactAudio(accessLink)
+    const content = await transcribeAudio(audio)
+    if (!content) {
+      return NextResponse.json({ status: 'error', message: 'Transcription came back empty' })
+    }
 
-    // Check immediately — it might already be finished
-    const result = await resolveTranscription(transcriptionId, bookingId, supabase)
-    return NextResponse.json(result)
+    // Cache so re-opens (and the summary step) never re-transcribe.
+    await supabase.from('bookings').update({ transcript_text: content }).eq('id', bookingId)
+
+    return NextResponse.json({ status: 'ready', content })
   } catch (err) {
     console.error('Transcription error:', err)
-    return NextResponse.json({ error: 'Internal error' }, { status: 500 })
+    return NextResponse.json({ status: 'error', message: 'Could not transcribe this lesson' })
   }
 }
