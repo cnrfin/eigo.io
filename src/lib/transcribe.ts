@@ -57,7 +57,7 @@ export async function extractCompactAudio(accessLink: string): Promise<Buffer> {
   const ffmpegBin = getFfmpegPath()
 
   const res = await fetch(accessLink)
-  if (!res.ok || !res.body) throw new Error(`recording fetch failed: ${res.status}`)
+  if (!res.ok || !res.body) throw new Error(`recording fetch failed: HTTP ${res.status}`)
 
   const input = Readable.fromWeb(res.body as import('stream/web').ReadableStream)
   const ff = spawn(
@@ -66,8 +66,12 @@ export async function extractCompactAudio(accessLink: string): Promise<Buffer> {
     { stdio: ['pipe', 'pipe', 'pipe'] },
   )
 
+  // If ffmpeg rejects the container and closes stdin early, writing to the pipe
+  // raises EPIPE. Without a handler that becomes an unhandled 'error' that reads
+  // as a mysterious failure — swallow it and let the exit code carry the reason.
+  ff.stdin.on('error', () => {})
+  input.on('error', () => { try { ff.stdin.destroy() } catch { /* already gone */ } })
   input.pipe(ff.stdin)
-  input.on('error', () => ff.stdin.destroy())
 
   const chunks: Buffer[] = []
   let size = 0
@@ -84,12 +88,16 @@ export async function extractCompactAudio(accessLink: string): Promise<Buffer> {
       }
       chunks.push(c)
     })
-    ff.on('error', reject)
+    ff.on('error', (e) => reject(new Error(`ffmpeg spawn failed: ${e.message}`)))
     ff.on('close', (code) => {
-      if (code !== 0 && code !== null) {
-        return reject(new Error(`ffmpeg exited ${code}: ${stderr.slice(-300)}`))
+      // No audio out means ffmpeg couldn't decode the recording — the stderr
+      // tail says why (bad container, no audio track, unseekable pipe, …).
+      if (chunks.length === 0) {
+        return reject(new Error(`ffmpeg produced no audio (exit ${code}): ${stderr.slice(-400)}`))
       }
-      if (chunks.length === 0) return reject(new Error('ffmpeg produced no audio'))
+      if (code !== 0 && code !== null) {
+        return reject(new Error(`ffmpeg exited ${code}: ${stderr.slice(-400)}`))
+      }
       resolve(Buffer.concat(chunks))
     })
   })

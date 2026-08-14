@@ -104,7 +104,7 @@ export async function GET(request: NextRequest) {
     const audio = await extractCompactAudio(accessLink)
     const content = await transcribeAudio(audio)
     if (!content) {
-      return NextResponse.json({ status: 'error', message: 'Transcription came back empty' })
+      return NextResponse.json({ status: 'error', message: 'Transcription came back empty', stage: 'transcribe-empty' })
     }
 
     // Cache so re-opens (and the summary step) never re-transcribe.
@@ -113,6 +113,12 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ status: 'ready', content })
   } catch (err) {
     console.error('Transcription error:', err)
-    return NextResponse.json({ status: 'error', message: 'Could not transcribe this lesson' })
+    // TEMPORARY diagnostic: surface the real cause to the client so we can see
+    // why it fails (model access, ffmpeg, timeout, …) without server logs. Remove
+    // the detail fields once the swap is confirmed working.
+    const detail = err instanceof Error ? err.message : String(err)
+    const apiStatus = (err as { status?: number })?.status ?? null
+    const apiCode = (err as { code?: string })?.code ?? null
+    return NextResponse.json({ status: 'error', message: 'Could not transcribe this lesson', detail, apiStatus, apiCode })
   }
 }
