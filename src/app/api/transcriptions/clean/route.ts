@@ -80,6 +80,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ status: 'ready', cleanedContent: cleaned })
   } catch (err) {
     console.error('Transcript cleanup error:', err)
-    return NextResponse.json({ error: 'Failed to clean transcript' }, { status: 500 })
+    // TEMPORARY diagnostic: surface the real cause (model access, token cap, …)
+    // so we can read it from the network tab. Remove once clean is confirmed.
+    const detail = err instanceof Error ? err.message : String(err)
+    const apiStatus = (err as { status?: number })?.status ?? null
+    const apiCode = (err as { code?: string })?.code ?? null
+    return NextResponse.json({ error: 'Failed to clean transcript', detail, apiStatus, apiCode }, { status: 500 })
   }
 }
