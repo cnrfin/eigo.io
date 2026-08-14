@@ -13,12 +13,14 @@ import OpenAI, { toFile } from 'openai'
  * file, and hand that to OpenAI. The recording itself still lives in Whereby —
  * only the transcription vendor changes.
  *
- * Model is env-overridable so it can move to gpt-4o-transcribe or whisper-1
- * without a code change. It must be added to the OpenAI project's allowed
- * models (Project Settings -> Limits) or the call returns 403 model_not_found.
+ * Pinned to a dated snapshot on purpose: the project's allowed-models list holds
+ * the exact ID `gpt-4o-mini-transcribe-2025-12-15`, and an allowlist treats the
+ * bare alias `gpt-4o-mini-transcribe` as a *different* model (403 model_not_found).
+ * Pinning also means the model can't silently change version, price or behaviour
+ * under us. Still env-overridable (e.g. to whisper-1, which is also allowed).
  */
 
-const TRANSCRIBE_MODEL = process.env.OPENAI_TRANSCRIBE_MODEL || 'gpt-4o-mini-transcribe'
+const TRANSCRIBE_MODEL = process.env.OPENAI_TRANSCRIBE_MODEL || 'gpt-4o-mini-transcribe-2025-12-15'
 
 // OpenAI rejects uploads over 25 MB. 16 kHz mono at 32 kbps is ~0.24 MB/min, so
 // a 75-minute lesson (the longest bookable) is ~18 MB — comfortably under. The
