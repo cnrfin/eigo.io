@@ -94,15 +94,20 @@ When in doubt about whether something is a transcription error or a genuine stud
       { role: 'user', content: `Here is the raw auto-generated transcript to clean up:\n\n${rawTranscript}` },
     ],
     temperature: 0.3,
-    max_completion_tokens: 8000,
+    // gpt-5.4-mini is a reasoning model and shares this budget between thinking
+    // and output. OpenAI transcripts arrive WITHOUT speaker labels, so the model
+    // has to infer every turn from scratch — much heavier reasoning than the old
+    // Whereby transcripts (which came pre-labelled). 8000 could be fully consumed
+    // by reasoning, leaving empty output; give it real headroom.
+    max_completion_tokens: 24000,
   })
 
-  const content = response.choices[0]?.message?.content
-  if (!content) {
-    throw new Error('No response from AI')
-  }
-
-  return content.trim()
+  const content = response.choices[0]?.message?.content?.trim()
+  // Never hard-fail: if the model returns nothing (e.g. it exhausted the budget
+  // on reasoning), fall back to the raw transcript. The OpenAI transcript is
+  // already reasonably clean, so the student still gets a usable result rather
+  // than a 500.
+  return content || rawTranscript.trim()
 }
 
 export type LessonAnalysis = {

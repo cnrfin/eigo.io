@@ -124,28 +124,21 @@ export default function RootLayout({
         {/* Signed-in users are redirected off the landing, but that decision needs
             React + validated auth, which is too late to stop the marketing page
             painting first. This probe runs during head parse: if a Supabase session
-            token is in localStorage it marks the document, so CSS can hide the page
-            and show a spinner until the redirect fires — no flash of landing.
-            Anonymous/logged-out visitors and crawlers have no token, so the marker
-            is never set and they get the full SSR page (SEO intact). LandingClient
-            clears the marker once auth resolves to a non-permanent session, so a
-            returning guest or a stale token falls back to the landing. Scoped to the
-            landing paths ('' is '/' after the trailing-slash strip). */}
+            token is in localStorage it marks the document AND injects the hide rule,
+            so the landing (`.lp-shell`) stays invisible until the redirect fires —
+            no flash. The rule is injected as plain DOM rather than a React <style>
+            on purpose: React 19 hoists/dedupes <style> resources, which can shift
+            its position between server and client and trip a hydration mismatch on
+            every page. Plain DOM injection sidesteps React entirely and still lands
+            before first paint. Anonymous/logged-out visitors and crawlers have no
+            token, so nothing is injected and they get the full SSR page (SEO intact);
+            LandingClient clears the marker once auth resolves to a non-permanent
+            session. Scoped to the landing paths ('' is '/' after the slash strip). */}
         <script
           dangerouslySetInnerHTML={{
             __html:
-              "(function(){try{var p=location.pathname.replace(/\\/+$/,'');if(p!==''&&p!=='/en')return;for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(k&&k.indexOf('sb-')===0&&k.indexOf('-auth-token')>-1){document.documentElement.setAttribute('data-authed','1');return}}}catch(e){}})()",
+              "(function(){try{var p=location.pathname.replace(/\\/+$/,'');if(p!==''&&p!=='/en')return;for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(k&&k.indexOf('sb-')===0&&k.indexOf('-auth-token')>-1){document.documentElement.setAttribute('data-authed','1');var s=document.createElement('style');s.textContent='html[data-authed] .lp-shell{visibility:hidden}';document.head.appendChild(s);return}}}catch(e){}})()",
           }}
-        />
-        {/* Paired with the probe above. Kept inline in <head> rather than in
-            globals.css on purpose: it ships with the HTML and applies before the
-            first paint, so it can't be missed or served stale by the bundler.
-            `.lp-shell` only exists on the landing, so this never affects other
-            routes even though the marker persists across client navigations. The
-            body background shows through, so the hidden state is a clean themed
-            blank until the redirect (or until LandingClient clears the marker). */}
-        <style
-          dangerouslySetInnerHTML={{ __html: 'html[data-authed] .lp-shell{visibility:hidden}' }}
         />
       </head>
       <body className="antialiased" style={{ background: 'var(--bg)', color: 'var(--text)', fontFamily: 'var(--font-outfit), sans-serif' }}>
