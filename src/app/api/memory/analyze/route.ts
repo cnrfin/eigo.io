@@ -109,7 +109,7 @@ export async function POST(request: NextRequest) {
           role: 'user',
           content: [
             { type: 'text', text: 'Analyse this photo.' },
-            { type: 'image_url', image_url: { url: dataUrl, detail: 'auto' } },
+            { type: 'image_url', image_url: { url: dataUrl, detail: 'high' } },
           ],
         },
       ],
