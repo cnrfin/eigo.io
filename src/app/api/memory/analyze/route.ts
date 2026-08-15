@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
     let buf = Buffer.from(imageBase64, 'base64')
     let mime = detectImageMime(buf)
     if (mime === 'image/heic' || mime === null) {
-      const convert = (await import('heic-convert')).default as unknown as (o: { buffer: Buffer; format: 'JPEG' | 'PNG'; quality?: number }) => Promise<ArrayBuffer>
+      const convert = (await import('heic-convert')).default
       const jpeg = await convert({ buffer: buf, format: 'JPEG', quality: 0.9 })
       buf = Buffer.from(jpeg)
       mime = 'image/jpeg'
