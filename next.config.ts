@@ -4,7 +4,7 @@ const nextConfig: NextConfig = {
   // The Azure Speech SDK does runtime feature-detection and dynamic requires
   // that Next's bundler mangles; keep it external so it loads as a plain Node
   // module inside the server function.
-  serverExternalPackages: ['microsoft-cognitiveservices-speech-sdk'],
+  serverExternalPackages: ['microsoft-cognitiveservices-speech-sdk', 'heic-convert'],
   // The postinstall script downloads an ~80MB static ffmpeg to bin/ffmpeg for
   // speaking-test transcodes. Vercel's file tracer statically resolves the
   // `join(process.cwd(), 'bin', 'ffmpeg')` in test-speaking.ts and pulls the

@@ -35,6 +35,20 @@ const VISION_MODEL = process.env.OPENAI_VISION_MODEL || process.env.OPENAI_GENER
  *   objects: [{ term, gloss, pos, example, exampleGloss, x, y }]
  * }
  */
+function detectImageMime(buf: Buffer): string | null {
+  if (buf.length < 12) return null
+  if (buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff) return 'image/jpeg'
+  if (buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4e && buf[3] === 0x47) return 'image/png'
+  if (buf[0] === 0x47 && buf[1] === 0x49 && buf[2] === 0x46) return 'image/gif'
+  if (buf[0] === 0x52 && buf[1] === 0x49 && buf[2] === 0x46 && buf[3] === 0x46 && buf[8] === 0x57 && buf[9] === 0x45 && buf[10] === 0x42 && buf[11] === 0x50) return 'image/webp'
+  // ISO-BMFF 'ftyp' box → HEIF/HEIC family
+  if (buf[4] === 0x66 && buf[5] === 0x74 && buf[6] === 0x79 && buf[7] === 0x70) {
+    const brand = buf.toString('ascii', 8, 12)
+    if (['heic', 'heix', 'hevc', 'hevx', 'heim', 'heis', 'hevm', 'hevs', 'mif1', 'msf1'].includes(brand)) return 'image/heic'
+  }
+  return null
+}
+
 export async function POST(request: NextRequest) {
   const auth = await authenticate(request)
   if (!auth.ok) return auth.response
@@ -53,7 +67,17 @@ export async function POST(request: NextRequest) {
   const level = typeof body.level === 'string' && /^[ABC][12]$/.test(body.level) ? body.level : 'A2'
 
   try {
-    const dataUrl = `data:image/jpeg;base64,${imageBase64}`
+    // Normalise the image for OpenAI (accepts only png/jpeg/gif/webp). iPhone photos
+    // are often HEIC/HEIF — decode those to JPEG first (pure-JS, no native deps).
+    let buf = Buffer.from(imageBase64, 'base64')
+    let mime = detectImageMime(buf)
+    if (mime === 'image/heic' || mime === null) {
+      const convert = (await import('heic-convert')).default as unknown as (o: { buffer: Buffer; format: 'JPEG' | 'PNG'; quality?: number }) => Promise<ArrayBuffer>
+      const jpeg = await convert({ buffer: buf, format: 'JPEG', quality: 0.9 })
+      buf = Buffer.from(jpeg)
+      mime = 'image/jpeg'
+    }
+    const dataUrl = `data:${mime};base64,${buf.toString('base64')}`
 
     const levelGuidance: Record<string, string> = {
       A1: 'The learner is CEFR A1 (beginner): choose only the most common, concrete everyday words (basic nouns).',
