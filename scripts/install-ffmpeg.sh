@@ -1,49 +1,71 @@
 #!/bin/bash
-# Downloads a static FFmpeg binary for the deployment platform.
-# Runs as a postinstall script so the binary is available at runtime
-# inside the serverless function bundle.
-#
+# Downloads a static FFmpeg binary for the deployment platform (Linux/Vercel).
 # On macOS (local dev) this is a no-op — developers use brew-installed ffmpeg.
-# On Linux (Vercel build) it downloads a minimal static build.
+#
+# Primary source is a GitHub-CDN-hosted static binary (reliable, single file, no
+# archive to corrupt). Falls back to a BtbN GitHub tarball. The old johnvansickle
+# direct download was dropped: that host rate-limits/blocks cloud build IPs, and the
+# previous `curl -sL | tar` piped error pages straight into tar ("tar: Error is not
+# recoverable"). Every download here is fail-fast (`curl -f`), retried, and validated.
 
-set -e
+set -euo pipefail
 
 DEST="bin/ffmpeg"
 
-# Skip if already present (e.g. repeated npm install)
 if [ -f "$DEST" ]; then
   echo "[install-ffmpeg] Already exists at $DEST, skipping."
   exit 0
 fi
 
-# Only download on Linux (Vercel build environment)
 if [ "$(uname -s)" != "Linux" ]; then
   echo "[install-ffmpeg] Not Linux ($(uname -s)), skipping — use system ffmpeg for local dev."
   exit 0
 fi
 
-echo "[install-ffmpeg] Downloading static FFmpeg for Linux x64..."
 mkdir -p bin
 
-# Download and extract to a temp directory, then find the ffmpeg binary.
-# The archive structure varies between releases so we search for it
-# rather than assuming a specific path depth.
-TMPDIR=$(mktemp -d)
-URL="https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz"
-curl -sL "$URL" | tar -xJ -C "$TMPDIR"
+ARCH="$(uname -m)"
+case "$ARCH" in
+  x86_64|amd64)
+    PRIMARY_URL="https://github.com/eugeneware/ffmpeg-static/releases/download/b6.0/ffmpeg-linux-x64"
+    FALLBACK_URL="https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linux64-gpl.tar.xz"
+    ;;
+  aarch64|arm64)
+    PRIMARY_URL="https://github.com/eugeneware/ffmpeg-static/releases/download/b6.0/ffmpeg-linux-arm64"
+    FALLBACK_URL="https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linuxarm64-gpl.tar.xz"
+    ;;
+  *)
+    echo "[install-ffmpeg] ERROR: unsupported arch $ARCH"
+    exit 1
+    ;;
+esac
 
-# Find the ffmpeg binary (not ffprobe, not directories)
-FOUND=$(find "$TMPDIR" -name 'ffmpeg' -type f ! -name 'ffprobe' | head -1)
+is_elf() {
+  # first 4 bytes of an ELF executable are 7f 45 4c 46
+  [ -f "$1" ] && [ "$(head -c4 "$1" | od -An -tx1 | tr -d ' \n')" = "7f454c46" ]
+}
 
-if [ -z "$FOUND" ]; then
-  echo "[install-ffmpeg] ERROR: ffmpeg binary not found in archive"
-  ls -R "$TMPDIR"
-  rm -rf "$TMPDIR"
-  exit 1
+echo "[install-ffmpeg] Downloading static FFmpeg for $ARCH (primary)..."
+if curl -fL --retry 4 --retry-delay 3 --max-time 180 -o "$DEST" "$PRIMARY_URL" && is_elf "$DEST"; then
+  chmod +x "$DEST"
+  echo "[install-ffmpeg] FFmpeg installed at $DEST ($(du -h "$DEST" | cut -f1))"
+  exit 0
 fi
+rm -f "$DEST"
+echo "[install-ffmpeg] Primary source failed or invalid, trying fallback tarball..."
 
-mv "$FOUND" "$DEST"
-chmod +x "$DEST"
+TMPDIR="$(mktemp -d)"
+if curl -fL --retry 4 --retry-delay 3 --max-time 300 -o "$TMPDIR/ff.tar.xz" "$FALLBACK_URL" && tar -xJf "$TMPDIR/ff.tar.xz" -C "$TMPDIR"; then
+  FOUND="$(find "$TMPDIR" -name 'ffmpeg' -type f ! -name 'ffprobe' | head -1)"
+  if [ -n "$FOUND" ] && is_elf "$FOUND"; then
+    mv "$FOUND" "$DEST"
+    chmod +x "$DEST"
+    rm -rf "$TMPDIR"
+    echo "[install-ffmpeg] FFmpeg installed from fallback at $DEST ($(du -h "$DEST" | cut -f1))"
+    exit 0
+  fi
+fi
 rm -rf "$TMPDIR"
 
-echo "[install-ffmpeg] FFmpeg installed at $DEST ($(du -h "$DEST" | cut -f1))"
+echo "[install-ffmpeg] ERROR: all FFmpeg sources failed"
+exit 1
