@@ -17,6 +17,21 @@ function openai(): OpenAI {
 
 const MODEL = process.env.OPENAI_GENERATION_MODEL || 'gpt-5.4-mini'
 
+// Strip machine-writing tells (em/en dashes, semicolons, punctuation-colons) from
+// Teri's spoken English so her lines read like a real person's text. Leaves times
+// like 3:30 alone and never touches the Japanese fields.
+function humanize(t: string): string {
+  return t
+    .replace(/\s*[\u2014\u2013]\s*/g, ', ')   // em/en dash -> comma
+    .replace(/\s*;\s*/g, ', ')                  // semicolon -> comma
+    .replace(/(\D)\s*:\s+/g, '$1, ')            // colon used as punctuation -> comma (keeps 3:30)
+    .replace(/\s+,/g, ',')
+    .replace(/,\s*,/g, ',')
+    .replace(/\s{2,}/g, ' ')
+    .replace(/^[,\s]+/, '')
+    .trim()
+}
+
 // Soft cap on how many questions the mascot asks before wrapping up.
 const MAX_TURNS = 5
 
@@ -68,12 +83,16 @@ export async function POST(request: NextRequest) {
     'Ask ONE short, natural question at a time, and ADAPT it to what they just told you — refer back to their earlier answers when it feels natural. ' +
     'Prefer to build each question directly on what they just said. When you DO need to change the subject (for example, turning back to the photo itself), bridge it with a short, natural discourse marker like "By the way,", "Anyway,", or "Oh, and" so the shift never feels abrupt or rude to a native speaker. ' +
     'Never ask something that does not fit their answer (e.g. do not ask how they "met" a family member). Never repeat a question already asked. ' +
-    'CRITICAL — if the learner ASKS YOU a question (for example "Do you know her name?", "What about you?", "Have you been there?"), you MUST answer it directly and in character FIRST. You are Teri, a curious little teacup: give a short, warm, genuine answer — it is completely fine to be playful, to guess, or to happily admit you do not know. NEVER ignore the learner\'s question or just carry on with your own next question — that feels rude and like you are not listening. Let the learner lead when they steer the conversation, and follow THEIR direction even if it moves away from the photo; only gently guide things back to the memory if the conversation runs dry. ' +
+    'CRITICAL — HANDLING A QUESTION FROM THE LEARNER. If the learner asks YOU something (for example "Do you know her name?", "What about you?", "Have you been there?"), do BOTH of these: ' +
+    '(1) In "reaction", ANSWER them directly and in character — a short, warm, genuine answer (a full sentence is fine here). As a curious little teacup it is completely fine to be playful, to guess, or to happily admit you do not know. ' +
+    '(2) In "question", STAY ON THE THREAD THEY JUST OPENED and reciprocate their curiosity — do NOT snap back to the photo or change the subject. If you admitted you do not know something, ask them about it (learner: "Do you know my mum\'s name?" -> reaction: "Hmm, I don\'t! She has a lovely smile though." -> question: "What\'s her name?"). If they asked "what about you?", turn a related question back to them. Snapping to an unrelated or photo question right after they asked you something (e.g. answering about a name and then asking "What did you eat?") makes you seem like you were not listening — a real person would NEVER do that. ' +
+    'Only once that thread has naturally run its course may you gently bridge back to the memory with a discourse marker. Never ignore the learner\'s question or barrel ahead with an unrelated one. ' +
     `Keep the whole chat to about ${MAX_TURNS} questions with a gentle arc: who → what happened → one specific detail → how it felt → a warm wrap-up. ` +
-    'Before the question, give a SHORT, warm reaction (2-5 words) — react to the photo on the first turn (e.g. "Looks delicious!", "Looks like fun!"), or to what they just said after that (e.g. "That sounds lovely!"). When the learner has ASKED you something, use "reaction" to actually ANSWER them (a short sentence is fine here, not just a few words), then let "question" continue the thread naturally. Keep reactions varied and genuine, never repetitive. ' +
+    'Before the question, give a SHORT, warm reaction (2-5 words) — react to the photo on the first turn (e.g. "Looks delicious!", "Looks like fun!"), or to what they just said after that (e.g. "That sounds lovely!"). When the learner has ASKED you something, use "reaction" to actually ANSWER them (a short sentence is fine here, not just a few words), and make "question" stay on the thread they opened and reciprocate their curiosity — never jump back to the photo in the same turn they asked you something. Keep reactions varied and genuine, never repetitive. ' +
     'Also provide THREE predicted replies the learner could plausibly give — natural SPOKEN English, each distinct and opening a different direction, short (a few words to one sentence). ' +
     (words.length ? 'The learner is currently learning these words/phrases from their photo: ' + words.map((w) => w.term).join(', ') + '. Where it fits the question NATURALLY, weave one or two of them into SOME of the predicted replies so the learner can practise them — but keep variety (not every reply needs one) and NEVER force a word that does not fit the question or sounds unnatural. ' : '') +
     `Match everything to the learner's CEFR level (${level}): simpler words and shorter sentences at A1/A2. ` +
+    'PUNCTUATION — write the way people actually text: plain and natural. Do NOT use em dashes, en dashes, colons, or semicolons anywhere in the English fields; real people almost never type those in a casual chat. Use commas, periods, or just separate short sentences instead. Question marks and exclamation marks are fine. This applies to "reaction", "question" and every reply. ' +
     'Return ONLY a JSON object of this exact shape: ' +
     '{ "done": boolean, "reaction": { "en": string, "ja": string }, "question": { "en": string, "ja": string }, "replies": [ { "en": string, "ja": string, "gap": [ { "term": string, "gloss": string, "pos": string } ] } ] }. ' +
     '"reaction.ja" and "question.ja" are natural Japanese translations. Each reply\'s "ja" is a natural Japanese translation of that reply. ' +
@@ -114,19 +133,19 @@ export async function POST(request: NextRequest) {
     }
 
     const question = {
-      en: String(parsed.question?.en ?? '').trim(),
+      en: humanize(String(parsed.question?.en ?? '').trim()),
       ja: String(parsed.question?.ja ?? '').trim(),
     }
     if (!question.en) return NextResponse.json({ error: 'No question produced' }, { status: 502 })
 
-    const reactionEn = String(parsed.reaction?.en ?? '').trim()
+    const reactionEn = humanize(String(parsed.reaction?.en ?? '').trim())
     const reaction = reactionEn ? { en: reactionEn, ja: String(parsed.reaction?.ja ?? '').trim() } : null
 
     const done = !!parsed.done
     const replies = done || !Array.isArray(parsed.replies)
       ? []
       : parsed.replies.slice(0, 3).map((r) => ({
-          en: String(r.en ?? '').trim(),
+          en: humanize(String(r.en ?? '').trim()),
           ja: String(r.ja ?? '').trim(),
           gap: Array.isArray(r.gap)
             ? r.gap.slice(0, 2).map((g) => ({ term: String(g.term ?? '').trim(), gloss: String(g.gloss ?? '').trim(), pos: String(g.pos ?? '').trim() || 'word' })).filter((g) => g.term)
