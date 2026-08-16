@@ -34,6 +34,8 @@ function humanize(t: string): string {
 
 // Soft cap on how many questions the mascot asks before wrapping up.
 const MAX_TURNS = 5
+// Hard ceiling: however far a tangent wanders, the chat is forced to wrap by here.
+const HARD_CAP = 8
 
 /**
  * POST /api/memory/converse
@@ -90,7 +92,7 @@ export async function POST(request: NextRequest) {
     `Keep the whole chat to about ${MAX_TURNS} questions with a gentle arc: who → what happened → one specific detail → how it felt → a warm wrap-up. ` +
     'Before the question, give a SHORT, warm reaction (2-5 words) — react to the photo on the first turn (e.g. "Looks delicious!", "Looks like fun!"), or to what they just said after that (e.g. "That sounds lovely!"). When the learner has ASKED you something, use "reaction" to actually ANSWER them (a short sentence is fine here, not just a few words), and make "question" stay on the thread they opened and reciprocate their curiosity — never jump back to the photo in the same turn they asked you something. Keep reactions varied and genuine, never repetitive. ' +
     'Also provide THREE predicted replies the learner could plausibly give — natural SPOKEN English, each distinct and opening a different direction, short (a few words to one sentence). ' +
-    (words.length ? 'The learner is currently learning these words/phrases from their photo: ' + words.map((w) => w.term).join(', ') + '. Where it fits the question NATURALLY, weave one or two of them into SOME of the predicted replies so the learner can practise them — but keep variety (not every reply needs one) and NEVER force a word that does not fit the question or sounds unnatural. ' : '') +
+    (words.length ? 'The learner is currently learning these words/phrases from their photo: ' + words.map((w) => w.term).join(', ') + '. These belong to the PHOTO, so they only make sense while the conversation is actually about that photo or its topic. ONLY weave one into a predicted reply when the word genuinely fits what is being discussed RIGHT NOW and the resulting sentence is TRUE and natural for the learner to say. If the conversation has drifted to another subject (a movie, their day, a person, anything not in the photo), do NOT drag these photo words in. For example, if you are talking about an alien movie, a reply like "I liked the coffee part more" is nonsense and exactly the mistake to avoid. When nothing fits the current topic, use none; a clean, on-topic reply is ALWAYS better than a forced vocabulary word. Keep strong variety, most replies should contain no target word at all. ' : '') +
     `Match everything to the learner's CEFR level (${level}): simpler words and shorter sentences at A1/A2. ` +
     'PUNCTUATION — write the way people actually text: plain and natural. Do NOT use em dashes, en dashes, colons, or semicolons anywhere in the English fields; real people almost never type those in a casual chat. Use commas, periods, or just separate short sentences instead. Question marks and exclamation marks are fine. This applies to "reaction", "question" and every reply. ' +
     'Return ONLY a JSON object of this exact shape: ' +
@@ -104,12 +106,20 @@ export async function POST(request: NextRequest) {
     ? history.map((h) => `Teri: ${h.q}\nLearner: ${h.a}`).join('\n')
     : '(the conversation has not started yet — ask your first question about the memory)'
 
+  const nearEnd = turn >= MAX_TURNS - 1
+  const mustWrap = turn >= HARD_CAP
+  const steer = mustWrap
+    ? 'THIS CHAT MUST END NOW. It has gone on long enough. If it has drifted away from the photo, tie it back to the memory in ONE warm sentence. Set "done" to true, make "question" a short warm closing line that refers to the memory, and return an empty "replies" array. Do NOT ask another question.'
+    : nearEnd
+    ? 'You are near the end of this chat. If the conversation has drifted away from the photo/memory, gently bridge back to it now (for example "Anyway, back to your photo,") and ask ONE last question about the MEMORY itself, then plan to wrap up within a turn or two. Do not keep chasing the tangent.'
+    : ''
   const user =
     `Memory: ${context}\n` +
     `Learner level: ${level}\n` +
     (words.length ? `Words the learner is learning: ${words.map((w) => w.term).join(', ')}\n` : '') +
-    `Questions asked so far: ${turn} (aim for about ${MAX_TURNS} total)\n\n` +
+    `Questions asked so far: ${turn} (aim for about ${MAX_TURNS} total, hard stop at ${HARD_CAP})\n\n` +
     `Conversation so far:\n${convo}\n\n` +
+    (steer ? steer + '\n\n' : '') +
     'Give the next turn as JSON.'
 
   try {
@@ -141,7 +151,7 @@ export async function POST(request: NextRequest) {
     const reactionEn = humanize(String(parsed.reaction?.en ?? '').trim())
     const reaction = reactionEn ? { en: reactionEn, ja: String(parsed.reaction?.ja ?? '').trim() } : null
 
-    const done = !!parsed.done
+    const done = !!parsed.done || mustWrap   // never let a tangent run past the hard cap
     const replies = done || !Array.isArray(parsed.replies)
       ? []
       : parsed.replies.slice(0, 3).map((r) => ({
