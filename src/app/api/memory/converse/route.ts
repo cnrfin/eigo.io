@@ -28,9 +28,9 @@ const HARD_CAP = 20
 // like 3:30 alone and never touches the Japanese fields.
 function humanize(t: string): string {
   return t
-    .replace(/\s*[—–]\s*/g, ', ')   // em/en dash -> comma
-    .replace(/\s*;\s*/g, ', ')                  // semicolon -> comma
-    .replace(/(\D)\s*:\s+/g, '$1, ')            // punctuation-colon -> comma (keeps 3:30)
+    .replace(/\s*[—–]\s*/g, ', ')
+    .replace(/\s*;\s*/g, ', ')
+    .replace(/(\D)\s*:\s+/g, '$1, ')
     .replace(/\s+,/g, ',')
     .replace(/,\s*,/g, ',')
     .replace(/\s{2,}/g, ' ')
@@ -39,9 +39,8 @@ function humanize(t: string): string {
 }
 
 // ── engagement signal (deterministic dryness detection) ──────────────────────
-// We decide, in code, whether the learner (a) just asked Teri something, or (b) has
-// gone quiet (two flat turns: short, no question, no new detail), and hand the model
-// one crisp directive. Keeps that fuzzy judgment out of the (lean) prompt.
+// Decide, in code, whether the learner (a) just asked Teri something, or (b) has gone
+// quiet (two flat turns), and hand the model one crisp directive.
 const countWords = (s: string) => (String(s || '').match(/[a-z0-9']+/gi) || []).length
 const hasQuestion = (s: string) => /\?/.test(String(s || ''))
 const DISENGAGED = /(i (don'?t|do not) know|not sure|it'?s fine|it was fine|nothing much|nothing really|no idea|dunno|i guess|maybe$)/i
@@ -55,35 +54,32 @@ function engagementDirective(history: { q: string; a: string }[]): string {
   }
   const last2 = history.slice(-2)
   if (last2.length === 2 && last2.every((h) => isFlat(h.a))) {
-    return 'NOTE: The learner has gone quiet (two short turns, no question, no new detail). If the conversation has drifted away from the photo, return to it now with one fresh question about the photo. If you are already talking about the photo, warmly wrap up: set done to true, put your warm closing line in the question field (not reaction), and use an empty replies array.'
+    return 'NOTE: The learner has gone quiet (two short turns, no question, no new detail). If the conversation has drifted from the photo, return to it now with one fresh question about the photo. If you are already on the photo, wrap up warmly: set done to true, send ONE short closing message, and use an empty replies array.'
   }
   return ''
 }
 
-// Lean, subtractive system prompt. Per OpenAI's GPT-5.6 guidance, a handful of
-// priority-phrased instructions beats a stacked wall of rules for this model family.
+// Lean, subtractive system prompt. Teri writes one or two real text messages rather
+// than a forced "reaction + question", which reads far more naturally.
 function buildSystem(learner: string, level: string, words: { term: string }[]): string {
   return (
     'You are Teri, a warm, curious teacup having a friendly, text-style chat with a Japanese person learning English about a photo they shared. ' +
     (learner ? 'You remember this about them: ' + learner + ' ' : '') +
-    'React briefly and warmly to what they say (a short comment, never a question), then ask ONE short, natural question. Build it on what they just said, and draw fresh angles from the photo (who, what, where, when, why, how), preferring angles you have not asked about yet. ' +
-    'If they ask you something, answer it warmly first, then stay on that thread. ' +
-    'Follow their lead: if they move to a new topic, go with them and ask about it. Let lively chats keep going and end flat ones sooner. Never go past about 20 questions. ' +
+    'Reply the way you would in a real text chat, as ONE or at most TWO short messages. Most of the time ONE message is enough: just your next question, which can carry a couple of words of natural acknowledgement inside it. Only send a separate first message when you genuinely have a quick, real reaction to add (agreement, a feeling, light surprise or curiosity), never a description of the photo or a restatement of what they said, and never a forced comment. Your LAST message is always your question. ' +
+    'Build your question on what they just said, and draw fresh angles from the photo (who, what, where, when, why, how), preferring angles you have not asked about yet. If they ask you something, answer it first, then stay on that thread. Follow their lead. ' +
     (words.length ? 'They are learning these photo words: ' + words.map((w) => w.term).join(', ') + '. Use one in a reply only when it fits naturally. ' : '') +
-    'Write English like a real text message: no emojis, and no dashes, colons or semicolons. Keep it at CEFR level ' + level + '. ' +
+    'Write English like real text messages: no emojis, no dashes, colons or semicolons, and only word pairings a native speaker would really say (a smell is not "warm"). Keep everything at CEFR level ' + level + '. ' +
     'Also give three short, distinct replies the learner might say. ' +
-    'Return only JSON: { "done": boolean, "reaction": { "en": string, "ja": string }, "question": { "en": string, "ja": string }, "replies": [ { "en": string, "ja": string, "gap": [ { "term": string, "gloss": string, "pos": string } ] } ] }. The ja fields are natural Japanese translations. Each reply gap has up to 2 useful words worth learning (skip trivial words like a/the/is), or [].'
+    'Return only JSON: { "done": boolean, "bubbles": [ { "en": string, "ja": string } ], "replies": [ { "en": string, "ja": string, "gap": [ { "term": string, "gloss": string, "pos": string } ] } ] }. "bubbles" is one or two messages and the LAST one is your question. The ja fields are natural Japanese translations. Each reply gap has up to 2 useful words worth learning (skip trivial words like a/the/is), or [].'
   )
 }
 
 /**
  * POST /api/memory/converse
  *
- * Drives the Teri conversation about a personal memory. Adaptive length with a
- * deterministic dryness signal: follows the learner's lead while lively, quietly
- * returns to the photo when a tangent goes quiet, and wraps up when the whole thing
- * does. Returns the next reaction + question + three scaffold replies, or a warm
- * closing line when done.
+ * Drives the Teri conversation. Adaptive length + deterministic dryness signal.
+ * Teri replies as one or two short text messages (last = the question) plus three
+ * scaffold replies, or a single warm closing message when done.
  */
 export async function POST(request: NextRequest) {
   const auth = await authenticate(request)
@@ -117,10 +113,10 @@ export async function POST(request: NextRequest) {
 
   const convo = history.length
     ? history.map((h) => `Teri: ${h.q}\nLearner: ${h.a}`).join('\n')
-    : '(the conversation has not started yet, ask your first question about the photo)'
+    : '(the conversation has not started yet, send your first message about the photo)'
 
   const directive = mustWrap
-    ? 'NOTE: This chat has gone on long enough. Wrap up now: set done to true, put a warm closing line in the question field, and use an empty replies array. Do not ask another question.'
+    ? 'NOTE: This chat has gone on long enough. Wrap up now: set done to true, send ONE short warm closing message, and use an empty replies array. Do not ask another question.'
     : engagementDirective(history)
 
   const user =
@@ -133,9 +129,6 @@ export async function POST(request: NextRequest) {
     'Give the next turn as JSON.'
 
   try {
-    // Run at low reasoning effort (fast + cheap, as this model is designed for).
-    // Strip reasoning_effort if an overridden model rejects it. Temperature is left
-    // at the model default (GPT-5-era models only allow the default).
     const base = {
       model: MODEL,
       messages: [
@@ -157,25 +150,21 @@ export async function POST(request: NextRequest) {
     const raw = completion.choices[0]?.message?.content ?? '{}'
     const parsed = JSON.parse(raw) as {
       done?: unknown
-      reaction?: { en?: unknown; ja?: unknown }
-      question?: { en?: unknown; ja?: unknown }
+      bubbles?: { en?: unknown; ja?: unknown }[]
       replies?: { en?: unknown; ja?: unknown; gap?: { term?: unknown; gloss?: unknown; pos?: unknown }[] }[]
     }
 
     const done = !!parsed.done || mustWrap
 
-    const reactionEnRaw = humanize(String(parsed.reaction?.en ?? '').trim())
-    let questionEn = humanize(String(parsed.question?.en ?? '').trim())
-    // On a wrap-up the model sometimes puts the farewell in "reaction" and leaves
-    // "question" empty. Promote the reaction to the closing line so a wrap never fails.
-    if (!questionEn && done && reactionEnRaw) questionEn = reactionEnRaw
-    if (!questionEn) return NextResponse.json({ error: 'No question produced' }, { status: 502 })
-
-    const question = { en: questionEn, ja: String(parsed.question?.ja ?? '').trim() }
-    // Avoid echoing the same text as both reaction and question on a wrap-up.
-    const reaction = reactionEnRaw && reactionEnRaw !== questionEn
-      ? { en: reactionEnRaw, ja: String(parsed.reaction?.ja ?? '').trim() }
-      : null
+    let bubbles = Array.isArray(parsed.bubbles)
+      ? parsed.bubbles
+          .map((b) => ({ en: humanize(String(b.en ?? '').trim()), ja: String(b.ja ?? '').trim() }))
+          .filter((b) => b.en)
+          .slice(0, 2)
+      : []
+    if (!bubbles.length) return NextResponse.json({ error: 'No message produced' }, { status: 502 })
+    // On a wrap-up, keep a single warm closing message (the last bubble).
+    if (done) bubbles = bubbles.slice(-1)
 
     const replies = done || !Array.isArray(parsed.replies)
       ? []
@@ -187,7 +176,11 @@ export async function POST(request: NextRequest) {
             : [],
         })).filter((r) => r.en)
 
-    return NextResponse.json({ done, reaction, question, replies })
+    // Also expose reaction/question derived from bubbles so an older app build that
+    // still reads those fields keeps working during the rollout.
+    const reaction = bubbles.length > 1 ? bubbles[0] : null
+    const question = bubbles[bubbles.length - 1]
+    return NextResponse.json({ done, bubbles, reaction, question, replies })
   } catch (err) {
     console.error('memory/converse error:', err)
     const detail = err instanceof Error ? err.message : String(err)
