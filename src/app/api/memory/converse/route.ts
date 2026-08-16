@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
   const auth = await authenticate(request)
   if (!auth.ok) return auth.response
 
-  let body: { context?: unknown; level?: unknown; history?: unknown }
+  let body: { context?: unknown; level?: unknown; history?: unknown; words?: unknown }
   try {
     body = await request.json()
   } catch {
@@ -54,6 +54,12 @@ export async function POST(request: NextRequest) {
         .filter((h) => h.q || h.a)
     : []
   const turn = history.length
+  const words = Array.isArray(body.words)
+    ? body.words
+        .map((w) => ({ term: String((w as { term?: unknown })?.term ?? '').trim(), gloss: String((w as { gloss?: unknown })?.gloss ?? '').trim() }))
+        .filter((w) => w.term)
+        .slice(0, 20)
+    : []
 
   const system =
     'You are Teri, a warm, curious teacup mascot having a friendly spoken conversation with a Japanese person learning English, about a personal memory (a photo they shared). ' +
@@ -63,6 +69,7 @@ export async function POST(request: NextRequest) {
     `Keep the whole chat to about ${MAX_TURNS} questions with a gentle arc: who → what happened → one specific detail → how it felt → a warm wrap-up. ` +
     'Before the question, give a SHORT, warm reaction (2-5 words) — react to the photo on the first turn (e.g. "Looks delicious!", "Looks like fun!"), or to what they just said after that (e.g. "That sounds lovely!"). Keep reactions varied and genuine, never repetitive. ' +
     'Also provide THREE predicted replies the learner could plausibly give — natural SPOKEN English, each distinct and opening a different direction, short (a few words to one sentence). ' +
+    (words.length ? 'The learner is currently learning these words/phrases from their photo: ' + words.map((w) => w.term).join(', ') + '. Where it fits the question NATURALLY, weave one or two of them into SOME of the predicted replies so the learner can practise them — but keep variety (not every reply needs one) and NEVER force a word that does not fit the question or sounds unnatural. ' : '') +
     `Match everything to the learner's CEFR level (${level}): simpler words and shorter sentences at A1/A2. ` +
     'Return ONLY a JSON object of this exact shape: ' +
     '{ "done": boolean, "reaction": { "en": string, "ja": string }, "question": { "en": string, "ja": string }, "replies": [ { "en": string, "ja": string, "gap": [ { "term": string, "gloss": string, "pos": string } ] } ] }. ' +
@@ -78,6 +85,7 @@ export async function POST(request: NextRequest) {
   const user =
     `Memory: ${context}\n` +
     `Learner level: ${level}\n` +
+    (words.length ? `Words the learner is learning: ${words.map((w) => w.term).join(', ')}\n` : '') +
     `Questions asked so far: ${turn} (aim for about ${MAX_TURNS} total)\n\n` +
     `Conversation so far:\n${convo}\n\n` +
     'Give the next turn as JSON.'
