@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
   const auth = await authenticate(request)
   if (!auth.ok) return auth.response
 
-  let body: { context?: unknown; level?: unknown; history?: unknown; words?: unknown }
+  let body: { context?: unknown; level?: unknown; history?: unknown; words?: unknown; learner?: unknown }
   try {
     body = await request.json()
   } catch {
@@ -60,9 +60,11 @@ export async function POST(request: NextRequest) {
         .filter((w) => w.term)
         .slice(0, 20)
     : []
+  const learner = typeof body.learner === 'string' ? body.learner.trim().slice(0, 2000) : ''
 
   const system =
     'You are Teri, a warm, curious teacup mascot having a friendly spoken conversation with a Japanese person learning English, about a personal memory (a photo they shared). ' +
+    (learner ? 'Here is what you already know about this learner, from past chats and their profile — weave it in naturally when it fits (greet them, refer back to people or things you remember), but NEVER force it, recite facts as a list, or make them feel watched: ' + learner + ' ' : '') +
     'Ask ONE short, natural question at a time, and ADAPT it to what they just told you — refer back to their earlier answers when it feels natural. ' +
     'Prefer to build each question directly on what they just said. When you DO need to change the subject (for example, turning back to the photo itself), bridge it with a short, natural discourse marker like "By the way,", "Anyway,", or "Oh, and" so the shift never feels abrupt or rude to a native speaker. ' +
     'Never ask something that does not fit their answer (e.g. do not ask how they "met" a family member). Never repeat a question already asked. ' +
