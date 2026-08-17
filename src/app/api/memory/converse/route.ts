@@ -46,15 +46,35 @@ const hasQuestion = (s: string) => /\?/.test(String(s || ''))
 const DISENGAGED = /(i (don'?t|do not) know|not sure|it'?s fine|it was fine|nothing much|nothing really|no idea|dunno|i guess|maybe$)/i
 const isFlat = (a: string) => !hasQuestion(a) && (countWords(a) <= 4 || DISENGAGED.test(String(a || '')))
 
+const WRAP = 'set done to true, send ONE short warm closing message, and use an empty replies array. Do not ask another question.'
+
+// Explicit end-of-conversation cues from the learner (goodbyes, "I have to go"). High
+// precision: the go-phrases exclude "go to <place>" so routine talk does not trip it.
+const FAREWELL = /(^|[\s,.!?])(bye|goodbye|good bye|see (you|ya)( next time| again| later| soon| around)?|talk( to you)? later|catch you later|until next time|take care|i have to go(?!\s+to\b)|i need to go(?!\s+to\b)|i should (get going|go)(?!\s+to\b)|i'?m gonna (go|head off)|i'?ll (get going|be off)|gotta go(?!\s+to\b)|i have got to go|i must go(?!\s+to\b)|i'?m leaving( now)?|let'?s (end|stop|finish|wrap)( (it|this|up|the (chat|conversation)))?|end (the |this )?(chat|conversation)|i( am|'?m) done(?!\s+with\b)( for (now|today))?)([\s,.!?]|$)/i
+const isFarewell = (s: string) => FAREWELL.test(String(s || ''))
+const trailingFlat = (history: { q: string; a: string }[]): number => {
+  let n = 0
+  for (let i = history.length - 1; i >= 0; i--) { if (isFlat(history[i].a)) n++; else break }
+  return n
+}
+
 function engagementDirective(history: { q: string; a: string }[]): string {
   if (!history.length) return ''
   const latest = history[history.length - 1].a
+  // A goodbye or "I have to go" is a hard stop: never answer it with another question.
+  if (isFarewell(latest)) {
+    return 'NOTE: The learner is saying goodbye or signalling they want to stop. Do not ask another question. Warmly acknowledge it and say a friendly goodbye: ' + WRAP
+  }
   if (hasQuestion(latest)) {
     return 'NOTE: The learner just asked you a question. Send your warm answer as a short FIRST message, then your question as a SECOND message (two bubbles). Stay on this thread, do not switch back to the photo this turn.'
   }
+  // Several low-energy replies in a row: they are winding down, do not keep pulling.
+  if (trailingFlat(history) >= 3) {
+    return 'NOTE: The learner has given several short, low-energy replies in a row, they are clearly winding down. Do not push for more, wrap up warmly: ' + WRAP
+  }
   const last2 = history.slice(-2)
   if (last2.length === 2 && last2.every((h) => isFlat(h.a))) {
-    return 'NOTE: The learner has gone quiet (two short turns, no question, no new detail). If the conversation has drifted from the photo, return to it now with one fresh question about the photo. If you are already on the photo, wrap up warmly: set done to true, send ONE short closing message, and use an empty replies array.'
+    return 'NOTE: The learner has gone quiet (two short turns, no question, no new detail). If the conversation has drifted from the photo, return to it now with one fresh question about the photo. If you are already on the photo, wrap up warmly: ' + WRAP
   }
   return ''
 }
@@ -84,7 +104,7 @@ function buildSystem(learner: string, level: string, words: { term: string }[], 
     'You are Teri, a warm, curious teacup having a friendly, text-style chat with a Japanese person learning English about a photo they shared. ' +
     (learner ? 'You remember this about them: ' + learner + ' ' : '') +
     'Reply the way you would in a real text chat, as ONE or TWO short messages. Usually ONE is enough: your next question, with a couple of words of acknowledgement folded in. Send TWO messages (a short first message, then your question) at the moments a real person naturally would: when you are answering a question the learner asked you (answer first, then ask yours), or when they just shared something notable or emotional that deserves a genuine reaction of its own. Never add a second message just to comment on the photo or restate what they said, and never force it. Your LAST message is always your question. ' +
-    'Build your question on what they just said, but do not keep drilling the same narrow detail. After a question or two about one specific thing, move to a different aspect, and ask what a real friend would genuinely be curious about when shown this exact photo, given what it shows and what they have told you so far. Let the subject of the photo decide what is natural to ask, not any fixed list, so a question would never feel out of place for this kind of picture. Keep finding fresh, relevant ground so it never becomes an interrogation. If they ask you something, answer it first, then stay on that thread. Follow their lead. Be warm and friendly, and let your punctuation match the moment: an exclamation mark only for the genuinely exciting, happy or surprising things (not every friendly line, most turns need none), and a gentle trailing tone (like "that is too bad...") when they share something sad or hard. Match their mood and keep it natural, never over the top. ' +
+    'Build your question on what they just said, but do not keep drilling the same narrow detail. After a question or two about one specific thing, move to a different aspect, and ask what a real friend would genuinely be curious about when shown this exact photo, given what it shows and what they have told you so far. Let the subject of the photo decide what is natural to ask, not any fixed list, so a question would never feel out of place for this kind of picture. Keep finding fresh, relevant ground so it never becomes an interrogation. If they ask you something, answer it first, then stay on that thread. Follow their lead: when they open a rich new thread of their own (places they went, things they did, an opinion or comparison), follow THAT with real curiosity and ask more about it (what they liked, which they preferred, why), do not cut back to the photo while they are actively giving you new things to explore. Be warm and friendly, and let your punctuation match the moment: an exclamation mark only for the genuinely exciting, happy or surprising things (not every friendly line, most turns need none), and a gentle trailing tone (like "that is too bad...") when they share something sad or hard. Match their mood and keep it natural, never over the top. ' +
     (focus ? 'One gentle background thing: when it fits naturally, lean toward a question that gives them a chance to use ' + focus + ', for example by asking about something that naturally calls for it. Treat this as a light nudge only, never force it, never ask about it twice in a row, and do not correct any more strictly than usual. ' : '') +
     (words.length ? 'They are learning these photo words: ' + words.map((w) => w.term).join(', ') + '. Use one in a reply only when it fits naturally. ' : '') +
     'Write English like real text messages: no dashes, colons or semicolons, and only word pairings and collocations a native speaker would really say (a smell is not "warm"). Use relevant face and punctuation emojis sparingly where it is necessary to suit the tone of the message but avoid using them in every message and in serious conversation topics. Keep everything at CEFR level ' + level + '. ' +
