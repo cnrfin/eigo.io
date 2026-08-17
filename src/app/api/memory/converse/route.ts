@@ -59,6 +59,24 @@ function engagementDirective(history: { q: string; a: string }[]): string {
   return ''
 }
 
+// ── topic-drift guard (deterministic) ──────────────────────────────────────
+// Teri tends to imitate her own transcript and drill one detail (coffee, the cat and
+// its birds) turn after turn. If her recent questions keep circling the same content
+// word, nudge her to open a genuinely new angle while staying on theme.
+const STOP = new Set(('a an and are at be been do does did the this that these those you your yours i me my we our us it its they them their he she his her him is was were of off out on in to for with from by about as into over after before near here there just really very so too some any many much more most one two three what when where why how who which whose will would can could should shall may might must not no yes like eat eating ate drink drinking go going goes went get got have has had think tell told say said know knew feel felt make made take took come came see saw look looked want wanted enjoy enjoyed').split(/\s+/))
+const topicWords = (s: string): string[] =>
+  Array.from(new Set((String(s || '').toLowerCase().match(/[a-z]+/g) || []).filter((w) => w.length >= 3 && !STOP.has(w))))
+
+function driftDirective(history: { q: string; a: string }[]): string {
+  if (history.length < 3) return ''
+  const recent = history.slice(-3).map((h) => new Set(topicWords(h.q)))
+  const counts: Record<string, number> = {}
+  recent.forEach((set) => set.forEach((w) => { counts[w] = (counts[w] || 0) + 1 }))
+  const stuck = Object.keys(counts).filter((w) => counts[w] >= 2).slice(0, 3)
+  if (!stuck.length) return ''
+  return 'NOTE: Your recent questions keep circling ' + stuck.join(', ') + '. Do not ask about ' + (stuck.length > 1 ? 'those' : 'that') + ' again. Open a genuinely new angle, a different part of the photo or a related topic you have not touched, on theme but fresh.'
+}
+
 // Lean, subtractive system prompt. Teri writes one or two real text messages rather
 // than a forced "reaction + question", which reads far more naturally.
 function buildSystem(learner: string, level: string, words: { term: string }[]): string {
@@ -115,9 +133,10 @@ export async function POST(request: NextRequest) {
     ? history.map((h) => `Teri: ${h.q}\nLearner: ${h.a}`).join('\n')
     : '(the conversation has not started yet, send your first message about the photo)'
 
-  const directive = mustWrap
+  let directive = mustWrap
     ? 'NOTE: This chat has gone on long enough. Wrap up now: set done to true, send ONE short warm closing message, and use an empty replies array. Do not ask another question.'
     : engagementDirective(history)
+  if (!mustWrap && !directive) directive = driftDirective(history)
 
   const user =
     `Memory: ${context}\n` +
