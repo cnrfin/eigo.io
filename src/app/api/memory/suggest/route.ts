@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Expected JSON body' }, { status: 400 })
   }
 
-  const sentence = typeof body.sentence === 'string' ? body.sentence.trim() : ''
+  const sentence = (typeof body.sentence === 'string' ? body.sentence : '').replace(/[\p{Extended_Pictographic}\u{FE0F}\u{20E3}]/gu, '').replace(/\s{2,}/g, ' ').trim()
   const context = typeof body.context === 'string' ? body.context.trim() : ''
   const level = typeof body.level === 'string' ? body.level.trim() : 'A2'
   if (!sentence) {
@@ -61,6 +61,7 @@ export async function POST(request: NextRequest) {
     '4) "note" = a very short Japanese hint about how to use it (for grammar, what the pattern does; for an irregular verb, e.g. "build -> built"). Keep it short; use "" if obvious. ' +
     '5) "example" = one short, natural English example sentence USING the term (for grammar, an example that fills the template). "exampleGloss" = its Japanese translation. ' +
     '6) No duplicates. Match the difficulty to the learner\'s level. If nothing is truly worth saving, return { "items": [] }. ' +
+    '7) Ignore emojis completely. They are not language, never turn an emoji into an item or mention it. ' +
     'No markdown, no code fences, no text outside the JSON object.'
 
   const parts: string[] = [`Sentence:\n"${sentence}"`, `Learner level (CEFR): ${level}`]
