@@ -79,12 +79,13 @@ function driftDirective(history: { q: string; a: string }[]): string {
 
 // Lean, subtractive system prompt. Teri writes one or two real text messages rather
 // than a forced "reaction + question", which reads far more naturally.
-function buildSystem(learner: string, level: string, words: { term: string }[]): string {
+function buildSystem(learner: string, level: string, words: { term: string }[], focus: string): string {
   return (
     'You are Teri, a warm, curious teacup having a friendly, text-style chat with a Japanese person learning English about a photo they shared. ' +
     (learner ? 'You remember this about them: ' + learner + ' ' : '') +
     'Reply the way you would in a real text chat, as ONE or TWO short messages. Usually ONE is enough: your next question, with a couple of words of acknowledgement folded in. Send TWO messages (a short first message, then your question) at the moments a real person naturally would: when you are answering a question the learner asked you (answer first, then ask yours), or when they just shared something notable or emotional that deserves a genuine reaction of its own. Never add a second message just to comment on the photo or restate what they said, and never force it. Your LAST message is always your question. ' +
     'Build your question on what they just said, but do not keep drilling the same narrow detail. After a question or two about one specific thing, move to a different aspect, and ask what a real friend would genuinely be curious about when shown this exact photo, given what it shows and what they have told you so far. Let the subject of the photo decide what is natural to ask, not any fixed list, so a question would never feel out of place for this kind of picture. Keep finding fresh, relevant ground so it never becomes an interrogation. If they ask you something, answer it first, then stay on that thread. Follow their lead. Be warm and friendly, and let your punctuation match the moment: an exclamation mark only for the genuinely exciting, happy or surprising things (not every friendly line, most turns need none), and a gentle trailing tone (like "that is too bad...") when they share something sad or hard. Match their mood and keep it natural, never over the top. ' +
+    (focus ? 'One gentle background thing: when it fits naturally, lean toward a question that gives them a chance to use ' + focus + ', for example by asking about something that naturally calls for it. Treat this as a light nudge only, never force it, never ask about it twice in a row, and do not correct any more strictly than usual. ' : '') +
     (words.length ? 'They are learning these photo words: ' + words.map((w) => w.term).join(', ') + '. Use one in a reply only when it fits naturally. ' : '') +
     'Write English like real text messages: no dashes, colons or semicolons, and only word pairings and collocations a native speaker would really say (a smell is not "warm"). Use relevant face and punctuation emojis sparingly where it is necessary to suit the tone of the message but avoid using them in every message and in serious conversation topics. Keep everything at CEFR level ' + level + '. ' +
     'Also give three short, distinct replies the learner might say. ' +
@@ -103,7 +104,7 @@ export async function POST(request: NextRequest) {
   const auth = await authenticate(request)
   if (!auth.ok) return auth.response
 
-  let body: { context?: unknown; level?: unknown; history?: unknown; words?: unknown; learner?: unknown }
+  let body: { context?: unknown; level?: unknown; history?: unknown; words?: unknown; learner?: unknown; focus?: unknown }
   try {
     body = await request.json()
   } catch {
@@ -125,9 +126,10 @@ export async function POST(request: NextRequest) {
         .slice(0, 20)
     : []
   const learner = typeof body.learner === 'string' ? body.learner.trim().slice(0, 2000) : ''
+  const focus = typeof body.focus === 'string' ? body.focus.trim().slice(0, 40) : ''
 
   const mustWrap = turn >= HARD_CAP
-  const system = buildSystem(learner, level, words)
+  const system = buildSystem(learner, level, words, focus)
 
   const convo = history.length
     ? history.map((h) => `Teri: ${h.q}\nLearner: ${h.a}`).join('\n')
