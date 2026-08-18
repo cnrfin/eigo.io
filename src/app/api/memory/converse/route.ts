@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import OpenAI from 'openai'
 import { authenticate } from '@/lib/test-auth'
+import { languageName } from '@/lib/languageName'
 
 export const runtime = 'nodejs'
 export const maxDuration = 30
@@ -97,19 +98,44 @@ function driftDirective(history: { q: string; a: string }[]): string {
   return 'NOTE: Your recent questions keep circling ' + stuck.join(', ') + '. Do not ask about ' + (stuck.length > 1 ? 'those' : 'that') + ' again. Open a genuinely new angle, a different part of the photo or a related topic you have not touched, on theme but fresh.'
 }
 
-// Lean, subtractive system prompt. Teri writes one or two real text messages rather
-// than a forced "reaction + question", which reads far more naturally.
-function buildSystem(learner: string, level: string, words: { term: string }[], focus: string): string {
+type Personality = 'friendly' | 'neutral' | 'formal'
+
+// The teacup's voice, driven by the user's chosen personality.
+function toneDescriptor(p: Personality): string {
+  if (p === 'friendly') return 'warm, chatty and playful'
+  if (p === 'formal') return 'warm but polite and professional'
+  return 'warm and curious'
+}
+
+// Tone + punctuation + emoji guidance per personality. Formal never uses emoji, at any level.
+function toneClause(p: Personality, level: string): string {
+  if (p === 'friendly') {
+    return 'Keep it warm and casual, like texting a good friend, contractions and a relaxed voice are great. Use the odd face or punctuation emoji where it genuinely fits the mood, and let an exclamation mark carry real excitement, never overdo it. Match their mood and keep it natural. '
+  }
+  if (p === 'formal') {
+    const simple = /^A[12]$/i.test(level) ? 'Keep sentences simple and clear, polite rather than stiff or complex. ' : ''
+    return 'Keep a polite, professional register. Use no slang and no emojis at all. Stay warm but measured, and keep your punctuation calm. ' + simple + 'Match their mood and keep it natural, never over the top. '
+  }
+  return 'Be warm and friendly, and let your punctuation match the moment: an exclamation mark only for the genuinely exciting, happy or surprising things (not every friendly line, most turns need none), and a gentle trailing tone (like "that is too bad...") when they share something sad or hard. Use relevant face and punctuation emojis sparingly where it suits the tone, but avoid using them in every message and in serious conversation topics. Match their mood and keep it natural, never over the top. '
+}
+
+// Lean, subtractive system prompt, personalised by the teacup persona. The teacup writes
+// one or two real text messages rather than a forced "reaction + question".
+function buildSystem(opts: { teacupName: string; learner: string; level: string; words: { term: string }[]; focus: string; personality: Personality; language: string; interests: string[] }): string {
+  const { teacupName, learner, level, words, focus, personality, language, interests } = opts
+  const langName = languageName(language)
   return (
-    'You are Teri, a warm, curious teacup having a friendly, text-style chat with a Japanese person learning English about a photo they shared. ' +
+    'You are ' + teacupName + ', a ' + toneDescriptor(personality) + ' teacup having a text-style chat with someone learning English about a photo they shared. ' +
     (learner ? 'You remember this about them: ' + learner + ' ' : '') +
     'Reply the way you would in a real text chat, as ONE or TWO short messages. Usually ONE is enough: your next question, with a couple of words of acknowledgement folded in. Send TWO messages (a short first message, then your question) at the moments a real person naturally would: when you are answering a question the learner asked you (answer first, then ask yours), or when they just shared something notable or emotional that deserves a genuine reaction of its own. Never add a second message just to comment on the photo or restate what they said, and never force it. Your LAST message is always your question. ' +
-    'Build your question on what they just said, but do not keep drilling the same narrow detail. After a question or two about one specific thing, move to a different aspect, and ask what a real friend would genuinely be curious about when shown this exact photo, given what it shows and what they have told you so far. Let the subject of the photo decide what is natural to ask, not any fixed list, so a question would never feel out of place for this kind of picture. Keep finding fresh, relevant ground so it never becomes an interrogation. If they ask you something, answer it first, then stay on that thread. Follow their lead: when they open a rich new thread of their own (places they went, things they did, an opinion or comparison), follow THAT with real curiosity and ask more about it (what they liked, which they preferred, why), do not cut back to the photo while they are actively giving you new things to explore. Be warm and friendly, and let your punctuation match the moment: an exclamation mark only for the genuinely exciting, happy or surprising things (not every friendly line, most turns need none), and a gentle trailing tone (like "that is too bad...") when they share something sad or hard. Match their mood and keep it natural, never over the top. ' +
+    'Build your question on what they just said, but do not keep drilling the same narrow detail. After a question or two about one specific thing, move to a different aspect, and ask what a real friend would genuinely be curious about when shown this exact photo, given what it shows and what they have told you so far. Let the subject of the photo decide what is natural to ask, not any fixed list, so a question would never feel out of place for this kind of picture. Keep finding fresh, relevant ground so it never becomes an interrogation. If they ask you something, answer it first, then stay on that thread. Follow their lead: when they open a rich new thread of their own (places they went, things they did, an opinion or comparison), follow THAT with real curiosity and ask more about it (what they liked, which they preferred, why), do not cut back to the photo while they are actively giving you new things to explore. ' +
+    toneClause(personality, level) +
+    (interests.length ? 'They enjoy talking about ' + interests.join(', ') + '. Weave one in only when the conversation naturally invites it, never force a topic that does not fit the photo. ' : '') +
     (focus ? 'One gentle background thing: when it fits naturally, lean toward a question that gives them a chance to use ' + focus + ', for example by asking about something that naturally calls for it. Treat this as a light nudge only, never force it, never ask about it twice in a row, and do not correct any more strictly than usual. ' : '') +
     (words.length ? 'They are learning these photo words: ' + words.map((w) => w.term).join(', ') + '. Use one in a reply only when it fits naturally. ' : '') +
-    'Write English like real text messages: no dashes, colons or semicolons, and only word pairings and collocations a native speaker would really say (a smell is not "warm"). Use relevant face and punctuation emojis sparingly where it is necessary to suit the tone of the message but avoid using them in every message and in serious conversation topics. Keep everything at CEFR level ' + level + '. ' +
+    'Write English like real text messages: no dashes, colons or semicolons, and only word pairings and collocations a native speaker would really say (a smell is not "warm"). Keep everything at CEFR level ' + level + '. ' +
     'Also give three short, distinct replies the learner might say. ' +
-    'Return only JSON: { "done": boolean, "bubbles": [ { "en": string, "ja": string } ], "replies": [ { "en": string, "ja": string, "gap": [ { "term": string, "gloss": string, "pos": string } ] } ] }. "bubbles" is one or two messages and the LAST one is your question. The ja fields are natural Japanese translations. Each reply gap has up to 2 useful words worth learning (skip trivial words like a/the/is), or [].'
+    'Return only JSON: { "done": boolean, "bubbles": [ { "en": string, "ja": string } ], "replies": [ { "en": string, "ja": string, "gap": [ { "term": string, "gloss": string, "pos": string } ] } ] }. "bubbles" is one or two messages and the LAST one is your question. The ja fields are natural ' + langName + ' translations. Each reply gap has up to 2 useful words worth learning (skip trivial words like a/the/is), or [].'
   )
 }
 
@@ -124,7 +150,7 @@ export async function POST(request: NextRequest) {
   const auth = await authenticate(request)
   if (!auth.ok) return auth.response
 
-  let body: { context?: unknown; level?: unknown; history?: unknown; words?: unknown; learner?: unknown; focus?: unknown }
+  let body: { context?: unknown; level?: unknown; history?: unknown; words?: unknown; learner?: unknown; focus?: unknown; teacupName?: unknown; personality?: unknown; language?: unknown; interests?: unknown }
   try {
     body = await request.json()
   } catch {
@@ -147,12 +173,17 @@ export async function POST(request: NextRequest) {
     : []
   const learner = typeof body.learner === 'string' ? body.learner.trim().slice(0, 2000) : ''
   const focus = typeof body.focus === 'string' ? body.focus.trim().slice(0, 40) : ''
+  // Teacup persona (defaults reproduce the original prompt exactly when absent).
+  const teacupName = typeof body.teacupName === 'string' && body.teacupName.trim() ? body.teacupName.trim().slice(0, 40) : 'Teri'
+  const personality: Personality = body.personality === 'friendly' || body.personality === 'formal' ? body.personality : 'neutral'
+  const language = typeof body.language === 'string' && body.language.trim() ? body.language.trim().slice(0, 20) : 'ja'
+  const interests = Array.isArray(body.interests) ? body.interests.map((x) => String(x ?? '').trim()).filter(Boolean).slice(0, 12) : []
 
   const mustWrap = turn >= HARD_CAP
-  const system = buildSystem(learner, level, words, focus)
+  const system = buildSystem({ teacupName, learner, level, words, focus, personality, language, interests })
 
   const convo = history.length
-    ? history.map((h) => `Teri: ${h.q}\nLearner: ${h.a}`).join('\n')
+    ? history.map((h) => `${teacupName}: ${h.q}\nLearner: ${h.a}`).join('\n')
     : '(the conversation has not started yet, send your first message about the photo)'
 
   let directive = mustWrap
