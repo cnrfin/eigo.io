@@ -90,11 +90,12 @@ export async function POST(request: NextRequest) {
     const system =
       'You help a Japanese person learning English turn a personal photo into vocabulary and a friendly chat. ' +
       'Look at the image and return ONLY a JSON object: ' +
-      '{ "context": string, "objects": [ { "term": string, "gloss": string, "pos": string, "example": string, "exampleGloss": string, "x": number, "y": number } ] }. ' +
+      '{ "context": string, "objects": [ { "term": string, "gloss": string, "pos": string, "acceptTerms": string[], "example": string, "exampleGloss": string, "x": number, "y": number } ] }. ' +
       '"context" = one natural English sentence describing the scene/memory (what it shows and its mood), suitable for starting a warm conversation. ' +
       '"objects" = 4 to 8 useful English vocabulary items that are clearly and unambiguously VISIBLE in the photo. ' +
       (levelGuidance[level] ?? levelGuidance.A2) + ' Skip anything you are not sure is in the image. ' +
       'For each: "term" = the English word (lowercase, singular), "gloss" = its Japanese meaning, "pos" = one of noun/verb/adj/adv/phrase, ' +
+      '"acceptTerms" = an array of ALL acceptable English answers for this item — its common synonyms and near-equivalents a learner might reasonably give (e.g. delicious → ["delicious","tasty","yummy"]; spicy → ["spicy","hot"]) — always lowercase and always including "term" itself. ' +
       '"example" = a short natural English sentence using the word, "exampleGloss" = its natural Japanese translation. ' +
       'PLACEMENT — "x" and "y" locate the object so the app can pin a label on it, so accuracy matters: ' +
       'give the CENTRE of the object as fractions of the image, where x=0 is the far left, x=1 the far right, y=0 the very top, y=1 the very bottom (origin top-left). ' +
@@ -121,7 +122,7 @@ export async function POST(request: NextRequest) {
     const raw = completion.choices[0]?.message?.content ?? '{}'
     const parsed = JSON.parse(raw) as {
       context?: unknown
-      objects?: { term?: unknown; gloss?: unknown; pos?: unknown; example?: unknown; exampleGloss?: unknown; x?: unknown; y?: unknown }[]
+      objects?: { term?: unknown; gloss?: unknown; pos?: unknown; acceptTerms?: unknown; example?: unknown; exampleGloss?: unknown; x?: unknown; y?: unknown }[]
     }
 
     const clamp01 = (n: unknown) => {
@@ -131,15 +132,24 @@ export async function POST(request: NextRequest) {
     const objects = Array.isArray(parsed.objects)
       ? parsed.objects
           .slice(0, 8)
-          .map((o) => ({
-            term: String(o.term ?? '').trim(),
-            gloss: String(o.gloss ?? '').trim(),
-            pos: String(o.pos ?? '').trim() || 'noun',
-            example: String(o.example ?? '').trim(),
-            exampleGloss: String(o.exampleGloss ?? '').trim(),
-            x: clamp01(o.x),
-            y: clamp01(o.y),
-          }))
+          .map((o) => {
+            const term = String(o.term ?? '').trim()
+            const accept = Array.from(new Set(
+              [...(Array.isArray(o.acceptTerms) ? o.acceptTerms : []), term]
+                .map((t) => String(t ?? '').trim().toLowerCase())
+                .filter(Boolean),
+            ))
+            return {
+              term,
+              gloss: String(o.gloss ?? '').trim(),
+              pos: String(o.pos ?? '').trim() || 'noun',
+              acceptTerms: accept,
+              example: String(o.example ?? '').trim(),
+              exampleGloss: String(o.exampleGloss ?? '').trim(),
+              x: clamp01(o.x),
+              y: clamp01(o.y),
+            }
+          })
           .filter((o) => o.term)
       : []
 

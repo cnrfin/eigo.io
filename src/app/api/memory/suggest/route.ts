@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
 
   const system =
     'You are an expert English tutor for a Japanese learner. From ONE English sentence you extract the most useful things worth SAVING and studying — not a mechanical word list. ' +
-    'Return ONLY a JSON object: { "items": [{ "kind": "word"|"phrase"|"grammar", "term": string, "gloss": string, "pos": string, "note": string, "example": string, "exampleGloss": string }] }. ' +
+    'Return ONLY a JSON object: { "items": [{ "kind": "word"|"phrase"|"grammar", "term": string, "gloss": string, "pos": string, "acceptTerms": string[], "note": string, "example": string, "exampleGloss": string }] }. ' +
     'Pick 2 to 4 of the HIGHEST-VALUE items that actually appear in (or are directly expressed by) the sentence. Rank by usefulness — a learner should think "yes, I want that". ' +
     'Item kinds: ' +
     '"word" = a single meaningful vocabulary word (skip trivial function words like a/the/is/of). ' +
@@ -62,6 +62,7 @@ export async function POST(request: NextRequest) {
     '5) "example" = one short, natural English example sentence USING the term (for grammar, an example that fills the template). "exampleGloss" = its Japanese translation. ' +
     '6) No duplicates. Match the difficulty to the learner\'s level. If nothing is truly worth saving, return { "items": [] }. ' +
     '7) Ignore emojis completely. They are not language, never turn an emoji into an item or mention it. ' +
+    '8) "acceptTerms" = for a "word" item, an array of acceptable English answers (its synonyms and near-equivalents a learner might give, lowercase, always including "term"); for "phrase"/"grammar" items return just the term lowercased as a single-element array. ' +
     'No markdown, no code fences, no text outside the JSON object.'
 
   const parts: string[] = [`Sentence:\n"${sentence}"`, `Learner level (CEFR): ${level}`]
@@ -81,7 +82,7 @@ export async function POST(request: NextRequest) {
 
     const raw = completion.choices[0]?.message?.content ?? '{}'
     const parsed = JSON.parse(raw) as {
-      items?: { kind?: unknown; term?: unknown; gloss?: unknown; pos?: unknown; note?: unknown; example?: unknown; exampleGloss?: unknown }[]
+      items?: { kind?: unknown; term?: unknown; gloss?: unknown; pos?: unknown; acceptTerms?: unknown; note?: unknown; example?: unknown; exampleGloss?: unknown }[]
     }
 
     const allowedKinds = new Set(['word', 'phrase', 'grammar'])
@@ -90,11 +91,18 @@ export async function POST(request: NextRequest) {
           .map((it) => {
             const kind = String(it.kind ?? '').trim().toLowerCase()
             const pos = String(it.pos ?? '').trim().toLowerCase()
+            const term = String(it.term ?? '').trim()
+            const accept = Array.from(new Set(
+              [...(Array.isArray(it.acceptTerms) ? it.acceptTerms : []), term]
+                .map((t) => String(t ?? '').trim().toLowerCase())
+                .filter(Boolean),
+            ))
             return {
               kind: allowedKinds.has(kind) ? (kind as 'word' | 'phrase' | 'grammar') : 'word',
-              term: String(it.term ?? '').trim(),
+              term,
               gloss: String(it.gloss ?? '').trim(),
               pos: pos || 'word',
+              acceptTerms: accept,
               note: String(it.note ?? '').trim(),
               example: String(it.example ?? '').trim(),
               exampleGloss: String(it.exampleGloss ?? '').trim(),
