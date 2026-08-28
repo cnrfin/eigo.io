@@ -121,8 +121,8 @@ function toneClause(p: Personality, level: string): string {
 
 // Lean, subtractive system prompt, personalised by the teacup persona. The teacup writes
 // one or two real text messages rather than a forced "reaction + question".
-function buildSystem(opts: { teacupName: string; learner: string; level: string; words: { term: string }[]; focus: string; personality: Personality; language: string; interests: string[] }): string {
-  const { teacupName, learner, level, words, focus, personality, language, interests } = opts
+function buildSystem(opts: { teacupName: string; learner: string; level: string; words: { term: string }[]; focus: string; gapWords: string[]; personality: Personality; language: string; interests: string[] }): string {
+  const { teacupName, learner, level, words, focus, gapWords, personality, language, interests } = opts
   const langName = languageName(language)
   return (
     'You are ' + teacupName + ', a ' + toneDescriptor(personality) + ' teacup having a text-style chat with someone learning English about a photo they shared. ' +
@@ -133,6 +133,7 @@ function buildSystem(opts: { teacupName: string; learner: string; level: string;
     (interests.length ? 'They enjoy talking about ' + interests.join(', ') + '. Weave one in only when the conversation naturally invites it, never force a topic that does not fit the photo. ' : '') +
     (focus ? 'One gentle background thing: when it fits naturally, lean toward a question that gives them a chance to use ' + focus + ', for example by asking about something that naturally calls for it. Treat this as a light nudge only, never force it, never ask about it twice in a row, and do not correct any more strictly than usual. ' : '') +
     (words.length ? 'They are learning these photo words: ' + words.map((w) => w.term).join(', ') + '. Use one in a reply only when it fits naturally. ' : '') +
+    (gapWords.length ? 'A few other useful words around their level: ' + gapWords.join(', ') + '. If one genuinely fits what you are already talking about, gently work it into a reply, but never force it, never steer the topic just to reach one, and use at most one across the whole reply. ' : '') +
     'Write English like real text messages: no dashes, colons or semicolons, and only word pairings and collocations a native speaker would really say (a smell is not "warm"). Keep everything at CEFR level ' + level + '. ' +
     'Also give three short, distinct replies the learner might say. ' +
     'Return only JSON: { "done": boolean, "bubbles": [ { "en": string, "ja": string } ], "replies": [ { "en": string, "ja": string, "gap": [ { "term": string, "gloss": string, "pos": string } ] } ] }. "bubbles" is one or two messages and the LAST one is your question. The ja fields are natural ' + langName + ' translations. Each reply gap has up to 2 useful words worth learning (skip trivial words like a/the/is), or [].'
@@ -150,7 +151,7 @@ export async function POST(request: NextRequest) {
   const auth = await authenticate(request)
   if (!auth.ok) return auth.response
 
-  let body: { context?: unknown; level?: unknown; history?: unknown; words?: unknown; learner?: unknown; focus?: unknown; teacupName?: unknown; personality?: unknown; language?: unknown; interests?: unknown }
+  let body: { context?: unknown; level?: unknown; history?: unknown; words?: unknown; learner?: unknown; focus?: unknown; gapWords?: unknown; teacupName?: unknown; personality?: unknown; language?: unknown; interests?: unknown }
   try {
     body = await request.json()
   } catch {
@@ -173,6 +174,7 @@ export async function POST(request: NextRequest) {
     : []
   const learner = typeof body.learner === 'string' ? body.learner.trim().slice(0, 2000) : ''
   const focus = typeof body.focus === 'string' ? body.focus.trim().slice(0, 40) : ''
+  const gapWords = Array.isArray(body.gapWords) ? body.gapWords.map((x) => String(x ?? '').trim()).filter(Boolean).slice(0, 6) : []
   // Teacup persona (defaults reproduce the original prompt exactly when absent).
   const teacupName = typeof body.teacupName === 'string' && body.teacupName.trim() ? body.teacupName.trim().slice(0, 40) : 'Teri'
   const personality: Personality = body.personality === 'friendly' || body.personality === 'formal' ? body.personality : 'neutral'
@@ -180,7 +182,7 @@ export async function POST(request: NextRequest) {
   const interests = Array.isArray(body.interests) ? body.interests.map((x) => String(x ?? '').trim()).filter(Boolean).slice(0, 12) : []
 
   const mustWrap = turn >= HARD_CAP
-  const system = buildSystem({ teacupName, learner, level, words, focus, personality, language, interests })
+  const system = buildSystem({ teacupName, learner, level, words, focus, gapWords, personality, language, interests })
 
   const convo = history.length
     ? history.map((h) => `${teacupName}: ${h.q}\nLearner: ${h.a}`).join('\n')

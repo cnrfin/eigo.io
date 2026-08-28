@@ -6,27 +6,18 @@
 --   • sentences — lines the learner banked from the mascot chat
 --
 -- Words and sentences carry FSRS-ready columns so spaced review can be layered
--- on later WITHOUT another migration. Photos live in the private `memories`
--- storage bucket, one folder per user. Idempotent; safe to re-run.
+-- on later WITHOUT another migration.
+--
+-- PRIVACY: photos are NOT stored server-side. They stay on the user's device;
+-- `memories.image_path` holds only the on-device filename. Only text (words,
+-- sentences, scene context) syncs here. Idempotent; safe to re-run.
 -- ============================================================================
-
--- ── Storage bucket for memory photos (private) ──────────────────────────────
-INSERT INTO storage.buckets (id, name, public)
-VALUES ('memories', 'memories', false)
-ON CONFLICT (id) DO NOTHING;
-
-DROP POLICY IF EXISTS "Users manage own memory photos" ON storage.objects;
-CREATE POLICY "Users manage own memory photos"
-  ON storage.objects FOR ALL
-  TO authenticated
-  USING (bucket_id = 'memories' AND (storage.foldername(name))[1] = auth.uid()::text)
-  WITH CHECK (bucket_id = 'memories' AND (storage.foldername(name))[1] = auth.uid()::text);
 
 -- ── Tables ──────────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS memories (
   id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id     UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  image_path  TEXT,
+  image_path  TEXT,             -- on-device filename only (photos never leave the device)
   context     TEXT,
   created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 );

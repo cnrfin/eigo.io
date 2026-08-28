@@ -1,0 +1,171 @@
+import { NextRequest, NextResponse } from 'next/server'
+import OpenAI from 'openai'
+import { authenticate } from '@/lib/test-auth'
+
+export const runtime = 'nodejs'
+export const maxDuration = 30
+
+let _openai: OpenAI | null = null
+function openai(): OpenAI {
+  if (!_openai) {
+    const apiKey = process.env.OPENAI_API_KEY
+    if (!apiKey) throw new Error('Missing OPENAI_API_KEY environment variable')
+    _openai = new OpenAI({ apiKey })
+  }
+  return _openai
+}
+
+const MODEL = process.env.OPENAI_GENERATION_MODEL || 'gpt-5.4-mini'
+
+// Strip machine-writing tells (em/en dashes, semicolons, punctuation-colons) from
+// Teri's spoken English so her lines read like a real person's text. Leaves times
+// like 3:30 alone and never touches the Japanese fields.
+function humanize(t: string): string {
+  return t
+    .replace(/\s*[\u2014\u2013]\s*/g, ', ')   // em/en dash -> comma
+    .replace(/\s*;\s*/g, ', ')                  // semicolon -> comma
+    .replace(/(\D)\s*:\s+/g, '$1, ')            // colon used as punctuation -> comma (keeps 3:30)
+    .replace(/\s+,/g, ',')
+    .replace(/,\s*,/g, ',')
+    .replace(/\s{2,}/g, ' ')
+    .replace(/^[,\s]+/, '')
+    .trim()
+}
+
+// Soft cap on how many questions the mascot asks before wrapping up.
+const MAX_TURNS = 5
+// Hard ceiling: however far a tangent wanders, the chat is forced to wrap by here.
+const HARD_CAP = 8
+
+/**
+ * POST /api/memory/converse
+ *
+ * Drives the mascot (Teri) conversation about a personal memory. Given the
+ * memory context, the conversation so far, and the learner's level, it returns
+ * the NEXT adaptive question plus three predicted replies (scaffolds) with gap
+ * words — or a warm closing line when the arc is complete.
+ *
+ * Request:  { context?: string, level?: string, history?: { q: string, a: string }[] }
+ * Response: {
+ *   done: boolean,
+ *   question: { en: string, ja: string },
+ *   replies: { en: string, ja: string, gap: { term, gloss, pos }[] }[]
+ * }
+ */
+export async function POST(request: NextRequest) {
+  const auth = await authenticate(request)
+  if (!auth.ok) return auth.response
+
+  let body: { context?: unknown; level?: unknown; history?: unknown; words?: unknown; learner?: unknown }
+  try {
+    body = await request.json()
+  } catch {
+    return NextResponse.json({ error: 'Expected JSON body' }, { status: 400 })
+  }
+
+  const context = typeof body.context === 'string' && body.context.trim() ? body.context.trim() : 'a personal photo the learner shared'
+  const level = typeof body.level === 'string' && body.level.trim() ? body.level.trim() : 'A2'
+  const history = Array.isArray(body.history)
+    ? body.history
+        .map((h) => ({ q: String((h as { q?: unknown })?.q ?? '').trim(), a: String((h as { a?: unknown })?.a ?? '').trim() }))
+        .filter((h) => h.q || h.a)
+    : []
+  const turn = history.length
+  const words = Array.isArray(body.words)
+    ? body.words
+        .map((w) => ({ term: String((w as { term?: unknown })?.term ?? '').trim(), gloss: String((w as { gloss?: unknown })?.gloss ?? '').trim() }))
+        .filter((w) => w.term)
+        .slice(0, 20)
+    : []
+  const learner = typeof body.learner === 'string' ? body.learner.trim().slice(0, 2000) : ''
+
+  const system =
+    'You are Teri, a warm, curious teacup mascot having a friendly spoken conversation with a Japanese person learning English, about a personal memory (a photo they shared). ' +
+    (learner ? 'Here is what you already know about this learner, from past chats and their profile — weave it in naturally when it fits (greet them, refer back to people or things you remember), but NEVER force it, recite facts as a list, or make them feel watched: ' + learner + ' ' : '') +
+    'Ask ONE short, natural question at a time, and ADAPT it to what they just told you — refer back to their earlier answers when it feels natural. ' +
+    'Prefer to build each question directly on what they just said. When you DO need to change the subject (for example, turning back to the photo itself), bridge it with a short, natural discourse marker like "By the way,", "Anyway,", or "Oh, and" so the shift never feels abrupt or rude to a native speaker. ' +
+    'Never ask something that does not fit their answer (e.g. do not ask how they "met" a family member). Never repeat a question already asked. ' +
+    'CRITICAL — HANDLING A QUESTION FROM THE LEARNER. If the learner asks YOU something (for example "Do you know her name?", "What about you?", "Have you been there?"), do BOTH of these: ' +
+    '(1) In "reaction", ANSWER them directly and in character — a short, warm, genuine answer (a full sentence is fine here). As a curious little teacup it is completely fine to be playful, to guess, or to happily admit you do not know. ' +
+    '(2) In "question", STAY ON THE THREAD THEY JUST OPENED and reciprocate their curiosity — do NOT snap back to the photo or change the subject. If you admitted you do not know something, ask them about it (learner: "Do you know my mum\'s name?" -> reaction: "Hmm, I don\'t! She has a lovely smile though." -> question: "What\'s her name?"). If they asked "what about you?", turn a related question back to them. Snapping to an unrelated or photo question right after they asked you something (e.g. answering about a name and then asking "What did you eat?") makes you seem like you were not listening — a real person would NEVER do that. ' +
+    'Only once that thread has naturally run its course may you gently bridge back to the memory with a discourse marker. Never ignore the learner\'s question or barrel ahead with an unrelated one. ' +
+    `Keep the whole chat to about ${MAX_TURNS} questions with a gentle arc: who → what happened → one specific detail → how it felt → a warm wrap-up. ` +
+    'Before the question, give a SHORT, warm reaction (2-5 words) — react to the photo on the first turn (e.g. "Looks delicious!", "Looks like fun!"), or to what they just said after that (e.g. "That sounds lovely!"). When the learner has ASKED you something, use "reaction" to actually ANSWER them (a short sentence is fine here, not just a few words), and make "question" stay on the thread they opened and reciprocate their curiosity — never jump back to the photo in the same turn they asked you something. Keep reactions varied and genuine, never repetitive. ' +
+    'Also provide THREE predicted replies the learner could plausibly give — natural SPOKEN English, each distinct and opening a different direction, short (a few words to one sentence). ' +
+    (words.length ? 'The learner is currently learning these words/phrases from their photo: ' + words.map((w) => w.term).join(', ') + '. These belong to the PHOTO, so they only make sense while the conversation is actually about that photo or its topic. ONLY weave one into a predicted reply when the word genuinely fits what is being discussed RIGHT NOW and the resulting sentence is TRUE and natural for the learner to say. If the conversation has drifted to another subject (a movie, their day, a person, anything not in the photo), do NOT drag these photo words in. For example, if you are talking about an alien movie, a reply like "I liked the coffee part more" is nonsense and exactly the mistake to avoid. When nothing fits the current topic, use none; a clean, on-topic reply is ALWAYS better than a forced vocabulary word. Keep strong variety, most replies should contain no target word at all. ' : '') +
+    `Match everything to the learner's CEFR level (${level}): simpler words and shorter sentences at A1/A2. ` +
+    'PUNCTUATION — write the way people actually text: plain and natural. Do NOT use em dashes, en dashes, colons, or semicolons anywhere in the English fields; real people almost never type those in a casual chat. Use commas, periods, or just separate short sentences instead. Question marks and exclamation marks are fine. This applies to "reaction", "question" and every reply. ' +
+    'Return ONLY a JSON object of this exact shape: ' +
+    '{ "done": boolean, "reaction": { "en": string, "ja": string }, "question": { "en": string, "ja": string }, "replies": [ { "en": string, "ja": string, "gap": [ { "term": string, "gloss": string, "pos": string } ] } ] }. ' +
+    '"reaction.ja" and "question.ja" are natural Japanese translations. Each reply\'s "ja" is a natural Japanese translation of that reply. ' +
+    '"gap" = up to 2 useful words/phrases FROM that reply worth learning (skip trivial words like a/the/is); "gloss" is Japanese, "pos" is one of noun/verb/adj/adv/phrase; use [] if none. ' +
+    'Set "done" to true ONLY when it is time to wrap up: then "question" is a short, warm closing line (a statement is fine) and "replies" is an empty array. ' +
+    'No markdown, no code fences, no text outside the JSON object.'
+
+  const convo = history.length
+    ? history.map((h) => `Teri: ${h.q}\nLearner: ${h.a}`).join('\n')
+    : '(the conversation has not started yet — ask your first question about the memory)'
+
+  const nearEnd = turn >= MAX_TURNS - 1
+  const mustWrap = turn >= HARD_CAP
+  const steer = mustWrap
+    ? 'THIS CHAT MUST END NOW. It has gone on long enough. If it has drifted away from the photo, tie it back to the memory in ONE warm sentence. Set "done" to true, make "question" a short warm closing line that refers to the memory, and return an empty "replies" array. Do NOT ask another question.'
+    : nearEnd
+    ? 'You are near the end of this chat. If the conversation has drifted away from the photo/memory, gently bridge back to it now (for example "Anyway, back to your photo,") and ask ONE last question about the MEMORY itself, then plan to wrap up within a turn or two. Do not keep chasing the tangent.'
+    : ''
+  const user =
+    `Memory: ${context}\n` +
+    `Learner level: ${level}\n` +
+    (words.length ? `Words the learner is learning: ${words.map((w) => w.term).join(', ')}\n` : '') +
+    `Questions asked so far: ${turn} (aim for about ${MAX_TURNS} total, hard stop at ${HARD_CAP})\n\n` +
+    `Conversation so far:\n${convo}\n\n` +
+    (steer ? steer + '\n\n' : '') +
+    'Give the next turn as JSON.'
+
+  try {
+    const completion = await openai().chat.completions.create({
+      model: MODEL,
+      messages: [
+        { role: 'system', content: system },
+        { role: 'user', content: user },
+      ],
+      response_format: { type: 'json_object' },
+      temperature: 0.7,
+      max_completion_tokens: 700,
+    })
+
+    const raw = completion.choices[0]?.message?.content ?? '{}'
+    const parsed = JSON.parse(raw) as {
+      done?: unknown
+      reaction?: { en?: unknown; ja?: unknown }
+      question?: { en?: unknown; ja?: unknown }
+      replies?: { en?: unknown; ja?: unknown; gap?: { term?: unknown; gloss?: unknown; pos?: unknown }[] }[]
+    }
+
+    const question = {
+      en: humanize(String(parsed.question?.en ?? '').trim()),
+      ja: String(parsed.question?.ja ?? '').trim(),
+    }
+    if (!question.en) return NextResponse.json({ error: 'No question produced' }, { status: 502 })
+
+    const reactionEn = humanize(String(parsed.reaction?.en ?? '').trim())
+    const reaction = reactionEn ? { en: reactionEn, ja: String(parsed.reaction?.ja ?? '').trim() } : null
+
+    const done = !!parsed.done || mustWrap   // never let a tangent run past the hard cap
+    const replies = done || !Array.isArray(parsed.replies)
+      ? []
+      : parsed.replies.slice(0, 3).map((r) => ({
+          en: humanize(String(r.en ?? '').trim()),
+          ja: String(r.ja ?? '').trim(),
+          gap: Array.isArray(r.gap)
+            ? r.gap.slice(0, 2).map((g) => ({ term: String(g.term ?? '').trim(), gloss: String(g.gloss ?? '').trim(), pos: String(g.pos ?? '').trim() || 'word' })).filter((g) => g.term)
+            : [],
+        })).filter((r) => r.en)
+
+    return NextResponse.json({ done, reaction, question, replies })
+  } catch (err) {
+    console.error('memory/converse error:', err)
+    const detail = err instanceof Error ? err.message : String(err)
+    return NextResponse.json({ error: 'Conversation failed', detail }, { status: 500 })
+  }
+}
