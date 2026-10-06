@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyAdmin, getAdminSupabase } from '@/lib/admin'
+import { filterUpcoming } from '@/lib/classroom/upcoming'
 
 // GET /api/admin/lessons — returns all upcoming lessons for the admin (teacher) view
 export async function GET(request: NextRequest) {
@@ -30,15 +31,9 @@ export async function GET(request: NextRequest) {
     : { data: [] as { user_id: string; classroom_enabled: boolean }[] }
   const pilot = new Set((perms || []).filter((p) => p.classroom_enabled).map((p) => p.user_id))
 
-  // Filter to only lessons whose end time hasn't passed (pilot lessons stay
-  // until the room closes, 60 min after the end, so the teacher can rejoin)
-  const now = new Date()
-  const upcoming = (data || [])
-    .filter((b) => {
-      const lessonEnd = new Date(`${b.date}T${b.start_time}+09:00`)
-      lessonEnd.setMinutes(lessonEnd.getMinutes() + (b.duration_minutes || 30) + (pilot.has(b.user_id) ? 60 : 0))
-      return lessonEnd > now
-    })
+  // Lessons whose end time hasn't passed (a pilot lesson that is running over
+  // stays until the room closes or the next lesson opens; see src/lib/classroom/upcoming.ts)
+  const upcoming = (await filterUpcoming(supabase, data || [], (b) => pilot.has(b.user_id)))
     .map((b) => ({ ...b, classroom_enabled: pilot.has(b.user_id) }))
 
   return NextResponse.json({ lessons: upcoming })

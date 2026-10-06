@@ -497,3 +497,4 @@
 .cr.jp{line-break:strict;word-break:auto-phrase}
 .cr.jp h2,.cr.jp h3,.cr.jp .lhead b{font-weight:600;line-height:1.3;letter-spacing:-.01em;font-feature-settings:'palt'}
 .cr.jp .leftScreen p,.cr.jp .emodal p{line-height:1.85}
+.cr .cr-spinner{margin:0 auto}
