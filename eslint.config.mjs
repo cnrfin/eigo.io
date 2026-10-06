@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Course studio: separate local Vite app (npm run studio)
+    "studio/**",
   ]),
 ]);
 

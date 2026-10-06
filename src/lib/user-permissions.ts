@@ -10,12 +10,17 @@ import type { SupabaseClient } from '@supabase/supabase-js'
  * DEFAULT-ALLOW: a user with no row gets everything. A feature is restricted
  * only when an explicit row sets it false, so existing users are unaffected and
  * a missing/failed lookup never accidentally locks anyone out.
+ *
+ * EXCEPTION: classroom_enabled is OPT-IN (pilot of the in-house classroom,
+ * supabase/add-classroom.sql). No row, or a failed lookup, means false, so
+ * everyone stays on the plain Whereby link until the admin switches them over.
  */
 export type UserPermissions = {
   courses_enabled: boolean
   tests_enabled: boolean
   recordings_enabled: boolean
   transcription_enabled: boolean
+  classroom_enabled: boolean
 }
 
 export const DEFAULT_PERMISSIONS: UserPermissions = {
@@ -23,6 +28,7 @@ export const DEFAULT_PERMISSIONS: UserPermissions = {
   tests_enabled: true,
   recordings_enabled: true,
   transcription_enabled: true,
+  classroom_enabled: false,
 }
 
 /** Effective permissions for a user (defaults merged with any stored overrides). */
@@ -32,7 +38,7 @@ export async function getUserPermissions(
 ): Promise<UserPermissions> {
   const { data } = await supabase
     .from('user_permissions')
-    .select('courses_enabled, tests_enabled, recordings_enabled, transcription_enabled')
+    .select('courses_enabled, tests_enabled, recordings_enabled, transcription_enabled, classroom_enabled')
     .eq('user_id', userId)
     .maybeSingle()
   if (!data) return { ...DEFAULT_PERMISSIONS }
@@ -41,10 +47,11 @@ export async function getUserPermissions(
     tests_enabled: data.tests_enabled ?? true,
     recordings_enabled: data.recordings_enabled ?? true,
     transcription_enabled: data.transcription_enabled ?? true,
+    classroom_enabled: data.classroom_enabled ?? false,
   }
 }
 
-/** Convenience: is one feature enabled for this user? (default-allow) */
+/** Convenience: is one feature enabled for this user? (default-allow, except classroom_enabled) */
 export async function isFeatureEnabled(
   supabase: SupabaseClient,
   userId: string,

@@ -10,8 +10,9 @@ import { DEFAULT_PERMISSIONS } from '@/lib/user-permissions'
  *   row defaults to everything enabled (`customized: false`).
  *
  * PUT  /api/admin/permissions   { userId, permissions: {...} }
- *   Upsert one user's permissions. Setting all four to true effectively
- *   restores the default (the row is kept but is equivalent to no row).
+ *   Upsert one user's permissions. Setting the four default-allow flags to
+ *   true and classroom_enabled to false restores the default (the row is kept
+ *   but is equivalent to no row).
  */
 export async function GET(request: NextRequest) {
   const admin = await verifyAdmin(request)
@@ -29,7 +30,7 @@ export async function GET(request: NextRequest) {
 
   const { data: perms } = await supabase
     .from('user_permissions')
-    .select('user_id, courses_enabled, tests_enabled, recordings_enabled, transcription_enabled')
+    .select('user_id, courses_enabled, tests_enabled, recordings_enabled, transcription_enabled, classroom_enabled')
   const permByUser = new Map((perms ?? []).map(p => [p.user_id, p]))
 
   const users = (profiles ?? []).map((p) => {
@@ -46,6 +47,7 @@ export async function GET(request: NextRequest) {
             tests_enabled: row.tests_enabled,
             recordings_enabled: row.recordings_enabled,
             transcription_enabled: row.transcription_enabled,
+            classroom_enabled: row.classroom_enabled ?? false,
           }
         : { ...DEFAULT_PERMISSIONS },
     }
@@ -76,13 +78,14 @@ export async function PUT(request: NextRequest) {
     tests_enabled: permissions.tests_enabled ?? true,
     recordings_enabled: permissions.recordings_enabled ?? true,
     transcription_enabled: permissions.transcription_enabled ?? true,
+    classroom_enabled: permissions.classroom_enabled ?? false,
     updated_at: new Date().toISOString(),
     updated_by: admin.email ?? null,
   }
   const { data, error } = await supabase
     .from('user_permissions')
     .upsert(row, { onConflict: 'user_id' })
-    .select('courses_enabled, tests_enabled, recordings_enabled, transcription_enabled')
+    .select('courses_enabled, tests_enabled, recordings_enabled, transcription_enabled, classroom_enabled')
     .single()
   if (error) {
     console.error('Permissions PUT error:', error)

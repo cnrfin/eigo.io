@@ -1,0 +1,6 @@
+dist/
+data/trash/
+.env*.local
+
+# Course drafts, backups, images and video (152 MB+). Kept on this Mac; published copies live in Supabase.
+data/

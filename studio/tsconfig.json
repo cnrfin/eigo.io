@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "isolatedModules": true,
+    "resolveJsonModule": true,
+    "allowImportingTsExtensions": false,
+    "types": ["node", "vite/client"],
+    "paths": {
+      "@slides": ["../src/lib/slides/index.ts"],
+      "@slides/*": ["../src/lib/slides/*"]
+    }
+  },
+  "include": ["src", "server", "vite.config.ts", "../src/lib/slides"]
+}

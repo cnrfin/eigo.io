@@ -1,0 +1,5 @@
+export * from './types'
+export * from './templates'
+export * from './summary'
+export { SlideRenderer, SlideCanvas, BlockView, RichText, resolveAsset, imageStyle, speakerColor, characterColor, BUBBLE_COLORS, SlideCharacters, SlideVocabSave, SlideMediaSync, SlideActivity } from './SlideRenderer'
+export type { SlideMode, SlideRendererProps, VocabSaveApi, MediaSyncApi, ActivityApi } from './SlideRenderer'

@@ -18,6 +18,7 @@ type FeaturePerms = {
   tests_enabled: boolean
   recordings_enabled: boolean
   transcription_enabled: boolean
+  classroom_enabled: boolean
 }
 type PermUser = {
   id: string
@@ -1538,6 +1539,7 @@ function AdminContent() {
                       { key: 'tests_enabled', label: 'Tests & exams', desc: 'TOEIC / IELTS / Eiken / Versant / CEFR practice' },
                       { key: 'recordings_enabled', label: 'Lesson recordings', desc: 'New lessons are cloud-recorded and replayable' },
                       { key: 'transcription_enabled', label: 'Transcripts', desc: 'Written transcript of each lesson' },
+                      { key: 'classroom_enabled', label: 'New classroom (pilot)', desc: 'Lessons open in the eigo classroom instead of the plain Whereby link' },
                     ]
                     return (
                       <SquircleBox cornerRadius={14} className="p-6 space-y-5" style={{ background: 'var(--surface)' }}>
