@@ -1,6 +1,35 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { getAvailableSlots } from '@/lib/google-calendar'
+import { getAvailableSlots, timezoneToJst } from '@/lib/google-calendar'
+import { verifySupabaseToken } from '@/lib/supabase-jwt'
+import { getSupabaseAdmin } from '@/lib/supabase-admin'
+import { getUserPermissions } from '@/lib/user-permissions'
+
+/**
+ * Test accounts (user_permissions.booking_test_mode) get every 15-minute slot
+ * of the day from 15 minutes ago onwards, ignoring opening hours, the booking
+ * buffer and the teacher's calendar. Only checked when the request carries the
+ * user's token; anonymous requests behave exactly as before.
+ */
+async function isBookingTester(request: NextRequest): Promise<boolean> {
+  const auth = request.headers.get('Authorization')
+  if (!auth?.startsWith('Bearer ')) return false
+  const verified = await verifySupabaseToken(auth.slice(7))
+  if (!verified.ok) return false
+  const perms = await getUserPermissions(getSupabaseAdmin(), verified.user.id)
+  return perms.booking_test_mode
+}
+
+function allSlotsFromNow(date: string, timezone: string): string[] {
+  const earliest = Date.now() - 15 * 60_000
+  const out: string[] = []
+  for (let m = 0; m < 24 * 60; m += 15) {
+    const time = `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`
+    const { jstDate, jstTime } = timezoneToJst(date, time, timezone)
+    if (new Date(`${jstDate}T${jstTime}:00+09:00`).getTime() >= earliest) out.push(time)
+  }
+  return out
+}
 
 // GET /api/calendar/available?date=2026-03-23&duration=30&tz=Asia/Tokyo
 export async function GET(request: NextRequest) {
@@ -22,6 +51,14 @@ export async function GET(request: NextRequest) {
   const userNow = new Intl.DateTimeFormat('en-CA', { timeZone: timezone, year: 'numeric', month: '2-digit', day: '2-digit' }).format(now)
   if (date < userNow) {
     return NextResponse.json({ date, duration, timezone, slots: [] })
+  }
+
+  try {
+    if (await isBookingTester(request)) {
+      return NextResponse.json({ date, duration, timezone, slots: allSlotsFromNow(date, timezone), testMode: true })
+    }
+  } catch (e) {
+    console.error('Booking test-mode check failed:', e)
   }
 
   // Fetch site settings for dynamic hours & booking buffer

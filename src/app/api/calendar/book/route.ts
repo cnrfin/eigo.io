@@ -48,14 +48,17 @@ export async function POST(request: NextRequest) {
 
     // Check subscription & minute balance (skip for trial lessons — 15 min with no subscription)
     const subscription = await getUserSubscription(user.id)
-    const isTrial = duration === 15 && !subscription
+    // Test accounts (user_permissions.booking_test_mode): any duration, any
+    // time, no subscription or minutes, and never treated as a trial booking.
+    const isTester = perms.booking_test_mode
+    const isTrial = duration === 15 && !subscription && !isTester
     // Admin accounts can book any duration for testing, bypassing the
     // subscription and minute-balance gates. Duration is still capped at 75 by
     // the DB CHECK constraint. Admins have no subscription, so no minutes are
     // recorded either (recordMinuteUsage requires a subscription).
     const isAdmin = isAdminEmail(user.email)
 
-    if (!isTrial && !isAdmin) {
+    if (!isTrial && !isAdmin && !isTester) {
       if (!subscription || subscription.status === 'cancelled') {
         return NextResponse.json(
           { error: 'No active subscription. Please subscribe first.', code: 'NO_SUBSCRIPTION' },
@@ -77,9 +80,13 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Verify the slot is still available (in the user's timezone)
-    const availableSlots = await getAvailableSlots(date, duration, timezone)
-    if (!availableSlots.includes(time)) {
+    // Verify the slot is still available (in the user's timezone).
+    // Test accounts skip this: they can book outside opening hours.
+    if (isTester) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !/^\d{2}:\d{2}$/.test(time) || ![15, 30, 45, 60, 75].includes(duration)) {
+        return NextResponse.json({ error: 'Invalid date, time or duration' }, { status: 400 })
+      }
+    } else if (!(await getAvailableSlots(date, duration, timezone)).includes(time)) {
       return NextResponse.json(
         { error: 'This time slot is no longer available' },
         { status: 409 }
@@ -145,8 +152,8 @@ export async function POST(request: NextRequest) {
       console.error('Failed to store booking in Supabase:', dbError)
     }
 
-    // Record minute usage (skip for free trial lessons)
-    if (!isTrial && bookingRow?.id && subscription) {
+    // Record minute usage (skip for free trial lessons and test accounts)
+    if (!isTrial && !isTester && bookingRow?.id && subscription) {
       try {
         await recordMinuteUsage(
           user.id,

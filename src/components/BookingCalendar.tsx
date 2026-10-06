@@ -13,7 +13,7 @@ type SelectedBooking = { date: string; time: string; dayLabel: string }
 export type BookingResultDetail = { date: string; time: string; success: boolean; reason?: string }
 export type BookingResult = { success: boolean; message: string; details?: BookingResultDetail[] }
 
-export default function BookingCalendar({ selectedDuration, onBookingComplete, rescheduleLesson, hasSubscription = false }: { selectedDuration?: number; onBookingComplete?: (result?: BookingResult) => void; rescheduleLesson?: { id: string; googleEventId: string | null }; hasSubscription?: boolean }) {
+export default function BookingCalendar({ selectedDuration, onBookingComplete, rescheduleLesson, hasSubscription = false, testMode = false }: { selectedDuration?: number; onBookingComplete?: (result?: BookingResult) => void; rescheduleLesson?: { id: string; googleEventId: string | null }; hasSubscription?: boolean; /** test account (user_permissions.booking_test_mode): every duration and every time of day */ testMode?: boolean }) {
   const { t, locale } = useLanguage()
   const { session } = useAuth()
   const [currentDate, setCurrentDate] = useState(new Date())
@@ -77,7 +77,10 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
     setAvailableSlots([])
     const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
     try {
-      const res = await fetch(`/api/calendar/available?date=${dateStr}&duration=${duration}&tz=${encodeURIComponent(userTimezone)}`)
+      // The token lets the server recognise test accounts (all slots); normal users get the usual availability.
+      const res = await fetch(`/api/calendar/available?date=${dateStr}&duration=${duration}&tz=${encodeURIComponent(userTimezone)}`, {
+        headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : undefined,
+      })
       const data = await res.json()
       setAvailableSlots(data.slots || [])
     } catch {
@@ -85,7 +88,7 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
     } finally {
       setLoadingSlots(false)
     }
-  }, [year, month, duration, userTimezone])
+  }, [year, month, duration, userTimezone, session?.access_token])
 
   useEffect(() => {
     if (selectedDay) fetchSlots(selectedDay)
@@ -339,7 +342,7 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
       {/* Duration selector */}
       <div className="flex gap-2 mb-3 justify-center">
         {[15, 30, 45, 60, 75].map((d) => {
-          const locked = !hasSubscription && d !== 15
+          const locked = !hasSubscription && !testMode && d !== 15
           return (
             <Squircle key={d} asChild cornerRadius={8} cornerSmoothing={0.8}>
               <button

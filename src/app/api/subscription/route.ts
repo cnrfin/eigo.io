@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getUserSubscription, getMinuteBalance } from '@/lib/subscription'
 import { verifySupabaseToken } from '@/lib/supabase-jwt'
+import { getUserPermissions } from '@/lib/user-permissions'
+import { getSupabaseAdmin } from '@/lib/supabase-admin'
 
 // GET /api/subscription
 // Returns user's subscription details + remaining minutes
@@ -18,12 +20,19 @@ export async function GET(request: NextRequest) {
     const user = verified.user
 
     // Independent lookups — run them in parallel
-    const [subscription, balance] = await Promise.all([
+    const [subscription, balance, perms] = await Promise.all([
       getUserSubscription(user.id),
       getMinuteBalance(user.id),
+      getUserPermissions(getSupabaseAdmin(), user.id),
     ])
+    // Opt-in features the dashboard needs to know about (pilot classroom,
+    // test bookings). Additive field: older clients ignore it.
+    const features = {
+      classroomEnabled: perms.classroom_enabled,
+      bookingTestMode: perms.booking_test_mode,
+    }
     if (!subscription) {
-      return NextResponse.json({ subscription: null, balance: null })
+      return NextResponse.json({ subscription: null, balance: null, features })
     }
 
     return NextResponse.json({
@@ -37,6 +46,7 @@ export async function GET(request: NextRequest) {
         paymentSource: subscription.payment_source || 'stripe',
       },
       balance,
+      features,
     })
   } catch (error) {
     console.error('Subscription fetch error:', error)

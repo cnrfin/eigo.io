@@ -903,6 +903,7 @@ function DashboardContent() {
   const [reviewingCardId, setReviewingCardId] = useState<string | null>(null)
   const [dueCount, setDueCount] = useState(0)
   const [subStatus, setSubStatus] = useState<'loading' | 'none' | 'active' | 'past_due'>('loading')
+  const [bookingTestMode, setBookingTestMode] = useState(false) // test accounts: any duration, any time
   const [minutesRemaining, setMinutesRemaining] = useState<number | null>(null)
   const [trialCompleted, setTrialCompleted] = useState<boolean | null>(null) // null = loading
   const HISTORY_PER_PAGE = 10
@@ -1246,6 +1247,7 @@ function DashboardContent() {
           if (data.balance) {
             setMinutesRemaining(data.balance.minutesRemaining)
           }
+          setBookingTestMode(!!data.features?.bookingTestMode)
         } else {
           setSubStatus('none')
         }
@@ -1434,6 +1436,7 @@ function DashboardContent() {
                   onBookingComplete={(result) => { fetchLessons(); setLessonToReschedule(null); setActiveTab('home'); if (result) setBookingResultModal(result) }}
                   rescheduleLesson={lessonToReschedule ? { id: lessonToReschedule.id, googleEventId: lessonToReschedule.googleEventId } : undefined}
                   hasSubscription={subStatus === 'active'}
+                  testMode={bookingTestMode}
                 />
               </div>
               </motion.div>
