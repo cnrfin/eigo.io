@@ -390,11 +390,19 @@ function ShareView({
   onRatio: (r: number) => void
 }) {
   const ref = useRef<HTMLVideoElement | null>(null)
+  const stream = share?.stream ?? null
+  // Only touch the video when the stream itself changes. (The room re-renders
+  // every second for the clock; re-setting srcObject each time made the share
+  // flash black.)
+  useEffect(() => {
+    const v = ref.current
+    if (!v || v.srcObject === stream) return
+    v.srcObject = stream
+    if (stream) void v.play().catch(() => undefined)
+  }, [stream])
   useEffect(() => {
     const v = ref.current
     if (!v) return
-    v.srcObject = share?.stream ?? null
-    if (share) void v.play().catch(() => undefined)
     const fit = () => v.videoWidth && onRatio(v.videoHeight / v.videoWidth)
     v.addEventListener('loadedmetadata', fit)
     v.addEventListener('resize', fit)
@@ -402,7 +410,7 @@ function ShareView({
       v.removeEventListener('loadedmetadata', fit)
       v.removeEventListener('resize', fit)
     }
-  }, [share, onRatio])
+  }, [onRatio])
   return (
     <div className="shareView">
       {/* my own share is muted here (no echo); theirs plays its audio if it has any */}

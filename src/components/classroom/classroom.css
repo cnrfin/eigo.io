@@ -505,3 +505,4 @@
 .cr .askCard .ebtn{height:38px;padding:0 16px}
 /* the teacher turned student drawing off */
 .cr .app.no-draw .handle,.cr .app.no-draw .toolbar{display:none}
+.cr .pill[disabled]{opacity:.5;pointer-events:none}

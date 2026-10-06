@@ -45,6 +45,7 @@ export default function Settings({
   applyDenoise,
   applyHd,
   applyLowData,
+  videoBusy,
 }: {
   t: ClassroomT
   open: boolean
@@ -62,6 +63,8 @@ export default function Settings({
   applyDenoise: (on: boolean) => Promise<boolean>
   applyHd: (on: boolean) => void
   applyLowData: (on: boolean) => void
+  /** a camera change is in progress: ignore further camera changes until it's done */
+  videoBusy: boolean
 }) {
   const [pane, setPane] = useState<'av' | 'cls' | 'look'>('av')
   const [bgs, setBgs] = useState<string[] | null>(null)
@@ -156,6 +159,7 @@ export default function Settings({
               </div>
               <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                 <button
+                  disabled={videoBusy}
                   className={`pill${!prefs.background ? ' on' : ''}`}
                   onClick={async () => (await applyBackground('')) && setPrefs({ background: '' })}
                 >
@@ -164,6 +168,7 @@ export default function Settings({
                 {offered.map((b) => (
                   <button
                     key={b.id}
+                    disabled={videoBusy}
                     className={`pill${prefs.background === b.id ? ' on' : ''}`}
                     onClick={async () => (await applyBackground(b.id)) && setPrefs({ background: b.id })}
                   >
@@ -201,6 +206,7 @@ export default function Settings({
               on={prefs.hd}
               label={t('hdVideo')}
               onClick={() => {
+                if (videoBusy) return
                 applyHd(!prefs.hd)
                 setPrefs({ hd: !prefs.hd })
               }}
@@ -215,6 +221,7 @@ export default function Settings({
               on={prefs.lowData}
               label={t('lowData')}
               onClick={() => {
+                if (videoBusy) return
                 applyLowData(!prefs.lowData)
                 setPrefs({ lowData: !prefs.lowData })
               }}

@@ -123,6 +123,7 @@ export default function Room(props: Props) {
   const otherPresent = !!other
   const me = state.localParticipant
   const myStream = localMedia.state.localStream ?? me?.stream ?? null
+  const myVideoTrackId = myStream?.getVideoTracks()[0]?.id ?? 'none'
   const micOn = me ? me.isAudioEnabled : localMedia.state.isMicrophoneEnabled
   const camOn = me ? me.isVideoEnabled : localMedia.state.isCameraEnabled
   const recording = state.cloudRecording?.status === 'recording'
@@ -473,18 +474,38 @@ export default function Room(props: Props) {
   /* ---------- settings ---------- */
   const [setOpen, setSetOpen] = useState(false)
   const { prefs } = props
+  // Camera changes (background, HD, low data) restart the camera; doing a second one
+  // before the first finishes could leave the video off. So they run one at a
+  // time, and the settings ignore taps while one is in progress.
+  const [videoBusy, setVideoBusy] = useState(false)
+  const busyRef = useRef(false)
+  const oneAtATime = useCallback(async <T,>(fn: () => Promise<T> | T, fallback: T): Promise<T> => {
+    if (busyRef.current) return fallback
+    busyRef.current = true
+    setVideoBusy(true)
+    try {
+      return await fn()
+    } finally {
+      // give the camera a moment to settle before the next change
+      setTimeout(() => {
+        busyRef.current = false
+        setVideoBusy(false)
+      }, 700)
+    }
+  }, [])
   const applyBackground = useCallback(
-    async (id: string) => {
-      try {
-        if (id) await actions.switchCameraEffect(id)
-        else await actions.clearCameraEffect()
-        return true
-      } catch {
-        toast(t('bgFailed'), 'bad')
-        return false
-      }
-    },
-    [actions, toast, t],
+    (id: string) =>
+      oneAtATime(async () => {
+        try {
+          if (id) await actions.switchCameraEffect(id)
+          else await actions.clearCameraEffect()
+          return true
+        } catch {
+          toast(t('bgFailed'), 'bad')
+          return false
+        }
+      }, false),
+    [actions, toast, t, oneAtATime],
   )
   const applyDenoise = useCallback(
     async (on: boolean) => {
@@ -776,7 +797,8 @@ export default function Room(props: Props) {
               </div>
               <div className={meTileClass} ref={meRef}>
                 <div className="face">
-                  {myStream && <VideoView stream={myStream} muted playsInline />}
+                  {/* keyed by the camera track, so a new track (camera, background or quality change) always shows */}
+                  {myStream && <VideoView key={myVideoTrackId} stream={myStream} muted playsInline />}
                   <div className="avatar" style={{ background: isTeacher ? '#dff5f2' : '#fae1d8' }}>
                     {initialOf(info.me.name)}
                   </div>
@@ -958,8 +980,9 @@ export default function Room(props: Props) {
         setStudentDraw={props.setStudentDraw}
         applyBackground={applyBackground}
         applyDenoise={applyDenoise}
-        applyHd={(on) => actions.toggleHdMode(on)}
-        applyLowData={(on) => actions.toggleLowDataMode(on)}
+        applyHd={(on) => oneAtATime(() => actions.toggleHdMode(on), undefined)}
+        applyLowData={(on) => oneAtATime(() => actions.toggleLowDataMode(on), undefined)}
+        videoBusy={videoBusy}
       />
 
       {isTeacher && (
