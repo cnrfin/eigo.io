@@ -44,6 +44,7 @@ export type JoinInfo = {
   whiteboard: boolean
   studentDraw?: boolean
   ink: Record<string, InkItem[]>
+  activity?: Record<string, unknown>
   chat: ChatMsg[]
   serverNow: string
 }
@@ -172,6 +173,74 @@ export async function putInk(bookingId: string, surface: string, items: InkItem[
   }
 }
 
+export type WordInfo = { term: string; pos: string; ja: string; meaning: string; example: string }
+
+export async function lookupWord(bookingId: string, term: string, sentence: string): Promise<WordInfo | null> {
+  try {
+    const r = await call(`/api/classroom/${bookingId}/lookup`, { method: 'POST', body: JSON.stringify({ term, sentence }) })
+    return r.ok ? ((await r.json()) as WordInfo) : null
+  } catch {
+    return null
+  }
+}
+
+export async function translateMessage(bookingId: string, messageId: string): Promise<string | null> {
+  try {
+    const r = await call(`/api/classroom/${bookingId}/translate`, { method: 'POST', body: JSON.stringify({ messageId }) })
+    return r.ok ? ((await r.json()).translation as string) : null
+  } catch {
+    return null
+  }
+}
+
+export type SavedWord = { itemId: string; term: string; source: 'course' | 'lookup' | 'chat'; courseId: string | null }
+export type SaveWordInput = {
+  source: 'course' | 'lookup' | 'chat'
+  courseId?: string | null
+  itemId: string
+  term: string
+  pos?: string
+  meaning?: string
+  ja?: string
+  example?: string
+}
+
+export async function fetchSavedWords(bookingId: string): Promise<SavedWord[]> {
+  try {
+    const r = await call(`/api/classroom/${bookingId}/words`)
+    return r.ok ? ((await r.json()).saved as SavedWord[]) : []
+  } catch {
+    return []
+  }
+}
+
+export async function saveWord(bookingId: string, w: SaveWordInput): Promise<boolean> {
+  try {
+    const r = await call(`/api/classroom/${bookingId}/words`, { method: 'POST', body: JSON.stringify(w) })
+    return r.ok
+  } catch {
+    return false
+  }
+}
+
+export async function removeWord(bookingId: string, itemId: string): Promise<boolean> {
+  try {
+    const r = await call(`/api/classroom/${bookingId}/words?itemId=${encodeURIComponent(itemId)}`, { method: 'DELETE' })
+    return r.ok
+  } catch {
+    return false
+  }
+}
+
+export async function putActivity(bookingId: string, blockId: string, state: unknown): Promise<boolean> {
+  try {
+    const r = await call(`/api/classroom/${bookingId}/activity`, { method: 'PUT', body: JSON.stringify({ blockId, state }) })
+    return r.ok
+  } catch {
+    return false
+  }
+}
+
 export async function postState(bookingId: string, open: OpenLesson | null): Promise<boolean> {
   try {
     const r = await call(`/api/classroom/${bookingId}/state`, {
@@ -200,6 +269,7 @@ export type ClassroomEvent =
   | { type: 'cursor'; hide: true }
   | { type: 'wb'; on: boolean }
   | { type: 'perm'; studentDraw: boolean }
+  | { type: 'act'; blockId: string; state: unknown }
 
 export function useClassroomChannel(bookingId: string, onEvent: (e: ClassroomEvent) => void) {
   const handler = useRef(onEvent)

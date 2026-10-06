@@ -1,10 +1,21 @@
 'use client'
 
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react'
-import { SlideCanvas, SlideCharacters, SlideMediaSync, type MediaSyncApi, type SlideMode } from '@/lib/slides'
+import {
+  SlideActivity,
+  SlideCanvas,
+  SlideCharacters,
+  SlideMediaSync,
+  SlideVocabSave,
+  type ActivityApi,
+  type MediaSyncApi,
+  type SlideMode,
+  type VocabSaveApi,
+} from '@/lib/slides'
 import type { Character, Slide } from '@/lib/slides/types'
 import { Ico } from './Icons'
 import type { InkEngine } from './ink'
+import type { LookupEngine } from './lookup'
 
 /**
  * The slide area: the 1280×960 slide scaled to the box the layout gives it,
@@ -27,6 +38,12 @@ type Props = {
   characters: Character[] | undefined
   className: string
   /** a play / pause from the other person, to apply here */
+  /** word lookup on the slide's text */
+  lookup: LookupEngine
+  /** the + buttons in vocabulary tables (student only; null = faded preview) */
+  vocabApi: VocabSaveApi | null
+  /** true / false and matching answers, shared by both people */
+  activityApi: ActivityApi | null
   remoteMedia: MediaEvent | null
   /** a play / pause made here, to send to the other person */
   onLocalMedia: (e: Omit<MediaEvent, 'n'>) => void
@@ -148,6 +165,26 @@ const SlideStage = forwardRef<SlideStageHandle, Props>(function SlideStage(props
     ink.setSurface(props.surface)
   }, [ink, props.surface])
 
+  /* ---------- word lookup ---------- */
+  const { lookup } = props
+  const hostRef = useRef<HTMLDivElement | null>(null)
+  useEffect(() => {
+    const stage = stageRef.current, host = hostRef.current
+    if (!stage || !host) return
+    lookup.attach(stage, host)
+    const stopTargets = ink.handleSlideTargets((x, y) => lookup.wordAt(x, y))
+    return () => {
+      stopTargets()
+      lookup.detach()
+    }
+  }, [lookup, ink])
+  // saved words turn teal: repaint after each slide renders
+  useEffect(() => {
+    const id = requestAnimationFrame(() => lookup.paintSaved())
+    lookup.clearSelection()
+    return () => cancelAnimationFrame(id)
+  }, [lookup, props.slide, props.mode])
+
   /* ---------- live cursors ---------- */
   const { onCursor, bus } = props
   useEffect(() => {
@@ -228,6 +265,7 @@ const SlideStage = forwardRef<SlideStageHandle, Props>(function SlideStage(props
       touches.set(e.pointerId, pt(e))
       if (touches.size === 2) {
         ink.cancel() // two fingers: it's a pinch, not a stroke
+        lookup.cancel() // ...nor a lookup
         const [a, b] = [...touches.values()]
         pinch = { d: Math.hypot(a[0] - b[0], a[1] - b[1]) || 1, z: zoom.current.z, m: [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2], x: zoom.current.x, y: zoom.current.y }
         pan = null
@@ -251,7 +289,7 @@ const SlideStage = forwardRef<SlideStageHandle, Props>(function SlideStage(props
         zoom.current = { z: nz, x: m[0] - (pinch.m[0] - pinch.x) * k, y: m[1] - (pinch.m[1] - pinch.y) * k }
         clamp()
         apply()
-      } else if (pan) {
+      } else if (pan && !lookup.phraseActive) {
         const p = pt(e)
         zoom.current.x = pan.x + p[0] - pan.p[0]
         zoom.current.y = pan.y + p[1] - pan.p[1]
@@ -268,6 +306,10 @@ const SlideStage = forwardRef<SlideStageHandle, Props>(function SlideStage(props
       pan = null
       box.classList.remove('gesturing')
       const now = Date.now()
+      if (now - lookup.tapUsedAt < 80) {
+        lastTap = 0 // that tap looked up a word: never part of a double-tap zoom
+        return
+      }
       if (!moved && selecting() && now - lastTap < 300 && !interactive(e.target)) {
         const p = pt(e)
         if (zoom.current.z > 1.02) resetZoom()
@@ -312,7 +354,7 @@ const SlideStage = forwardRef<SlideStageHandle, Props>(function SlideStage(props
       box.removeEventListener('wheel', wheel)
       window.clearTimeout(settleT)
     }
-  }, [animateOnce, apply, clamp, resetZoom, zoomAt, ink])
+  }, [animateOnce, apply, clamp, resetZoom, zoomAt, ink, lookup])
 
   /* ---------- media sync ---------- */
   const suppress = useRef(new Map<string, number>())
@@ -348,11 +390,15 @@ const SlideStage = forwardRef<SlideStageHandle, Props>(function SlideStage(props
       }}
     >
       <div className="stage" ref={stageRef}>
-        <div id="slideHost">
+        <div id="slideHost" ref={hostRef}>
           {props.slide && (
             <SlideCharacters characters={props.characters} assetBase={props.assetBase}>
               <SlideMediaSync value={mediaApi}>
-                <SlideCanvas slide={props.slide} mode={props.mode} assetBase={props.assetBase} />
+                <SlideVocabSave value={props.vocabApi}>
+                  <SlideActivity value={props.activityApi}>
+                    <SlideCanvas slide={props.slide} mode={props.mode} assetBase={props.assetBase} />
+                  </SlideActivity>
+                </SlideVocabSave>
               </SlideMediaSync>
             </SlideCharacters>
           )}

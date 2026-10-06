@@ -25,10 +25,11 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   if (!roomUrl) return json(409, { reason: 'no_room', uiLang: await uiLangFor(user.id, ctx.isAdmin) })
 
   const db = getSupabaseAdmin()
-  const [{ data: student }, { data: teacher }, { data: inkRows }] = await Promise.all([
+  const [{ data: student }, { data: teacher }, { data: inkRows }, { data: actRows }] = await Promise.all([
     db.from('profiles').select('display_name, email, preferred_language, native_language').eq('id', booking.user_id).maybeSingle(),
     db.from('profiles').select('display_name, email').eq('email', ADMIN_EMAIL).maybeSingle(),
     db.from('classroom_ink').select('surface, items').eq('booking_id', booking.id),
+    db.from('classroom_activity').select('block_id, state').eq('booking_id', booking.id),
   ])
   const studentName = personName(student?.display_name, student?.email, 'Student')
   const teacherName = personName(teacher?.display_name, teacher?.email, 'Connor')
@@ -77,6 +78,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     whiteboard: !!(session?.state as { whiteboard?: boolean } | null)?.whiteboard,
     studentDraw: (session?.state as { studentDraw?: boolean } | null)?.studentDraw !== false,
     ink: Object.fromEntries((inkRows ?? []).map((r) => [r.surface, r.items])),
+    activity: Object.fromEntries((actRows ?? []).map((r) => [r.block_id, r.state])),
     chat: Array.isArray(booking.chat_log) ? booking.chat_log : [],
     serverNow: new Date().toISOString(),
   })

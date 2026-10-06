@@ -106,6 +106,14 @@ export class InkEngine {
       if (this.onOp === fn) this.onOp = null
     }
   }
+  /** the select tool leaves points the slide wants (words to look up) alone */
+  private slideTargetAt: ((x: number, y: number) => boolean) | null = null
+  handleSlideTargets(fn: (x: number, y: number) => boolean) {
+    this.slideTargetAt = fn
+    return () => {
+      if (this.slideTargetAt === fn) this.slideTargetAt = null
+    }
+  }
   /** subscribe to tool changes (the toolbar); returns unsubscribe */
   handleToolChange(fn: (t: Tool) => void) {
     this.onToolChange = fn
@@ -568,7 +576,7 @@ export class InkEngine {
           return
         }
         if (target.closest?.('button,video,audio,a,input,textarea,.es-media,.es-audio,.es-tf,.es-match,.zoomChip')) return
-        if (this.opts.isSlideTarget?.(target)) return
+        if (this.opts.isSlideTarget?.(target) || this.slideTargetAt?.(e.clientX, e.clientY)) return // e.g. a word to look up
         if (e.pointerType === 'touch') return // touch drags pan / pinch the slide instead
         if (!e.shiftKey) this.sel.clear()
         this.marquee = [p, p]

@@ -17,6 +17,9 @@ import Toolbar from './Toolbar'
 import type { InkEngine } from './ink'
 import Settings from './Settings'
 import type { Prefs } from './prefs'
+import type { LookupEngine } from './lookup'
+import type { ActivityApi, VocabSaveApi } from '@/lib/slides'
+import type { SaveWordInput, SavedWord } from '@/lib/classroom/client'
 
 /**
  * The live room: top bar with slide controls, the slide and the two video
@@ -72,6 +75,12 @@ type Props = {
   setSpeakerId: (id: string) => void
   studentDraw: boolean
   setStudentDraw: (on: boolean) => void
+  lookup: LookupEngine
+  vocabApi: VocabSaveApi | null
+  activityApi: ActivityApi
+  savedIds: Map<string, SavedWord>
+  onSaveWord: (w: SaveWordInput) => void
+  closeLookup: () => void
 }
 
 function findLesson(loaded: LoadedCourse | null, open: OpenLesson | null): { lesson: Lesson; number: number } | null {
@@ -343,6 +352,10 @@ export default function Room(props: Props) {
   /* ---------- drawing + whiteboard ---------- */
   const [tbOpen, setTbOpen] = useState(false)
   const surface = props.whiteboard ? 'board' : (slide?.id ?? '')
+  const { closeLookup } = props
+  useEffect(() => {
+    closeLookup()
+  }, [surface, closeLookup])
   const { setWhiteboard, whiteboard, ink } = props
   const toggleWhiteboard = useCallback(() => {
     const on = !whiteboard
@@ -733,6 +746,9 @@ export default function Room(props: Props) {
                 otherName={info.other.name.split(/\s+/)[0]}
                 boardLabel={t('whiteboard')}
                 onCursor={props.onCursor}
+                lookup={props.lookup}
+                vocabApi={props.vocabApi}
+                activityApi={props.activityApi}
                 share={
                   activeShare?.stream
                     ? {
@@ -886,6 +902,9 @@ export default function Room(props: Props) {
               messages={props.messages}
               startedLabel={startedLabel}
               onSend={props.sendMessage}
+              bookingId={info.bookingId}
+              savedIds={props.savedIds}
+              onSaveWord={props.onSaveWord}
               onClose={() => props.setChatOpen(false)}
             />
           </aside>

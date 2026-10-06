@@ -506,3 +506,24 @@
 /* the teacher turned student drawing off */
 .cr .app.no-draw .handle,.cr .app.no-draw .toolbar{display:none}
 .cr .pill[disabled]{opacity:.5;pointer-events:none}
+/* ---- word lookup (from the mockup) ---- */
+::highlight(lk-hover){background-color:rgba(0,168,159,.16)}
+::highlight(lk-sel){background-color:rgba(0,168,159,.28)}
+::highlight(lk-saved){color:#00a89f;text-shadow:.35px 0 0 #00a89f,-.35px 0 0 #00a89f}
+.cr .stage{-webkit-touch-callout:none}
+.cr .lkPop{position:fixed;z-index:25;width:min(300px,calc(100vw - 16px));padding:14px 16px 14px;border-radius:16px;background:#ffffff;color:#151414;box-shadow:0 0 0 1px rgba(0,0,0,.06),0 18px 50px rgba(0,0,0,.35);
+  animation:cr-in .2s var(--ease);font-family:var(--font-outfit),Outfit,'Hiragino Sans','Noto Sans JP',sans-serif}
+.cr .lkPop::before{content:'';position:absolute;top:-6px;left:calc(var(--ax,50%) - 6px);width:12px;height:12px;background:#fff;transform:rotate(45deg);border-radius:2px}
+.cr .lkPop.up::before{top:auto;bottom:-6px}
+.cr .lk-h{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}.cr .lk-h b{font-size:20px;font-weight:700;letter-spacing:-.01em}.cr .lk-h i{font-size:13px;color:#707075}
+.cr .lk-ja{margin-top:4px;font-size:15px;color:#007f78;font-weight:600}
+.cr .lk-mean{margin-top:2px;font-size:13.5px;color:#46464b}
+.cr .lk-ex{margin-top:8px;padding-top:8px;border-top:1px solid #efeeeb;font-size:14px;line-height:1.45;color:#46464b}.cr .lk-ex strong{color:#151414}
+.cr .lk-save{margin-top:12px;width:100%;height:38px;border-radius:10px;background:#00a89f;color:#fff;font-weight:600;font-size:14px}
+.cr .lk-save.saved{background:#e6f7f5;color:#007f78}
+.cr .lk-load{display:flex;align-items:center;gap:10px;font-size:14px;color:#707075}
+.cr .lk-load .spin{width:14px;height:14px;border-radius:50%;border:2px solid currentColor;border-top-color:transparent;animation:cr-spin .7s linear infinite}
+.cr .lk-err{font-size:14px;color:#707075}
+.cr .toast .tick.bad{background:var(--danger)}
+/* translations are body text: no palt (keeps the pause after 。 and 、) */
+.cr .tr{font-feature-settings:normal;line-height:1.7}

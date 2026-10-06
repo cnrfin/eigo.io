@@ -6,17 +6,27 @@ import {
   downloadChat,
   fetchCourse,
   postMessage,
+  fetchSavedWords,
+  lookupWord,
   postEvent,
   postState,
+  putActivity,
   putInk,
+  removeWord,
+  saveWord,
   postRating,
   useClassroomChannel,
   type ChatMsg,
   type JoinInfo,
   type LoadedCourse,
   type OpenLesson,
+  type SaveWordInput,
+  type SavedWord,
   type SessionInfo,
+  type WordInfo,
 } from '@/lib/classroom/client'
+import type { ActivityApi, VocabSaveApi } from '@/lib/slides'
+import type { VocabItem } from '@/lib/slides/types'
 import { makeT, type ClassroomT } from '@/lib/classroom/i18n'
 import { audioContext } from './audio'
 import { Ico, Star } from './Icons'
@@ -25,6 +35,8 @@ import Room, { type TileMsg } from './Room'
 import type { MediaEvent } from './SlideStage'
 import { InkEngine, type InkItem } from './ink'
 import { isLowPower, usePrefs } from './prefs'
+import { LookupEngine, type LookupRequest } from './lookup'
+import WordPopup, { type PopupState } from './WordPopup'
 
 /**
  * Lobby → room → "left / lesson complete" screen, plus the state that must
@@ -135,6 +147,7 @@ function LeftScreen({
   session,
   clockOffset,
   onRejoin,
+  words,
 }: {
   info: JoinInfo
   t: ClassroomT
@@ -142,6 +155,8 @@ function LeftScreen({
   session: SessionInfo
   clockOffset: number
   onRejoin: () => void
+  /** this lesson's words (course vocabulary + anything saved today) and which are saved */
+  words: { term: string; saved: boolean }[]
 }) {
   const L = info.durationMinutes * 60
   const startedMs = session.startedAt ? new Date(session.startedAt).getTime() : null
@@ -151,8 +166,51 @@ function LeftScreen({
   const done = ended || (!!startedMs && elapsed >= L)
   const isStudent = info.role === 'student'
 
+  const savedN = words.filter((w) => w.saved).length
+  if (done && isStudent && savedN > 0) {
+    // Layout F: the student saved words in this lesson
+    const show = [...words.filter((w) => w.saved), ...words.filter((w) => !w.saved)].slice(0, 6)
+    return (
+      <div className="leftScreen on done layF">
+        <div className="card">
+          <div className="eico">
+            <Ico name="check" />
+          </div>
+          <h2>{t('lessonComplete')}</h2>
+          <p>{t('wordsSaved', { n: words.length, m: savedN })}</p>
+          <div className="wchips">
+            {show.map((w) => (
+              <span key={w.term} className={w.saved ? 'saved' : ''}>
+                {w.term}
+              </span>
+            ))}
+            {words.length > 6 && <span className="more">+{words.length - 6}</span>}
+          </div>
+          <div className="ebtns">
+            <a className="ebtn cta" id="reviewBtn" href="/dashboard?tab=vocab">
+              {t('reviewNow')}
+            </a>
+            <a className="ebtn ghost" id="dashBtn" href="/dashboard">
+              {t('goDashboard')}
+            </a>
+          </div>
+          <div className="bRate" style={{ display: 'block' }}>
+            <Rating t={t} bookingId={info.bookingId} />
+          </div>
+          <div className="fFoot">
+            <span />
+            <button className="dlLink" onClick={() => downloadChat(info.bookingId)}>
+              <Ico name="download" />
+              {t('downloadChat')}
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   if (done) {
-    // Layout B (no course words). Layout F, with saved words and Review Now, arrives with course slides.
+    // Layout B: no words saved in this lesson
     return (
       <div className="leftScreen on done layB">
         <div className="card">
@@ -204,14 +262,14 @@ function LeftScreen({
 
 export default function Classroom({ info }: { info: JoinInfo }) {
   const t = useMemo(() => makeT(info.uiLang), [info.uiLang])
-  const [saved] = useState(() => readJoin(info.bookingId))
+  const [savedJoin] = useState(() => readJoin(info.bookingId))
   const localMedia = useLocalMedia({ audio: true, video: true })
-  const [phase, setPhase] = useState<Phase>(() => (saved ? { name: 'room', key: Date.now() } : { name: 'lobby' }))
+  const [phase, setPhase] = useState<Phase>(() => (savedJoin ? { name: 'room', key: Date.now() } : { name: 'lobby' }))
   const [session, setSession] = useState<SessionInfo>(info.session)
   const [messages, setMessages] = useState<ChatMsg[]>(info.chat)
   const [chatOpen, setChatOpenRaw] = useState(false)
   const [unread, setUnread] = useState(0)
-  const [speakerId, setSpeakerId] = useState(saved?.speaker || 'default')
+  const [speakerId, setSpeakerId] = useState(savedJoin?.speaker || 'default')
   const [endSignal, setEndSignal] = useState(0)
   const [clockOffset] = useState(() => new Date(info.serverNow).getTime() - Date.now())
 
@@ -253,6 +311,18 @@ export default function Classroom({ info }: { info: JoinInfo }) {
   /* ---------- drawings, whiteboard, cursors ---------- */
   const [whiteboard, setWb] = useState(!!info.whiteboard)
   const [prefs, setPrefs] = usePrefs()
+
+  /* ---------- words: lookups, the + in vocabulary tables, saving ---------- */
+  const [saved, setSaved] = useState<Map<string, SavedWord>>(new Map())
+  const [savedNow, setSavedNow] = useState<Map<string, string>>(new Map()) // itemId → term, saved in this lesson
+  const [lessonsSeen, setLessonsSeen] = useState<Set<string>>(() => new Set(info.open ? [`${info.open.courseId}:${info.open.lessonId}`] : []))
+  const markSeen = (o: OpenLesson | null) => {
+    if (o) setLessonsSeen((p) => (p.has(`${o.courseId}:${o.lessonId}`) ? p : new Set(p).add(`${o.courseId}:${o.lessonId}`)))
+  }
+  const [popup, setPopup] = useState<(PopupState & { key?: SaveWordInput }) | null>(null)
+  const [lookup] = useState(() => new LookupEngine())
+  /* true / false and matching: shared answers */
+  const [activity, setActivity] = useState<Record<string, unknown>>(info.activity ?? {})
   const [studentDraw, setStudentDrawState] = useState(info.studentDraw !== false)
   // visual effects: solid panels instead of frosted glass on 'reduced' (or a low-power device on 'auto')
   useEffect(() => {
@@ -298,6 +368,7 @@ export default function Classroom({ info }: { info: JoinInfo }) {
       // the teacher moved to another slide, opened a lesson or closed the course
       if (!isTeacher) {
         setOpen(e.open)
+        markSeen(e.open)
         if (e.open) setWb(false) // moving slides closes the whiteboard
       }
     } else if (e.type === 'ink') {
@@ -307,6 +378,8 @@ export default function Classroom({ info }: { info: JoinInfo }) {
       bus.dispatchEvent(new CustomEvent('cursor', { detail: d }))
     } else if (e.type === 'wb') {
       setWb(e.on)
+    } else if (e.type === 'act') {
+      setActivity((p) => ({ ...p, [e.blockId]: e.state }))
     } else if (e.type === 'perm') {
       if (!isTeacher) {
         setStudentDrawState(e.studentDraw)
@@ -383,6 +456,150 @@ export default function Classroom({ info }: { info: JoinInfo }) {
     },
     [send, ink, prefs.cursors],
   )
+  /* the student's saved words (so slides can show them as saved) */
+  useEffect(() => {
+    if (isTeacher) return
+    let live = true
+    fetchSavedWords(info.bookingId).then((list) => {
+      if (live) setSaved(new Map(list.map((w) => [w.itemId, w])))
+    })
+    return () => {
+      live = false
+    }
+  }, [isTeacher, info.bookingId])
+  useEffect(() => {
+    lookup.setSaved([...saved.values()].map((w) => w.term))
+  }, [saved, lookup])
+
+  const lessonVocab = useCallback((): (VocabItem & { courseId: string })[] => {
+    const o = openRef.current
+    const c = o ? courses[o.courseId] : null
+    const lesson = c?.course.units.flatMap((u) => u.lessons).find((l) => l.id === o!.lessonId)
+    const out: (VocabItem & { courseId: string })[] = []
+    for (const s of lesson?.slides ?? [])
+      for (const b of s.blocks) if (b.type === 'vocab') for (const it of b.items) out.push({ ...it, courseId: c!.course.id })
+    return out
+  }, [courses])
+
+  const toggleWord = useCallback(
+    async (w: SaveWordInput) => {
+      if (isTeacher) return
+      const was = saved.has(w.itemId)
+      const apply = (on: boolean) => {
+        setSaved((p) => {
+          const n = new Map(p)
+          if (on) n.set(w.itemId, { itemId: w.itemId, term: w.term, source: w.source, courseId: w.courseId ?? null })
+          else n.delete(w.itemId)
+          return n
+        })
+        setSavedNow((p) => {
+          const n = new Map(p)
+          if (on) n.set(w.itemId, w.term)
+          else n.delete(w.itemId)
+          return n
+        })
+      }
+      apply(!was) // optimistic
+      const ok = was ? await removeWord(info.bookingId, w.itemId) : await saveWord(info.bookingId, w)
+      if (!ok) {
+        apply(was)
+        toast(t('saveFailed'), 'bad')
+        return
+      }
+      toast(was ? t('wordRemoved', { term: w.term }) : t('wordAdded', { term: w.term }), was ? undefined : 'ok')
+    },
+    [isTeacher, saved, info.bookingId, toast, t],
+  )
+
+  const vocabApi = useMemo<VocabSaveApi | null>(
+    () =>
+      isTeacher
+        ? null
+        : {
+            isSaved: (it) => !!it.id && saved.has(it.id),
+            toggle: (it) => {
+              const o = openRef.current
+              if (!it.id || !o) return
+              toggleWord({ source: 'course', courseId: o.courseId, itemId: it.id, term: it.term, pos: it.pos, meaning: it.meaning, ja: it.ja, example: it.example })
+            },
+          },
+    [isTeacher, saved, toggleWord],
+  )
+
+  const activityApi = useMemo<ActivityApi>(
+    () => ({
+      get: (id) => activity[id],
+      set: (id, st) => {
+        setActivity((p) => ({ ...p, [id]: st }))
+        send({ type: 'act', blockId: id, state: st })
+        putActivity(info.bookingId, id, st)
+      },
+      onResult: (_id, r) => toast(r.message, r.correct ? 'ok' : 'bad'),
+    }),
+    [activity, send, info.bookingId, toast],
+  )
+
+  /* word lookup: course vocabulary first (instant), otherwise ask the AI */
+  const onLookup = useCallback(
+    async (r: LookupRequest) => {
+      const k = r.term.toLowerCase().replace(/[’]/g, "'").trim()
+      const bare = k.replace(/^(a|an|the|to)\s+/, '')
+      const hit = lessonVocab().find((it) => {
+        const t2 = it.term.toLowerCase().replace(/[’]/g, "'")
+        const tb = t2.replace(/^(a|an|the|to)\s+/, '')
+        return t2 === k || tb === bare || tb + 's' === bare || tb + 'es' === bare
+      })
+      if (hit?.id) {
+        const info2: WordInfo = { term: hit.term, pos: hit.pos ?? '', ja: hit.ja ?? '', meaning: hit.meaning ?? '', example: hit.example ?? '' }
+        setPopup({
+          term: r.term,
+          rect: r.rect,
+          status: 'ok',
+          info: info2,
+          key: { source: 'course', courseId: hit.courseId, itemId: hit.id, ...info2 },
+        })
+        return
+      }
+      setPopup({ term: r.term, rect: r.rect, status: 'loading' })
+      const res = await lookupWord(info.bookingId, r.term, r.sentence)
+      setPopup((p) => {
+        if (!p || p.term !== r.term || p.rect !== r.rect) return p // closed or replaced meanwhile
+        if (!res) return { ...p, status: 'error' }
+        const itemId = 'lk:' + res.term.toLowerCase().slice(0, 120)
+        return { ...p, status: 'ok', info: res, key: { source: 'lookup', itemId, ...res } }
+      })
+    },
+    [lessonVocab, info.bookingId],
+  )
+  useEffect(
+    () =>
+      lookup.handle({
+        // only with the select tool, on slides (not the whiteboard), when nothing is being shared
+        enabled: () => ink.tool === 'select' && !!ink.surface && ink.surface !== 'board' && !document.querySelector('.cr .app.sharing'),
+        onLookup: (r) => void onLookup(r),
+        onTooLong: () => toast(t('tooManyWords')),
+      }),
+    [lookup, ink, onLookup, toast, t],
+  )
+  const closePopup = useCallback(() => {
+    setPopup(null)
+    lookup.clearSelection()
+  }, [lookup])
+
+  /* words for the lesson-complete screen */
+  const completeWords = useMemo(() => {
+    const out = new Map<string, { term: string; saved: boolean }>()
+    for (const key of lessonsSeen) {
+      const [cid, lid] = key.split(':')
+      const lesson = courses[cid]?.course.units.flatMap((u) => u.lessons).find((l) => l.id === lid)
+      for (const s of lesson?.slides ?? [])
+        for (const b of s.blocks)
+          if (b.type === 'vocab') for (const it of b.items) if (it.id) out.set(it.id, { term: it.term, saved: saved.has(it.id) })
+    }
+    for (const [id, term] of savedNow) out.set(id, { term, saved: saved.has(id) })
+    return [...out.values()]
+  }, [lessonsSeen, courses, saved, savedNow])
+
   const setStudentDraw = useCallback(
     (on: boolean) => {
       setStudentDrawState(on)
@@ -417,6 +634,7 @@ export default function Classroom({ info }: { info: JoinInfo }) {
   const changeOpen = useCallback(
     (next: OpenLesson | null) => {
       setOpen(next)
+      markSeen(next)
       send({ type: 'open', open: next })
       if (saveTimer.current) clearTimeout(saveTimer.current)
       saveTimer.current = setTimeout(() => postState(info.bookingId, next), next ? 400 : 0)
@@ -456,16 +674,16 @@ export default function Classroom({ info }: { info: JoinInfo }) {
 
   /* restore the camera / mic choices after a refresh (once the devices are known) */
   const { state: lm, actions: lma } = localMedia
-  const restored = useRef(!saved)
+  const restored = useRef(!savedJoin)
   useEffect(() => {
-    if (restored.current || !saved || !lm.localStream) return
+    if (restored.current || !savedJoin || !lm.localStream) return
     restored.current = true
-    if (!saved.camOn) lma.toggleCameraEnabled(false)
-    if (!saved.micOn) lma.toggleMicrophoneEnabled(false)
-    if (saved.cam && saved.cam !== lm.currentCameraDeviceId && lm.cameraDevices.some((d) => d.deviceId === saved.cam)) lma.setCameraDevice(saved.cam)
-    if (saved.mic && saved.mic !== lm.currentMicrophoneDeviceId && lm.microphoneDevices.some((d) => d.deviceId === saved.mic))
-      lma.setMicrophoneDevice(saved.mic)
-  }, [saved, lm, lma])
+    if (!savedJoin.camOn) lma.toggleCameraEnabled(false)
+    if (!savedJoin.micOn) lma.toggleMicrophoneEnabled(false)
+    if (savedJoin.cam && savedJoin.cam !== lm.currentCameraDeviceId && lm.cameraDevices.some((d) => d.deviceId === savedJoin.cam)) lma.setCameraDevice(savedJoin.cam)
+    if (savedJoin.mic && savedJoin.mic !== lm.currentMicrophoneDeviceId && lm.microphoneDevices.some((d) => d.deviceId === savedJoin.mic))
+      lma.setMicrophoneDevice(savedJoin.mic)
+  }, [savedJoin, lm, lma])
   /* keep the saved choices up to date while in the room */
   useEffect(() => {
     if (phase.name !== 'room' || !restored.current) return
@@ -545,6 +763,12 @@ export default function Classroom({ info }: { info: JoinInfo }) {
           setSpeakerId={setSpeakerId}
           studentDraw={studentDraw}
           setStudentDraw={setStudentDraw}
+          lookup={lookup}
+          vocabApi={vocabApi}
+          activityApi={activityApi}
+          savedIds={saved}
+          onSaveWord={toggleWord}
+          closeLookup={closePopup}
         />
       )}
       {phase.name === 'left' && (
@@ -555,6 +779,20 @@ export default function Classroom({ info }: { info: JoinInfo }) {
           session={session}
           clockOffset={clockOffset}
           onRejoin={() => setPhase({ name: 'room', key: Date.now() })}
+          words={completeWords}
+        />
+      )}
+      {phase.name === 'room' && (
+        <WordPopup
+          t={t}
+          popup={popup}
+          saved={!!popup?.key && saved.has(popup.key.itemId)}
+          canSave={!isTeacher && !!popup?.key}
+          onToggleSave={() => {
+            if (popup?.key) toggleWord(popup.key)
+            closePopup()
+          }}
+          onClose={closePopup}
         />
       )}
       <Toast toast={toastState} />

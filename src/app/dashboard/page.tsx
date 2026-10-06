@@ -833,6 +833,8 @@ function DashboardContent() {
   // Deep link: /dashboard?tab=booking (used by the course upsell modal)
   useEffect(() => {
     if (tabParam === 'booking') setActiveTab('booking')
+    // /dashboard?tab=vocab: the classroom's "Review Now" after a lesson
+    if (tabParam === 'vocab') setActiveTab('vocab')
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tabParam])
 
@@ -917,6 +919,7 @@ function DashboardContent() {
     else if (typeof window !== 'undefined') {
       const tabParam = new URLSearchParams(window.location.search).get('tab')
       if (tabParam === 'booking') setActiveTab('booking')
+      if (tabParam === 'vocab') setActiveTab('vocab')
     }
   }, [durationParam])
 

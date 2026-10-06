@@ -367,6 +367,23 @@ Each phase is shippable to the **pilot** (users with `classroom_enabled`) and te
 5. **Reconnecting banner:** shown on `signalTrouble`, cleared on `signalOk`.
 
 ### Phase 5: Interactive slides, lookups and translation
+
+**Status (2026-10-06): built, ready to test.**
+- **Word lookup:** `lookup.ts` + `WordPopup.tsx`.
+  - Mouse: hover highlight, click a word, drag for a phrase (6 words max).
+  - Touch: tap; long-press then drag for a phrase. Pinch / pan / double-tap zoom unaffected.
+  - Only with the select tool, on slides (not the whiteboard), not while sharing.
+  - Words in the lesson's vocabulary tables answer instantly. Anything else goes to `POST /api/classroom/[id]/lookup` (`gpt-5.4-nano`, JSON, cached in `ai_lookup_cache`, translation into `profiles.native_language`).
+  - The teacher can look things up but has no Save button.
+- **Saving words (student):** `GET / POST / DELETE /api/classroom/[id]/words`.
+  - Saves to `vocabulary_phrases` (source course / lookup / chat, `source_course_id` = course id or 'lookup' / 'chat', `source_item_id` = VocabItem id, `lk:<term>` or `chat:<message id>`) and creates a review card due now.
+  - The + buttons in vocabulary tables are live for the student.
+  - Saved words are painted teal on every slide (CSS Custom Highlight API).
+  - Toast "… added to your word list!".
+- **Chat translation (student):** a translate button on the teacher's messages calls `POST /api/classroom/[id]/translate` (cached). "+ Save" appears for messages of 10 words or fewer.
+- **True / false and matching:** a shared `SlideActivity` provider; answers are broadcast (`act`) and saved (`PUT /api/classroom/[id]/activity`, table `classroom_activity`, loaded in `join`). Result toasts only show for the person who answered.
+- **Lesson complete:** layout F when the student saved words in this lesson ("N words・M saved", chips, Review Now → `/dashboard?tab=vocab`, rating, chat download); otherwise layout B.
+- **Tests:** a sixth render test (23 checks) with stubbed caret and highlight APIs; all earlier suites still pass. The AI prompts haven't been run here (no API key in the sandbox).
 1. **Word lookup:**
    - **Finding the word:** use `caretPositionFromPoint` / `caretRangeFromPoint`, with eligible-text rules as in the spec.
    - **Drawing it:** use the CSS Custom Highlight API (`::highlight(lk-hover|lk-sel|lk-saved)`), so React's DOM is never changed.
