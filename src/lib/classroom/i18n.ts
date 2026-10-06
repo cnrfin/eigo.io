@@ -25,6 +25,8 @@ const en = {
   reconnecting: 'Connection lost. Reconnecting…',
   reconnected: 'Reconnected',
   muted: 'Muted',
+  backToWholeSlide: 'Back to the whole slide',
+  courseLoadFailed: 'Couldn’t load the lesson slides. Please reload the page.',
   // end dialog
   leaveRoomQ: 'Leave the room?',
   notStartedBody: 'The lesson hasn’t started yet. The clock starts when {name} joins.',
@@ -122,6 +124,8 @@ const ja: Record<Keys, string> = {
   reconnecting: '接続が切れました。再接続しています…',
   reconnected: '再接続しました',
   muted: 'ミュート中',
+  backToWholeSlide: 'スライド全体に戻る',
+  courseLoadFailed: 'スライドを読み込めませんでした。ページを再読み込みしてください。',
   leaveRoomQ: '退出しますか？',
   notStartedBody: 'レッスンはまだ始まっていません。{name}さんが参加するとタイマーが始まります。',
   endEarlyQ: 'レッスンを早めに終了しますか？',

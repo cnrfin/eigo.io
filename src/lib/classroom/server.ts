@@ -32,6 +32,10 @@ export type ClassroomSession = {
   started_at: string | null
   ended_at: string | null
   recording_stopped_at: string | null
+  course_id: string | null
+  lesson_id: string | null
+  used_course: boolean
+  state: { slideId?: string | null } | null
 }
 
 export type ChatItem = {
@@ -49,6 +53,9 @@ export type ClassroomContext = {
   session: ClassroomSession | null
   access: Extract<AccessResult, { allowed: true }>
 }
+
+export const SESSION_COLS =
+  'booking_id, student_joined_at, started_at, ended_at, recording_stopped_at, course_id, lesson_id, used_course, state'
 
 const BOOKING_COLS =
   'id, user_id, date, start_time, duration_minutes, status, whereby_room_url, whereby_host_url, slide_course_id, slide_lesson_id, chat_log'
@@ -87,7 +94,7 @@ export async function loadClassroom(
   const [{ data: booking }, { data: session }] = await Promise.all([
     db.from('bookings').select(BOOKING_COLS).eq('id', bookingId).maybeSingle(),
     db.from('classroom_sessions')
-      .select('booking_id, student_joined_at, started_at, ended_at, recording_stopped_at')
+      .select(SESSION_COLS)
       .eq('booking_id', bookingId)
       .maybeSingle(),
   ])
@@ -129,6 +136,7 @@ export function publicSession(s: ClassroomSession | null) {
     endedAt: s?.ended_at ?? null,
     studentJoinedAt: s?.student_joined_at ?? null,
     recordingStoppedAt: s?.recording_stopped_at ?? null,
+    usedCourse: !!s?.used_course,
   }
 }
 

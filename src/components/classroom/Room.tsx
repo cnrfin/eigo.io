@@ -2,18 +2,26 @@
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useRoomConnection, VideoView, type UseLocalMediaResult } from '@whereby.com/browser-sdk/react'
-import type { ChatMsg, JoinInfo, SessionInfo } from '@/lib/classroom/client'
+import type { ChatMsg, JoinInfo, LoadedCourse, OpenLesson, SessionInfo } from '@/lib/classroom/client'
 import { postEvent } from '@/lib/classroom/client'
+import { SlideCanvas } from '@/lib/slides'
+import type { Lesson } from '@/lib/slides/types'
 import type { ClassroomT } from '@/lib/classroom/i18n'
 import { computeLayout, type Rect } from '@/lib/classroom/layout'
 import { useVolDot } from './audio'
 import ChatPanel from './ChatPanel'
 import { Ico } from './Icons'
-import { lessonTitle } from './Lobby'
+import Library from './Library'
+import SlideStage, { type MediaEvent, type SlideStageHandle } from './SlideStage'
 
 /**
- * The live room: top bar, the two video tiles (free-talk layout until slides
- * arrive in phase 2), bottom controls, chat, lesson clock, End dialog.
+ * The live room: top bar with slide controls, the slide and the two video
+ * tiles (or just the videos in free talk), bottom controls, chat, lesson
+ * clock, End dialog, Library.
+ *
+ * Slides: only the teacher moves through them (buttons, thumbnails, arrow
+ * keys); the student always sees the teacher's slide. Teacher view (N) shows
+ * the teacher's own copy with answers and teacher-only blocks.
  *
  * Clock: starts the first time both people are in (server keeps started_at,
  * so a refresh doesn't reset it), keeps running if someone leaves, shows
@@ -41,6 +49,26 @@ type Props = {
   toast: (msg: string, kind?: 'ok' | 'bad') => void
   onLeave: (opts: { ended: boolean }) => void
   endSignal: number
+  open: OpenLesson | null
+  loaded: LoadedCourse | null
+  teacherView: boolean
+  setTeacherView: (v: boolean) => void
+  onGo: (slideId: string) => void
+  onOpenLesson: (o: OpenLesson) => void
+  onCloseCourse: () => void
+  remoteMedia: MediaEvent | null
+  onLocalMedia: (e: Omit<MediaEvent, 'n'>) => void
+}
+
+function findLesson(loaded: LoadedCourse | null, open: OpenLesson | null): { lesson: Lesson; number: number } | null {
+  if (!loaded || !open) return null
+  let n = 0
+  for (const u of loaded.course.units)
+    for (const l of u.lessons) {
+      n++
+      if (l.id === open.lessonId) return { lesson: l, number: n }
+    }
+  return null
 }
 
 const mmss = (s: number) => {
@@ -184,6 +212,9 @@ export default function Room(props: Props) {
   const appRef = useRef<HTMLDivElement | null>(null)
   const otherRef = useRef<HTMLDivElement | null>(null)
   const meRef = useRef<HTMLDivElement | null>(null)
+  const slideBoxRef = useRef<HTMLDivElement | null>(null)
+  const stageApi = useRef<SlideStageHandle | null>(null)
+  const showSlide = !!props.open
   const rects = useRef(new Map<HTMLElement, Rect>())
   const place = useCallback((el: HTMLElement | null, r: Rect | null, animate: boolean) => {
     if (!el || !r) return
@@ -207,8 +238,9 @@ export default function Room(props: Props) {
     (animate: boolean) => {
       const box = layoutRef.current
       if (!box) return
-      const res = computeLayout(box.clientWidth, box.clientHeight, { showSlide: false, chatOpen: props.chatOpen })
+      const res = computeLayout(box.clientWidth, box.clientHeight, { showSlide, chatOpen: props.chatOpen })
       if (!res) return
+      place(slideBoxRef.current, res.slide, animate)
       place(otherRef.current, res.other, animate)
       place(meRef.current, res.me, animate)
       if (appRef.current) {
@@ -216,7 +248,7 @@ export default function Room(props: Props) {
         appRef.current.style.setProperty('--lift', res.lift.toFixed(1) + 'px')
       }
     },
-    [place, props.chatOpen],
+    [place, props.chatOpen, showSlide],
   )
   useLayoutEffect(() => {
     const box = layoutRef.current
@@ -236,7 +268,51 @@ export default function Room(props: Props) {
   useLayoutEffect(() => {
     doLayout(!firstLayout.current)
     firstLayout.current = false
-  }, [props.chatOpen, doLayout])
+  }, [props.chatOpen, showSlide, doLayout])
+
+  /* ---------- slides ---------- */
+  const found = findLesson(props.loaded, props.open)
+  const lessonSlides = found?.lesson.slides
+  const slides = useMemo(() => lessonSlides ?? [], [lessonSlides])
+  const idxRaw = slides.findIndex((x) => x.id === props.open?.slideId)
+  const idx = idxRaw >= 0 ? idxRaw : 0
+  const slide = slides[idx] ?? null
+  const mode = isTeacher && props.teacherView ? 'teacher' : 'student'
+  const { onGo } = props
+  const go = useCallback(
+    (i: number) => {
+      if (!isTeacher || i < 0 || i >= slides.length) return
+      stageApi.current?.resetZoom()
+      onGo(slides[i].id)
+    },
+    [isTeacher, slides, onGo],
+  )
+  const [stripOpen, setStripOpen] = useState(false)
+  const [stripBuilt, setStripBuilt] = useState(false)
+  const [libOpen, setLibOpen] = useState(false)
+  useEffect(() => {
+    if (!stripOpen) return
+    const close = (e: MouseEvent) => {
+      if (!(e.target instanceof Element) || !e.target.closest('.navwrap')) setStripOpen(false)
+    }
+    document.addEventListener('click', close)
+    return () => document.removeEventListener('click', close)
+  }, [stripOpen])
+  // keyboard: ← → move slides, N toggles teacher view (teacher only)
+  const { setTeacherView, teacherView } = props
+  useEffect(() => {
+    if (!isTeacher) return
+    const k = (e: KeyboardEvent) => {
+      if (e.target instanceof Element && e.target.closest('input,textarea,select,[contenteditable]')) return
+      if (document.querySelector('.cr .scrim.open')) return
+      if (e.metaKey || e.ctrlKey || e.altKey) return
+      if (e.key === 'ArrowRight') go(idx + 1)
+      else if (e.key === 'ArrowLeft') go(idx - 1)
+      else if (e.key.toLowerCase() === 'n' && props.open) setTeacherView(!teacherView)
+    }
+    window.addEventListener('keydown', k)
+    return () => window.removeEventListener('keydown', k)
+  }, [isTeacher, go, idx, setTeacherView, teacherView, props.open])
 
   /* ---------- speaker choice for the other person's audio ---------- */
   const otherVideo = useRef<HTMLVideoElement | null>(null)
@@ -317,17 +393,73 @@ export default function Room(props: Props) {
     <>
       <div
         ref={appRef}
-        className={`app no-course${isTeacher ? '' : ' student'}${props.chatOpen ? ' chat-open' : ''}${recording ? ' recording' : ''}`}
+        className={`app${props.open ? '' : ' no-course'}${isTeacher ? '' : ' student'}${props.chatOpen ? ' chat-open' : ''}${recording ? ' recording' : ''}`}
       >
         <header className="top">
           <div className="logo">
             eigo<b>.</b>io
           </div>
           <div className="ttl">
-            {info.lesson && <span className="course">{info.lesson.courseTitle}</span>}
-            <span id="crumb">{lessonTitle(info, t)}</span>
+            {props.open && props.loaded && <span className="course">{props.loaded.course.title}</span>}
+            <span id="crumb">
+              {!props.open ? t('freeTalk') : found ? `Lesson ${found.number}: ${found.lesson.title}` : info.lesson ? `Lesson ${info.lesson.number}: ${info.lesson.lessonTitle}` : '…'}
+            </span>
           </div>
           <div className="spacer" />
+          <div className="navwrap">
+            <div className="snav">
+              <button title="Previous (←)" disabled={!isTeacher || idx === 0} onClick={() => go(idx - 1)} aria-label="Previous slide">
+                <Ico name="left" />
+              </button>
+              <span className="n">{slides.length ? `${idx + 1} / ${slides.length}` : '–'}</span>
+              <button title="Next (→)" disabled={!isTeacher || idx >= slides.length - 1} onClick={() => go(idx + 1)} aria-label="Next slide">
+                <Ico name="right" />
+              </button>
+              <button
+                className={`teachOnly${stripOpen ? ' on' : ''}`}
+                id="gridBtn"
+                title="All slides"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setStripBuilt(true)
+                  setStripOpen(!stripOpen)
+                }}
+              >
+                <Ico name="grid" />
+              </button>
+              <button className="teachOnly" id="closeCourse" title="Close the course (free talk)" onClick={props.onCloseCourse}>
+                <Ico name="x" />
+              </button>
+            </div>
+            <div className={`strip${stripOpen ? ' open' : ''}`}>
+              {stripBuilt &&
+                props.loaded &&
+                slides.map((sl, i) => (
+                  <button
+                    key={sl.id}
+                    className={`thumb${i === idx ? ' cur' : ''}`}
+                    onClick={() => {
+                      go(i)
+                      setStripOpen(false)
+                    }}
+                  >
+                    <div className="mini">
+                      <SlideCanvas slide={sl} mode="editor" assetBase={props.loaded!.assetBase} />
+                    </div>
+                    <span>{i + 1}</span>
+                  </button>
+                ))}
+            </div>
+          </div>
+          <button
+            className={`sq tog teachOnly${props.teacherView ? ' on' : ''}`}
+            id="notesBtn"
+            title="Teacher view: show answers and teacher-only blocks (N)"
+            aria-pressed={props.teacherView}
+            onClick={() => props.setTeacherView(!props.teacherView)}
+          >
+            <Ico name="notes" />
+          </button>
           <div className={`info${clockClass}`}>
             <span className="rec" title={t('recTitle')}>
               <i />
@@ -358,6 +490,20 @@ export default function Room(props: Props) {
         <div className="body">
           <section className="stageArea">
             <div className="layout" ref={layoutRef}>
+              <SlideStage
+                ref={stageApi}
+                setBox={(el) => {
+                  slideBoxRef.current = el
+                }}
+                className="slot slideBox tool-select"
+                slide={slide}
+                mode={mode}
+                assetBase={props.loaded?.assetBase ?? ''}
+                characters={props.loaded?.course.characters}
+                remoteMedia={props.remoteMedia}
+                onLocalMedia={props.onLocalMedia}
+                zoomLabel={t('backToWholeSlide')}
+              />
               <div className={otherTileClass} ref={otherRef}>
                 <div className="face">
                   {other?.stream && (
@@ -448,6 +594,14 @@ export default function Room(props: Props) {
                 <span className={`badge${props.unread > 0 ? ' show' : ''}`}>{props.unread || ''}</span>
                 <span className="lbl">{t('chat')}</span>
               </button>
+              {isTeacher && (
+                <button className="cbtn teachOnly" onClick={() => setLibOpen(true)}>
+                  <span className="cface">
+                    <Ico name="book" />
+                  </span>
+                  <span className="lbl">Library</span>
+                </button>
+              )}
             </nav>
           </section>
 
@@ -464,6 +618,16 @@ export default function Room(props: Props) {
           </aside>
         </div>
       </div>
+
+      {isTeacher && (
+        <Library
+          bookingId={info.bookingId}
+          open={libOpen}
+          current={props.open}
+          onClose={() => setLibOpen(false)}
+          onOpenLesson={props.onOpenLesson}
+        />
+      )}
 
       {/* End dialog: one wording before time is up, one after; same options */}
       <div

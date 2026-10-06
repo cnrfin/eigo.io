@@ -1,8 +1,9 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import type { RealtimeChannel } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
+import type { Course } from '@/lib/slides/types'
 
 /** Browser-side helpers for the classroom: API calls and the lesson's Realtime channel. */
 
@@ -19,7 +20,11 @@ export type SessionInfo = {
   endedAt: string | null
   studentJoinedAt: string | null
   recordingStoppedAt: string | null
+  usedCourse?: boolean
 }
+
+/** What's on the slide area: a course lesson on a slide, or null for free talk. */
+export type OpenLesson = { courseId: string; lessonId: string; slideId: string | null }
 
 export type JoinInfo = {
   bookingId: string
@@ -34,6 +39,7 @@ export type JoinInfo = {
   uiLang: 'ja' | 'en'
   nativeLang: string
   lesson: { courseTitle: string; lessonTitle: string; number: number } | null
+  open: OpenLesson | null
   chat: ChatMsg[]
   serverNow: string
 }
@@ -120,6 +126,46 @@ export async function downloadChat(bookingId: string) {
   setTimeout(() => URL.revokeObjectURL(a.href), 1000)
 }
 
+export type LoadedCourse = { course: Course; version: number; assetBase: string }
+
+export async function fetchCourse(bookingId: string, courseId: string): Promise<LoadedCourse | null> {
+  try {
+    const r = await call(`/api/classroom/${bookingId}/course?courseId=${encodeURIComponent(courseId)}`)
+    return r.ok ? ((await r.json()) as LoadedCourse) : null
+  } catch {
+    return null
+  }
+}
+
+export type LibraryCourse = {
+  id: string
+  title: string
+  level: string
+  units: { title: string; lessons: { id: string; title: string; slides: number }[] }[]
+}
+export type LibraryProgress = Record<string, { lessonId: string | null; slideId: string | null; completed: string[] }>
+
+export async function fetchLibrary(bookingId: string): Promise<{ courses: LibraryCourse[]; progress: LibraryProgress } | null> {
+  try {
+    const r = await call(`/api/classroom/${bookingId}/library`)
+    return r.ok ? await r.json() : null
+  } catch {
+    return null
+  }
+}
+
+export async function postState(bookingId: string, open: OpenLesson | null): Promise<boolean> {
+  try {
+    const r = await call(`/api/classroom/${bookingId}/state`, {
+      method: 'POST',
+      body: JSON.stringify(open ?? { courseId: null }),
+    })
+    return r.ok
+  } catch {
+    return false
+  }
+}
+
 /* ---------- Realtime: private channel classroom:<bookingId> ----------
    Authorised by the realtime.messages policies in supabase/add-classroom.sql
    (only the booking's student and the admin). Broadcast only: anything that
@@ -128,6 +174,9 @@ export async function downloadChat(bookingId: string) {
 export type ClassroomEvent =
   | { type: 'chat'; message: ChatMsg }
   | { type: 'ended' }
+  | { type: 'open'; open: OpenLesson | null }
+  | { type: 'media'; blockId: string; action: 'play' | 'pause' | 'ended'; time: number }
+  | { type: 'hello' }
 
 export function useClassroomChannel(bookingId: string, onEvent: (e: ClassroomEvent) => void) {
   const handler = useRef(onEvent)
@@ -155,7 +204,8 @@ export function useClassroomChannel(bookingId: string, onEvent: (e: ClassroomEve
     }
   }, [bookingId])
 
-  return (e: ClassroomEvent) => {
+  // stable, so callers can use it in effect / callback dependencies
+  return useCallback((e: ClassroomEvent) => {
     channelRef.current?.send({ type: 'broadcast', event: 'cr', payload: e })
-  }
+  }, [])
 }

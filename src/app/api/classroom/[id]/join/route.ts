@@ -1,17 +1,18 @@
 import { NextRequest } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-admin'
 import { serializeWindow } from '@/lib/classroom/booking-window'
+import { findLesson, loadCourse } from '@/lib/classroom/courses'
 import { json, loadClassroom, personName, publicSession, uiLangFor, wherebyParts } from '@/lib/classroom/server'
-import type { Course } from '@/lib/slides/types'
 
 const ADMIN_EMAIL = 'cnrfin93@gmail.com'
 
 /**
  * GET /api/classroom/[id]/join
  * Everything the classroom needs to start: role, Whereby room (+ host key for
- * the teacher), booking window, live session, names, languages, lesson title
- * and the chat so far. 403 { reason, window, uiLang } when it's too early,
- * over, cancelled or not this user's lesson.
+ * the teacher), booking window, live session, names, languages, the course /
+ * lesson / slide currently open (or null = free talk) and the chat so far.
+ * 403 { reason, window, uiLang } when it's too early, over, cancelled or not
+ * this user's lesson.
  */
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -24,27 +25,38 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   if (!roomUrl) return json(409, { reason: 'no_room', uiLang: await uiLangFor(user.id, ctx.isAdmin) })
 
   const db = getSupabaseAdmin()
-  const [{ data: student }, { data: teacher }, courseRes] = await Promise.all([
+  const [{ data: student }, { data: teacher }] = await Promise.all([
     db.from('profiles').select('display_name, email, preferred_language, native_language').eq('id', booking.user_id).maybeSingle(),
     db.from('profiles').select('display_name, email').eq('email', ADMIN_EMAIL).maybeSingle(),
-    booking.slide_course_id
-      ? db.from('slide_courses').select('title, title_ja, course').eq('id', booking.slide_course_id).maybeSingle()
-      : Promise.resolve({ data: null }),
   ])
-
   const studentName = personName(student?.display_name, student?.email, 'Student')
   const teacherName = personName(teacher?.display_name, teacher?.email, 'Connor')
 
-  // Lesson title (phase 2 loads the slides themselves)
+  // What's open: the live session wins (the teacher may have changed it); otherwise
+  // what was booked, starting where the student left off in that lesson.
+  let open: { courseId: string; lessonId: string; slideId: string | null } | null = null
+  if (session?.course_id && session.lesson_id) {
+    open = { courseId: session.course_id, lessonId: session.lesson_id, slideId: session.state?.slideId ?? null }
+  } else if (!session?.started_at && booking.slide_course_id && booking.slide_lesson_id) {
+    const { data: prog } = await db
+      .from('slide_course_progress')
+      .select('lesson_id, slide_id, completed_lesson_ids')
+      .eq('user_id', booking.user_id)
+      .eq('course_id', booking.slide_course_id)
+      .maybeSingle()
+    const resume =
+      prog?.lesson_id === booking.slide_lesson_id && !(prog.completed_lesson_ids ?? []).includes(booking.slide_lesson_id)
+        ? prog.slide_id
+        : null
+    open = { courseId: booking.slide_course_id, lessonId: booking.slide_lesson_id, slideId: resume }
+  }
+
   let lesson: { courseTitle: string; lessonTitle: string; number: number } | null = null
-  const course = (courseRes.data?.course ?? null) as Course | null
-  if (course && booking.slide_lesson_id) {
-    let n = 0
-    for (const u of course.units)
-      for (const l of u.lessons) {
-        n++
-        if (l.id === booking.slide_lesson_id) lesson = { courseTitle: course.title, lessonTitle: l.title, number: n }
-      }
+  if (open) {
+    const c = await loadCourse(open.courseId)
+    const l = c ? findLesson(c.course, open.lessonId) : null
+    if (c && l) lesson = { courseTitle: c.course.title, lessonTitle: l.lesson.title, number: l.number }
+    else open = null // unpublished or deleted: fall back to free talk
   }
 
   return json(200, {
@@ -59,6 +71,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     other: { name: role === 'teacher' ? studentName : teacherName },
     uiLang: role === 'teacher' ? 'en' : student?.preferred_language === 'en' ? 'en' : 'ja',
     nativeLang: student?.native_language || 'ja',
+    open,
     lesson,
     chat: Array.isArray(booking.chat_log) ? booking.chat_log : [],
     serverNow: new Date().toISOString(),

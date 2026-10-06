@@ -4,11 +4,15 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useLocalMedia } from '@whereby.com/browser-sdk/react'
 import {
   downloadChat,
+  fetchCourse,
   postMessage,
+  postState,
   postRating,
   useClassroomChannel,
   type ChatMsg,
   type JoinInfo,
+  type LoadedCourse,
+  type OpenLesson,
   type SessionInfo,
 } from '@/lib/classroom/client'
 import { makeT, type ClassroomT } from '@/lib/classroom/i18n'
@@ -16,6 +20,7 @@ import { audioContext } from './audio'
 import { Ico, Star } from './Icons'
 import Lobby from './Lobby'
 import Room, { type TileMsg } from './Room'
+import type { MediaEvent } from './SlideStage'
 
 /**
  * Lobby → room → "left / lesson complete" screen, plus the state that must
@@ -210,17 +215,46 @@ export default function Classroom({ info }: { info: JoinInfo }) {
     if (o) setUnread(0)
   }, [])
 
+  /* ---------- course lesson on the slide area (null = free talk) ---------- */
+  const isTeacher = info.role === 'teacher'
+  const [open, setOpen] = useState<OpenLesson | null>(info.open)
+  const [courses, setCourses] = useState<Record<string, LoadedCourse>>({})
+  const [teacherView, setTeacherView] = useState(true) // on by default for the teacher
+  const [remoteMedia, setRemoteMedia] = useState<MediaEvent | null>(null)
+  const [helloAt, setHelloAt] = useState(0)
+  const loading = useRef(new Set<string>())
+  useEffect(() => {
+    const id = open?.courseId
+    if (!id || courses[id] || loading.current.has(id)) return
+    loading.current.add(id)
+    fetchCourse(info.bookingId, id).then((c) => {
+      loading.current.delete(id)
+      if (c) setCourses((p) => ({ ...p, [id]: c }))
+      else toast(t('courseLoadFailed'), 'bad')
+    })
+  }, [open?.courseId, courses, info.bookingId, toast, t])
+
   const chatOpenRef = useRef(chatOpen)
   const phaseRef = useRef(phase.name)
+  const openRef = useRef(open)
   useEffect(() => {
     chatOpenRef.current = chatOpen
     phaseRef.current = phase.name
+    openRef.current = open
   })
   const send = useClassroomChannel(info.bookingId, (e) => {
     if (e.type === 'chat') {
       setMessages((p) => (p.some((m) => m.id === e.message.id) ? p : [...p, e.message]))
       popTile('other', e.message)
       if (!chatOpenRef.current) setUnread((n) => n + 1)
+    } else if (e.type === 'open') {
+      // the teacher moved to another slide, opened a lesson or closed the course
+      if (!isTeacher) setOpen(e.open)
+    } else if (e.type === 'media') {
+      setRemoteMedia({ blockId: e.blockId, action: e.action, time: e.time, n: Date.now() })
+    } else if (e.type === 'hello') {
+      // the student (re)connected: tell them what's on screen right now (effect below)
+      if (isTeacher) setHelloAt(Date.now())
     } else if (e.type === 'ended') {
       // In the room: Room leaves and reports back. In the lobby: go straight to the end screen.
       if (phaseRef.current === 'room') setEndSignal(Date.now())
@@ -242,6 +276,48 @@ export default function Classroom({ info }: { info: JoinInfo }) {
     },
     [info.bookingId, popTile, send, toast, t],
   )
+
+  useEffect(() => {
+    if (helloAt) send({ type: 'open', open: openRef.current })
+  }, [helloAt, send])
+
+  // the student asks the teacher for the current slide whenever they enter the room
+  useEffect(() => {
+    if (phase.name !== 'room' || isTeacher) return
+    const id = setTimeout(() => send({ type: 'hello' }), 1500)
+    return () => clearTimeout(id)
+  }, [phase, isTeacher, send])
+
+  /* teacher: change what's open, tell the student at once, save it (debounced) */
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const changeOpen = useCallback(
+    (next: OpenLesson | null) => {
+      setOpen(next)
+      send({ type: 'open', open: next })
+      if (saveTimer.current) clearTimeout(saveTimer.current)
+      saveTimer.current = setTimeout(() => postState(info.bookingId, next), next ? 400 : 0)
+    },
+    [send, info.bookingId],
+  )
+  const onGo = useCallback(
+    (slideId: string) => {
+      const o = openRef.current
+      if (o) changeOpen({ ...o, slideId })
+    },
+    [changeOpen],
+  )
+  const onOpenLesson = useCallback(
+    (o: OpenLesson) => {
+      changeOpen(o)
+      toast(`Lesson opened for you and ${info.other.name}`, 'ok')
+    },
+    [changeOpen, toast, info.other.name],
+  )
+  const onCloseCourse = useCallback(() => {
+    changeOpen(null)
+    toast('Course closed. Add one any time from the Library')
+  }, [changeOpen, toast])
+  const onLocalMedia = useCallback((m: Omit<MediaEvent, 'n'>) => send({ type: 'media', ...m }), [send])
 
   const onLeave = useCallback(
     ({ ended }: { ended: boolean }) => {
@@ -298,6 +374,15 @@ export default function Classroom({ info }: { info: JoinInfo }) {
           toast={toast}
           onLeave={onLeave}
           endSignal={endSignal}
+          open={open}
+          loaded={open ? (courses[open.courseId] ?? null) : null}
+          teacherView={teacherView}
+          setTeacherView={setTeacherView}
+          onGo={onGo}
+          onOpenLesson={onOpenLesson}
+          onCloseCourse={onCloseCourse}
+          remoteMedia={remoteMedia}
+          onLocalMedia={onLocalMedia}
         />
       )}
       {phase.name === 'left' && (

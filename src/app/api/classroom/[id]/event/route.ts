@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-admin'
-import { ensureSession, json, loadClassroom, publicSession } from '@/lib/classroom/server'
+import { ensureSession, json, loadClassroom, publicSession, SESSION_COLS } from '@/lib/classroom/server'
 
 /**
  * POST /api/classroom/[id]/event   { type }
@@ -55,7 +55,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   }
 
   const { data } = await sessions()
-    .select('booking_id, student_joined_at, started_at, ended_at, recording_stopped_at')
+    .select(SESSION_COLS)
     .eq('booking_id', booking.id)
     .maybeSingle()
   return json(200, { session: publicSession(data), serverNow: now })

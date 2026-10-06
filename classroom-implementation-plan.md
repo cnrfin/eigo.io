@@ -289,6 +289,16 @@ Each phase is shippable to the **pilot** (users with `classroom_enabled`) and te
 12. **i18n:** all student-facing strings go into `src/lib/i18n.ts` (`ja` / `en`) and are chosen by `preferred_language`. The teacher UI is in English.
 
 ### Phase 2: Slides
+
+**Status (2026-10-06): built, ready to test.**
+- **Slides in the room:** `SlideStage.tsx` places the slide (side / stacked layouts) and scales it. Zoom is local: pinch, double-tap, Ctrl/⌘ + wheel, the % chip resets.
+- **Navigation (teacher only):** prev / next, ← → keys, thumbnail grid, ✕ to close the course (free talk). Teacher view toggle (eye button or N), on by default.
+- **Sync:** the teacher's change is broadcast at once (`open` event) and saved after 400 ms (`POST /api/classroom/[id]/state`). A student who (re)connects asks the teacher for the current slide (`hello`). Video and audio blocks play and pause together (`media` event, no echo).
+- **Library (teacher):** `GET /api/classroom/[id]/library` lists published courses with "In class now / Continue / Done" for this student.
+- **Course data:** `GET /api/classroom/[id]/course` returns the course JSON and the asset base URL.
+- **Progress:** every saved slide updates `slide_course_progress`. Reaching a lesson's last slide marks it completed. Opening a lesson from the Library, or a booked lesson, resumes at the saved slide unless that lesson is finished.
+- **Tests:** a second render test using the real beginner course (38 checks).
+- **Still to come:** the student can't pick a course when booking (phase 6), so for now the teacher opens lessons from the Library.
 1. **Load the course:**
    - The course comes from `slide_courses` (`bookings.slide_course_id` / `slide_lesson_id`, or `classroom_sessions.course_id` once changed).
    - Render `SlideCanvas` with `assetBase` = the public bucket URL + `<courseId>/`, inside `SlideCharacters`, `SlideVocabSave`, `SlideActivity` and `SlideMediaSync`.
