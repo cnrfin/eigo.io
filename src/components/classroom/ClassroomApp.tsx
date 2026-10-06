@@ -7,6 +7,8 @@ import { fetchJoin, type JoinDenied, type JoinInfo } from '@/lib/classroom/clien
 import { makeT, type ClassroomLang } from '@/lib/classroom/i18n'
 import { ClassroomIcons, Ico } from './Icons'
 import Classroom from './Classroom'
+// Slide styles first (shared with the studio), then the classroom's own.
+import '@/lib/slides/slides.css'
 import './classroom.css'
 
 /**
