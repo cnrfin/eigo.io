@@ -9,10 +9,11 @@ import { ensureSession, json, loadClassroom, publicSession, SESSION_COLS } from 
  *   start              both people are in: start the lesson clock (first call wins)
  *   recording_stopped  teacher's client stopped the cloud recording at the booked end
  *   end                teacher ended the lesson for everyone → booking completed
+ *   whiteboard { on }  either person opened / closed the lesson's whiteboard
  *
  * Returns the session, so every client agrees on the clock.
  */
-type EventType = 'student_joined' | 'start' | 'recording_stopped' | 'end'
+type EventType = 'student_joined' | 'start' | 'recording_stopped' | 'end' | 'whiteboard'
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -21,8 +22,11 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   const { booking, access } = ctx
 
   let type: EventType
+  let on = false
   try {
-    type = (await request.json()).type
+    const b = await request.json()
+    type = b.type
+    on = !!b.on
   } catch {
     return json(400, { error: 'Invalid body' })
   }
@@ -50,6 +54,12 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       await sessions().update({ ended_at: now, updated_at: now }).eq('booking_id', booking.id).is('ended_at', null)
       await db.from('bookings').update({ status: 'completed' }).eq('id', booking.id).in('status', ['confirmed', 'no_show'])
       break
+    case 'whiteboard': {
+      const { data: cur } = await sessions().select('state').eq('booking_id', booking.id).maybeSingle()
+      const state = { ...((cur?.state as Record<string, unknown>) ?? {}), whiteboard: on }
+      await sessions().update({ state, updated_at: now }).eq('booking_id', booking.id)
+      break
+    }
     default:
       return json(400, { error: 'Unknown event' })
   }

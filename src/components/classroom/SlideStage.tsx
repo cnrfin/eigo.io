@@ -4,13 +4,17 @@ import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRe
 import { SlideCanvas, SlideCharacters, SlideMediaSync, type MediaSyncApi, type SlideMode } from '@/lib/slides'
 import type { Character, Slide } from '@/lib/slides/types'
 import { Ico } from './Icons'
+import type { InkEngine } from './ink'
 
 /**
  * The slide area: the 1280×960 slide scaled to the box the layout gives it,
  * with local zoom (each person zooms on their own screen):
- *  - touch: pinch to zoom, drag to pan when zoomed, double-tap to zoom in/out
+ *  - touch: pinch to zoom; with the select tool, drag to pan when zoomed and
+ *    double-tap to zoom in / out (with a drawing tool one finger draws)
  *  - desktop: Ctrl/⌘ + wheel or trackpad pinch; wheel pans when zoomed
  * Video and audio blocks are kept in sync between teacher and student.
+ * On top of the slide: the lesson whiteboard, the drawing layer (ink.ts) and
+ * the other person's live cursor, all in 1280×960 stage coordinates.
  */
 
 export type MediaEvent = { blockId: string; action: 'play' | 'pause' | 'ended'; time: number; n: number }
@@ -29,6 +33,15 @@ type Props = {
   zoomLabel: string
   /** the layout engine positions this box */
   setBox: (el: HTMLDivElement | null) => void
+  ink: InkEngine
+  /** 'board' for the whiteboard, else the slide id ('' = nothing to draw on) */
+  surface: string
+  /** remote cursor updates arrive here: event 'cursor', detail {x, y} or null */
+  bus: EventTarget
+  otherName: string
+  boardLabel: string
+  /** my pointer over the slide, for the other person's cursor (null = left the slide) */
+  onCursor: (p: { x: number; y: number } | null) => void
 }
 
 const STAGE_W = 1280
@@ -38,19 +51,31 @@ const SlideStage = forwardRef<SlideStageHandle, Props>(function SlideStage(props
   const boxRef = useRef<HTMLDivElement | null>(null)
   const stageRef = useRef<HTMLDivElement | null>(null)
   const chipRef = useRef<HTMLButtonElement | null>(null)
+  const canvasRef = useRef<HTMLCanvasElement | null>(null)
+  const textRef = useRef<HTMLDivElement | null>(null)
+  const cursorRef = useRef<HTMLDivElement | null>(null)
+  const cursorPos = useRef<[number, number] | null>(null)
   const base = useRef(1)
   const zoom = useRef({ z: 1, x: 0, y: 0 })
   const [zoomed, setZoomed] = useState(false)
+  const { ink } = props
 
+  const placeCursor = useCallback(() => {
+    const el = cursorRef.current
+    const p = cursorPos.current
+    if (!el || !p) return
+    // constant on-screen size whatever the slide's scale or zoom
+    el.style.transform = `translate(${p[0].toFixed(1)}px,${p[1].toFixed(1)}px) scale(${(1 / (base.current * zoom.current.z || 1)).toFixed(4)})`
+  }, [])
   const apply = useCallback(() => {
     const s = base.current * zoom.current.z
     const st = stageRef.current
     if (st) st.style.transform = `translate(${zoom.current.x}px,${zoom.current.y}px) scale(${s})`
-    const on = zoom.current.z > 1.02
-    setZoomed(on)
+    setZoomed(zoom.current.z > 1.02)
     const span = chipRef.current?.querySelector('span')
     if (span) span.textContent = Math.round(zoom.current.z * 100) + '%'
-  }, [])
+    placeCursor()
+  }, [placeCursor])
   const clamp = useCallback(() => {
     const z = zoom.current
     const bw = STAGE_W * base.current
@@ -101,14 +126,82 @@ const SlideStage = forwardRef<SlideStageHandle, Props>(function SlideStage(props
     return () => ro.disconnect()
   }, [apply, clamp])
 
-  // a new slide always starts at 100%
-  const slideId = props.slide?.id
+  // a new slide (or the whiteboard) always starts at 100%
   useEffect(() => {
     zoom.current = { z: 1, x: 0, y: 0 }
     apply()
-  }, [slideId, apply])
+  }, [props.surface, apply])
 
-  // gestures
+  /* ---------- drawing layer ---------- */
+  useEffect(() => {
+    const stage = stageRef.current, canvas = canvasRef.current, textLayer = textRef.current, box = boxRef.current
+    if (!stage || !canvas || !textLayer || !box) return
+    ink.attach({ stage, canvas, textLayer, box })
+    return () => ink.detach()
+  }, [ink])
+  useEffect(() => {
+    ink.setSurface(props.surface)
+  }, [ink, props.surface])
+
+  /* ---------- live cursors ---------- */
+  const { onCursor, bus } = props
+  useEffect(() => {
+    const box = boxRef.current
+    const stage = stageRef.current
+    if (!box || !stage) return
+    let last = 0
+    let pendingT = 0
+    let latest: { x: number; y: number } | null = null
+    const send = () => {
+      last = Date.now()
+      pendingT = 0
+      onCursor(latest)
+    }
+    const move = (e: PointerEvent) => {
+      const r = stage.getBoundingClientRect()
+      const s = r.width / STAGE_W || 1
+      latest = { x: Math.round((e.clientX - r.left) / s), y: Math.round((e.clientY - r.top) / s) }
+      if (Date.now() - last >= 50) send()
+      else if (!pendingT) pendingT = window.setTimeout(send, 50)
+    }
+    const leave = () => {
+      window.clearTimeout(pendingT)
+      pendingT = 0
+      latest = null
+      onCursor(null)
+    }
+    box.addEventListener('pointermove', move)
+    box.addEventListener('pointerleave', leave)
+    return () => {
+      box.removeEventListener('pointermove', move)
+      box.removeEventListener('pointerleave', leave)
+      window.clearTimeout(pendingT)
+    }
+  }, [onCursor])
+  useEffect(() => {
+    let hideT = 0
+    const on = (e: Event) => {
+      const d = (e as CustomEvent<{ x: number; y: number } | null>).detail
+      const el = cursorRef.current
+      if (!el) return
+      window.clearTimeout(hideT)
+      if (!d) {
+        el.classList.remove('on')
+        return
+      }
+      cursorPos.current = [d.x, d.y]
+      placeCursor()
+      el.classList.add('on')
+      hideT = window.setTimeout(() => el.classList.remove('on'), 6000) // still for a while: fade it out
+    }
+    bus.addEventListener('cursor', on)
+    return () => {
+      bus.removeEventListener('cursor', on)
+      window.clearTimeout(hideT)
+    }
+  }, [bus, placeCursor])
+
+  /* ---------- gestures ---------- */
   useEffect(() => {
     const box = boxRef.current
     if (!box) return
@@ -122,18 +215,21 @@ const SlideStage = forwardRef<SlideStageHandle, Props>(function SlideStage(props
       return [e.clientX - r.left, e.clientY - r.top]
     }
     const interactive = (t: EventTarget | null) =>
-      t instanceof Element && !!t.closest('button,video,audio,a,input,textarea,.es-tf,.es-match,.zoomChip')
+      t instanceof Element && !!t.closest('button,video,audio,a,input,textarea,.es-tf,.es-match,.zoomChip,.inktext')
+    const selecting = () => ink.tool === 'select'
 
     const down = (e: PointerEvent) => {
       if (e.pointerType !== 'touch' || (e.target instanceof Element && e.target.closest('.zoomChip'))) return
       touches.set(e.pointerId, pt(e))
       if (touches.size === 2) {
+        ink.cancel() // two fingers: it's a pinch, not a stroke
         const [a, b] = [...touches.values()]
         pinch = { d: Math.hypot(a[0] - b[0], a[1] - b[1]) || 1, z: zoom.current.z, m: [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2], x: zoom.current.x, y: zoom.current.y }
         pan = null
         box.classList.add('gesturing')
+        e.stopPropagation()
         e.preventDefault()
-      } else if (touches.size === 1 && zoom.current.z > 1.02 && !interactive(e.target)) {
+      } else if (touches.size === 1 && zoom.current.z > 1.02 && selecting() && !interactive(e.target)) {
         pan = { p: pt(e), x: zoom.current.x, y: zoom.current.y }
         box.classList.add('gesturing')
       }
@@ -167,7 +263,7 @@ const SlideStage = forwardRef<SlideStageHandle, Props>(function SlideStage(props
       pan = null
       box.classList.remove('gesturing')
       const now = Date.now()
-      if (!moved && now - lastTap < 300 && !interactive(e.target)) {
+      if (!moved && selecting() && now - lastTap < 300 && !interactive(e.target)) {
         const p = pt(e)
         if (zoom.current.z > 1.02) resetZoom()
         else {
@@ -211,7 +307,7 @@ const SlideStage = forwardRef<SlideStageHandle, Props>(function SlideStage(props
       box.removeEventListener('wheel', wheel)
       window.clearTimeout(settleT)
     }
-  }, [animateOnce, apply, clamp, resetZoom, zoomAt])
+  }, [animateOnce, apply, clamp, resetZoom, zoomAt, ink])
 
   /* ---------- media sync ---------- */
   const suppress = useRef(new Map<string, number>())
@@ -256,11 +352,24 @@ const SlideStage = forwardRef<SlideStageHandle, Props>(function SlideStage(props
             </SlideCharacters>
           )}
         </div>
+        <div className="board" />
+        <canvas id="ink" ref={canvasRef} width={STAGE_W} height={STAGE_H} />
+        <div id="textLayer" ref={textRef} />
+        <div className="rcursor" ref={cursorRef} aria-hidden>
+          <svg viewBox="0 0 24 24">
+            <path d="M4 2.5v17l4.6-4.3 2.9 6.6 2.9-1.3-2.9-6.4 6.3-.3z" />
+          </svg>
+          <span>{props.otherName}</span>
+        </div>
       </div>
       <button className={`zoomChip${zoomed ? ' on' : ''}`} ref={chipRef} title={props.zoomLabel} onClick={resetZoom}>
         <Ico name="fit" />
         <span>100%</span>
       </button>
+      <div className="boardTag">
+        <Ico name="board" />
+        {props.boardLabel}
+      </div>
     </div>
   )
 })

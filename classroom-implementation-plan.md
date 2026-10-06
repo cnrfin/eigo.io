@@ -319,6 +319,15 @@ Each phase is shippable to the **pilot** (users with `classroom_enabled`) and te
 8. **Media sync:** `SlideMediaSync.onEvent` → broadcast play / pause / seek.
 
 ### Phase 3: Canvas, whiteboard and cursors
+
+**Status (2026-10-06): built, ready to test.**
+- **Drawing engine:** `src/components/classroom/ink.ts`, one per classroom, so drawings survive leaving and rejoining. Pen, highlighter, line (Shift snaps), rectangle / ellipse (Shift = square / circle), text, eraser, select (click, shift-click, marquee, drag, Delete, recolour), undo (60 steps per surface), clear.
+- **Toolbar:** `Toolbar.tsx`, the frosted drawer with the handle and notch, for both teacher and student. Keys V P H L R O T E, ⌘Z, Delete.
+- **Sync:** every change is sent at once (`ink` ops: add / pts at about 30 Hz / set / del / all). Each surface is saved 800 ms after its last change (`PUT /api/classroom/[id]/ink`, table `classroom_ink`), and anything pending is saved when the tab closes. Drawings are loaded in `join`.
+- **Whiteboard:** one per lesson (surface `board`). Either person toggles it (button or W); it's shared and saved in `classroom_sessions.state.whiteboard` (`event` type `whiteboard`). The teacher moving slides or opening a lesson closes it. In free talk it gives the 4:3 area.
+- **Live cursors:** the pointer is sent at up to 20 Hz in stage coordinates, shown with a name label at a constant size, and fades after 6 s still. Touch: one finger draws with a drawing tool, two fingers pinch; pan and double-tap zoom only with the select tool.
+- **Tests:** a third render test (32 checks) with a stub canvas.
+- **Not yet:** the "Let the student draw" and cursor on/off settings (phase 4 settings).
 1. **Ink model:** port the ink model (`kind`, `pts`, `a`/`b`, text) and the tools: pen, highlighter, line (Shift snaps), shape (rectangle / ellipse, Shift for square / circle), text, eraser and select (click, shift-click, marquee, drag, Backspace / Delete, recolour, undo history).
 2. **Who can draw:** the student can use every canvas tool but never the slide controls. There's a teacher setting "Let the student draw", default **on**.
 3. **Sync:** live stroke points are broadcast (throttled to about 30 Hz). The finished item and the full `items` list are persisted to `classroom_ink` (debounced), keyed by slide id, or `board` for the one-per-lesson whiteboard.

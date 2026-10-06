@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef } from 'react'
 import type { RealtimeChannel } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
 import type { Course } from '@/lib/slides/types'
+import type { InkItem, InkOp } from '@/components/classroom/ink'
 
 /** Browser-side helpers for the classroom: API calls and the lesson's Realtime channel. */
 
@@ -40,6 +41,8 @@ export type JoinInfo = {
   nativeLang: string
   lesson: { courseTitle: string; lessonTitle: string; number: number } | null
   open: OpenLesson | null
+  whiteboard: boolean
+  ink: Record<string, InkItem[]>
   chat: ChatMsg[]
   serverNow: string
 }
@@ -79,10 +82,11 @@ export async function fetchJoin(bookingId: string): Promise<{ ok: true; info: Jo
 
 export async function postEvent(
   bookingId: string,
-  type: 'student_joined' | 'start' | 'recording_stopped' | 'end',
+  type: 'student_joined' | 'start' | 'recording_stopped' | 'end' | 'whiteboard',
+  extra?: { on: boolean },
 ): Promise<SessionInfo | null> {
   try {
-    const r = await call(`/api/classroom/${bookingId}/event`, { method: 'POST', body: JSON.stringify({ type }) })
+    const r = await call(`/api/classroom/${bookingId}/event`, { method: 'POST', body: JSON.stringify({ type, ...extra }) })
     if (!r.ok) return null
     return (await r.json()).session as SessionInfo
   } catch {
@@ -154,6 +158,19 @@ export async function fetchLibrary(bookingId: string): Promise<{ courses: Librar
   }
 }
 
+export async function putInk(bookingId: string, surface: string, items: InkItem[], keepalive = false): Promise<boolean> {
+  try {
+    const r = await call(`/api/classroom/${bookingId}/ink`, {
+      method: 'PUT',
+      body: JSON.stringify({ surface, items }),
+      keepalive,
+    })
+    return r.ok
+  } catch {
+    return false
+  }
+}
+
 export async function postState(bookingId: string, open: OpenLesson | null): Promise<boolean> {
   try {
     const r = await call(`/api/classroom/${bookingId}/state`, {
@@ -177,6 +194,10 @@ export type ClassroomEvent =
   | { type: 'open'; open: OpenLesson | null }
   | { type: 'media'; blockId: string; action: 'play' | 'pause' | 'ended'; time: number }
   | { type: 'hello' }
+  | { type: 'ink'; op: InkOp }
+  | { type: 'cursor'; x: number; y: number; surface: string }
+  | { type: 'cursor'; hide: true }
+  | { type: 'wb'; on: boolean }
 
 export function useClassroomChannel(bookingId: string, onEvent: (e: ClassroomEvent) => void) {
   const handler = useRef(onEvent)

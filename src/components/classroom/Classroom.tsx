@@ -6,7 +6,9 @@ import {
   downloadChat,
   fetchCourse,
   postMessage,
+  postEvent,
   postState,
+  putInk,
   postRating,
   useClassroomChannel,
   type ChatMsg,
@@ -21,6 +23,7 @@ import { Ico, Star } from './Icons'
 import Lobby from './Lobby'
 import Room, { type TileMsg } from './Room'
 import type { MediaEvent } from './SlideStage'
+import { InkEngine, type InkItem } from './ink'
 
 /**
  * Lobby → room → "left / lesson complete" screen, plus the state that must
@@ -222,6 +225,15 @@ export default function Classroom({ info }: { info: JoinInfo }) {
   const [teacherView, setTeacherView] = useState(true) // on by default for the teacher
   const [remoteMedia, setRemoteMedia] = useState<MediaEvent | null>(null)
   const [helloAt, setHelloAt] = useState(0)
+
+  /* ---------- drawings, whiteboard, cursors ---------- */
+  const [whiteboard, setWb] = useState(!!info.whiteboard)
+  const [bus] = useState(() => new EventTarget())
+  const [ink] = useState(() => {
+    const e = new InkEngine()
+    e.loadAll(info.ink ?? {})
+    return e
+  })
   const loading = useRef(new Set<string>())
   useEffect(() => {
     const id = open?.courseId
@@ -237,10 +249,12 @@ export default function Classroom({ info }: { info: JoinInfo }) {
   const chatOpenRef = useRef(chatOpen)
   const phaseRef = useRef(phase.name)
   const openRef = useRef(open)
+  const wbRef = useRef(whiteboard)
   useEffect(() => {
     chatOpenRef.current = chatOpen
     phaseRef.current = phase.name
     openRef.current = open
+    wbRef.current = whiteboard
   })
   const send = useClassroomChannel(info.bookingId, (e) => {
     if (e.type === 'chat') {
@@ -249,7 +263,17 @@ export default function Classroom({ info }: { info: JoinInfo }) {
       if (!chatOpenRef.current) setUnread((n) => n + 1)
     } else if (e.type === 'open') {
       // the teacher moved to another slide, opened a lesson or closed the course
-      if (!isTeacher) setOpen(e.open)
+      if (!isTeacher) {
+        setOpen(e.open)
+        if (e.open) setWb(false) // moving slides closes the whiteboard
+      }
+    } else if (e.type === 'ink') {
+      ink.applyRemote(e.op)
+    } else if (e.type === 'cursor') {
+      const d = 'hide' in e || e.surface !== ink.surface ? null : { x: e.x, y: e.y }
+      bus.dispatchEvent(new CustomEvent('cursor', { detail: d }))
+    } else if (e.type === 'wb') {
+      setWb(e.on)
     } else if (e.type === 'media') {
       setRemoteMedia({ blockId: e.blockId, action: e.action, time: e.time, n: Date.now() })
     } else if (e.type === 'hello') {
@@ -278,8 +302,59 @@ export default function Classroom({ info }: { info: JoinInfo }) {
   )
 
   useEffect(() => {
-    if (helloAt) send({ type: 'open', open: openRef.current })
+    if (!helloAt) return
+    send({ type: 'open', open: openRef.current })
+    send({ type: 'wb', on: wbRef.current })
   }, [helloAt, send])
+
+  /* drawings: send each change at once, save each surface 800 ms after its last change */
+  const inkTimers = useRef(new Map<string, ReturnType<typeof setTimeout>>())
+  const inkLatest = useRef(new Map<string, InkItem[]>())
+  useEffect(() => {
+    return ink.handleOps((op, items) => {
+      send({ type: 'ink', op })
+      inkLatest.current.set(op.surface, items)
+      const prev = inkTimers.current.get(op.surface)
+      if (prev) clearTimeout(prev)
+      inkTimers.current.set(
+        op.surface,
+        setTimeout(() => {
+          inkTimers.current.delete(op.surface)
+          const latest = inkLatest.current.get(op.surface)
+          inkLatest.current.delete(op.surface)
+          if (latest) putInk(info.bookingId, op.surface, latest)
+        }, 800),
+      )
+    })
+  }, [send, info.bookingId, ink])
+  useEffect(() => {
+    // closing the tab: save what's still waiting
+    const flush = () => {
+      for (const [surface, items] of inkLatest.current) putInk(info.bookingId, surface, items, true)
+      inkLatest.current.clear()
+    }
+    window.addEventListener('pagehide', flush)
+    return () => window.removeEventListener('pagehide', flush)
+  }, [info.bookingId])
+
+  const onCursor = useCallback(
+    (p: { x: number; y: number } | null) =>
+      send(p ? { type: 'cursor', x: p.x, y: p.y, surface: ink.surface } : { type: 'cursor', hide: true }),
+    [send, ink],
+  )
+
+  const setWhiteboard = useCallback(
+    (on: boolean) => {
+      setWb(on)
+      send({ type: 'wb', on })
+      postEvent(info.bookingId, 'whiteboard', { on })
+      const o = openRef.current
+      const lesson = o ? courses[o.courseId]?.course.units.flatMap((u) => u.lessons).find((l) => l.id === o.lessonId) : null
+      const n = lesson && o ? Math.max(0, lesson.slides.findIndex((x) => x.id === o.slideId)) + 1 : 0
+      toast(on ? t('wbOn', { name: info.other.name }) : n ? t('backToSlide', { n }) : t('wbOff'))
+    },
+    [send, info.bookingId, info.other.name, toast, t, courses],
+  )
 
   // the student asks the teacher for the current slide whenever they enter the room
   useEffect(() => {
@@ -302,12 +377,14 @@ export default function Classroom({ info }: { info: JoinInfo }) {
   const onGo = useCallback(
     (slideId: string) => {
       const o = openRef.current
+      if (wbRef.current) setWb(false) // the server closes it with the slide change
       if (o) changeOpen({ ...o, slideId })
     },
     [changeOpen],
   )
   const onOpenLesson = useCallback(
     (o: OpenLesson) => {
+      if (wbRef.current) setWb(false)
       changeOpen(o)
       toast(`Lesson opened for you and ${info.other.name}`, 'ok')
     },
@@ -383,6 +460,11 @@ export default function Classroom({ info }: { info: JoinInfo }) {
           onCloseCourse={onCloseCourse}
           remoteMedia={remoteMedia}
           onLocalMedia={onLocalMedia}
+          ink={ink}
+          bus={bus}
+          whiteboard={whiteboard}
+          setWhiteboard={setWhiteboard}
+          onCursor={onCursor}
         />
       )}
       {phase.name === 'left' && (

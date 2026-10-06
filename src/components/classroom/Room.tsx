@@ -13,6 +13,8 @@ import ChatPanel from './ChatPanel'
 import { Ico } from './Icons'
 import Library from './Library'
 import SlideStage, { type MediaEvent, type SlideStageHandle } from './SlideStage'
+import Toolbar from './Toolbar'
+import type { InkEngine } from './ink'
 
 /**
  * The live room: top bar with slide controls, the slide and the two video
@@ -58,6 +60,11 @@ type Props = {
   onCloseCourse: () => void
   remoteMedia: MediaEvent | null
   onLocalMedia: (e: Omit<MediaEvent, 'n'>) => void
+  ink: InkEngine
+  bus: EventTarget
+  whiteboard: boolean
+  setWhiteboard: (on: boolean) => void
+  onCursor: (p: { x: number; y: number } | null) => void
 }
 
 function findLesson(loaded: LoadedCourse | null, open: OpenLesson | null): { lesson: Lesson; number: number } | null {
@@ -214,7 +221,7 @@ export default function Room(props: Props) {
   const meRef = useRef<HTMLDivElement | null>(null)
   const slideBoxRef = useRef<HTMLDivElement | null>(null)
   const stageApi = useRef<SlideStageHandle | null>(null)
-  const showSlide = !!props.open
+  const showSlide = !!props.open || props.whiteboard
   const rects = useRef(new Map<HTMLElement, Rect>())
   const place = useCallback((el: HTMLElement | null, r: Rect | null, animate: boolean) => {
     if (!el || !r) return
@@ -312,7 +319,30 @@ export default function Room(props: Props) {
     }
     window.addEventListener('keydown', k)
     return () => window.removeEventListener('keydown', k)
-  }, [isTeacher, go, idx, setTeacherView, teacherView, props.open])
+  }, [isTeacher, go, idx, setTeacherView, teacherView, props.open, props.whiteboard])
+
+  /* ---------- drawing + whiteboard ---------- */
+  const [tbOpen, setTbOpen] = useState(false)
+  const surface = props.whiteboard ? 'board' : (slide?.id ?? '')
+  const { setWhiteboard, whiteboard, ink } = props
+  const toggleWhiteboard = useCallback(() => {
+    const on = !whiteboard
+    setWhiteboard(on)
+    if (on) {
+      // opening the board: get the pen out
+      setTbOpen(true)
+      if (ink.tool === 'select') ink.setTool('pen')
+    } else if (!props.open) setTbOpen(false)
+  }, [whiteboard, setWhiteboard, ink, props.open])
+  useEffect(() => {
+    const k = (e: KeyboardEvent) => {
+      if (e.target instanceof Element && e.target.closest('input,textarea,select,[contenteditable="true"]')) return
+      if (document.querySelector('.cr .scrim.open') || e.metaKey || e.ctrlKey || e.altKey) return
+      if (e.key.toLowerCase() === 'w') toggleWhiteboard()
+    }
+    window.addEventListener('keydown', k)
+    return () => window.removeEventListener('keydown', k)
+  }, [toggleWhiteboard])
 
   /* ---------- speaker choice for the other person's audio ---------- */
   const otherVideo = useRef<HTMLVideoElement | null>(null)
@@ -393,7 +423,7 @@ export default function Room(props: Props) {
     <>
       <div
         ref={appRef}
-        className={`app${props.open ? '' : ' no-course'}${isTeacher ? '' : ' student'}${props.chatOpen ? ' chat-open' : ''}${recording ? ' recording' : ''}`}
+        className={`app${props.open ? '' : ' no-course'}${props.whiteboard ? ' wb' : ''}${tbOpen ? ' tb-open' : ''}${isTeacher ? '' : ' student'}${props.chatOpen ? ' chat-open' : ''}${recording ? ' recording' : ''}`}
       >
         <header className="top">
           <div className="logo">
@@ -460,6 +490,15 @@ export default function Room(props: Props) {
           >
             <Ico name="notes" />
           </button>
+          <button
+            className={`sq tog${props.whiteboard ? ' on' : ''}`}
+            id="wbBtn"
+            title={t('whiteboardTitle')}
+            aria-pressed={props.whiteboard}
+            onClick={toggleWhiteboard}
+          >
+            <Ico name="board" />
+          </button>
           <div className={`info${clockClass}`}>
             <span className="rec" title={t('recTitle')}>
               <i />
@@ -503,6 +542,12 @@ export default function Room(props: Props) {
                 remoteMedia={props.remoteMedia}
                 onLocalMedia={props.onLocalMedia}
                 zoomLabel={t('backToWholeSlide')}
+                ink={props.ink}
+                surface={surface}
+                bus={props.bus}
+                otherName={info.other.name.split(/\s+/)[0]}
+                boardLabel={t('whiteboard')}
+                onCursor={props.onCursor}
               />
               <div className={otherTileClass} ref={otherRef}>
                 <div className="face">
@@ -556,6 +601,8 @@ export default function Room(props: Props) {
                 )}
               </div>
             </div>
+
+            <Toolbar t={t} ink={props.ink} open={tbOpen} setOpen={setTbOpen} toast={toast} enabled={!!surface} />
 
             <div className={`netBanner${reconnecting ? ' on' : ''}`}>
               <span className="spin" />

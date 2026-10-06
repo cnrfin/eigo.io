@@ -32,9 +32,12 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   await ensureSession(ctx.booking.id)
 
   if (!body.courseId) {
+    // closing the course keeps the whiteboard as it is
+    const { data: cur } = await db.from('classroom_sessions').select('state').eq('booking_id', ctx.booking.id).maybeSingle()
+    const whiteboard = !!(cur?.state as { whiteboard?: boolean } | null)?.whiteboard
     await db
       .from('classroom_sessions')
-      .update({ course_id: null, lesson_id: null, state: {}, updated_at: now })
+      .update({ course_id: null, lesson_id: null, state: { whiteboard }, updated_at: now })
       .eq('booking_id', ctx.booking.id)
     return json(200, { ok: true })
   }
@@ -51,7 +54,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       course_id: body.courseId,
       lesson_id: found.lesson.id,
       used_course: true,
-      state: { slideId },
+      state: { slideId, whiteboard: false }, // a teacher moving slides closes the whiteboard
       updated_at: now,
     })
     .eq('booking_id', ctx.booking.id)
