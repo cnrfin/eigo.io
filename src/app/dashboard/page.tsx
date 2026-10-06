@@ -904,6 +904,7 @@ function DashboardContent() {
   const [dueCount, setDueCount] = useState(0)
   const [subStatus, setSubStatus] = useState<'loading' | 'none' | 'active' | 'past_due'>('loading')
   const [bookingTestMode, setBookingTestMode] = useState(false) // test accounts: any duration, any time
+  const [classroomEnabled, setClassroomEnabled] = useState(false) // pilot: lessons open in /classroom/[id]
   const [minutesRemaining, setMinutesRemaining] = useState<number | null>(null)
   const [trialCompleted, setTrialCompleted] = useState<boolean | null>(null) // null = loading
   const HISTORY_PER_PAGE = 10
@@ -1248,6 +1249,7 @@ function DashboardContent() {
             setMinutesRemaining(data.balance.minutesRemaining)
           }
           setBookingTestMode(!!data.features?.bookingTestMode)
+          setClassroomEnabled(!!data.features?.classroomEnabled)
         } else {
           setSubStatus('none')
         }
@@ -1388,6 +1390,7 @@ function DashboardContent() {
                   loadingLessons={loadingLessons}
                   wherebyUrl={wherebyUrl}
                   isAdmin={isAdmin}
+                  classroomEnabled={classroomEnabled}
                   onBook={() => setActiveTab('booking')}
                   onReviewPhrases={() => setActiveTab('vocab')}
                   onTakeTests={() => router.push('/dashboard/tests')}

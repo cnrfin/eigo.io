@@ -23,13 +23,23 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
-  // Filter to only lessons whose end time hasn't passed
+  // Which students are in the classroom pilot (their lessons open in /classroom/[id])
+  const userIds = [...new Set((data || []).map((b) => b.user_id))]
+  const { data: perms } = userIds.length
+    ? await supabase.from('user_permissions').select('user_id, classroom_enabled').in('user_id', userIds)
+    : { data: [] as { user_id: string; classroom_enabled: boolean }[] }
+  const pilot = new Set((perms || []).filter((p) => p.classroom_enabled).map((p) => p.user_id))
+
+  // Filter to only lessons whose end time hasn't passed (pilot lessons stay
+  // until the room closes, 60 min after the end, so the teacher can rejoin)
   const now = new Date()
-  const upcoming = (data || []).filter((b) => {
-    const lessonEnd = new Date(`${b.date}T${b.start_time}+09:00`)
-    lessonEnd.setMinutes(lessonEnd.getMinutes() + (b.duration_minutes || 30))
-    return lessonEnd > now
-  })
+  const upcoming = (data || [])
+    .filter((b) => {
+      const lessonEnd = new Date(`${b.date}T${b.start_time}+09:00`)
+      lessonEnd.setMinutes(lessonEnd.getMinutes() + (b.duration_minutes || 30) + (pilot.has(b.user_id) ? 60 : 0))
+      return lessonEnd > now
+    })
+    .map((b) => ({ ...b, classroom_enabled: pilot.has(b.user_id) }))
 
   return NextResponse.json({ lessons: upcoming })
 }

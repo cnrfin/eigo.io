@@ -142,6 +142,8 @@ type AdminLesson = {
   user_id: string
   whereby_room_url: string | null
   whereby_host_url: string | null
+  /** pilot student: the lesson opens in the eigo classroom */
+  classroom_enabled?: boolean
   profiles: { display_name: string | null; email: string | null } | null
 }
 
@@ -837,7 +839,32 @@ function AdminContent() {
                             </div>
                           </div>
                           <div className="flex items-center gap-2">
-                            {(lesson.whereby_host_url || lesson.whereby_room_url) && (
+                            {lesson.classroom_enabled ? (
+                              <>
+                                {/* Pilot: the eigo classroom, with the raw Whereby host link kept as a fallback */}
+                                {lesson.whereby_host_url && (
+                                  <a
+                                    href={lesson.whereby_host_url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-[11px] font-medium transition-opacity hover:opacity-70"
+                                    style={{ color: 'var(--text-muted)' }}
+                                    title="Open the plain Whereby room instead (fallback)"
+                                  >
+                                    Whereby
+                                  </a>
+                                )}
+                                <Squircle asChild cornerRadius={8} cornerSmoothing={0.8}>
+                                  <a
+                                    href={`/classroom/${lesson.id}`}
+                                    className="px-3 py-1.5 text-xs font-medium transition-colors hover:opacity-90"
+                                    style={{ background: 'var(--accent)', color: 'var(--selected-text)' }}
+                                  >
+                                    Classroom →
+                                  </a>
+                                </Squircle>
+                              </>
+                            ) : (lesson.whereby_host_url || lesson.whereby_room_url) && (
                               <Squircle asChild cornerRadius={8} cornerSmoothing={0.8}>
                                 <a
                                   href={lesson.whereby_host_url || lesson.whereby_room_url!}

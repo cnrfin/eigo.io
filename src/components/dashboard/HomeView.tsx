@@ -31,6 +31,8 @@ interface HomeViewProps {
   loadingLessons: boolean
   wherebyUrl: string | null
   isAdmin: boolean
+  /** pilot: lessons open in the eigo classroom (/classroom/[id]) instead of the Whereby link */
+  classroomEnabled?: boolean
   onBook: () => void
   onReviewPhrases: () => void
   onTakeTests: () => void
@@ -144,13 +146,14 @@ function ActionButton({ artboard, label, onClick, colors, flat = false }: {
   )
 }
 
-function HeroLesson({ lesson, locale, wherebyUrl, isAdmin, onCancel, onReschedule }: {
-  lesson: HomeViewLesson; locale: Locale; wherebyUrl: string | null; isAdmin: boolean
+function HeroLesson({ lesson, locale, wherebyUrl, isAdmin, classroomEnabled, onCancel, onReschedule }: {
+  lesson: HomeViewLesson; locale: Locale; wherebyUrl: string | null; isAdmin: boolean; classroomEnabled?: boolean
   onCancel: (l: HomeViewLesson) => void; onReschedule: (l: HomeViewLesson) => void
 }) {
   const mins = (lessonDate(lesson).getTime() - new Date().getTime()) / 60000
   const canEnter = isAdmin || (mins <= 10 && mins > -lesson.durationMinutes)
-  const room = lesson.wherebyRoomUrl || wherebyUrl || '#'
+  // Pilot users go to the eigo classroom (same tab; it enforces the 10-minute rule itself).
+  const room = classroomEnabled ? `/classroom/${lesson.id}` : lesson.wherebyRoomUrl || wherebyUrl || '#'
   return (
     <SquircleCard radius={22} className="p-5">
       <div className="flex items-start justify-between gap-3">
@@ -167,8 +170,8 @@ function HeroLesson({ lesson, locale, wherebyUrl, isAdmin, onCancel, onReschedul
         <motion.a
           {...pressAnimLarge}
           href={room}
-          target="_blank"
-          rel="noopener noreferrer"
+          target={classroomEnabled ? undefined : '_blank'}
+          rel={classroomEnabled ? undefined : 'noopener noreferrer'}
           className="block text-center mt-4 py-3 font-medium"
           style={{ background: 'var(--accent)', color: '#fff', opacity: canEnter ? 1 : 0.92 }}
         >
@@ -218,7 +221,7 @@ function UpcomingLesson({ lesson, locale, onCancel, onReschedule }: {
 }
 
 export default function HomeView(props: HomeViewProps) {
-  const { locale, greeting, firstName, subStatus, trialCompleted, lessons, loadingLessons, wherebyUrl, isAdmin } = props
+  const { locale, greeting, firstName, subStatus, trialCompleted, lessons, loadingLessons, wherebyUrl, isAdmin, classroomEnabled } = props
   const { theme } = useTheme()
   const mesh = theme === 'dark' ? MESH_DARK : MESH
 
@@ -227,7 +230,7 @@ export default function HomeView(props: HomeViewProps) {
     // Cached or live lessons — render immediately, even mid-refresh.
     lessonsSection = (
       <div className="flex flex-col gap-3">
-        <HeroLesson lesson={lessons[0]} locale={locale} wherebyUrl={wherebyUrl} isAdmin={isAdmin} onCancel={props.onCancelLesson} onReschedule={props.onRescheduleLesson} />
+        <HeroLesson lesson={lessons[0]} locale={locale} wherebyUrl={wherebyUrl} isAdmin={isAdmin} classroomEnabled={classroomEnabled} onCancel={props.onCancelLesson} onReschedule={props.onRescheduleLesson} />
         {lessons.slice(1).map((l) => (
           <UpcomingLesson key={l.id} lesson={l} locale={locale} onCancel={props.onCancelLesson} onReschedule={props.onRescheduleLesson} />
         ))}

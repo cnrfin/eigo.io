@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifySupabaseToken } from '@/lib/supabase-jwt'
 import { createClient } from '@supabase/supabase-js'
+import { getSupabaseAdmin } from '@/lib/supabase-admin'
+import { getUserPermissions } from '@/lib/user-permissions'
 
 // GET /api/calendar/upcoming
 export async function GET(request: NextRequest) {
@@ -39,11 +41,15 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Failed to fetch bookings' }, { status: 500 })
   }
 
-  // Only include lessons whose end time hasn't passed yet
+  // Only include lessons whose end time hasn't passed yet. Pilot classroom users
+  // keep the lesson until the room closes (60 min after the end) so they can
+  // rejoin while the lesson runs over; it disappears as soon as it's completed.
+  const perms = await getUserPermissions(getSupabaseAdmin(), verified.user.id)
+  const graceMinutes = perms.classroom_enabled ? 60 : 0
   const now = new Date()
   const upcoming = (bookings || []).filter((b) => {
     const lessonEnd = new Date(`${b.date}T${b.start_time}+09:00`)
-    lessonEnd.setMinutes(lessonEnd.getMinutes() + (b.duration_minutes || 30))
+    lessonEnd.setMinutes(lessonEnd.getMinutes() + (b.duration_minutes || 30) + graceMinutes)
     return lessonEnd > now
   })
 

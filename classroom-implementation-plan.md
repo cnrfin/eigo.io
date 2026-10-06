@@ -237,6 +237,18 @@ Each phase is shippable to the **pilot** (users with `classroom_enabled`) and te
 5. **Pilot flag:** `classroom_enabled` is in the admin Permissions tab ("New classroom (pilot)"). Unlike the other flags it's **opt-in**: no row means off.
 
 ### Phase 1: The core room (no slides yet)
+
+**Status (2026-10-06): built, ready for the first two-browser test.**
+- **Pages and components:** `src/app/classroom/[bookingId]` and `src/components/classroom/*`.
+  - Lobby, room, tiles with audio dots, Cam / Mic / Chat controls, free-talk layout (`src/lib/classroom/layout.ts`).
+  - Lesson clock (server `started_at`), REC badge, teacher stops recording at the booked end.
+  - End dialog, "left" and "lesson complete" (layout B) screens, rating, chat download, text chat with tile pop-ups and unread badge, join/leave toasts, reconnect banner.
+- **APIs:** `join`, `event` (student_joined / start / recording_stopped / end), `messages`, `rating`, `chat` (download). The separate start/state/end routes listed below were merged into `event`.
+- **Strings:** `src/lib/classroom/i18n.ts` (ja/en), not `src/lib/i18n.ts`.
+- **Styles:** `src/components/classroom/classroom.css` is the mockup CSS scoped under `.cr`.
+- **Links:** the dashboard lesson card and the admin lesson list open `/classroom/[id]` for pilot students. Admin keeps a small "Whereby" fallback link. Pilot lessons stay listed until the room closes (end + 60 min).
+- **Tests:** render test with the Whereby SDK mocked (45 checks) in the work folder; not yet tested against real Whereby.
+- **Not in this step:** chat attachments, translation, settings, screen share, pop-out, tile menu, library, no-show prompt. These follow in the later phases as planned.
 1. **Route and access:**
    - `src/app/classroom/[bookingId]/page.tsx`.
    - `GET /api/classroom/[id]/join` returns `{ role, roomUrl, roomKey?, booking, window, session, otherName, uiLang, nativeLang }` or `403 { reason }`. The page explains each reason: too early (with a countdown), ended, not yours.
