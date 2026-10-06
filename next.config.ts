@@ -1,6 +1,15 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // The Whereby SDK's camera-effects package contains Emscripten code with a
+  // Node-only branch (require("fs") / require("path")) that never runs in the
+  // browser but must still resolve when bundling the classroom.
+  turbopack: {
+    resolveAlias: {
+      fs: { browser: './src/lib/empty-module.js' },
+      path: { browser: './src/lib/empty-module.js' },
+    },
+  },
   // The Azure Speech SDK does runtime feature-detection and dynamic requires
   // that Next's bundler mangles; keep it external so it loads as a plain Node
   // module inside the server function.
