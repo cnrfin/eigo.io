@@ -10,10 +10,11 @@ import { ensureSession, json, loadClassroom, publicSession, SESSION_COLS } from 
  *   recording_stopped  teacher's client stopped the cloud recording at the booked end
  *   end                teacher ended the lesson for everyone → booking completed
  *   whiteboard { on }  either person opened / closed the lesson's whiteboard
+ *   studentDraw { on } teacher: let the student draw (default on)
  *
  * Returns the session, so every client agrees on the clock.
  */
-type EventType = 'student_joined' | 'start' | 'recording_stopped' | 'end' | 'whiteboard'
+type EventType = 'student_joined' | 'start' | 'recording_stopped' | 'end' | 'whiteboard' | 'studentDraw'
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -54,9 +55,11 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       await sessions().update({ ended_at: now, updated_at: now }).eq('booking_id', booking.id).is('ended_at', null)
       await db.from('bookings').update({ status: 'completed' }).eq('id', booking.id).in('status', ['confirmed', 'no_show'])
       break
-    case 'whiteboard': {
+    case 'whiteboard':
+    case 'studentDraw': {
+      if (type === 'studentDraw' && access.role !== 'teacher') return json(403, { error: 'Teacher only' })
       const { data: cur } = await sessions().select('state').eq('booking_id', booking.id).maybeSingle()
-      const state = { ...((cur?.state as Record<string, unknown>) ?? {}), whiteboard: on }
+      const state = { ...((cur?.state as Record<string, unknown>) ?? {}), [type === 'whiteboard' ? 'whiteboard' : 'studentDraw']: on }
       await sessions().update({ state, updated_at: now }).eq('booking_id', booking.id)
       break
     }

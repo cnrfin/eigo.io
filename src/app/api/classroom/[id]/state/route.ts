@@ -34,14 +34,16 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   if (!body.courseId) {
     // closing the course keeps the whiteboard as it is
     const { data: cur } = await db.from('classroom_sessions').select('state').eq('booking_id', ctx.booking.id).maybeSingle()
-    const whiteboard = !!(cur?.state as { whiteboard?: boolean } | null)?.whiteboard
+    const prev = (cur?.state as Record<string, unknown> | null) ?? {}
     await db
       .from('classroom_sessions')
-      .update({ course_id: null, lesson_id: null, state: { whiteboard }, updated_at: now })
+      .update({ course_id: null, lesson_id: null, state: { ...prev, slideId: null }, updated_at: now })
       .eq('booking_id', ctx.booking.id)
     return json(200, { ok: true })
   }
 
+  const { data: cur } = await db.from('classroom_sessions').select('state').eq('booking_id', ctx.booking.id).maybeSingle()
+  const prev = (cur?.state as Record<string, unknown> | null) ?? {}
   const c = await loadCourse(body.courseId)
   const found = c ? findLesson(c.course, body.lessonId) : null
   if (!c || !found) return json(404, { error: 'Lesson not found' })
@@ -54,7 +56,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       course_id: body.courseId,
       lesson_id: found.lesson.id,
       used_course: true,
-      state: { slideId, whiteboard: false }, // a teacher moving slides closes the whiteboard
+      state: { ...prev, slideId, whiteboard: false }, // a teacher moving slides closes the whiteboard
       updated_at: now,
     })
     .eq('booking_id', ctx.booking.id)

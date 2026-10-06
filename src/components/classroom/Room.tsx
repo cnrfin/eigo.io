@@ -15,6 +15,8 @@ import Library from './Library'
 import SlideStage, { type MediaEvent, type SlideStageHandle } from './SlideStage'
 import Toolbar from './Toolbar'
 import type { InkEngine } from './ink'
+import Settings from './Settings'
+import type { Prefs } from './prefs'
 
 /**
  * The live room: top bar with slide controls, the slide and the two video
@@ -65,6 +67,11 @@ type Props = {
   whiteboard: boolean
   setWhiteboard: (on: boolean) => void
   onCursor: (p: { x: number; y: number } | null) => void
+  prefs: Prefs
+  setPrefs: (p: Partial<Prefs>) => void
+  setSpeakerId: (id: string) => void
+  studentDraw: boolean
+  setStudentDraw: (on: boolean) => void
 }
 
 function findLesson(loaded: LoadedCourse | null, open: OpenLesson | null): { lesson: Lesson; number: number } | null {
@@ -221,7 +228,14 @@ export default function Room(props: Props) {
   const meRef = useRef<HTMLDivElement | null>(null)
   const slideBoxRef = useRef<HTMLDivElement | null>(null)
   const stageApi = useRef<SlideStageHandle | null>(null)
-  const showSlide = !!props.open || props.whiteboard
+  /* screen share: mine, or the other person's (Whereby sends it) */
+  const shares = state.screenshares ?? []
+  const myShare = shares.find((x) => x.isLocal && x.stream) ?? null
+  const theirShare = shares.find((x) => !x.isLocal && x.stream) ?? null
+  const activeShare = myShare ?? theirShare
+  const sharing = !!activeShare
+  const [shareRatio, setShareRatio] = useState(9 / 16)
+  const showSlide = !!props.open || props.whiteboard || sharing
   const rects = useRef(new Map<HTMLElement, Rect>())
   const place = useCallback((el: HTMLElement | null, r: Rect | null, animate: boolean) => {
     if (!el || !r) return
@@ -245,7 +259,11 @@ export default function Room(props: Props) {
     (animate: boolean) => {
       const box = layoutRef.current
       if (!box) return
-      const res = computeLayout(box.clientWidth, box.clientHeight, { showSlide, chatOpen: props.chatOpen })
+      const res = computeLayout(box.clientWidth, box.clientHeight, {
+        showSlide,
+        chatOpen: props.chatOpen,
+        ratio: sharing ? shareRatio : 3 / 4,
+      })
       if (!res) return
       place(slideBoxRef.current, res.slide, animate)
       place(otherRef.current, res.other, animate)
@@ -255,7 +273,7 @@ export default function Room(props: Props) {
         appRef.current.style.setProperty('--lift', res.lift.toFixed(1) + 'px')
       }
     },
-    [place, props.chatOpen, showSlide],
+    [place, props.chatOpen, showSlide, sharing, shareRatio],
   )
   useLayoutEffect(() => {
     const box = layoutRef.current
@@ -275,7 +293,7 @@ export default function Room(props: Props) {
   useLayoutEffect(() => {
     doLayout(!firstLayout.current)
     firstLayout.current = false
-  }, [props.chatOpen, showSlide, doLayout])
+  }, [props.chatOpen, showSlide, sharing, shareRatio, doLayout])
 
   /* ---------- slides ---------- */
   const found = findLesson(props.loaded, props.open)
@@ -356,6 +374,149 @@ export default function Room(props: Props) {
   const volOther = useVolDot(other?.stream, otherMuted)
   const volMe = useVolDot(myStream, !micOn)
 
+  /* ---------- screen sharing ---------- */
+  const canShare = typeof navigator !== 'undefined' && !!navigator.mediaDevices?.getDisplayMedia
+  const toggleShare = () => {
+    if (myShare) return actions.stopScreenshare()
+    if (!canShare) return toast(t('shareUnsupported'), 'bad')
+    actions.startScreenshare()
+  }
+  const prevShareStatus = useRef(state.localScreenshareStatus)
+  useEffect(() => {
+    const was = prevShareStatus.current
+    const now = state.localScreenshareStatus
+    prevShareStatus.current = now
+    if (now === 'active' && was !== 'active') {
+      toast(t('canSeeScreen', { name: info.other.name }), 'ok')
+      setTbOpen(false)
+      stageApi.current?.resetZoom()
+    } else if (was === 'active' && now !== 'active') {
+      const n = slides.length ? idx + 1 : 0
+      toast(props.whiteboard ? t('backToBoard') : props.open && n ? t('backToSlide', { n }) : t('shareStopped'))
+    } else if (now === 'error' && was === 'starting') {
+      toast(t('shareFailed'), 'bad')
+    }
+  }, [state.localScreenshareStatus, toast, t, info.other.name, props.whiteboard, props.open, slides.length, idx])
+
+  /* ---------- the other person's tile: menu, pop-out ---------- */
+  const [menuAt, setMenuAt] = useState<{ x: number; y: number } | null>(null)
+  const menuBtn = useRef<HTMLButtonElement | null>(null)
+  useEffect(() => {
+    if (!menuAt) return
+    const close = (e: MouseEvent) => {
+      if (!(e.target instanceof Element) || !e.target.closest('.tmenu,.tmenuBtn')) setMenuAt(null)
+    }
+    const esc = (e: KeyboardEvent) => e.key === 'Escape' && setMenuAt(null)
+    document.addEventListener('click', close)
+    window.addEventListener('keydown', esc)
+    return () => {
+      document.removeEventListener('click', close)
+      window.removeEventListener('keydown', esc)
+    }
+  }, [menuAt])
+  const openMenu = () => {
+    const r = menuBtn.current?.getBoundingClientRect()
+    if (!r) return
+    setMenuAt(menuAt ? null : { x: Math.min(window.innerWidth - 248, r.left), y: r.bottom + 6 })
+  }
+  const canPip = typeof document !== 'undefined' && 'pictureInPictureEnabled' in document && document.pictureInPictureEnabled
+  const [popped, setPopped] = useState(false)
+  useEffect(() => {
+    const el = otherVideo.current
+    if (!el) return
+    const on = () => setPopped(true)
+    const off = () => setPopped(false)
+    el.addEventListener('enterpictureinpicture', on)
+    el.addEventListener('leavepictureinpicture', off)
+    return () => {
+      el.removeEventListener('enterpictureinpicture', on)
+      el.removeEventListener('leavepictureinpicture', off)
+    }
+  }, [other?.stream])
+  const popOut = async () => {
+    setMenuAt(null)
+    try {
+      if (document.pictureInPictureElement) await document.exitPictureInPicture()
+      else await otherVideo.current?.requestPictureInPicture()
+    } catch {
+      /* the browser refused (e.g. no video yet) */
+    }
+  }
+  useEffect(
+    () => () => {
+      if (document.pictureInPictureElement) document.exitPictureInPicture().catch(() => {})
+    },
+    [],
+  )
+
+  /* ---------- requests from the teacher (student side) ---------- */
+  const [ask, setAsk] = useState<'unmute' | 'share' | null>(null)
+  useEffect(() => {
+    if (!events) return
+    const audio = (e: { type: string }) => {
+      if (e.type === 'requestAudioDisable') toast(t('mutedYou', { name: info.other.name }))
+      else setAsk('unmute')
+    }
+    const screen = (e: { type: string }) => {
+      if (e.type === 'requestScreenshareEnable') setAsk('share')
+    }
+    events.on('requestAudioEnable', audio)
+    events.on('requestAudioDisable', audio)
+    events.on('requestScreenshareEnable', screen)
+    return () => {
+      events.off('requestAudioEnable', audio)
+      events.off('requestAudioDisable', audio)
+      events.off('requestScreenshareEnable', screen)
+    }
+  }, [events, toast, t, info.other.name])
+
+  /* ---------- settings ---------- */
+  const [setOpen, setSetOpen] = useState(false)
+  const { prefs } = props
+  const applyBackground = useCallback(
+    async (id: string) => {
+      try {
+        if (id) await actions.switchCameraEffect(id)
+        else await actions.clearCameraEffect()
+        return true
+      } catch {
+        toast(t('bgFailed'), 'bad')
+        return false
+      }
+    },
+    [actions, toast, t],
+  )
+  const applyDenoise = useCallback(
+    async (on: boolean) => {
+      try {
+        if (on) await actions.enableAudioDenoiser()
+        else await actions.disableAudioDenoiser()
+        return true
+      } catch {
+        return false
+      }
+    },
+    [actions],
+  )
+  // re-apply this device's choices once connected (background, noise reduction, HD, low data)
+  const appliedPrefs = useRef(false)
+  useEffect(() => {
+    if (!connected || appliedPrefs.current) return
+    appliedPrefs.current = true
+    if (prefs.background) void applyBackground(prefs.background)
+    if (prefs.denoise) void applyDenoise(true)
+    if (!prefs.hd) actions.toggleHdMode(false)
+    if (prefs.lowData) actions.toggleLowDataMode(true)
+  }, [connected, prefs, applyBackground, applyDenoise, actions])
+
+  /* ---------- student drawing permission ---------- */
+  const canDraw = isTeacher || props.studentDraw
+  useEffect(() => {
+    if (canDraw) return
+    setTbOpen(false)
+    if (ink.tool !== 'select') ink.setTool('select')
+  }, [canDraw, ink])
+
   /* ---------- End dialog ---------- */
   const [endOpen, setEndOpen] = useState(false)
   const endAll = async () => {
@@ -383,8 +544,8 @@ export default function Room(props: Props) {
 
   /* ---------- render ---------- */
   const clockClass = !startedMs ? ' wait' : over ? ' over' : L - elapsed <= 300 ? ' warn' : ''
-  const otherTileClass = `slot tile${otherPresent ? '' : ' away'}${other && other.stream && other.isVideoEnabled ? ' has-video' : ''}${other && !other.isVideoEnabled ? ' camoff' : ''}`
-  const meTileClass = `slot tile mirror${myStream ? ' has-video' : ''}${camOn ? '' : ' camoff'}`
+  const otherTileClass = `slot tile${popped ? ' is-popped' : ''}${otherPresent ? '' : ' away'}${other && other.stream && other.isVideoEnabled ? ' has-video' : ''}${other && !other.isVideoEnabled ? ' camoff' : ''}`
+  const meTileClass = `slot tile${prefs.mirror ? ' mirror' : ''}${myStream ? ' has-video' : ''}${camOn ? '' : ' camoff'}`
   const otherStatus = startedMs
     ? t('otherLeftClockRuns', { name: info.other.name })
     : t('waitingToJoin', { name: info.other.name })
@@ -423,7 +584,7 @@ export default function Room(props: Props) {
     <>
       <div
         ref={appRef}
-        className={`app${props.open ? '' : ' no-course'}${props.whiteboard ? ' wb' : ''}${tbOpen ? ' tb-open' : ''}${isTeacher ? '' : ' student'}${props.chatOpen ? ' chat-open' : ''}${recording ? ' recording' : ''}`}
+        className={`app${props.open ? '' : ' no-course'}${props.whiteboard ? ' wb' : ''}${sharing ? ' sharing' : ''}${prefs.cursors ? '' : ' no-cursors'}${canDraw ? '' : ' no-draw'}${tbOpen ? ' tb-open' : ''}${isTeacher ? '' : ' student'}${props.chatOpen ? ' chat-open' : ''}${recording ? ' recording' : ''}`}
       >
         <header className="top">
           <div className="logo">
@@ -499,6 +660,9 @@ export default function Room(props: Props) {
           >
             <Ico name="board" />
           </button>
+          <button className="sq" title={t('settings')} aria-label={t('settings')} onClick={() => setSetOpen(true)}>
+            <Ico name="gear" />
+          </button>
           <div className={`info${clockClass}`}>
             <span className="rec" title={t('recTitle')}>
               <i />
@@ -548,6 +712,19 @@ export default function Room(props: Props) {
                 otherName={info.other.name.split(/\s+/)[0]}
                 boardLabel={t('whiteboard')}
                 onCursor={props.onCursor}
+                share={
+                  activeShare?.stream
+                    ? {
+                        stream: activeShare.stream,
+                        local: !!myShare,
+                        audio: !myShare && activeShare.hasAudioTrack,
+                        label: myShare ? t('youAreSharing') : t('otherSharing', { name: info.other.name }),
+                        stopLabel: myShare ? t('stopSharing') : isTeacher ? t('stopTheirShare') : null,
+                      }
+                    : null
+                }
+                onStopShare={() => (myShare ? actions.stopScreenshare() : other && actions.stopParticipantScreenshare(other.id))}
+                onShareRatio={setShareRatio}
               />
               <div className={otherTileClass} ref={otherRef}>
                 <div className="face">
@@ -571,6 +748,25 @@ export default function Room(props: Props) {
                   </span>
                 </span>
                 <span className="status">{otherStatus}</span>
+                {otherPresent && (isTeacher || canPip) && (
+                  <button
+                    className="tmenuBtn"
+                    ref={menuBtn}
+                    title={t('tileOptions')}
+                    aria-haspopup="menu"
+                    aria-expanded={!!menuAt}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      openMenu()
+                    }}
+                  >
+                    <Ico name="more" />
+                  </button>
+                )}
+                <div className="popped">
+                  <span>{t('poppedOut', { name: info.other.name })}</span>
+                  <button onClick={popOut}>{t('bringBack')}</button>
+                </div>
                 <span className="name">{info.other.name}</span>
                 {props.tileMsgs.other && (
                   <div className={`tmsg ${props.tileMsgs.other.from}${props.tileMsgs.other.out ? ' out' : ''}`}>
@@ -602,7 +798,7 @@ export default function Room(props: Props) {
               </div>
             </div>
 
-            <Toolbar t={t} ink={props.ink} open={tbOpen} setOpen={setTbOpen} toast={toast} enabled={!!surface} />
+            {canDraw && <Toolbar t={t} ink={props.ink} open={tbOpen} setOpen={setTbOpen} toast={toast} enabled={!!surface && !sharing} />}
 
             <div className={`netBanner${reconnecting ? ' on' : ''}`}>
               <span className="spin" />
@@ -630,6 +826,14 @@ export default function Room(props: Props) {
                 </span>
                 <span className="lbl">{t('mic')}</span>
               </button>
+              {canShare && (
+                <button className={`cbtn${myShare ? ' on' : ''}`} aria-pressed={!!myShare} onClick={toggleShare}>
+                  <span className="cface">
+                    <Ico name="share" />
+                  </span>
+                  <span className="lbl">{t('share')}</span>
+                </button>
+              )}
               <button
                 className={`cbtn${props.chatOpen ? ' on' : ''}`}
                 aria-pressed={props.chatOpen}
@@ -665,6 +869,98 @@ export default function Room(props: Props) {
           </aside>
         </div>
       </div>
+
+      <div className={`tmenu${menuAt ? ' open' : ''}`} role="menu" style={menuAt ? { left: menuAt.x, top: menuAt.y } : undefined}>
+        {isTeacher && other && (
+          <>
+            <button
+              role="menuitem"
+              onClick={() => {
+                setMenuAt(null)
+                if (other.isAudioEnabled) {
+                  actions.muteParticipants([other.id])
+                  toast(t('youMuted', { name: info.other.name }))
+                } else {
+                  actions.askToSpeak(other.id)
+                  toast(t('askedUnmute', { name: info.other.name }))
+                }
+              }}
+            >
+              <Ico name={other.isAudioEnabled ? 'micoff' : 'mic'} />
+              <span>{other.isAudioEnabled ? t('muteName', { name: info.other.name }) : t('askUnmuteName', { name: info.other.name })}</span>
+            </button>
+            <button
+              role="menuitem"
+              disabled={!!theirShare}
+              onClick={() => {
+                setMenuAt(null)
+                actions.askToTurnOnScreenshare(other.id)
+                toast(t('askedShare', { name: info.other.name }))
+              }}
+            >
+              <Ico name="share" />
+              <span>{t('askShareName', { name: info.other.name })}</span>
+            </button>
+            <button
+              role="menuitem"
+              disabled={!theirShare}
+              onClick={() => {
+                setMenuAt(null)
+                actions.stopParticipantScreenshare(other.id)
+              }}
+            >
+              <Ico name="x" />
+              <span>{t('stopShareName', { name: info.other.name })}</span>
+            </button>
+          </>
+        )}
+        {canPip && (
+          <button role="menuitem" onClick={popOut}>
+            <Ico name="popout" />
+            <span>{t('popOut')}</span>
+          </button>
+        )}
+      </div>
+
+      {ask && (
+        <div className="askCard" role="alertdialog">
+          <p>{ask === 'unmute' ? t('askUnmutePrompt', { name: info.other.name }) : t('askSharePrompt', { name: info.other.name })}</p>
+          <div>
+            <button className="ebtn ghost" onClick={() => setAsk(null)}>
+              {t('notNow')}
+            </button>
+            <button
+              className="ebtn cta"
+              onClick={() => {
+                if (ask === 'unmute') actions.toggleMicrophone(true)
+                else toggleShare()
+                setAsk(null)
+              }}
+            >
+              {ask === 'unmute' ? t('unmute') : t('share')}
+            </button>
+          </div>
+        </div>
+      )}
+
+      <Settings
+        t={t}
+        open={setOpen}
+        onClose={() => setSetOpen(false)}
+        isTeacher={isTeacher}
+        otherName={info.other.name}
+        localMedia={localMedia}
+        speakerId={props.speakerId}
+        setSpeakerId={props.setSpeakerId}
+        prefs={prefs}
+        setPrefs={props.setPrefs}
+        studentDraw={props.studentDraw}
+        setStudentDraw={props.setStudentDraw}
+        applyBackground={applyBackground}
+        applyDenoise={applyDenoise}
+        applyHd={(on) => actions.toggleHdMode(on)}
+        applyLowData={(on) => actions.toggleLowDataMode(on)}
+      />
 
       {isTeacher && (
         <Library

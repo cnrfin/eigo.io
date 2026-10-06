@@ -42,6 +42,11 @@ type Props = {
   boardLabel: string
   /** my pointer over the slide, for the other person's cursor (null = left the slide) */
   onCursor: (p: { x: number; y: number } | null) => void
+  /** a screen share fills this box (mine or the other person's) */
+  share: { stream: MediaStream; local: boolean; audio: boolean; label: string; stopLabel: string | null } | null
+  onStopShare: () => void
+  /** height / width of the shared screen, so the layout can give it its shape */
+  onShareRatio: (r: number) => void
 }
 
 const STAGE_W = 1280
@@ -362,6 +367,7 @@ const SlideStage = forwardRef<SlideStageHandle, Props>(function SlideStage(props
           <span>{props.otherName}</span>
         </div>
       </div>
+      <ShareView share={props.share} onStop={props.onStopShare} onRatio={props.onShareRatio} />
       <button className={`zoomChip${zoomed ? ' on' : ''}`} ref={chipRef} title={props.zoomLabel} onClick={resetZoom}>
         <Ico name="fit" />
         <span>100%</span>
@@ -373,5 +379,43 @@ const SlideStage = forwardRef<SlideStageHandle, Props>(function SlideStage(props
     </div>
   )
 })
+
+function ShareView({
+  share,
+  onStop,
+  onRatio,
+}: {
+  share: Props['share']
+  onStop: () => void
+  onRatio: (r: number) => void
+}) {
+  const ref = useRef<HTMLVideoElement | null>(null)
+  useEffect(() => {
+    const v = ref.current
+    if (!v) return
+    v.srcObject = share?.stream ?? null
+    if (share) void v.play().catch(() => undefined)
+    const fit = () => v.videoWidth && onRatio(v.videoHeight / v.videoWidth)
+    v.addEventListener('loadedmetadata', fit)
+    v.addEventListener('resize', fit)
+    return () => {
+      v.removeEventListener('loadedmetadata', fit)
+      v.removeEventListener('resize', fit)
+    }
+  }, [share, onRatio])
+  return (
+    <div className="shareView">
+      {/* my own share is muted here (no echo); theirs plays its audio if it has any */}
+      <video ref={ref} autoPlay playsInline muted={!share?.audio} />
+      {share && (
+        <div className="shareBar">
+          <span className="rec" />
+          <span>{share.label}</span>
+          {share.stopLabel && <button onClick={onStop}>{share.stopLabel}</button>}
+        </div>
+      )}
+    </div>
+  )
+}
 
 export default SlideStage

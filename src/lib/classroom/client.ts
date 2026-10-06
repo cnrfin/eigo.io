@@ -42,6 +42,7 @@ export type JoinInfo = {
   lesson: { courseTitle: string; lessonTitle: string; number: number } | null
   open: OpenLesson | null
   whiteboard: boolean
+  studentDraw?: boolean
   ink: Record<string, InkItem[]>
   chat: ChatMsg[]
   serverNow: string
@@ -82,7 +83,7 @@ export async function fetchJoin(bookingId: string): Promise<{ ok: true; info: Jo
 
 export async function postEvent(
   bookingId: string,
-  type: 'student_joined' | 'start' | 'recording_stopped' | 'end' | 'whiteboard',
+  type: 'student_joined' | 'start' | 'recording_stopped' | 'end' | 'whiteboard' | 'studentDraw',
   extra?: { on: boolean },
 ): Promise<SessionInfo | null> {
   try {
@@ -198,6 +199,7 @@ export type ClassroomEvent =
   | { type: 'cursor'; x: number; y: number; surface: string }
   | { type: 'cursor'; hide: true }
   | { type: 'wb'; on: boolean }
+  | { type: 'perm'; studentDraw: boolean }
 
 export function useClassroomChannel(bookingId: string, onEvent: (e: ClassroomEvent) => void) {
   const handler = useRef(onEvent)

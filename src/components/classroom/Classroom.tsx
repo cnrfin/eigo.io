@@ -24,6 +24,7 @@ import Lobby from './Lobby'
 import Room, { type TileMsg } from './Room'
 import type { MediaEvent } from './SlideStage'
 import { InkEngine, type InkItem } from './ink'
+import { isLowPower, usePrefs } from './prefs'
 
 /**
  * Lobby → room → "left / lesson complete" screen, plus the state that must
@@ -251,6 +252,13 @@ export default function Classroom({ info }: { info: JoinInfo }) {
 
   /* ---------- drawings, whiteboard, cursors ---------- */
   const [whiteboard, setWb] = useState(!!info.whiteboard)
+  const [prefs, setPrefs] = usePrefs()
+  const [studentDraw, setStudentDrawState] = useState(info.studentDraw !== false)
+  // visual effects: solid panels instead of frosted glass on 'reduced' (or a low-power device on 'auto')
+  useEffect(() => {
+    const root = document.querySelector('.cr')
+    root?.classList.toggle('fx-lite', prefs.fx === 'lite' || (prefs.fx === 'auto' && isLowPower()))
+  }, [prefs.fx])
   const [bus] = useState(() => new EventTarget())
   const [ink] = useState(() => {
     const e = new InkEngine()
@@ -273,11 +281,13 @@ export default function Classroom({ info }: { info: JoinInfo }) {
   const phaseRef = useRef(phase.name)
   const openRef = useRef(open)
   const wbRef = useRef(whiteboard)
+  const studentDrawRef = useRef(true)
   useEffect(() => {
     chatOpenRef.current = chatOpen
     phaseRef.current = phase.name
     openRef.current = open
     wbRef.current = whiteboard
+    studentDrawRef.current = studentDraw
   })
   const send = useClassroomChannel(info.bookingId, (e) => {
     if (e.type === 'chat') {
@@ -297,6 +307,11 @@ export default function Classroom({ info }: { info: JoinInfo }) {
       bus.dispatchEvent(new CustomEvent('cursor', { detail: d }))
     } else if (e.type === 'wb') {
       setWb(e.on)
+    } else if (e.type === 'perm') {
+      if (!isTeacher) {
+        setStudentDrawState(e.studentDraw)
+        toast(e.studentDraw ? t('drawingOn') : t('drawingOff', { name: info.other.name }))
+      }
     } else if (e.type === 'media') {
       setRemoteMedia({ blockId: e.blockId, action: e.action, time: e.time, n: Date.now() })
     } else if (e.type === 'hello') {
@@ -328,6 +343,7 @@ export default function Classroom({ info }: { info: JoinInfo }) {
     if (!helloAt) return
     send({ type: 'open', open: openRef.current })
     send({ type: 'wb', on: wbRef.current })
+    if (!studentDrawRef.current) send({ type: 'perm', studentDraw: false })
   }, [helloAt, send])
 
   /* drawings: send each change at once, save each surface 800 ms after its last change */
@@ -361,9 +377,19 @@ export default function Classroom({ info }: { info: JoinInfo }) {
   }, [info.bookingId])
 
   const onCursor = useCallback(
-    (p: { x: number; y: number } | null) =>
-      send(p ? { type: 'cursor', x: p.x, y: p.y, surface: ink.surface } : { type: 'cursor', hide: true }),
-    [send, ink],
+    (p: { x: number; y: number } | null) => {
+      if (!prefs.cursors) return // cursors off: don't send mine either
+      send(p ? { type: 'cursor', x: p.x, y: p.y, surface: ink.surface } : { type: 'cursor', hide: true })
+    },
+    [send, ink, prefs.cursors],
+  )
+  const setStudentDraw = useCallback(
+    (on: boolean) => {
+      setStudentDrawState(on)
+      send({ type: 'perm', studentDraw: on })
+      postEvent(info.bookingId, 'studentDraw', { on })
+    },
+    [send, info.bookingId],
   )
 
   const setWhiteboard = useCallback(
@@ -476,6 +502,7 @@ export default function Classroom({ info }: { info: JoinInfo }) {
           localMedia={localMedia}
           speakerId={speakerId}
           setSpeakerId={setSpeakerId}
+          mirror={prefs.mirror}
           joining={false}
           onJoin={join}
         />
@@ -513,6 +540,11 @@ export default function Classroom({ info }: { info: JoinInfo }) {
           whiteboard={whiteboard}
           setWhiteboard={setWhiteboard}
           onCursor={onCursor}
+          prefs={prefs}
+          setPrefs={setPrefs}
+          setSpeakerId={setSpeakerId}
+          studentDraw={studentDraw}
+          setStudentDraw={setStudentDraw}
         />
       )}
       {phase.name === 'left' && (

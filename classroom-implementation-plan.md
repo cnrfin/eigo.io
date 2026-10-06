@@ -334,6 +334,19 @@ Each phase is shippable to the **pilot** (users with `classroom_enabled`) and te
 4. **Live cursors:** broadcast the pointer in stage coordinates at up to 20 Hz. Draw an arrow with a translucent name badge, at a constant on-screen size. The Settings toggle is local.
 
 ### Phase 4: Sharing, controls and settings
+
+**Status (2026-10-06): built, ready to test.**
+- **Screen share (both):** Share button (hidden where the browser can't share, e.g. phones). The slide area takes the shape of the shared screen. The bar says who is sharing, with Stop (or "Stop their share" for the teacher). The stop toast depends on context (back to slide N / whiteboard / sharing stopped).
+- **Tile menu (⋯ on the other person's video):**
+  - Teacher: Mute / Ask to unmute, Ask to share screen, Stop their share.
+  - Both: Pop out video (Picture-in-Picture), with a "Bring it back" overlay. No keyboard shortcut, because P is the pen.
+- **Student prompts:** a card for "asked you to unmute" / "asked you to share" with a button (a share needs the student's own tap). A toast when the teacher mutes them.
+- **Settings (gear, both):**
+  - Audio & video: mic, speaker, camera, background (blur / strong blur / presets the device supports), noise reduction (if supported), mirror, HD, low data.
+  - Classroom: let the student draw (teacher; saved in `state.studentDraw`, sent as `perm`), show cursors.
+  - Appearance: visual effects Auto / Full / Reduced, Dark / Light theme.
+  - Device choices are kept in localStorage (`eigo-classroom-prefs`) and re-applied on joining.
+- **Tests:** a fifth render test (30 checks).
 1. **Screen share:** teacher and student. Use `startScreenshare` / `stopScreenshare`; the slide area takes the shape of the share. The stop toast is context-aware: whiteboard / slide N / "Screen sharing stopped".
 2. **Pop-out video (P):** `videoElement.requestPictureInPicture()` on the other person's `VideoView`. This works in Chrome and Safari 17+. The tile shows "… video is in a separate window". No toasts.
 3. **Teacher tile menu:**

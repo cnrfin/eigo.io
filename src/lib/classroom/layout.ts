@@ -22,12 +22,21 @@ export type LayoutResult = {
   lift: number
 }
 
-const SR = 3 / 4 // slide height / width
 const VR = 9 / 16 // video height / width
 const G = 12
 
-export function computeLayout(W: number, H: number, opts: { showSlide: boolean; chatOpen: boolean }): LayoutResult | null {
+export function computeLayout(
+  W: number,
+  H: number,
+  opts: {
+    showSlide: boolean
+    chatOpen: boolean
+    /** height / width of the slide area: 3/4 for slides, the shape of a shared screen while sharing */
+    ratio?: number
+  },
+): LayoutResult | null {
   if (!W || !H) return null
+  const SR = Math.min(1.2, Math.max(0.4, opts.ratio ?? 3 / 4))
   let r: Omit<LayoutResult, 'lift'>
 
   if (!opts.showSlide) {

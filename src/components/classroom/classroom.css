@@ -498,3 +498,10 @@
 .cr.jp h2,.cr.jp h3,.cr.jp .lhead b{font-weight:600;line-height:1.3;letter-spacing:-.01em;font-feature-settings:'palt'}
 .cr.jp .leftScreen p,.cr.jp .emodal p{line-height:1.85}
 .cr .cr-spinner{margin:0 auto}
+/* a request from the teacher ("unmute" / "share your screen"), with buttons */
+.cr .askCard{position:fixed;left:50%;top:14px;transform:translateX(-50%);z-index:31;width:min(380px,calc(100vw - 24px));padding:14px 14px 12px;border-radius:16px;background:var(--panel);box-shadow:0 0 0 1px var(--edge),0 16px 40px rgba(0,0,0,.35);animation:cr-in .35s var(--ease)}
+.cr .askCard p{font-size:14.5px;font-weight:600;margin:2px 4px 12px}
+.cr .askCard div{display:flex;gap:8px;justify-content:flex-end}
+.cr .askCard .ebtn{height:38px;padding:0 16px}
+/* the teacher turned student drawing off */
+.cr .app.no-draw .handle,.cr .app.no-draw .toolbar{display:none}

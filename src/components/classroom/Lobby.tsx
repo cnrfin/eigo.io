@@ -27,6 +27,7 @@ export default function Lobby({
   setSpeakerId,
   joining,
   onJoin,
+  mirror = true,
 }: {
   info: JoinInfo
   t: ClassroomT
@@ -35,6 +36,7 @@ export default function Lobby({
   setSpeakerId: (id: string) => void
   joining: boolean
   onJoin: () => void
+  mirror?: boolean
 }) {
   const { state, actions } = localMedia
   const stream = state.localStream
@@ -97,7 +99,7 @@ export default function Lobby({
         </div>
       </div>
       <div className="lcard">
-        <div className={`lprev mirror${noCam ? ' nocam' : ''}${denied ? ' denied' : ''}`}>
+        <div className={`lprev${mirror ? ' mirror' : ''}${noCam ? ' nocam' : ''}${denied ? ' denied' : ''}`}>
           {stream && <VideoView stream={stream} muted mirror={false} playsInline />}
           <div className="lnocam">
             <div className="avatar" style={{ background: '#dff5f2' }}>

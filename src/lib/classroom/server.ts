@@ -35,7 +35,7 @@ export type ClassroomSession = {
   course_id: string | null
   lesson_id: string | null
   used_course: boolean
-  state: { slideId?: string | null; whiteboard?: boolean } | null
+  state: { slideId?: string | null; whiteboard?: boolean; studentDraw?: boolean } | null
 }
 
 export type ChatItem = {

@@ -75,6 +75,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     open,
     lesson,
     whiteboard: !!(session?.state as { whiteboard?: boolean } | null)?.whiteboard,
+    studentDraw: (session?.state as { studentDraw?: boolean } | null)?.studentDraw !== false,
     ink: Object.fromEntries((inkRows ?? []).map((r) => [r.surface, r.items])),
     chat: Array.isArray(booking.chat_log) ? booking.chat_log : [],
     serverNow: new Date().toISOString(),
