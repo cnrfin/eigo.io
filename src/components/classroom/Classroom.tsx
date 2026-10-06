@@ -32,6 +32,28 @@ import { InkEngine, type InkItem } from './ink'
 
 type Phase = { name: 'lobby' } | { name: 'room'; key: number } | { name: 'left'; ended: boolean }
 
+/* After the pre-join check, a refresh of the same tab goes straight back into
+   the room with the same camera / mic choices (sessionStorage: this tab only,
+   gone when the tab closes). Leaving the lesson clears it. */
+type SavedJoin = { camOn: boolean; micOn: boolean; cam?: string; mic?: string; speaker?: string }
+const joinKey = (id: string) => `eigo-classroom-joined:${id}`
+function readJoin(id: string): SavedJoin | null {
+  try {
+    const v = sessionStorage.getItem(joinKey(id))
+    return v ? (JSON.parse(v) as SavedJoin) : null
+  } catch {
+    return null
+  }
+}
+function writeJoin(id: string, v: SavedJoin | null) {
+  try {
+    if (v) sessionStorage.setItem(joinKey(id), JSON.stringify(v))
+    else sessionStorage.removeItem(joinKey(id))
+  } catch {
+    /* private mode etc.: just show the check again next time */
+  }
+}
+
 function Toast({ toast }: { toast: { msg: string; kind?: 'ok' | 'bad'; n: number } | null }) {
   return (
     <div className={`toast${toast ? ' show' : ''}`} key={toast?.n} role="status" aria-live="polite">
@@ -181,13 +203,14 @@ function LeftScreen({
 
 export default function Classroom({ info }: { info: JoinInfo }) {
   const t = useMemo(() => makeT(info.uiLang), [info.uiLang])
+  const [saved] = useState(() => readJoin(info.bookingId))
   const localMedia = useLocalMedia({ audio: true, video: true })
-  const [phase, setPhase] = useState<Phase>({ name: 'lobby' })
+  const [phase, setPhase] = useState<Phase>(() => (saved ? { name: 'room', key: Date.now() } : { name: 'lobby' }))
   const [session, setSession] = useState<SessionInfo>(info.session)
   const [messages, setMessages] = useState<ChatMsg[]>(info.chat)
   const [chatOpen, setChatOpenRaw] = useState(false)
   const [unread, setUnread] = useState(0)
-  const [speakerId, setSpeakerId] = useState('default')
+  const [speakerId, setSpeakerId] = useState(saved?.speaker || 'default')
   const [endSignal, setEndSignal] = useState(0)
   const [clockOffset] = useState(() => new Date(info.serverNow).getTime() - Date.now())
 
@@ -399,10 +422,35 @@ export default function Classroom({ info }: { info: JoinInfo }) {
   const onLeave = useCallback(
     ({ ended }: { ended: boolean }) => {
       if (ended && info.role === 'teacher') send({ type: 'ended' })
+      writeJoin(info.bookingId, null)
       setPhase({ name: 'left', ended })
     },
-    [info.role, send],
+    [info.role, send, info.bookingId],
   )
+
+  /* restore the camera / mic choices after a refresh (once the devices are known) */
+  const { state: lm, actions: lma } = localMedia
+  const restored = useRef(!saved)
+  useEffect(() => {
+    if (restored.current || !saved || !lm.localStream) return
+    restored.current = true
+    if (!saved.camOn) lma.toggleCameraEnabled(false)
+    if (!saved.micOn) lma.toggleMicrophoneEnabled(false)
+    if (saved.cam && saved.cam !== lm.currentCameraDeviceId && lm.cameraDevices.some((d) => d.deviceId === saved.cam)) lma.setCameraDevice(saved.cam)
+    if (saved.mic && saved.mic !== lm.currentMicrophoneDeviceId && lm.microphoneDevices.some((d) => d.deviceId === saved.mic))
+      lma.setMicrophoneDevice(saved.mic)
+  }, [saved, lm, lma])
+  /* keep the saved choices up to date while in the room */
+  useEffect(() => {
+    if (phase.name !== 'room' || !restored.current) return
+    writeJoin(info.bookingId, {
+      camOn: lm.isCameraEnabled,
+      micOn: lm.isMicrophoneEnabled,
+      cam: lm.currentCameraDeviceId,
+      mic: lm.currentMicrophoneDeviceId,
+      speaker: speakerId,
+    })
+  }, [phase.name, lm.isCameraEnabled, lm.isMicrophoneEnabled, lm.currentCameraDeviceId, lm.currentMicrophoneDeviceId, speakerId, info.bookingId])
 
   const join = () => {
     audioContext()?.resume().catch(() => {})

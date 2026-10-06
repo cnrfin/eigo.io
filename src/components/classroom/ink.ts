@@ -422,7 +422,7 @@ export class InkEngine {
         d.remove()
         this.textEls.delete(id)
       }
-    if (focusId) setTimeout(() => this.textEls.get(focusId)?.focus())
+    if (focusId) this.textEls.get(focusId)?.focus() // synchronously, inside the tap (see the text tool)
     this.redrawSoon()
   }
 
@@ -470,6 +470,14 @@ export class InkEngine {
         const it: InkItem = { id: uid(), kind: 'text', text: '', x: p[0], y: p[1] - 20, color: this.color }
         this.items().push(it)
         this.renderTexts(it.id)
+        // Phones only open the keyboard when focus happens inside the tap itself,
+        // so: stop the tap from moving focus back to the page, and focus the new
+        // box again when the finger lifts (that's still part of the gesture).
+        e.preventDefault()
+        const el = this.textEls.get(it.id)
+        const refocus = () => el?.focus()
+        window.addEventListener('pointerup', refocus, { once: true })
+        window.addEventListener('touchend', refocus, { once: true })
         return
       } else return
       cv.setPointerCapture?.(e.pointerId)

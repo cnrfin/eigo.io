@@ -352,7 +352,7 @@
 /*
  * eigo slide styles — shared by the course studio and the eigo.io lesson page.
 /* ---- from the mockup: cursors, effects, tile menu, lobby, lesson complete ---- */
-.cr .inktext{position:absolute;font-size:32px;font-weight:600;outline:none;min-width:20px;padding:2px 4px;border-radius:6px;white-space:pre;font-family:Outfit,sans-serif}
+.cr .inktext{position:absolute;font-size:32px;font-weight:600;outline:none;min-width:20px;min-height:1.3em;padding:2px 4px;border-radius:6px;white-space:pre;font-family:Outfit,sans-serif}
 .cr .inktext:focus{box-shadow:0 0 0 2px rgba(0,168,159,.5)}
 .cr .rcursor{position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform;contain:layout paint;z-index:5;pointer-events:none;display:flex;align-items:flex-start;opacity:0;transition:opacity .25s;--rc:#e8735a;will-change:transform}
 .cr .rcursor.on{opacity:1}
