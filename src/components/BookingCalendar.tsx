@@ -515,7 +515,7 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
       </div>
 
       {/* Selected bookings summary */}
-      {(selectedBookings.length > 0 || coursesOn) && (
+      {selectedBookings.length > 0 && (
         <div className="mb-4">
           <div className={coursesOn ? 'grid grid-cols-1 md:grid-cols-2 gap-6 items-start' : ''}>
           {selectedBookings.length > 0 ? (
@@ -596,7 +596,7 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
                   <button type="button" className="cs-x" onClick={() => setCourseId(null)} aria-label={locale === 'ja' ? 'コースを外す' : 'Remove course'}>✕</button>
                 </div>
               ) : (
-                <button type="button" className="cs-add" disabled={selectedBookings.length === 0} onClick={() => setSheetOpen(true)}>
+                <button type="button" className="cs-add" onClick={() => setSheetOpen(true)}>
                   <span className="cs-plus">＋</span>
                   <span>
                     <b className="block font-semibold" style={{ color: 'var(--text)' }}>{locale === 'ja' ? 'コースを追加' : 'Add a course'}</b>
