@@ -262,6 +262,14 @@ export interface Course {
   category: string
   /** Relative asset path, e.g. "images/cover.jpg". */
   coverImage: string
+  /** Japanese description shown in the booking course picker (optional). */
+  descriptionJa?: string
+  /** Series the course belongs to, e.g. "Great Britain" (one row per series in the picker). */
+  series?: string
+  /** 3–4 short topic chips for the picker, per language. */
+  chips?: { ja: string[]; en: string[] }
+  /** Order within the series (lower first). */
+  sortOrder?: number
   /** Recurring characters (optional; older courses don't have it). */
   characters?: Character[]
   units: Unit[]

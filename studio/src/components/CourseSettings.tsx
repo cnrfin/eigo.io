@@ -5,6 +5,9 @@ import { Field, IconButton, Select, TextArea, TextInput } from '../ui/fields'
 import { IconPlus, IconTrash } from '../ui/icons'
 import { ImageField } from './ImageField'
 
+/** Keep empty entries while typing ("a, "); they're dropped when the course is used. */
+const splitChips = (v: string) => v.split(/[,、]/).map((x) => x.trimStart())
+
 const LEVELS: (CefrLevel | '')[] = ['', 'Pre-A1', 'A1', 'A2', 'B1', 'B2', 'C1', 'C2']
 
 export function CourseSettings({ course, editor, onDelete }: { course: Course; editor: CourseEditor; onDelete: () => void }) {
@@ -65,6 +68,13 @@ export function CourseSettings({ course, editor, onDelete }: { course: Course; e
             <Field label="Description" hint="Shown to students in the course library.">
               <TextArea value={course.description} minRows={4} onChange={(v) => set((d) => void (d.description = v), 'desc')} />
             </Field>
+            <Field label="Japanese description" hint="Shown to students in the booking course picker.">
+              <TextArea
+                value={course.descriptionJa ?? ''}
+                minRows={3}
+                onChange={(v) => set((d) => void (d.descriptionJa = v), 'descJa')}
+              />
+            </Field>
             <div className="row gap-12">
               <Field label="CEFR level">
                 <Select
@@ -77,6 +87,36 @@ export function CourseSettings({ course, editor, onDelete }: { course: Course; e
                 <TextInput value={course.category} placeholder="e.g. Travel, Business, Culture" onChange={(v) => set((d) => void (d.category = v), 'cat')} />
               </Field>
             </div>
+          </div>
+
+          <div className="card">
+            <div className="row gap-12">
+              <Field label="Series" hint="Courses in the same series share a row in the picker.">
+                <TextInput value={course.series ?? ''} placeholder="e.g. Great Britain" onChange={(v) => set((d) => void (d.series = v), 'series')} />
+              </Field>
+              <Field label="Order">
+                <TextInput
+                  value={course.sortOrder == null ? '' : String(course.sortOrder)}
+                  placeholder="1"
+                  onChange={(v) => set((d) => void (d.sortOrder = v.trim() === '' || isNaN(+v) ? undefined : +v), 'order')}
+                />
+              </Field>
+            </div>
+            <Field label="Topic chips (Japanese)" hint="3–4, separated by commas. Shown on the course banner when booking.">
+              <TextInput
+                value={(course.chips?.ja ?? []).join(', ')}
+                className="jp"
+                placeholder="日常会話, 旅行, 文化"
+                onChange={(v) => set((d) => void (d.chips = { ja: splitChips(v), en: d.chips?.en ?? [] }), 'chipsJa')}
+              />
+            </Field>
+            <Field label="Topic chips (English)">
+              <TextInput
+                value={(course.chips?.en ?? []).join(', ')}
+                placeholder="Everyday English, Travel, Culture"
+                onChange={(v) => set((d) => void (d.chips = { ja: d.chips?.ja ?? [], en: splitChips(v) }), 'chipsEn')}
+              />
+            </Field>
           </div>
 
           <div className="card">

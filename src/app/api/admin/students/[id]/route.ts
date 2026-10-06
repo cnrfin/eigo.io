@@ -105,6 +105,7 @@ export async function GET(
       ? Math.round(enrichedCards.reduce((sum, c) => sum + (c.ease_factor || 2.5), 0) / enrichedCards.length * 100) / 100
       : 0,
     totalLessons: bookings.length,
+    noShows: bookings.filter(b => b.status === 'no_show').length,
     analyzedLessons: summaries.length,
   }
 

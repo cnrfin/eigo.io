@@ -7,13 +7,14 @@ import { pillTabStyle } from '@/lib/pill-tabs'
 import { useAuth } from '@/context/AuthContext'
 import { Squircle } from '@squircle-js/react'
 import SquircleBox from '@/components/ui/SquircleBox'
+import CourseSheet, { type CatalogEntry } from '@/components/booking/CourseSheet'
 
 type SelectedBooking = { date: string; time: string; dayLabel: string }
 
 export type BookingResultDetail = { date: string; time: string; success: boolean; reason?: string }
 export type BookingResult = { success: boolean; message: string; details?: BookingResultDetail[] }
 
-export default function BookingCalendar({ selectedDuration, onBookingComplete, rescheduleLesson, hasSubscription = false, testMode = false }: { selectedDuration?: number; onBookingComplete?: (result?: BookingResult) => void; rescheduleLesson?: { id: string; googleEventId: string | null }; hasSubscription?: boolean; /** test account (user_permissions.booking_test_mode): every duration and every time of day */ testMode?: boolean }) {
+export default function BookingCalendar({ selectedDuration, onBookingComplete, rescheduleLesson, hasSubscription = false, testMode = false, classroomEnabled = false }: { selectedDuration?: number; onBookingComplete?: (result?: BookingResult) => void; rescheduleLesson?: { id: string; googleEventId: string | null }; hasSubscription?: boolean; /** test account (user_permissions.booking_test_mode): every duration and every time of day */ testMode?: boolean; /** classroom pilot: a course can be added to the booking */ classroomEnabled?: boolean }) {
   const { t, locale } = useLanguage()
   const { session } = useAuth()
   const [currentDate, setCurrentDate] = useState(new Date())
@@ -36,6 +37,25 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
   // Recurring booking
   const [recurringEnabled, setRecurringEnabled] = useState(false)
   const [recurringWeeks, setRecurringWeeks] = useState(4)
+
+  // Course for the booking (classroom pilot). Free talk when none is chosen.
+  const [catalog, setCatalog] = useState<CatalogEntry[]>([])
+  const [courseId, setCourseId] = useState<string | null>(null)
+  const [sheetOpen, setSheetOpen] = useState(false)
+  const [catalogTick, setCatalogTick] = useState(0)
+  const accessToken = session?.access_token
+  useEffect(() => {
+    if (!classroomEnabled || !accessToken) return
+    let alive = true
+    fetch('/api/slide-courses/catalog', { headers: { Authorization: `Bearer ${accessToken}` } })
+      .then((r) => (r.ok ? r.json() : { courses: [] }))
+      .then((d) => { if (alive) setCatalog(d.courses ?? []) })
+      .catch(() => {})
+    return () => { alive = false }
+  }, [classroomEnabled, accessToken, catalogTick])
+  const closeSheet = useCallback(() => setSheetOpen(false), [])
+  const coursesOn = classroomEnabled && catalog.length > 0 && !rescheduleLesson
+  const course = coursesOn && courseId ? catalog.find((c) => c.id === courseId) ?? null : null
 
   // Teacher profile
   const [teacherName, setTeacherName] = useState('')
@@ -178,23 +198,32 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
     return dates
   }
 
+  // Every lesson that will be booked (weekly copies included), in date order.
+  // The server gives them consecutive course lessons in this order too.
+  const expandBookings = (list: SelectedBooking[]) => {
+    const all = recurringEnabled
+      ? list.flatMap((b) => generateRecurringDates(b.date, recurringWeeks).map((d) => ({ date: d, time: b.time, dayLabel: b.dayLabel })))
+      : [...list]
+    return all.sort((a, b) => a.date.localeCompare(b.date) || a.time.localeCompare(b.time))
+  }
+  const lessonAt = (i: number) => (course ? course.queue[i] ?? course.lessonCount : 0)
+  const lessonOf = (b: SelectedBooking) => {
+    const i = expandBookings(selectedBookings).findIndex((x) => x.date === b.date && x.time === b.time)
+    return lessonAt(i)
+  }
+  const lessonRange = () => {
+    const n = expandBookings(selectedBookings).length
+    const a = lessonAt(0), z = lessonAt(Math.max(0, n - 1))
+    return a === z ? `Lesson ${a}` : `Lesson ${a} 〜 ${z}`
+  }
+
   const handleConfirmBooking = async () => {
     if (selectedBookings.length === 0 || !session) return
     setBooking(true)
     setBookingResult(null)
 
     // Build the full list of bookings (including recurring copies)
-    let allBookings = [...selectedBookings]
-    if (recurringEnabled) {
-      const expanded: SelectedBooking[] = []
-      for (const b of selectedBookings) {
-        const dates = generateRecurringDates(b.date, recurringWeeks)
-        for (const d of dates) {
-          expanded.push({ date: d, time: b.time, dayLabel: b.dayLabel })
-        }
-      }
-      allBookings = expanded
-    }
+    const allBookings = expandBookings(selectedBookings)
 
     let successCount = 0
     let failCount = 0
@@ -242,6 +271,7 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
               duration,
               timezone: userTimezone,
               skipAdminEmail: isMultiBooking,
+              ...(course ? { slideCourseId: course.id } : {}),
             }),
           })
           if (res.ok) {
@@ -295,6 +325,7 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
     setBookingResult(result)
 
     setSelectedBookings([])
+    if (course) { setCourseId(null); setCatalogTick((x) => x + 1) } // the student's lesson queue has moved on
     if (selectedDay) fetchSlots(selectedDay)
     onBookingComplete?.(result)
     setBooking(false)
@@ -377,12 +408,12 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
         <div>
           {/* Calendar header */}
           <div className="flex items-center justify-between mb-4">
-            <button onClick={prevMonth} className="text-base transition-all duration-[120ms] ease-out hover:opacity-80 hover:scale-110 active:scale-90" style={{ color: 'var(--text-muted)' }}>
-              ←
+            <button onClick={prevMonth} aria-label={locale === 'ja' ? '前の月' : 'Previous month'} className="w-7 h-7 grid place-items-center transition-all duration-[120ms] ease-out hover:opacity-80 hover:scale-110 active:scale-90" style={{ color: 'var(--text-muted)' }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M15 6l-6 6 6 6" /></svg>
             </button>
             <span className="font-medium text-base" style={{ color: 'var(--text)' }}>{monthName}</span>
-            <button onClick={nextMonth} className="text-base transition-all duration-[120ms] ease-out hover:opacity-80 hover:scale-110 active:scale-90" style={{ color: 'var(--text-muted)' }}>
-              →
+            <button onClick={nextMonth} aria-label={locale === 'ja' ? '次の月' : 'Next month'} className="w-7 h-7 grid place-items-center transition-all duration-[120ms] ease-out hover:opacity-80 hover:scale-110 active:scale-90" style={{ color: 'var(--text-muted)' }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M9 6l6 6-6 6" /></svg>
             </button>
           </div>
 
@@ -433,7 +464,7 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
           {!selectedDay ? (
             <div className="flex items-center justify-center h-full">
               <p className="text-sm" style={{ color: 'var(--text-subtle)' }}>
-                {locale === 'ja' ? '← 日付を選択してください' : '← Select a date'}
+                {locale === 'ja' ? '日付を選択してください' : 'Select a date'}
               </p>
             </div>
           ) : (
@@ -484,8 +515,11 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
       </div>
 
       {/* Selected bookings summary */}
-      {selectedBookings.length > 0 && (
+      {(selectedBookings.length > 0 || coursesOn) && (
         <div className="mb-4">
+          <div className={coursesOn ? 'grid grid-cols-1 md:grid-cols-2 gap-6 items-start' : ''}>
+          {selectedBookings.length > 0 ? (
+          <div>
           <h3 className="text-sm mb-2" style={{ color: 'var(--text-secondary)' }}>
             {locale === 'ja' ? `${selectedBookings.length}件選択中` : `${selectedBookings.length} selected`}
           </h3>
@@ -497,6 +531,7 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
                   style={{ background: 'var(--surface)', color: 'var(--text-secondary)' }}
                 >
                   {b.dayLabel} {b.time}
+                  {course && <span style={{ color: 'var(--accent)', fontWeight: 600 }}>· L{lessonOf(b)}</span>}
                   <button onClick={() => removeBooking(i)} className="hover:opacity-70" style={{ color: 'var(--text-muted)' }}>✕</button>
                 </span>
               </Squircle>
@@ -542,7 +577,40 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
               </Squircle>
             )}
           </div>
+          </div>
+          ) : <div className="hidden md:block" />}
 
+          {/* Course (classroom pilot): optional, free talk when none is chosen */}
+          {coursesOn && (
+            <div>
+              <h3 className="text-sm mb-2" style={{ color: 'var(--text-secondary)' }}>{locale === 'ja' ? 'コース' : 'Course'}</h3>
+              {course ? (
+                <div className="cs-picked">
+                  <button type="button" className="cs-pmain" onClick={() => setSheetOpen(true)} aria-label={locale === 'ja' ? 'コースを変更' : 'Change course'}>
+                    {course.scenes[0] ? <img src={course.scenes[0]} alt="" /> : <span className="cs-ph" />}
+                    <span style={{ minWidth: 0 }}>
+                      <b style={{ color: 'var(--text)' }}>{locale === 'ja' ? course.titleJa : course.title}</b>
+                      <span>{lessonRange()}</span>
+                    </span>
+                  </button>
+                  <button type="button" className="cs-x" onClick={() => setCourseId(null)} aria-label={locale === 'ja' ? 'コースを外す' : 'Remove course'}>✕</button>
+                </div>
+              ) : (
+                <button type="button" className="cs-add" disabled={selectedBookings.length === 0} onClick={() => setSheetOpen(true)}>
+                  <span className="cs-plus">＋</span>
+                  <span>
+                    <b className="block font-semibold" style={{ color: 'var(--text)' }}>{locale === 'ja' ? 'コースを追加' : 'Add a course'}</b>
+                    <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                      {locale === 'ja' ? '選ばない場合は、フリートークなどのレッスンになります' : 'Without a course, the lesson is free talk or similar'}
+                    </span>
+                  </span>
+                </button>
+              )}
+            </div>
+          )}
+          </div>
+
+          {selectedBookings.length > 0 && (<>
           {/* Booking result message */}
           {bookingResult && (
             <div className="mb-4">
@@ -594,7 +662,18 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
               </button>
             </Squircle>
           )}
+          </>)}
         </div>
+      )}
+
+      {sheetOpen && coursesOn && (
+        <CourseSheet
+          courses={catalog}
+          initialId={courseId}
+          lang={locale === 'ja' ? 'ja' : 'en'}
+          onChoose={(id) => { setCourseId(id); setSheetOpen(false) }}
+          onClose={closeSheet}
+        />
       )}
     </div>
   )

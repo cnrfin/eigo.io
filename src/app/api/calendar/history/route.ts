@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
   const { data: bookings, error: dbError } = await supabase
     .from('bookings')
     .select('*')
-    .in('status', ['confirmed', 'completed'])
+    .in('status', ['confirmed', 'completed', 'no_show'])
     .order('date', { ascending: false })
     .order('start_time', { ascending: false })
     .limit(100)
@@ -83,7 +83,8 @@ export async function GET(request: NextRequest) {
     googleEventId: b.google_event_id,
     wherebyMeetingId: b.whereby_meeting_id,
     wherebyRoomUrl: b.whereby_room_url,
-    hasSummary: summarizedIds.has(b.id),
+    // a missed lesson has nothing to summarise (and shouldn't count as "needs a summary")
+    hasSummary: b.status === 'no_show' ? undefined : summarizedIds.has(b.id),
     keyTopics: topicsByBooking.get(b.id) || [],
     phrases: phrasesByBooking.get(b.id) || [],
   }))

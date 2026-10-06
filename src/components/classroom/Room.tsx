@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useRoomConnection, VideoView, type UseLocalMediaResult } from '@whereby.com/browser-sdk/react'
 import type { ChatMsg, JoinInfo, LoadedCourse, OpenLesson, SessionInfo } from '@/lib/classroom/client'
-import { postEvent } from '@/lib/classroom/client'
+import { markNoShow, postEvent } from '@/lib/classroom/client'
 import { SlideCanvas } from '@/lib/slides'
 import type { Lesson } from '@/lib/slides/types'
 import type { ClassroomT } from '@/lib/classroom/i18n'
@@ -216,6 +216,23 @@ export default function Room(props: Props) {
   const elapsed = startedMs ? (now - startedMs) / 1000 : 0
   const over = !!startedMs && elapsed >= L
   const bookedEnd = new Date(info.window.end).getTime()
+
+  /* ---------- no-show: 15 min after the start, the student has never joined ---------- */
+  const [noShow, setNoShow] = useState<'no' | 'marked' | 'undone'>('no')
+  const noShowTried = useRef(false)
+  const noShowAt = new Date(info.window.noShowAt).getTime()
+  useEffect(() => {
+    if (!isTeacher || !connected || noShowTried.current || now < noShowAt) return
+    if (otherPresent || session.studentJoinedAt || session.startedAt) return
+    noShowTried.current = true
+    markNoShow(info.bookingId, true).then((ok) => ok && setNoShow('marked'))
+  }, [isTeacher, connected, now, noShowAt, otherPresent, session.studentJoinedAt, session.startedAt, info.bookingId])
+  const undoNoShow = () => {
+    setNoShow('undone')
+    markNoShow(info.bookingId, false).then((ok) => !ok && toast(t('saveFailed'), 'bad'))
+  }
+  // a student who arrives late undoes it on the server (student_joined); the banner just goes
+  const noShowBanner = noShow === 'marked' && !otherPresent
 
   /* ---------- recording: teacher stops it at the booked end ---------- */
   const reportedStop = useRef(!!session.recordingStoppedAt)
@@ -837,6 +854,13 @@ export default function Room(props: Props) {
             </div>
 
             {canDraw && <Toolbar t={t} ink={props.ink} open={tbOpen} setOpen={setTbOpen} toast={toast} enabled={!!surface && !sharing} />}
+
+            <div className={`nsBanner${noShowBanner ? ' on' : ''}`} role="status">
+              <span>{t('noShowMarked', { name: info.other.name })}</span>
+              <button onClick={undoNoShow} tabIndex={noShowBanner ? 0 : -1}>
+                {t('undoNoShow')}
+              </button>
+            </div>
 
             <div className={`netBanner${reconnecting ? ' on' : ''}`}>
               <span className="spin" />

@@ -577,7 +577,12 @@ function HistoryLessonCard({
             <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{timeStr} · {lesson.durationMinutes} min</p>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
-            {lesson.wherebyRoomUrl && (
+            {lesson.status === 'no_show' && (
+              <span className="px-3 py-1.5 text-xs font-medium rounded-full" style={{ background: 'var(--surface)', color: 'var(--text-muted)' }}>
+                {locale === 'ja' ? '欠席' : 'Missed'}
+              </span>
+            )}
+            {lesson.status !== 'no_show' && lesson.wherebyRoomUrl && (
               <>
                 {/* Transcript button */}
                 <Squircle asChild cornerRadius={8} cornerSmoothing={0.8}>
@@ -998,7 +1003,8 @@ function DashboardContent() {
 
   // History stats (always from the full set, not the filtered view)
   const historyStats = useMemo(() => {
-    const minutes = historyLessons.reduce((sum, l) => sum + (l.durationMinutes || 0), 0)
+    const taken = historyLessons.filter((l) => l.status !== 'no_show') // missed lessons don't count
+    const minutes = taken.reduce((sum, l) => sum + (l.durationMinutes || 0), 0)
     const counts = new Map<string, number>()
     for (const l of historyLessons) {
       for (const raw of l.keyTopics || []) {
@@ -1007,7 +1013,7 @@ function DashboardContent() {
       }
     }
     const topTopics = [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 3).map(([topic]) => topic)
-    return { count: historyLessons.length, minutes, topTopics }
+    return { count: taken.length, minutes, topTopics }
   }, [historyLessons])
 
   // Searchable text per lesson: topics, phrases, and the date in several
@@ -1443,6 +1449,7 @@ function DashboardContent() {
                   rescheduleLesson={lessonToReschedule ? { id: lessonToReschedule.id, googleEventId: lessonToReschedule.googleEventId } : undefined}
                   hasSubscription={subStatus === 'active'}
                   testMode={bookingTestMode}
+                  classroomEnabled={classroomEnabled}
                 />
               </div>
               </motion.div>

@@ -399,7 +399,67 @@ Each phase is shippable to the **pilot** (users with `classroom_enabled`) and te
 5. **Review Now:** opens the dashboard's vocabulary review with the newly due cards.
 
 ### Phase 6: Booking and dashboard integration
-1. **Booking form:** an optional "Add a course" control. Course + lesson are preselected from `slide_course_progress`. It writes `bookings.slide_course_id` / `slide_lesson_id`. Free talk is the default when nothing is chosen.
+
+**Status (2026-10-07): built, ready to test.**
+- **Course details:** `Course` has `descriptionJa`, `series`, `chips {ja, en}` and `sortOrder`, edited in the studio's Course details. They're filled in for the 3 GB courses and take effect after the courses are published again.
+- **Catalog:** `src/lib/classroom/catalog.ts` + `GET /api/slide-courses/catalog` (pilot users and the admin only).
+  - **Scenes:** each lesson's first image, or a video's poster, turned into absolute URLs.
+  - **Speed:** the summary is cached in memory per published version, so the full course JSON is read only once per version.
+  - **Lesson queue:** lessons that are neither completed nor on an upcoming booking.
+- **Booking:** `CourseSheet.tsx` + `course-sheet.css` and the D2 layout in `BookingCalendar` (pilot only, hidden while rescheduling).
+  - Bookings are sent in date order with `slideCourseId`.
+  - `/api/calendar/book` works out the lesson on the server (`nextLessonFor`).
+  - Reschedule keeps the booking's course and lesson.
+  - The calendar month buttons are chevrons.
+- **No-show:** `POST /api/classroom/[id]/no-show` (teacher only, from start + 15 min, never if the student joined).
+  - The teacher's room marks it automatically and shows a banner with 元に戻す / Undo.
+  - A late student undoes it (existing `student_joined`).
+- **Ratings:** `GET /api/admin/ratings` + `RatingsCard`, on the admin overview (30-day average + latest) and on the admin student page.
+- **`no_show` in existing pages:**
+  - History includes no-shows as 欠席 / Missed: no summary prompt, and they don't count in the totals.
+  - Admin stats: a No-shows card. The student page shows "N missed".
+- **Checked:** subset typecheck, studio typecheck, lint (no errors), jsdom test of the booking form and sheet (23 checks).
+1. **Booking form: course picker.** Design reference: `mockups/booking-course-mockups.html`, option **D2**. Its sheet is also in `mockups/course-browser-mockup.html`. Free talk is the default when no course is chosen. Build it in this order:
+   1. **Course metadata (studio → publish):**
+      - The course JSON already has `title`, `titleJa`, `description` (EN), `level`, `category` and `coverImage`.
+      - Add `descriptionJa`, `series` (e.g. "Great Britain"), `chips: { ja: string[], en: string[] }` (3–4 each) and `sortOrder` to the `Course` type and the studio course settings form.
+      - Publish stores them in `slide_courses.course` (no migration needed). Optionally also store them as columns if search needs them server-side.
+      - Fill them in for the 3 GB courses. The chips are in the mockup's `INFO`.
+   2. **Scenes (banner/card images):**
+      - For now: one photo per lesson, taken from each lesson's first image (title or Watch and describe slide), in lesson order. Work out the list at publish time and store it as `course.scenes: string[]` (asset URLs).
+      - Later, when the Watch and describe videos exist: a publish step uses ffmpeg to cut 2–3 s from each clip into one silent looping `trailer.mp4` plus a poster. The banner plays the video if there is one, otherwise the photo crossfade.
+   3. **API:** `GET /api/slide-courses/catalog` (signed in). It returns the published courses, each with `{ id, title, titleJa, description, descriptionJa, level, series, chips, scenes, lessonCount }`, plus the caller's progress from `slide_course_progress` (`completed` count and next lesson id). It does not return the full slide JSON.
+   4. **`CourseSheet` component** (`src/components/booking/CourseSheet.tsx`):
+      - **Layout:** a modal sheet, a bottom sheet under 700px, and the same component in light and dark mode.
+      - **Banner:** a full-width banner for the selected course: a scene crossfade with a slow Ken Burns zoom that fades into `--panel` at the bottom. Over its lower part:
+        - the level badge (kicker style)
+        - the JA title, with the EN title under it in Japanese mode
+        - frosted-glass chips, then the description
+        - a progress bar, always shown ("0 / 12 レッスン" when not started)
+      - **Below the banner:**
+        - a search box that filters by title, level, series and chips
+        - one row per `series`, scrolling sideways with snap; chevron buttons only on hover devices
+        - cards show the level badge on the image, the title and the progress bar; a card plays its scenes on hover
+      - **Selecting:**
+        - tapping a card swaps the banner (it doesn't close the sheet)
+        - the footer has one button, 「このコースを選ぶ」
+        - Esc clears the search first, then closes the sheet
+      - **Copy:** no lesson titles, no extra badges, neutral wording, chevrons only.
+      - **Default:** the course already chosen; otherwise the course in progress; otherwise the first course.
+      - **Motion:** transform/opacity only; `prefers-reduced-motion` stops the zoom; only the visible banner runs a timer.
+   5. **`BookingCalendar.tsx` (D2 layout):**
+      - Row 1: calendar | time slots.
+      - Row 2 (same line): booking chips + 毎週繰り返す | 「コース」 with the dashed 「＋ コースを追加」 button (subtitle 「選ばない場合は、フリートークなどのレッスンになります」). It is disabled until a time is picked.
+      - Once a course is chosen, the whole block (cover, title, "Lesson 4 〜 5") is one button that reopens the sheet, and ✕ removes the course. There is no 「変更」 link.
+      - Each booking chip shows its lesson (`· L4`, `· L5` …): slots sorted by time get consecutive lessons from the next lesson, capped at the last lesson. Weekly repeats continue the sequence.
+      - The calendar month buttons become chevrons.
+   6. **`POST /api/calendar/book`:** accept an optional `slideCourseId`. The server works out the starting lesson again from `slide_course_progress` (never trusts the client) and writes `bookings.slide_course_id` + `slide_lesson_id` for each booking in time order, including repeats. If the course is unknown or unpublished, it returns 400. Test mode works the same way.
+   7. **Classroom:** make sure `loadClassroom` / the join route use `bookings.slide_course_id` / `slide_lesson_id` when the session has no course yet, so a booked course opens on its lesson at the first join.
+   8. **Verify:**
+      - jsdom render test of `CourseSheet` (select, search, Esc, progress at 0)
+      - book 2 slots + weekly repeat in test mode and check the lesson ids in `bookings`
+      - screenshots of light and dark mode, phone and desktop
+      - lint and the subset typecheck
 2. **Dashboard:** if `classroom_enabled`, `HeroLesson` links to `/classroom/<bookingId>` in the same tab, otherwise to the Whereby URL as today.
 3. **Admin:** the `/admin` lesson list shows an "Enter classroom" link to `/classroom/<bookingId>` for pilot users.
 4. **Ratings on the admin dashboard (admin-only):**

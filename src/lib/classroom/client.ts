@@ -96,6 +96,16 @@ export async function postEvent(
   }
 }
 
+/** Teacher: mark the booking as a no-show (or undo it). */
+export async function markNoShow(bookingId: string, on: boolean): Promise<boolean> {
+  try {
+    const r = await call(`/api/classroom/${bookingId}/no-show`, { method: 'POST', body: JSON.stringify({ on }) })
+    return r.ok
+  } catch {
+    return false
+  }
+}
+
 export async function postMessage(bookingId: string, text: string): Promise<ChatMsg | null> {
   try {
     const r = await call(`/api/classroom/${bookingId}/messages`, { method: 'POST', body: JSON.stringify({ text }) })

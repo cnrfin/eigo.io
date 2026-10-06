@@ -6,6 +6,7 @@ import { useLanguage } from '@/context/LanguageContext'
 import { Squircle } from '@squircle-js/react'
 import SquircleBox from '@/components/ui/SquircleBox'
 import Header from '@/components/Header'
+import RatingsCard from '@/components/admin/RatingsCard'
 import { motion, AnimatePresence } from 'framer-motion'
 
 const ADMIN_EMAILS = ['cnrfin93@gmail.com']
@@ -89,6 +90,7 @@ type StudentProgress = {
     dueNow: number
     avgEase: number
     totalLessons: number
+    noShows?: number
     analyzedLessons: number
   }
   recentActivity: {
@@ -151,6 +153,7 @@ type Stats = {
   activeStudents: number
   upcomingLessons: number
   completedLessons: number
+  noShowLessons?: number
   totalUsers: number
 }
 
@@ -798,10 +801,14 @@ function AdminContent() {
                   <StatCard label="Students" value={stats.totalUsers} />
                   <StatCard label="Upcoming" value={stats.upcomingLessons} />
                   <StatCard label="Completed" value={stats.completedLessons} />
+                  <StatCard label="No-shows" value={stats.noShowLessons ?? 0} />
                 </div>
               ) : (
                 <p style={{ color: 'var(--text-muted)' }}>Could not load stats</p>
               )}
+
+              {/* Lesson ratings (classroom, admin-only) */}
+              <RatingsCard token={session?.access_token} />
 
               {/* Upcoming Lessons */}
               <div>
@@ -1713,6 +1720,9 @@ function AdminContent() {
                           <SquircleBox cornerRadius={12} className="p-4" style={{ background: 'var(--surface)' }}>
                             <p className="text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Lessons</p>
                             <p className="text-2xl font-bold" style={{ color: 'var(--text)' }}>{studentProgress.stats.totalLessons}</p>
+                            {!!studentProgress.stats.noShows && (
+                              <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>{studentProgress.stats.noShows} missed</p>
+                            )}
                           </SquircleBox>
                           <SquircleBox cornerRadius={12} className="p-4" style={{ background: 'var(--surface)' }}>
                             <p className="text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Due now</p>
@@ -1835,6 +1845,9 @@ function AdminContent() {
                             )}
                           </SquircleBox>
                         )}
+
+                        {/* Lesson ratings (classroom) */}
+                        <RatingsCard token={session?.access_token} userId={selectedStudentId ?? undefined} />
 
                         {/* Lesson insights */}
                         {studentProgress.summaries.length > 0 && (

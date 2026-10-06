@@ -8,15 +8,20 @@ import { createStudentCalendarEvent } from '@/lib/student-calendar'
 import { getUserSubscription, hasEnoughMinutes, recordMinuteUsage } from '@/lib/subscription'
 import { getUserPermissions } from '@/lib/user-permissions'
 import { isAdminEmail } from '@/lib/admin-redirect'
+import { nextLessonFor } from '@/lib/classroom/catalog'
 
 // POST /api/calendar/book
-// Body: { date: '2026-03-23', time: '17:00', duration: 30, timezone: 'Europe/London' }
+// Body: { date: '2026-03-23', time: '17:00', duration: 30, timezone: 'Europe/London', slideCourseId?: 'c_greatbritain' }
+// With slideCourseId (classroom pilot), the booking gets the student's next
+// lesson in that course, worked out here: not completed and not already on an
+// upcoming booking. The form books several times in date order, so they get
+// consecutive lessons.
 export async function POST(request: NextRequest) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   try {
     const body = await request.json()
-    const { date, time, duration, timezone = 'Asia/Tokyo', skipAdminEmail = false } = body
+    const { date, time, duration, timezone = 'Asia/Tokyo', skipAdminEmail = false, slideCourseId = null } = body
 
     if (!date || !time || !duration) {
       return NextResponse.json(
@@ -57,6 +62,17 @@ export async function POST(request: NextRequest) {
     // the DB CHECK constraint. Admins have no subscription, so no minutes are
     // recorded either (recordMinuteUsage requires a subscription).
     const isAdmin = isAdminEmail(user.email)
+
+    // Optional course for the classroom (pilot users only).
+    let slideCourse: { courseId: string; lessonId: string } | null = null
+    if (slideCourseId != null) {
+      if (typeof slideCourseId !== 'string' || (!perms.classroom_enabled && !isAdmin)) {
+        return NextResponse.json({ error: 'Courses are not available for this account' }, { status: 400 })
+      }
+      const next = await nextLessonFor(user.id, slideCourseId)
+      if (!next) return NextResponse.json({ error: 'Unknown course' }, { status: 400 })
+      slideCourse = { courseId: slideCourseId, lessonId: next.lessonId }
+    }
 
     if (!isTrial && !isAdmin && !isTester) {
       if (!subscription || subscription.status === 'cancelled') {
@@ -146,6 +162,8 @@ export async function POST(request: NextRequest) {
       whereby_room_url: wherebyRoomUrl,
       whereby_host_url: wherebyHostUrl,
       status: 'confirmed',
+      slide_course_id: slideCourse?.courseId ?? null,
+      slide_lesson_id: slideCourse?.lessonId ?? null,
     }).select('id').single()
 
     if (dbError) {

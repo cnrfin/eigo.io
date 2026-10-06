@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
     // Fetch old booking details (for email and Whereby cleanup)
     const { data: oldBooking } = await supabase
       .from('bookings')
-      .select('id, date, start_time, duration_minutes, whereby_meeting_id, whereby_room_url, student_gcal_event_id')
+      .select('id, date, start_time, duration_minutes, whereby_meeting_id, whereby_room_url, student_gcal_event_id, slide_course_id, slide_lesson_id')
       .eq('id', oldBookingId)
       .eq('user_id', user.id)
       .single()
@@ -99,6 +99,9 @@ export async function POST(request: NextRequest) {
       whereby_room_url: wherebyRoomUrl,
       whereby_host_url: wherebyHostUrl,
       status: 'confirmed',
+      // keep the course lesson chosen when it was booked
+      slide_course_id: oldBooking.slide_course_id ?? null,
+      slide_lesson_id: oldBooking.slide_lesson_id ?? null,
     }).select('id').single()
 
     if (dbError) {

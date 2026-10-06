@@ -28,6 +28,12 @@ export async function GET(request: NextRequest) {
     .in('status', ['confirmed', 'completed'])
     .lt('date', today)
 
+  // Lessons the student missed (classroom no-show)
+  const { count: noShowLessons } = await supabase
+    .from('bookings')
+    .select('*', { count: 'exact', head: true })
+    .eq('status', 'no_show')
+
   // Total registered users
   const { count: totalUsers } = await supabase
     .from('profiles')
@@ -37,6 +43,7 @@ export async function GET(request: NextRequest) {
     activeStudents: activeStudents || 0,
     upcomingLessons: upcomingLessons || 0,
     completedLessons: completedLessons || 0,
+    noShowLessons: noShowLessons || 0,
     totalUsers: totalUsers || 0,
   })
 }
