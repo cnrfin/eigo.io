@@ -49,6 +49,8 @@ export default function AiRoom(props: Props) {
   const [micOn, setMicOn] = useState(true)
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null)
   const [micStream, setMicStream] = useState<MediaStream | null>(null)
+  /** the AI tutor has started talking: until then the student sees 'Calling your AI tutor…' */
+  const [tutorReady, setTutorReady] = useState(false)
 
   const pc = useRef<RTCPeerConnection | null>(null)
   const dc = useRef<RTCDataChannel | null>(null)
@@ -153,6 +155,10 @@ export default function AiRoom(props: Props) {
       switch (ev.type) {
         case 'session.started': {
           setStatus('live')
+          lastSpeech.current = Date.now()
+          nudged.current = false
+          // GPT-Live waits for the caller unless told to greet: ask it to open the lesson now
+          void act({ kind: 'start' })
           postEvent(info.bookingId, 'student_joined')
           postEvent(info.bookingId, 'start').then((s) => s && setSession(s))
           const { slides: S, idx: i } = live.current
@@ -163,6 +169,7 @@ export default function AiRoom(props: Props) {
           addText('student', String(ev.delta ?? ''), Number(ev.start_ms) || 0, Number(ev.end_ms) || 0)
           break
         case 'session.output_transcript.delta':
+          setTutorReady(true)
           addText('tutor', String(ev.delta ?? ''), Number(ev.start_ms) || 0, Number(ev.end_ms) || 0)
           break
         case 'response.event': {
@@ -186,7 +193,7 @@ export default function AiRoom(props: Props) {
         }
       }
     },
-    [info.bookingId, setSession, context, addText, runTool, sendEvent, flush],
+    [info.bookingId, setSession, context, act, addText, runTool, sendEvent, flush],
   )
   const handleRef = useRef(handleEvent)
   useEffect(() => {
@@ -388,14 +395,23 @@ export default function AiRoom(props: Props) {
     }
   }, [left, status, act, sendEvent, flush])
 
+  useEffect(() => {
+    if (speaking) setTutorReady(true)
+  }, [speaking])
+  useEffect(() => {
+    if (status !== 'live' || tutorReady) return
+    const id = setTimeout(() => setTutorReady(true), 12_000)
+    return () => clearTimeout(id)
+  }, [status, tutorReady])
+
   /* ---------- quiet for a while → remind the AI tutor to lead ---------- */
   // GPT-Live sometimes waits after a slide is finished; nudge it once per silence
   useEffect(() => {
-    if (status !== 'live' || left <= 30 || nudged.current) return
+    if (status !== 'live' || !tutorReady || left <= 30 || nudged.current) return
     if (Date.now() - lastSpeech.current < 9000) return
     nudged.current = true
     void act({ kind: 'nudge' })
-  }, [now, left, status, act])
+  }, [now, left, status, tutorReady, act])
 
   useEffect(() => {
     if (status === 'ended') {
@@ -527,6 +543,15 @@ export default function AiRoom(props: Props) {
       className={`app ai-lesson student${freeTalk ? ' no-course' : ''}${props.whiteboard ? ' wb' : ''}${props.prefs.cursors ? '' : ' no-cursors'}${tbOpen ? ' tb-open' : ''}${props.chatOpen ? ' chat-open' : ''}`}
     >
       <audio ref={audioEl} autoPlay playsInline />
+      <div className={`ai-calling${(status === 'connecting' || status === 'live') && !tutorReady ? '' : ' out'}`} role="status" aria-hidden={tutorReady}>
+        <div className="ai-orb" aria-hidden>
+          <span className="ai-ring" />
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+            <path d="M5 10v4M9 7v10M13 5v14M17 8v8M21 11v2" />
+          </svg>
+        </div>
+        {t('aiCalling')}
+      </div>
       <header className="top">
         <div className="logo">
           eigo<b>.</b>io

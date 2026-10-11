@@ -19,6 +19,7 @@ type Action =
   | { kind: 'save'; term: string }
   | { kind: 'activity'; text: string }
   | { kind: 'media'; text: string }
+  | { kind: 'start' }
   | { kind: 'nudge' }
   | { kind: 'time' }
 
@@ -48,6 +49,8 @@ function instruction(a: Action, secondsLeft: number): string | null {
       const t = q(a.text, 160)
       return t ? `On the student's screen: ${t}` : null
     }
+    case 'start':
+      return 'The student has joined and can hear you. Greet them now by name and start the lesson as your preferences say (warm-up chat, review of the last lesson, or straight into the first slide). Then pause and listen.'
     case 'nudge':
       if (secondsLeft < 30) return null
       return 'Nobody has spoken for about 9 seconds. You lead the lesson: if the student is in the middle of a task, give a short, friendly prompt; if everything on this slide is done, move to the next slide now (next_slide) and introduce it. In free talk, ask a new question or bring a new topic.'

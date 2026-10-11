@@ -129,6 +129,7 @@ export type StudentAction =
   | { kind: 'save'; term: string }
   | { kind: 'activity'; text: string }
   | { kind: 'media'; text: string }
+  | { kind: 'start' }
   | { kind: 'nudge' }
   | { kind: 'time' }
 

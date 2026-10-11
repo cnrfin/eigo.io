@@ -28,6 +28,7 @@ export default function Lobby({
   joining,
   onJoin,
   mirror = true,
+  audioOnly = false,
 }: {
   info: JoinInfo
   t: ClassroomT
@@ -37,6 +38,8 @@ export default function Lobby({
   joining: boolean
   onJoin: () => void
   mirror?: boolean
+  /** AI lessons: microphone and speaker checks only */
+  audioOnly?: boolean
 }) {
   const { state, actions } = localMedia
   const stream = state.localStream
@@ -53,12 +56,20 @@ export default function Lobby({
     barsRef.current?.querySelectorAll('i').forEach((b, i) => b.classList.toggle('lit', i < n))
   })
 
-  const noCam = !stream || !camOn
-  const noCamText = denied
-    ? t('allowCamMicBody', { name: info.other.name })
-    : stream && !camOn
-      ? t('cameraOff')
-      : t('startingCamera')
+  const noCam = audioOnly || !stream || !camOn
+  const noCamText = audioOnly
+    ? denied
+      ? t('allowMicBody')
+      : t('micCheck')
+    : denied
+      ? t('allowCamMicBody', { name: info.other.name })
+      : stream && !camOn
+        ? t('cameraOff')
+        : t('startingCamera')
+  const lvlBig = useRef<HTMLDivElement | null>(null)
+  useAudioLevel(audioOnly && micOn ? stream : null, (v) => {
+    if (lvlBig.current) lvlBig.current.style.setProperty('--lvl', v.toFixed(2))
+  })
 
   async function testSpeaker() {
     if (testing) return
@@ -100,27 +111,29 @@ export default function Lobby({
       </div>
       <div className="lcard">
         <div className={`lprev${mirror ? ' mirror' : ''}${noCam ? ' nocam' : ''}${denied ? ' denied' : ''}`}>
-          {stream && <VideoView stream={stream} muted mirror={false} playsInline />}
+          {stream && !audioOnly && <VideoView stream={stream} muted mirror={false} playsInline />}
           <div className="lnocam">
-            <div className="avatar" style={{ background: '#dff5f2' }}>
+            <div className={`avatar${audioOnly ? ' lmic' : ''}`} style={{ background: '#dff5f2' }} ref={audioOnly ? lvlBig : undefined}>
               {initial}
             </div>
             <span>{noCamText}</span>
             <button className="lallow" onClick={() => window.location.reload()}>
-              {t('allowCamMic')}
+              {audioOnly ? t('allowMic') : t('allowCamMic')}
             </button>
           </div>
           <div className="lctl">
             <span style={{ width: 44 }} />
             <div className="mid">
-              <button
-                className={`lbtn${camOn ? ' on' : ' off'}`}
-                title={t('camOnOff')}
-                aria-pressed={camOn}
-                onClick={() => actions.toggleCameraEnabled(!camOn)}
-              >
-                <Ico name={camOn ? 'cam' : 'camoff'} />
-              </button>
+              {!audioOnly && (
+                <button
+                  className={`lbtn${camOn ? ' on' : ' off'}`}
+                  title={t('camOnOff')}
+                  aria-pressed={camOn}
+                  onClick={() => actions.toggleCameraEnabled(!camOn)}
+                >
+                  <Ico name={camOn ? 'cam' : 'camoff'} />
+                </button>
+              )}
               <button
                 className={`lbtn${micOn ? ' on' : ' off'}`}
                 title={t('micOnOff')}
@@ -142,32 +155,26 @@ export default function Lobby({
               {t('withName', { name: info.other.name })}
             </span>
           </div>
-          <label className="dev">
-            <Ico name="cam" />
-            <select
-              value={state.currentCameraDeviceId || ''}
-              onChange={(e) => actions.setCameraDevice(e.target.value)}
-              aria-label={t('camera')}
-            >
-              {state.cameraDevices.length ? (
-                state.cameraDevices.map((d, i) => (
-                  <option key={d.deviceId || i} value={d.deviceId}>
-                    {d.label || `${t('camera')} ${i + 1}`}
-                  </option>
-                ))
-              ) : (
-                <option value="">{t('camera')}</option>
-              )}
-            </select>
-            <Ico name="down" className="ico chev" />
-          </label>
+          {!audioOnly && (
+            <label className="dev">
+              <Ico name="cam" />
+              <select value={state.currentCameraDeviceId || ''} onChange={(e) => actions.setCameraDevice(e.target.value)} aria-label={t('camera')}>
+                {state.cameraDevices.length ? (
+                  state.cameraDevices.map((d, i) => (
+                    <option key={d.deviceId || i} value={d.deviceId}>
+                      {d.label || `${t('camera')} ${i + 1}`}
+                    </option>
+                  ))
+                ) : (
+                  <option value="">{t('camera')}</option>
+                )}
+              </select>
+              <Ico name="down" className="ico chev" />
+            </label>
+          )}
           <label className="dev">
             <Ico name="mic" />
-            <select
-              value={state.currentMicrophoneDeviceId || ''}
-              onChange={(e) => actions.setMicrophoneDevice(e.target.value)}
-              aria-label={t('microphone')}
-            >
+            <select value={state.currentMicrophoneDeviceId || ''} onChange={(e) => actions.setMicrophoneDevice(e.target.value)} aria-label={t('microphone')}>
               {state.microphoneDevices.length ? (
                 state.microphoneDevices.map((d, i) => (
                   <option key={d.deviceId || i} value={d.deviceId}>
@@ -214,6 +221,7 @@ export default function Lobby({
             </button>
             <Ico name="down" className="ico chev" />
           </label>
+          {audioOnly && <div className="lnote">{t('aiAudioOnly')}</div>}
           <div className="lstatus">
             <span className="dot" />
             {t('startsAt', { time: startTime })}

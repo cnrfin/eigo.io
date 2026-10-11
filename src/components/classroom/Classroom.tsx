@@ -265,7 +265,8 @@ function LeftScreen({
 export default function Classroom({ info }: { info: JoinInfo }) {
   const t = useMemo(() => makeT(info.uiLang), [info.uiLang])
   const [savedJoin] = useState(() => readJoin(info.bookingId))
-  const localMedia = useLocalMedia({ audio: true, video: true })
+  // AI lessons are voice only: no camera (and no camera permission prompt)
+  const localMedia = useLocalMedia({ audio: true, video: !info.ai })
   const [phase, setPhase] = useState<Phase>(() => (savedJoin ? { name: 'room', key: Date.now() } : { name: 'lobby' }))
   const [session, setSession] = useState<SessionInfo>(info.session)
   const [messages, setMessages] = useState<ChatMsg[]>(info.chat)
@@ -740,6 +741,7 @@ export default function Classroom({ info }: { info: JoinInfo }) {
           speakerId={speakerId}
           setSpeakerId={setSpeakerId}
           mirror={prefs.mirror}
+          audioOnly={!!info.ai}
           joining={false}
           onJoin={join}
         />
