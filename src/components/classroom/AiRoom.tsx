@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { aiOpenLesson, aiTurn, postEvent, saveAiTranscript, sendAiAction, startAiSession, type SlideRef, type StudentAction } from '@/lib/classroom/client'
 import type { Lesson } from '@/lib/slides/types'
-import { useVolDot } from './audio'
+import { useAudioLevel, useVolDot } from './audio'
+import AiOrb from '@/components/ai/AiOrb'
 import ChatPanel from './ChatPanel'
 import { Ico } from './Icons'
 import SlideStage from './SlideStage'
@@ -612,6 +613,11 @@ export default function AiRoom(props: Props) {
 
   /* ---------- tutor speaking indicator ---------- */
   const tutorDot = useVolDot(remoteStream, false)
+  // the AI tutor's voice level drives its orb
+  const voiceLevel = useRef(0)
+  useAudioLevel(remoteStream, (v) => {
+    voiceLevel.current = v
+  })
   const myDot = useVolDot(micStream, !micOn)
   useEffect(() => {
     if (!remoteStream) return
@@ -733,12 +739,7 @@ export default function AiRoom(props: Props) {
     >
       <audio ref={audioEl} autoPlay playsInline />
       <div className={`ai-calling${(status === 'connecting' || status === 'live') && !tutorReady ? '' : ' out'}`} role="status" aria-hidden={tutorReady}>
-        <div className="ai-orb" aria-hidden>
-          <span className="ai-ring" />
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
-            <path d="M5 10v4M9 7v10M13 5v14M17 8v8M21 11v2" />
-          </svg>
-        </div>
+        <AiOrb className="ai-orb-calling" color={info.aiColor} />
         {t('aiCalling')}
       </div>
       <header className="top">
@@ -802,12 +803,7 @@ export default function AiRoom(props: Props) {
             />
             <div className={`slot tile ai-tile${speaking ? ' speaking' : ''}${status !== 'live' ? ' idle' : ''}`} ref={otherRef}>
               <div className="face">
-                <div className="ai-orb" aria-hidden>
-                  <span className="ai-ring" />
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
-                    <path d="M5 10v4M9 7v10M13 5v14M17 8v8M21 11v2" />
-                  </svg>
-                </div>
+                <AiOrb className="ai-orb-tile" color={info.aiColor} level={voiceLevel} title={info.other.name} />
               </div>
               <span className="vol" ref={tutorDot}>
                 <i />

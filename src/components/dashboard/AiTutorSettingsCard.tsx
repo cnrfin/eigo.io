@@ -6,6 +6,8 @@ import { pillTabStyle } from '@/lib/pill-tabs'
 import { useTheme } from '@/context/ThemeContext'
 import { useAuth } from '@/context/AuthContext'
 import { DEFAULT_TUTOR_SETTINGS, TUTOR_VOICES, type TutorSettings } from '@/lib/ai-tutor/settings'
+import { ORB_COLORS, orbColor } from '@/lib/ai-tutor/orb-colors'
+import AiOrb from '@/components/ai/AiOrb'
 
 /**
  * 「AIチューターの設定」: the student's AI tutor settings (dashboard → Settings).
@@ -317,6 +319,27 @@ export default function AiTutorSettingsCard({ locale }: { locale: string }) {
                     {v.label}
                   </button>
                 </span>
+              )
+            }),
+          )}
+          {row(
+            'orbColor',
+            ja ? '色' : 'Colour',
+            t(orbColor(s.orbColor)),
+            ORB_COLORS.map((c) => {
+              const on = s.orbColor === c.id
+              return (
+                <button
+                  key={c.id}
+                  onClick={() => set('orbColor', c.id)}
+                  aria-label={t(c)}
+                  aria-pressed={on}
+                  title={t(c)}
+                  className="w-9 h-9 rounded-full grid place-items-center transition-transform duration-[120ms] ease-out hover:scale-[1.06] active:scale-95"
+                  style={{ boxShadow: on ? '0 0 0 2px var(--accent)' : '0 0 0 1px var(--edge)' }}
+                >
+                  <AiOrb color={c.id} className="w-7 h-7" />
+                </button>
               )
             }),
           )}

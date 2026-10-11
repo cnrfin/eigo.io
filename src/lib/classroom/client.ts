@@ -49,6 +49,8 @@ export type JoinInfo = {
   serverNow: string
   /** AI tutor lesson: no Whereby room; the tutor is a GPT-Live voice session */
   ai?: boolean
+  /** AI lessons: the AI tutor's orb colour (ORB_COLORS id) */
+  aiColor?: string | null
 }
 
 export type JoinDenied = {

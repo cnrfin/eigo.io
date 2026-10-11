@@ -15,8 +15,8 @@
 .tp-pill.on .tp-pic > * { transform: scale(1); opacity: 1; }
 .tp-pill:not(.on) .tp-pic > * { transition: transform .3s cubic-bezier(.4, 0, .6, 1), opacity .2s .1s; }
 .tp-initial { display: grid; place-items: center; background: var(--surface-hover); color: var(--text); font-weight: 700; }
-.tp-ai { display: grid; place-items: center; color: #fff; background: radial-gradient(circle at 30% 25%, #b9ecd9, #5fb597 45%, #2a6e5d 100%); }
-.tp-ai svg { width: 52%; height: 52%; }
+.tp-ai { display: grid; place-items: center; }
+.tp-ai canvas { width: 100%; height: 100%; }
 .tp-off {
   position: absolute; top: -9px; right: -10px; padding: 2px 7px; border-radius: 999px; font-size: .6rem; font-weight: 700;
   letter-spacing: .02em; line-height: 1.5; white-space: nowrap; background: #bfe6d6; color: #14473b;

@@ -1,3 +1,5 @@
+import { DEFAULT_ORB_COLOR, ORB_COLORS, type OrbColor } from './orb-colors'
+
 /**
  * AI tutor ("マイAIチューター") settings, shared by the server and the browser.
  * Stored per student in ai_tutor_profiles.settings (jsonb). Unknown or missing
@@ -30,6 +32,8 @@ export type TutorVoice = (typeof TUTOR_VOICES)[number]['id']
 
 export type TutorSettings = {
   voice: TutorVoice
+  /** the AI tutor's orb colour (ORB_COLORS) */
+  orbColor: OrbColor
   speed: 'slow' | 'normal' | 'natural'
   japanese: 'english_only' | 'when_stuck' | 'grammar'
   corrections: 'relaxed' | 'end_of_activity' | 'immediate'
@@ -49,6 +53,7 @@ export type TutorSettings = {
 
 export const DEFAULT_TUTOR_SETTINGS: TutorSettings = {
   voice: 'vesper',
+  orbColor: DEFAULT_ORB_COLOR,
   speed: 'normal',
   japanese: 'when_stuck',
   corrections: 'end_of_activity',
@@ -77,6 +82,7 @@ export function normalizeSettings(raw: unknown): TutorSettings {
   const focus = Array.isArray(r.focus) ? (r.focus.filter((f) => focusAll.includes(f as never)) as TutorSettings['focus']) : d.focus
   return {
     voice: pick(r.voice, TUTOR_VOICES.map((v) => v.id), d.voice),
+    orbColor: pick(r.orbColor, ORB_COLORS.map((c) => c.id), d.orbColor),
     speed: pick(r.speed, ['slow', 'normal', 'natural'] as const, d.speed),
     japanese: pick(r.japanese, ['english_only', 'when_stuck', 'grammar'] as const, d.japanese),
     corrections: pick(r.corrections, ['relaxed', 'end_of_activity', 'immediate'] as const, d.corrections),

@@ -537,19 +537,11 @@
 /* ===== AI tutor lesson (AiRoom) ===== */
 .cr .ai-calling{position:absolute;inset:0;z-index:30;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;background:var(--bg);font-size:15px;color:var(--text-secondary);transition:opacity .35s var(--ease)}
 .cr .ai-calling.out{opacity:0;pointer-events:none}
-.cr .ai-calling .ai-orb{width:120px;height:120px}
-.cr .ai-calling .ai-ring{opacity:.8;animation:ai-pulse 1.4s ease-out infinite}
 .cr .ai-tile .face{background:radial-gradient(120% 90% at 50% 40%,rgba(124,199,174,.14),transparent 70%)}
-.cr .ai-tile .ai-orb{width:clamp(44px,30cqmin,112px);height:auto;aspect-ratio:1}
+.cr .ai-tile .ai-orb-tile{width:clamp(44px,34cqmin,128px);height:auto}
+.cr .ai-tile.idle .ai-orb-tile{filter:saturate(.5);opacity:.75}
+.cr .ai-calling .ai-orb-calling{width:128px;height:auto}
 .cr .ai-tile .ai-status{position:absolute;left:50%;top:10px;transform:translateX(-50%);display:flex;align-items:center;gap:8px;padding:4px 10px;border-radius:999px;background:rgba(10,10,15,.6);color:#fff;font-size:12px;white-space:nowrap}
 .cr .ai-tile .ai-status .spin{width:12px;height:12px;border-radius:50%;border:2px solid currentColor;border-top-color:transparent;animation:cr-spin .7s linear infinite}
 .cr .ai-tile .ai-status .ebtn{padding:3px 10px;font-size:12px}
-.cr .ai-orb{position:relative;width:112px;height:112px;border-radius:50%;display:grid;place-items:center;color:#fff;background:radial-gradient(circle at 30% 25%,#b9ecd9,#5fb597 45%,#2a6e5d 100%);transition:transform .25s var(--ease)}
-.cr .ai-orb svg{width:44%;height:44%}
-.cr .ai-ring{position:absolute;inset:-6px;border-radius:50%;border:2px solid var(--accent);opacity:0;transition:opacity .2s}
-.cr .ai-tile.speaking .ai-orb{transform:scale(1.04)}
-.cr .ai-tile.speaking .ai-ring{opacity:.8;animation:ai-pulse 1.4s ease-out infinite}
-.cr .ai-tile.idle .ai-orb{filter:saturate(.4);opacity:.7}
-@keyframes ai-pulse{0%{transform:scale(1);opacity:.8}100%{transform:scale(1.25);opacity:0}}
 .cr .info.warn{color:var(--warning)}
-@media (prefers-reduced-motion:reduce){.cr .ai-tile.speaking .ai-ring,.cr .ai-calling .ai-ring{animation:none}}

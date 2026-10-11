@@ -7,10 +7,10 @@ import { json, loadClassroom, personName, publicSession, uiLangFor, wherebyParts
 const ADMIN_EMAIL = 'cnrfin93@gmail.com'
 
 /** The name the student gave their AI tutor, or the default. */
-async function aiTutorName(userId: string) {
+async function aiTutor(userId: string) {
   const { data } = await getSupabaseAdmin().from('ai_tutor_profiles').select('settings').eq('user_id', userId).maybeSingle()
-  const n = (data?.settings as { tutorName?: string } | null)?.tutorName?.trim()
-  return n || 'AI tutor'
+  const st = data?.settings as { tutorName?: string; orbColor?: string } | null
+  return { name: st?.tutorName?.trim() || 'AI tutor', color: typeof st?.orbColor === 'string' ? st.orbColor : null }
 }
 
 /**
@@ -69,6 +69,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     else open = null // unpublished or deleted: fall back to free talk
   }
 
+  const tutorInfo = ai ? await aiTutor(booking.user_id) : null
   return json(200, {
     bookingId: booking.id,
     role,
@@ -78,8 +79,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     durationMinutes: booking.duration_minutes,
     session: publicSession(session),
     me: { name: role === 'teacher' ? teacherName : studentName },
-    other: { name: role === 'teacher' ? studentName : ai ? await aiTutorName(booking.user_id) : teacherName },
+    other: { name: role === 'teacher' ? studentName : tutorInfo ? tutorInfo.name : teacherName },
     ai,
+    aiColor: tutorInfo?.color ?? null,
     uiLang: role === 'teacher' ? 'en' : student?.preferred_language === 'en' ? 'en' : 'ja',
     nativeLang: student?.native_language || 'ja',
     open,
