@@ -1,0 +1,37 @@
+/* Booking: Connor / AI tutor picker + plan-minutes usage bar (design: mockups/booking-ai-minutes.html) */
+.tp-row { display: flex; justify-content: center; gap: 10px; margin-bottom: 1.1rem; }
+.tp-pill {
+  --tp-spring: cubic-bezier(.34, 1.56, .64, 1);
+  position: relative; display: flex; align-items: center; height: 48px; padding: 0 20px; border-radius: 999px;
+  border: 1px solid var(--edge); color: var(--text-muted); font-size: .88rem; font-weight: 600;
+  transition: padding .45s var(--tp-spring), background .25s, color .25s, border-color .25s, transform .12s ease-out;
+}
+.tp-pill:active { transform: scale(.96); }
+.tp-pic { width: 0; height: 36px; margin-right: 0; display: grid; place-items: center; transition: width .45s var(--tp-spring), margin-right .45s var(--tp-spring); }
+.tp-pic > * { width: 36px; height: 36px; border-radius: 50%; flex: none; transform: scale(0); opacity: 0; transition: transform .45s var(--tp-spring), opacity .2s; object-fit: cover; }
+.tp-pill.on { padding-left: 6px; color: var(--accent); background: var(--accent-bg); border-color: var(--accent); }
+:root[data-theme="light"] .tp-pill.on { background: var(--accent); color: #fff; }
+.tp-pill.on .tp-pic { width: 36px; margin-right: 10px; }
+.tp-pill.on .tp-pic > * { transform: scale(1); opacity: 1; }
+.tp-pill:not(.on) .tp-pic > * { transition: transform .3s cubic-bezier(.4, 0, .6, 1), opacity .2s .1s; }
+.tp-initial { display: grid; place-items: center; background: var(--surface-hover); color: var(--text); font-weight: 700; }
+.tp-ai { display: grid; place-items: center; color: #fff; background: radial-gradient(circle at 30% 25%, #b9ecd9, #5fb597 45%, #2a6e5d 100%); }
+.tp-ai svg { width: 52%; height: 52%; }
+.tp-off {
+  position: absolute; top: -9px; right: -10px; padding: 2px 7px; border-radius: 999px; font-size: .6rem; font-weight: 700;
+  letter-spacing: .02em; line-height: 1.5; white-space: nowrap; background: #bfe6d6; color: #14473b;
+  box-shadow: 0 0 0 3px var(--bg); pointer-events: none; transition: background .25s, color .25s;
+}
+:root[data-theme="light"] .tp-off { background: #d5efe5; color: #1f6f5f; }
+.tp-pill:not(.on) .tp-off { background: var(--surface-hover); color: var(--text-muted); }
+
+.tp-meter { max-width: 30rem; margin: -.4rem auto 1.4rem; }
+.tp-meter .tp-lbl { display: flex; justify-content: space-between; gap: 12px; font-size: .72rem; color: var(--text-muted); margin-bottom: 6px; }
+.tp-meter .tp-lbl b { color: var(--text); font-weight: 600; }
+.tp-track { position: relative; height: 8px; border-radius: 4px; background: var(--surface-hover); overflow: hidden; }
+.tp-track .tp-use { position: absolute; top: 0; bottom: 0; right: 0; background: var(--accent); border-radius: 4px; transition: width .5s cubic-bezier(.22, 1, .36, 1); }
+.tp-track .tp-ghost { position: absolute; top: 0; bottom: 0; right: 0; border: 1.5px dashed var(--text-muted); border-radius: 4px; opacity: 0; transition: opacity .3s, width .5s cubic-bezier(.22, 1, .36, 1); }
+.tp-meter.ai .tp-ghost { opacity: .7; }
+@media (prefers-reduced-motion: reduce) {
+  .tp-pill, .tp-pic, .tp-pic > *, .tp-track .tp-use, .tp-track .tp-ghost { transition: none !important; }
+}

@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-admin'
-import { ensureSession, json, loadClassroom, publicSession, SESSION_COLS } from '@/lib/classroom/server'
+import { canControlLesson, ensureSession, json, loadClassroom, publicSession, SESSION_COLS } from '@/lib/classroom/server'
 
 /**
  * POST /api/classroom/[id]/event   { type }
@@ -51,7 +51,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       await sessions().update({ recording_stopped_at: now, updated_at: now }).eq('booking_id', booking.id)
       break
     case 'end':
-      if (access.role !== 'teacher') return json(403, { error: 'Teacher only' })
+      if (!canControlLesson(ctx)) return json(403, { error: 'Teacher only' })
       await sessions().update({ ended_at: now, updated_at: now }).eq('booking_id', booking.id).is('ended_at', null)
       await db.from('bookings').update({ status: 'completed' }).eq('id', booking.id).in('status', ['confirmed', 'no_show'])
       break

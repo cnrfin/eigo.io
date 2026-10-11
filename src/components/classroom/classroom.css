@@ -531,3 +531,26 @@
 .cr .toast .tick.bad{background:var(--danger)}
 /* translations are body text: no palt (keeps the pause after 。 and 、) */
 .cr .tr{font-feature-settings:normal;line-height:1.7}
+
+/* ===== AI tutor lesson (AiRoom) ===== */
+.cr .ai-layout{flex:1;min-height:0;display:flex;gap:14px;padding:0 12px;align-items:stretch}
+.cr .ai-slideWrap{flex:1;min-width:0;display:flex;align-items:center;justify-content:center;container-type:size}
+.cr .ai-slide{position:relative;width:min(100cqw,calc(100cqh * 16 / 9));aspect-ratio:16/9}
+.cr .ai-tutor{position:relative;flex:none;width:260px;border-radius:12px;background:var(--well);box-shadow:0 0 0 1px var(--hairline);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:20px 16px;text-align:center}
+.cr .app.no-course .ai-tutor{flex:1;width:auto}
+.cr .ai-orb{position:relative;width:112px;height:112px;border-radius:50%;display:grid;place-items:center;color:#fff;background:radial-gradient(circle at 30% 25%,#b9ecd9,#5fb597 45%,#2a6e5d 100%);transition:transform .25s var(--ease)}
+.cr .ai-orb svg{width:44%;height:44%}
+.cr .ai-ring{position:absolute;inset:-6px;border-radius:50%;border:2px solid var(--accent);opacity:0;transition:opacity .2s}
+.cr .ai-tutor.speaking .ai-orb{transform:scale(1.04)}
+.cr .ai-tutor.speaking .ai-ring{opacity:.8;animation:ai-pulse 1.4s ease-out infinite}
+.cr .ai-tutor.idle .ai-orb{filter:saturate(.4);opacity:.7}
+@keyframes ai-pulse{0%{transform:scale(1);opacity:.8}100%{transform:scale(1.25);opacity:0}}
+.cr .ai-name{display:flex;align-items:center;gap:8px;font-size:16px;font-weight:600}
+.cr .ai-name .vol{position:relative;right:auto;top:auto}
+.cr .ai-status{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-secondary);min-height:20px}
+.cr .ai-status .spin{width:14px;height:14px;border-radius:50%;border:2px solid currentColor;border-top-color:transparent;animation:cr-spin .7s linear infinite}
+.cr .ai-micoff{font-size:12px;color:var(--danger)}
+.cr .vol.ai-me{top:auto;right:12px;bottom:12px}
+.cr .info.warn{color:var(--warning)}
+@media (max-width:760px){.cr .ai-layout{flex-direction:column}.cr .ai-tutor{width:auto;flex-direction:row;padding:10px 14px;gap:12px}.cr .ai-orb{width:48px;height:48px}.cr .app.no-course .ai-tutor{flex-direction:column}.cr .app.no-course .ai-orb{width:112px;height:112px}}
+@media (prefers-reduced-motion:reduce){.cr .ai-tutor.speaking .ai-ring{animation:none}}

@@ -32,6 +32,7 @@ import { audioContext } from './audio'
 import { Ico, Star } from './Icons'
 import Lobby from './Lobby'
 import Room, { type TileMsg } from './Room'
+import AiRoom from './AiRoom'
 import type { MediaEvent } from './SlideStage'
 import { InkEngine, type InkItem } from './ink'
 import { isLowPower, usePrefs } from './prefs'
@@ -411,6 +412,17 @@ export default function Classroom({ info }: { info: JoinInfo }) {
     },
     [info.bookingId, popTile, send, toast, t],
   )
+  /** AI lessons: the tutor's write_in_chat message (stored as the teacher's side). */
+  const sendTutorMessage = useCallback(
+    async (text: string) => {
+      const m = await postMessage(info.bookingId, text, true)
+      if (!m) return false
+      setMessages((p) => [...p, m])
+      popTile('other', m)
+      return true
+    },
+    [info.bookingId, popTile],
+  )
 
   useEffect(() => {
     if (!helloAt) return
@@ -725,7 +737,54 @@ export default function Classroom({ info }: { info: JoinInfo }) {
           onJoin={join}
         />
       )}
-      {phase.name === 'room' && (
+      {phase.name === 'room' && info.ai && (
+        <AiRoom
+          key={phase.key}
+          info={info}
+          t={t}
+          localMedia={localMedia}
+          speakerId={speakerId}
+          session={session}
+          setSession={setSession}
+          clockOffset={clockOffset}
+          messages={messages}
+          sendMessage={sendMessage}
+          chatOpen={chatOpen}
+          setChatOpen={setChatOpen}
+          unread={unread}
+          tileMsgs={tileMsgs}
+          toast={toast}
+          onLeave={onLeave}
+          endSignal={endSignal}
+          open={open}
+          loaded={open ? (courses[open.courseId] ?? null) : null}
+          teacherView={teacherView}
+          setTeacherView={setTeacherView}
+          onGo={onGo}
+          onOpenLesson={onOpenLesson}
+          onCloseCourse={onCloseCourse}
+          remoteMedia={remoteMedia}
+          onLocalMedia={onLocalMedia}
+          ink={ink}
+          bus={bus}
+          whiteboard={whiteboard}
+          setWhiteboard={setWhiteboard}
+          onCursor={onCursor}
+          prefs={prefs}
+          setPrefs={setPrefs}
+          setSpeakerId={setSpeakerId}
+          studentDraw={studentDraw}
+          setStudentDraw={setStudentDraw}
+          lookup={lookup}
+          vocabApi={vocabApi}
+          activityApi={activityApi}
+          savedIds={saved}
+          onSaveWord={toggleWord}
+          closeLookup={closePopup}
+          sendTutorMessage={sendTutorMessage}
+        />
+      )}
+      {phase.name === 'room' && !info.ai && (
         <Room
           key={phase.key}
           info={info}

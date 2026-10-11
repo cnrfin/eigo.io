@@ -18,15 +18,20 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   if (ctx instanceof Response) return ctx
 
   let text = ''
+  let asTutor = false
   try {
-    text = String((await request.json()).text ?? '')
+    const b = await request.json()
+    text = String(b.text ?? '')
+    asTutor = b.asTutor === true
   } catch {
     return json(400, { error: 'Invalid body' })
   }
   text = text.replace(/\r\n/g, '\n').trim().slice(0, MAX_TEXT)
   if (!text) return json(400, { error: 'Empty message' })
 
-  const msg: ChatItem = { id: randomUUID(), from: ctx.access.role, text, at: new Date().toISOString() }
+  // AI lessons: the classroom posts the AI tutor's write_in_chat messages as the teacher's side.
+  const from = asTutor && ctx.booking.lesson_kind === 'ai' && ctx.booking.user_id === ctx.user.id ? 'teacher' : ctx.access.role
+  const msg: ChatItem = { id: randomUUID(), from, text, at: new Date().toISOString() }
   const { error } = await getSupabaseAdmin().rpc('append_lesson_chat', { p_booking: ctx.booking.id, p_msg: msg })
   if (error) {
     console.error('append_lesson_chat failed:', error)

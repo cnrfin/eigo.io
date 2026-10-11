@@ -6,6 +6,7 @@ import { useTheme } from '@/context/ThemeContext'
 import { pillTabStyle } from '@/lib/pill-tabs'
 import { useState, useEffect, useRef } from 'react'
 import SquircleCard from '@/components/ui/SquircleCard'
+import AiTutorSettingsCard from '@/components/dashboard/AiTutorSettingsCard'
 import { motion } from 'framer-motion'
 
 // New-design button recipes (match BookingCalendar / HomeView: tween scale,
@@ -623,6 +624,11 @@ export default function SettingsPage() {
               </div>
             </div>
           </SquircleCard>
+          </motion.div>
+
+          {/* My AI tutor (AI tutor pilot users only; renders nothing otherwise) */}
+          <motion.div variants={{ hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0 } }}>
+            <AiTutorSettingsCard locale={locale} />
           </motion.div>
 
           {/* Subscription / Your Plan */}

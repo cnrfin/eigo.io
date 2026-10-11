@@ -20,8 +20,8 @@ async function isBookingTester(request: NextRequest): Promise<boolean> {
   return perms.booking_test_mode
 }
 
-function allSlotsFromNow(date: string, timezone: string): string[] {
-  const earliest = Date.now() - 15 * 60_000
+function allSlotsFromNow(date: string, timezone: string, leadMs = -15 * 60_000): string[] {
+  const earliest = Date.now() + leadMs
   const out: string[] = []
   for (let m = 0; m < 24 * 60; m += 15) {
     const time = `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`
@@ -31,7 +31,7 @@ function allSlotsFromNow(date: string, timezone: string): string[] {
   return out
 }
 
-// GET /api/calendar/available?date=2026-03-23&duration=30&tz=Asia/Tokyo
+// GET /api/calendar/available?date=2026-03-23&duration=30&tz=Asia/Tokyo[&kind=ai]
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
   const date = searchParams.get('date')
@@ -51,6 +51,11 @@ export async function GET(request: NextRequest) {
   const userNow = new Intl.DateTimeFormat('en-CA', { timeZone: timezone, year: 'numeric', month: '2-digit', day: '2-digit' }).format(now)
   if (date < userNow) {
     return NextResponse.json({ date, duration, timezone, slots: [] })
+  }
+
+  // AI tutor lessons: any 15-minute slot from 5 minutes from now (the tutor is always free)
+  if (searchParams.get('kind') === 'ai') {
+    return NextResponse.json({ date, duration, timezone, slots: allSlotsFromNow(date, timezone, 5 * 60_000), ai: true })
   }
 
   try {

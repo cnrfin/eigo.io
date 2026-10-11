@@ -25,6 +25,8 @@ export type UserPermissions = {
   transcription_enabled: boolean
   classroom_enabled: boolean
   booking_test_mode: boolean
+  /** AI tutor lessons (pilot, opt-in; supabase/add-ai-tutor.sql) */
+  ai_enabled: boolean
 }
 
 export const DEFAULT_PERMISSIONS: UserPermissions = {
@@ -34,6 +36,7 @@ export const DEFAULT_PERMISSIONS: UserPermissions = {
   transcription_enabled: true,
   classroom_enabled: false,
   booking_test_mode: false,
+  ai_enabled: false,
 }
 
 /** Effective permissions for a user (defaults merged with any stored overrides). */
@@ -41,11 +44,11 @@ export async function getUserPermissions(
   supabase: SupabaseClient,
   userId: string,
 ): Promise<UserPermissions> {
-  const { data } = await supabase
-    .from('user_permissions')
-    .select('courses_enabled, tests_enabled, recordings_enabled, transcription_enabled, classroom_enabled, booking_test_mode')
-    .eq('user_id', userId)
-    .maybeSingle()
+  const cols = 'courses_enabled, tests_enabled, recordings_enabled, transcription_enabled, classroom_enabled, booking_test_mode'
+  const first = await supabase.from('user_permissions').select(`${cols}, ai_enabled`).eq('user_id', userId).maybeSingle()
+  let data = first.data as Partial<UserPermissions> | null
+  // Before add-ai-tutor.sql is applied the ai_enabled column doesn't exist: fall back so nothing else breaks.
+  if (first.error) data = (await supabase.from('user_permissions').select(cols).eq('user_id', userId).maybeSingle()).data as Partial<UserPermissions> | null
   if (!data) return { ...DEFAULT_PERMISSIONS }
   return {
     courses_enabled: data.courses_enabled ?? true,
@@ -54,6 +57,7 @@ export async function getUserPermissions(
     transcription_enabled: data.transcription_enabled ?? true,
     classroom_enabled: data.classroom_enabled ?? false,
     booking_test_mode: data.booking_test_mode ?? false,
+    ai_enabled: data.ai_enabled ?? false,
   }
 }
 

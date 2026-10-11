@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
   // closes or their next lesson opens. See src/lib/classroom/upcoming.ts.
   const admin = getSupabaseAdmin()
   const perms = await getUserPermissions(admin, verified.user.id)
-  const upcoming = await filterUpcoming(admin, bookings || [], () => perms.classroom_enabled)
+  const upcoming = await filterUpcoming(admin, bookings || [], (b) => perms.classroom_enabled || b.lesson_kind === 'ai')
 
   const lessons = upcoming.map((b) => ({
     id: b.id,
@@ -58,6 +58,7 @@ export async function GET(request: NextRequest) {
     googleEventId: b.google_event_id,
     wherebyRoomUrl: b.whereby_room_url,
     wherebyMeetingId: b.whereby_meeting_id,
+    lessonKind: b.lesson_kind === 'ai' ? 'ai' : 'human',
   }))
 
   return NextResponse.json({ lessons })

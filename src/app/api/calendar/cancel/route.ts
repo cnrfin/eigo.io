@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
     // Fetch booking details before cancelling (for email + Whereby cleanup)
     const { data: booking, error: fetchError } = await supabase
       .from('bookings')
-      .select('id, date, start_time, duration_minutes, whereby_meeting_id, student_gcal_event_id')
+      .select('*') // * so it works before and after add-ai-tutor.sql (ai_minutes_charged)
       .eq('id', bookingId)
       .eq('user_id', user.id)
       .single()
@@ -88,7 +88,8 @@ export async function POST(request: NextRequest) {
           await recordMinuteUsage(
             user.id,
             bookingId,
-            booking.duration_minutes,
+            // AI lessons refund the minutes actually charged (60% of the length)
+            booking.ai_minutes_charged ?? booking.duration_minutes,
             subscription.current_period_start,
             'cancelled_refund',
           )

@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
     // Fetch old booking details (for email and Whereby cleanup)
     const { data: oldBooking } = await supabase
       .from('bookings')
-      .select('id, date, start_time, duration_minutes, whereby_meeting_id, whereby_room_url, student_gcal_event_id, slide_course_id, slide_lesson_id')
+      .select('*')
       .eq('id', oldBookingId)
       .eq('user_id', user.id)
       .single()
@@ -61,7 +61,8 @@ export async function POST(request: NextRequest) {
     let wherebyRoomUrl = null
     let wherebyHostUrl = null
 
-    try {
+    const isAi = oldBooking.lesson_kind === 'ai'
+    if (!isAi) try {
       const room = await createWherebyRoom({
         endDate: lessonEndJST.toISOString(),
         roomNamePrefix: 'eigo',
@@ -78,15 +79,18 @@ export async function POST(request: NextRequest) {
     }
 
     // Create new Google Calendar event
-    const event = await createBookingEvent({
-      date,
-      time,
-      durationMinutes: duration,
-      studentEmail: user.email || '',
-      studentName: user.user_metadata?.full_name || user.email,
-      timezone,
-      location: wherebyRoomUrl || undefined,
-    })
+    // AI lessons don't go on Connor's calendar
+    const event = isAi
+      ? { id: null }
+      : await createBookingEvent({
+          date,
+          time,
+          durationMinutes: duration,
+          studentEmail: user.email || '',
+          studentName: user.user_metadata?.full_name || user.email,
+          timezone,
+          location: wherebyRoomUrl || undefined,
+        })
 
     // Store new booking in Supabase
     const { data: newBookingRow, error: dbError } = await supabase.from('bookings').insert({
@@ -102,6 +106,8 @@ export async function POST(request: NextRequest) {
       // keep the course lesson chosen when it was booked
       slide_course_id: oldBooking.slide_course_id ?? null,
       slide_lesson_id: oldBooking.slide_lesson_id ?? null,
+      // an AI lesson stays an AI lesson (no Whereby room needed)
+      ...(oldBooking.lesson_kind === 'ai' ? { lesson_kind: 'ai', ai_minutes_charged: oldBooking.ai_minutes_charged ?? null } : {}),
     }).select('id').single()
 
     if (dbError) {

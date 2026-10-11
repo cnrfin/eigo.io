@@ -47,6 +47,8 @@ export type JoinInfo = {
   activity?: Record<string, unknown>
   chat: ChatMsg[]
   serverNow: string
+  /** AI tutor lesson: no Whereby room; the tutor is a GPT-Live voice session */
+  ai?: boolean
 }
 
 export type JoinDenied = {
@@ -96,6 +98,30 @@ export async function postEvent(
   }
 }
 
+/** AI lesson: exchange the browser's WebRTC offer for OpenAI's answer (our server creates the session). */
+export async function startAiSession(
+  bookingId: string,
+  sdp: string,
+): Promise<{ ok: true; sessionId: string; sdp: string; endsAt: string } | { ok: false; reason: string }> {
+  try {
+    const r = await call(`/api/classroom/${bookingId}/ai-session`, { method: 'POST', body: JSON.stringify({ sdp }) })
+    const j = await r.json().catch(() => ({}))
+    if (!r.ok) return { ok: false, reason: j.reason ?? j.error ?? 'error' }
+    return { ok: true, sessionId: j.sessionId, sdp: j.sdp, endsAt: j.endsAt }
+  } catch {
+    return { ok: false, reason: 'network' }
+  }
+}
+
+/** AI lesson: save the transcript (and close the session record). Uses keepalive so it survives page unload. */
+export async function saveAiTranscript(bookingId: string, sessionId: string, lines: { from: 'student' | 'tutor'; text: string; t: number }[], final: boolean) {
+  try {
+    await call(`/api/classroom/${bookingId}/ai-transcript`, { method: 'POST', body: JSON.stringify({ sessionId, lines, final }), keepalive: true })
+  } catch {
+    /* best effort */
+  }
+}
+
 /** Teacher: mark the booking as a no-show (or undo it). */
 export async function markNoShow(bookingId: string, on: boolean): Promise<boolean> {
   try {
@@ -106,9 +132,9 @@ export async function markNoShow(bookingId: string, on: boolean): Promise<boolea
   }
 }
 
-export async function postMessage(bookingId: string, text: string): Promise<ChatMsg | null> {
+export async function postMessage(bookingId: string, text: string, asTutor = false): Promise<ChatMsg | null> {
   try {
-    const r = await call(`/api/classroom/${bookingId}/messages`, { method: 'POST', body: JSON.stringify({ text }) })
+    const r = await call(`/api/classroom/${bookingId}/messages`, { method: 'POST', body: JSON.stringify(asTutor ? { text, asTutor } : { text }) })
     if (!r.ok) return null
     return (await r.json()).message as ChatMsg
   } catch {

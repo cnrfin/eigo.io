@@ -24,6 +24,8 @@ export type ClassroomBooking = {
   slide_course_id: string | null
   slide_lesson_id: string | null
   chat_log: ChatItem[]
+  /** 'ai' = AI tutor lesson (GPT-Live, no Whereby room) */
+  lesson_kind: 'human' | 'ai'
 }
 
 export type ClassroomSession = {
@@ -58,7 +60,7 @@ export const SESSION_COLS =
   'booking_id, student_joined_at, started_at, ended_at, recording_stopped_at, course_id, lesson_id, used_course, state'
 
 const BOOKING_COLS =
-  'id, user_id, date, start_time, duration_minutes, status, whereby_room_url, whereby_host_url, slide_course_id, slide_lesson_id, chat_log'
+  'id, user_id, date, start_time, duration_minutes, status, whereby_room_url, whereby_host_url, slide_course_id, slide_lesson_id, chat_log, lesson_kind'
 
 export function json(status: number, body: unknown) {
   return NextResponse.json(body, { status })
@@ -122,6 +124,11 @@ export async function loadClassroom(
 }
 
 export { uiLangFor }
+
+/** In an AI tutor lesson the student runs the lesson (the AI moves slides through their client). */
+export function canControlLesson(ctx: ClassroomContext) {
+  return ctx.access.role === 'teacher' || ctx.booking.lesson_kind === 'ai'
+}
 
 /** Make sure a classroom_sessions row exists (idempotent). */
 export async function ensureSession(bookingId: string) {

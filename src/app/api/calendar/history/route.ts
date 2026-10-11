@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifySupabaseToken } from '@/lib/supabase-jwt'
 import { createClient } from '@supabase/supabase-js'
+import { loadCatalog } from '@/lib/classroom/catalog'
 
 // GET /api/calendar/history
 export async function GET(request: NextRequest) {
@@ -74,12 +75,24 @@ export async function GET(request: NextRequest) {
     }
   }
 
+  // What each lesson was: course + lesson number (from the catalog), or free talk.
+  const catalog = pastBookings.some((b) => b.slide_course_id) ? await loadCatalog().catch(() => []) : []
+  const courseOf = new Map(catalog.map((c) => [c.id, c]))
+  const lessonInfo = (b: { slide_course_id?: string | null; slide_lesson_id?: string | null }) => {
+    const c = b.slide_course_id ? courseOf.get(b.slide_course_id) : null
+    if (!c) return null
+    const n = b.slide_lesson_id ? c.lessonIds.indexOf(b.slide_lesson_id) + 1 : 0
+    return { courseTitle: c.title, courseTitleJa: c.titleJa, lessonNumber: n > 0 ? n : null }
+  }
+
   const lessons = pastBookings.map((b) => ({
     id: b.id,
     date: b.date,
     startTime: b.start_time,
     durationMinutes: b.duration_minutes,
     status: b.status,
+    lessonKind: b.lesson_kind === 'ai' ? 'ai' : 'human',
+    course: lessonInfo(b),
     googleEventId: b.google_event_id,
     wherebyMeetingId: b.whereby_meeting_id,
     wherebyRoomUrl: b.whereby_room_url,

@@ -32,6 +32,8 @@ type Lesson = {
   hasSummary?: boolean
   keyTopics?: string[]
   phrases?: string[]
+  lessonKind?: 'human' | 'ai'
+  course?: { courseTitle: string; courseTitleJa: string; lessonNumber: number | null } | null
 }
 
 
@@ -573,8 +575,18 @@ function HistoryLessonCard({
         {/* Main card row */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-6 py-4">
           <div className="shrink-0">
-            <p className="font-medium" style={{ color: 'var(--text)' }}>{dateStr}</p>
-            <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{timeStr} · {lesson.durationMinutes} min</p>
+            <p className="font-medium flex items-center gap-2" style={{ color: 'var(--text)' }}>
+              {dateStr}
+              {lesson.lessonKind === 'ai' && (
+                <span className="px-2 py-0.5 text-[11px] font-semibold rounded-full" style={{ background: 'var(--accent-bg)', color: 'var(--accent)' }}>AI</span>
+              )}
+            </p>
+            <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+              {timeStr} · {lesson.durationMinutes} min ·{' '}
+              {lesson.course
+                ? `${locale === 'ja' ? lesson.course.courseTitleJa : lesson.course.courseTitle}${lesson.course.lessonNumber ? ` · Lesson ${lesson.course.lessonNumber}` : ''}`
+                : locale === 'ja' ? 'フリートーク' : 'Free talk'}
+            </p>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
             {lesson.status === 'no_show' && (
@@ -582,7 +594,7 @@ function HistoryLessonCard({
                 {locale === 'ja' ? '欠席' : 'Missed'}
               </span>
             )}
-            {lesson.status !== 'no_show' && lesson.wherebyRoomUrl && (
+            {lesson.status !== 'no_show' && (lesson.wherebyRoomUrl || lesson.lessonKind === 'ai') && (
               <>
                 {/* Transcript button */}
                 <Squircle asChild cornerRadius={8} cornerSmoothing={0.8}>
@@ -627,7 +639,8 @@ function HistoryLessonCard({
                   </Squircle>
                 )}
 
-                {/* Download recording button */}
+                {/* Download recording button (tutor lessons only: AI lessons aren't recorded) */}
+                {lesson.lessonKind !== 'ai' && (
                 <Squircle asChild cornerRadius={8} cornerSmoothing={0.8}>
                   <button
                     ref={downloadBtnRef}
@@ -654,6 +667,7 @@ function HistoryLessonCard({
                       : (locale === 'ja' ? 'ダウンロード' : 'Download')}
                   </button>
                 </Squircle>
+                )}
               </>
             )}
           </div>
@@ -911,7 +925,8 @@ function DashboardContent() {
   const [dueCount, setDueCount] = useState(0)
   const [subStatus, setSubStatus] = useState<'loading' | 'none' | 'active' | 'past_due'>('loading')
   const [bookingTestMode, setBookingTestMode] = useState(false) // test accounts: any duration, any time
-  const [classroomEnabled, setClassroomEnabled] = useState(false) // pilot: lessons open in /classroom/[id]
+  const [classroomEnabled, setClassroomEnabled] = useState(false)
+  const [aiEnabled, setAiEnabled] = useState(false) // pilot: AI tutor lessons // pilot: lessons open in /classroom/[id]
   const [minutesRemaining, setMinutesRemaining] = useState<number | null>(null)
   const [trialCompleted, setTrialCompleted] = useState<boolean | null>(null) // null = loading
   const HISTORY_PER_PAGE = 10
@@ -1258,6 +1273,7 @@ function DashboardContent() {
             setMinutesRemaining(data.balance.minutesRemaining)
           }
           setBookingTestMode(!!data.features?.bookingTestMode)
+          setAiEnabled(!!data.features?.aiEnabled)
           setClassroomEnabled(!!data.features?.classroomEnabled)
         } else {
           setSubStatus('none')
@@ -1450,6 +1466,8 @@ function DashboardContent() {
                   hasSubscription={subStatus === 'active'}
                   testMode={bookingTestMode}
                   classroomEnabled={classroomEnabled}
+                  aiEnabled={aiEnabled}
+                  minutesRemaining={subStatus === 'active' ? minutesRemaining : null}
                 />
               </div>
               </motion.div>

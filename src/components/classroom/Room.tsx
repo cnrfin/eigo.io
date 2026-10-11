@@ -39,6 +39,7 @@ import type { SaveWordInput, SavedWord } from '@/lib/classroom/client'
 
 export type TileMsg = { id: string; from: 'teacher' | 'student'; text: string; out?: boolean }
 
+export type RoomProps = Props
 type Props = {
   info: JoinInfo
   t: ClassroomT

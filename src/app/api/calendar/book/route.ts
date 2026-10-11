@@ -9,6 +9,7 @@ import { getUserSubscription, hasEnoughMinutes, recordMinuteUsage } from '@/lib/
 import { getUserPermissions } from '@/lib/user-permissions'
 import { isAdminEmail } from '@/lib/admin-redirect'
 import { nextLessonFor } from '@/lib/classroom/catalog'
+import { aiMinutesFor } from '@/lib/ai-tutor/settings'
 
 // POST /api/calendar/book
 // Body: { date: '2026-03-23', time: '17:00', duration: 30, timezone: 'Europe/London', slideCourseId?: 'c_greatbritain' }
@@ -21,7 +22,7 @@ export async function POST(request: NextRequest) {
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   try {
     const body = await request.json()
-    const { date, time, duration, timezone = 'Asia/Tokyo', skipAdminEmail = false, slideCourseId = null } = body
+    const { date, time, duration, timezone = 'Asia/Tokyo', skipAdminEmail = false, slideCourseId = null, lessonKind = 'human' } = body
 
     if (!date || !time || !duration) {
       return NextResponse.json(
@@ -72,6 +73,63 @@ export async function POST(request: NextRequest) {
       const next = await nextLessonFor(user.id, slideCourseId)
       if (!next) return NextResponse.json({ error: 'Unknown course' }, { status: 400 })
       slideCourse = { courseId: slideCourseId, lessonId: next.lessonId }
+    }
+
+    // ---------- AI tutor lesson: any time, 60% of the minutes, no Whereby / no teacher calendar ----------
+    if (lessonKind === 'ai') {
+      if (!perms.ai_enabled && !isAdmin) {
+        return NextResponse.json({ error: 'AI lessons are not available for this account' }, { status: 403 })
+      }
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !/^\d{2}:\d{2}$/.test(time) || ![15, 30, 45, 60, 75].includes(duration)) {
+        return NextResponse.json({ error: 'Invalid date, time or duration' }, { status: 400 })
+      }
+      const { jstDate, jstTime } = timezoneToJst(date, time, timezone)
+      if (new Date(`${jstDate}T${jstTime}:00+09:00`).getTime() < Date.now() - 60_000) {
+        return NextResponse.json({ error: 'This time has already passed' }, { status: 400 })
+      }
+      const aiMinutes = aiMinutesFor(duration)
+      if (!isAdmin && !isTester) {
+        if (!subscription || subscription.status === 'cancelled') {
+          return NextResponse.json({ error: 'No active subscription. Please subscribe first.', code: 'NO_SUBSCRIPTION' }, { status: 403 })
+        }
+        const minuteCheck = await hasEnoughMinutes(user.id, aiMinutes)
+        if (!minuteCheck.allowed) {
+          return NextResponse.json(
+            { error: `Not enough minutes remaining. You have ${minuteCheck.remaining} minutes left but need ${minuteCheck.needed}.`, code: 'INSUFFICIENT_MINUTES', remaining: minuteCheck.remaining, needed: minuteCheck.needed },
+            { status: 403 },
+          )
+        }
+      }
+      const { data: aiRow, error: aiErr } = await supabase
+        .from('bookings')
+        .insert({
+          user_id: user.id,
+          date: jstDate,
+          start_time: jstTime,
+          duration_minutes: duration,
+          status: 'confirmed',
+          lesson_kind: 'ai',
+          ai_minutes_charged: aiMinutes,
+          slide_course_id: slideCourse?.courseId ?? null,
+          slide_lesson_id: slideCourse?.lessonId ?? null,
+        })
+        .select('id')
+        .single()
+      if (aiErr || !aiRow) {
+        console.error('Failed to store AI booking:', aiErr)
+        return NextResponse.json({ error: 'Failed to create booking' }, { status: 500 })
+      }
+      if (!isTester && subscription) {
+        try {
+          await recordMinuteUsage(user.id, aiRow.id, aiMinutes, subscription.current_period_start, 'booked')
+        } catch (usageError) {
+          console.error('Failed to record AI minute usage:', usageError)
+        }
+      }
+      return NextResponse.json({
+        success: true,
+        booking: { id: aiRow.id, date, time, duration, timezone, status: 'confirmed', lessonKind: 'ai', minutesCharged: aiMinutes },
+      })
     }
 
     if (!isTrial && !isAdmin && !isTester) {

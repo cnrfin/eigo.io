@@ -6,6 +6,13 @@ import { json, loadClassroom, personName, publicSession, uiLangFor, wherebyParts
 
 const ADMIN_EMAIL = 'cnrfin93@gmail.com'
 
+/** The name the student gave their AI tutor, or the default. */
+async function aiTutorName(userId: string) {
+  const { data } = await getSupabaseAdmin().from('ai_tutor_profiles').select('settings').eq('user_id', userId).maybeSingle()
+  const n = (data?.settings as { tutorName?: string } | null)?.tutorName?.trim()
+  return n || 'AI Tutor'
+}
+
 /**
  * GET /api/classroom/[id]/join
  * Everything the classroom needs to start: role, Whereby room (+ host key for
@@ -21,8 +28,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   const { booking, access, session, user } = ctx
   const role = access.role
 
+  const ai = booking.lesson_kind === 'ai'
   const { roomUrl, roomKey } = wherebyParts(booking)
-  if (!roomUrl) return json(409, { reason: 'no_room', uiLang: await uiLangFor(user.id, ctx.isAdmin) })
+  if (!roomUrl && !ai) return json(409, { reason: 'no_room', uiLang: await uiLangFor(user.id, ctx.isAdmin) })
 
   const db = getSupabaseAdmin()
   const [{ data: student }, { data: teacher }, { data: inkRows }, { data: actRows }] = await Promise.all([
@@ -70,7 +78,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     durationMinutes: booking.duration_minutes,
     session: publicSession(session),
     me: { name: role === 'teacher' ? teacherName : studentName },
-    other: { name: role === 'teacher' ? studentName : teacherName },
+    other: { name: role === 'teacher' ? studentName : ai ? await aiTutorName(booking.user_id) : teacherName },
+    ai,
     uiLang: role === 'teacher' ? 'en' : student?.preferred_language === 'en' ? 'en' : 'ja',
     nativeLang: student?.native_language || 'ja',
     open,

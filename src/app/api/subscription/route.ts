@@ -30,6 +30,7 @@ export async function GET(request: NextRequest) {
     const features = {
       classroomEnabled: perms.classroom_enabled,
       bookingTestMode: perms.booking_test_mode,
+      aiEnabled: perms.ai_enabled,
     }
     if (!subscription) {
       return NextResponse.json({ subscription: null, balance: null, features })

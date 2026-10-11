@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-admin'
 import { findLesson, loadCourse } from '@/lib/classroom/courses'
-import { ensureSession, json, loadClassroom } from '@/lib/classroom/server'
+import { ensureSession, json, loadClassroom, canControlLesson } from '@/lib/classroom/server'
 
 /**
  * POST /api/classroom/[id]/state   (teacher only)
@@ -18,7 +18,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   const { id } = await params
   const ctx = await loadClassroom(request, id)
   if (ctx instanceof Response) return ctx
-  if (ctx.access.role !== 'teacher') return json(403, { error: 'Teacher only' })
+  if (!canControlLesson(ctx)) return json(403, { error: 'Teacher only' })
 
   let body: { courseId?: string | null; lessonId?: string | null; slideId?: string | null }
   try {

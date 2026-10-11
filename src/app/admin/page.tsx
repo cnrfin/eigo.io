@@ -21,6 +21,7 @@ type FeaturePerms = {
   transcription_enabled: boolean
   classroom_enabled: boolean
   booking_test_mode: boolean
+  ai_enabled?: boolean
 }
 type PermUser = {
   id: string
@@ -1576,6 +1577,7 @@ function AdminContent() {
                       { key: 'transcription_enabled', label: 'Transcripts', desc: 'Written transcript of each lesson' },
                       { key: 'classroom_enabled', label: 'New classroom (pilot)', desc: 'Lessons open in the eigo classroom instead of the plain Whereby link' },
                       { key: 'booking_test_mode', label: 'Test bookings', desc: 'Testing only: book any duration at any time, with no subscription or minutes' },
+                      { key: 'ai_enabled', label: 'AI tutor (pilot)', desc: 'Can book AI tutor lessons (voice AI in the classroom; uses 60% of the minutes)' },
                     ]
                     return (
                       <SquircleBox cornerRadius={14} className="p-6 space-y-5" style={{ background: 'var(--surface)' }}>

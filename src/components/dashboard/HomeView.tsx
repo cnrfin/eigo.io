@@ -19,6 +19,8 @@ export type HomeViewLesson = {
   wherebyRoomUrl: string | null
   wherebyMeetingId: string | null
   hasSummary?: boolean
+  /** AI tutor lessons always open in the eigo classroom */
+  lessonKind?: 'human' | 'ai'
 }
 
 interface HomeViewProps {
@@ -153,13 +155,17 @@ function HeroLesson({ lesson, locale, wherebyUrl, isAdmin, classroomEnabled, onC
   const mins = (lessonDate(lesson).getTime() - new Date().getTime()) / 60000
   const canEnter = isAdmin || (mins <= 10 && mins > -lesson.durationMinutes)
   // Pilot users go to the eigo classroom (same tab; it enforces the 10-minute rule itself).
-  const room = classroomEnabled ? `/classroom/${lesson.id}` : lesson.wherebyRoomUrl || wherebyUrl || '#'
+  const inClassroom = classroomEnabled || lesson.lessonKind === 'ai'
+  const room = inClassroom ? `/classroom/${lesson.id}` : lesson.wherebyRoomUrl || wherebyUrl || '#'
   return (
     <SquircleCard radius={22} className="p-5">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-subtle)' }}>
+          <p className="text-[11px] font-semibold uppercase tracking-wider flex items-center gap-2" style={{ color: 'var(--text-subtle)' }}>
             {locale === 'ja' ? '次のレッスン' : 'Next lesson'}
+            {lesson.lessonKind === 'ai' && (
+              <span className="px-2 py-0.5 text-[10px] font-semibold rounded-full normal-case tracking-normal" style={{ background: 'var(--accent-bg)', color: 'var(--accent)' }}>AI</span>
+            )}
           </p>
           <p className="text-lg font-semibold mt-1" style={{ color: 'var(--text)' }}>{fmtDate(lesson, locale)}</p>
           <p className="text-sm mt-0.5" style={{ color: 'var(--text-secondary)' }}>{fmtTime(lesson, locale)}</p>
@@ -170,8 +176,8 @@ function HeroLesson({ lesson, locale, wherebyUrl, isAdmin, classroomEnabled, onC
         <motion.a
           {...pressAnimLarge}
           href={room}
-          target={classroomEnabled ? undefined : '_blank'}
-          rel={classroomEnabled ? undefined : 'noopener noreferrer'}
+          target={inClassroom ? undefined : '_blank'}
+          rel={inClassroom ? undefined : 'noopener noreferrer'}
           className="block text-center mt-4 py-3 font-medium"
           style={{ background: 'var(--accent)', color: '#fff', opacity: canEnter ? 1 : 0.92 }}
         >
