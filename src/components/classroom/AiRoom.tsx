@@ -73,6 +73,8 @@ export default function AiRoom(props: Props) {
   const lastSent = useRef<string | null>(null)
   const lastSpeech = useRef(Date.now())
   /** called on every transcript fragment (set up below, where the slide controls live) */
+  /** start a new transcript line (a new slide just appeared) */
+  const breakLine = useRef(false)
   const speechHook = useRef<(from: Line['from'], line: Line) => void>(() => {})
   const nudged = useRef(false)
 
@@ -126,8 +128,9 @@ export default function AiRoom(props: Props) {
     nudged.current = false
     const L = lines.current
     const last = L[L.length - 1]
-    if (last && last.from === from && startMs - lastEnd.current[from] < 2500) last.text += delta
+    if (last && last.from === from && startMs - lastEnd.current[from] < 2500 && !breakLine.current) last.text += delta
     else L.push({ from, text: delta.replace(/^\s+/, ''), t: startMs })
+    breakLine.current = false
     lastEnd.current[from] = endMs
     speechHook.current(from, L[L.length - 1])
   }, [])
@@ -146,12 +149,19 @@ export default function AiRoom(props: Props) {
   const furthest = useRef(0)
   const review = useRef(false)
   const lastMove = useRef(0)
+  // Per slide: where its conversation starts, and which checklist items are done.
+  // The slide only moves on once every item is done (the server checks), never early.
+  const slideStart = useRef(0)
+  const coverage = useRef<{ slideId: string; covered: number[]; total: number }>({ slideId: '', covered: [], total: -1 })
   const moveSlide = useCallback(
     (kind: 'next' | 'back' | 'return', n?: number): string => {
       const { slides: S, idx: i } = live.current
       if (!S.length) return 'There are no slides in this lesson (free talk).'
       const show = (k: number) => {
         lastMove.current = Date.now()
+        slideStart.current = lines.current.length
+        breakLine.current = true
+        coverage.current = { slideId: S[k].id, covered: [], total: -1 }
         onGo(S[k].id)
         return `Showing slide ${k + 1} of ${S.length}.`
       }
@@ -176,54 +186,83 @@ export default function AiRoom(props: Props) {
     [onGo],
   )
 
+  const notYetAt = useRef(0)
   const cued = useRef<Line | null>(null)
   const turnTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const checking = useRef(false)
   const checkedSig = useRef('')
-  const checkTurn = useCallback(async () => {
-    const sid = sessionId.current
-    const ref = slideRef()
-    const L = lines.current
-    if (!sid || !ref || !L.length || checking.current || closing.current) return
-    if (Date.now() - lastMove.current < 3000) return
-    const sig = `${L.length}:${L[L.length - 1].text.length}:${ref.slideId}`
-    if (sig === checkedSig.current) return
-    checkedSig.current = sig
-    checking.current = true
-    const asked = Date.now()
-    const r = await aiTurn(info.bookingId, {
-      sessionId: sid,
-      ...ref,
-      furthest: furthest.current + 1,
-      reviewing: review.current,
-      recent: L.slice(-10).map((l) => ({ from: l.from, text: l.text })),
-    })
-    checking.current = false
-    // the slide moved some other way meanwhile: don't move it again
-    if (lastMove.current > asked || slideRef()?.slideId !== ref.slideId) return
-    if (r.move === 'next') moveSlide('next')
-    else if (r.move === 'return') moveSlide('return')
-    else if (r.move === 'back' && r.slide) moveSlide('back', r.slide)
-  }, [info.bookingId, slideRef, moveSlide])
+  const checkTurn = useCallback(
+    async (cue = false) => {
+      const sid = sessionId.current
+      const ref = slideRef()
+      if (!sid || !ref || closing.current) return
+      if (coverage.current.slideId !== ref.slideId) {
+        coverage.current = { slideId: ref.slideId, covered: [], total: -1 }
+        slideStart.current = lines.current.length
+        breakLine.current = true
+      }
+      const slideLines = lines.current.slice(slideStart.current)
+      if (!slideLines.length) return
+      if (checking.current) {
+        if (cue) setTimeout(() => void checkTurn(true), 700) // don't lose a "moving on" while a check runs
+        return
+      }
+      if (Date.now() - lastMove.current < 2500) return
+      const sig = `${slideLines.length}:${slideLines[slideLines.length - 1].text.length}:${ref.slideId}:${cue}`
+      if (sig === checkedSig.current) return
+      checkedSig.current = sig
+      checking.current = true
+      const asked = Date.now()
+      const r = await aiTurn(info.bookingId, {
+        sessionId: sid,
+        ...ref,
+        furthest: furthest.current + 1,
+        reviewing: review.current,
+        covered: coverage.current.covered,
+        cue,
+        lines: slideLines.slice(-16).map((l) => ({ from: l.from, text: l.text })),
+      })
+      checking.current = false
+      // the slide moved some other way meanwhile: don't move it again
+      if (lastMove.current > asked || slideRef()?.slideId !== ref.slideId) return
+      if (r.total >= 0) coverage.current = { slideId: ref.slideId, covered: r.covered, total: r.total }
+      if (r.move === 'next') moveSlide('next')
+      else if (r.move === 'return') moveSlide('return')
+      else if (r.move === 'back' && r.slide) moveSlide('back', r.slide)
+      else if (r.missing.length && Date.now() - notYetAt.current > 15_000) {
+        notYetAt.current = Date.now()
+        void act({ kind: 'not_yet', missing: r.missing })
+      }
+    },
+    [info.bookingId, slideRef, moveSlide, act],
+  )
   useEffect(() => {
     speechHook.current = (from, line) => {
-      if (from === 'tutor' && cued.current !== line && Date.now() - lastMove.current > 4000) {
+      if (from === 'tutor' && cued.current !== line && Date.now() - lastMove.current > 2500) {
         if (review.current && RETURN_CUE.test(line.text)) {
           cued.current = line
           moveSlide('return')
-        } else if (NEXT_CUE.test(line.text) && !NOT_YET.test(line.text)) {
+          return
+        }
+        if (NEXT_CUE.test(line.text) && !NOT_YET.test(line.text)) {
           cued.current = line
-          moveSlide('next')
+          const cov = coverage.current
+          const ref = slideRef()
+          const studentSpoke = lines.current.slice(slideStart.current).some((l) => l.from === 'student')
+          // everything already covered: move at once; otherwise let the server check now
+          if (ref && cov.slideId === ref.slideId && cov.total >= 0 && cov.covered.length >= cov.total && (cov.total === 0 || studentSpoke)) moveSlide('next')
+          else void checkTurn(true)
+          return
         }
       }
-      // after a short pause in the conversation, check whether the slide should change
+      // after a short pause in the conversation, update what's covered
       if (turnTimer.current) clearTimeout(turnTimer.current)
-      turnTimer.current = setTimeout(() => void checkTurn(), 900)
+      turnTimer.current = setTimeout(() => void checkTurn(false), 900)
     }
     return () => {
       if (turnTimer.current) clearTimeout(turnTimer.current)
     }
-  }, [moveSlide, checkTurn])
+  }, [moveSlide, checkTurn, slideRef])
 
   /* ---------- tool calls from the AI tutor (opening a lesson, writing in the chat) ---------- */
   /** resolves once the "lesson opened" note has been sent, so slide notes come after it */

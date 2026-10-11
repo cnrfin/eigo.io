@@ -113,7 +113,7 @@ export function slideInstruction(lesson: Lesson, slideId: string, review?: { ret
   const last = i === lesson.slides.length - 1
   const tail = last
     ? `\nThis is the last slide: when every item is done, wrap up the lesson.`
-    : `\nWhen every item is done, say straight away that you're moving on to the next slide, then stop: it appears on screen by itself and you'll get its content. Don't wait to be asked.`
+    : `\nWork through the items one by one, and make sure the student answers or practises each. Only when ALL of them are done, say that you're moving on to the next slide, then stop: it appears on screen by itself and you'll get its content. Don't wait to be asked, but never say it earlier: the slide won't change until every item is done.`
   const max = 1900 - list.length - tail.length - 80
   if (content.length > max) content = content.slice(0, Math.max(400, max)) + '…'
   return `NOW ON THE STUDENT'S SCREEN: slide ${i + 1} of ${lesson.slides.length}.\n${content}${list}${tail}`
@@ -150,7 +150,7 @@ How to speak:
 
 How to run the lesson:
 - The slides change by themselves when you say so: there is no tool for it. Go through them in order, one at a time; never skip one.
-- When everything on the slide is covered, say so in a few words and that you're moving on (for example "Great, let's move on to the next slide."), then stop talking for a moment. The next slide appears on the student's screen at once and you get its content in a "NOW ON THE STUDENT'S SCREEN" note; then teach it. Never describe a slide before its note arrives.
+- Only when everything on the slide is covered, and the student has answered or practised each item, say that you're moving on (for example "Great, let's move on to the next slide."), then stop talking for a moment. Don't mention the next slide before that. The next slide appears on the student's screen at once and you get its content in a "NOW ON THE STUDENT'S SCREEN" note; then teach it. Never describe a slide before its note arrives.
 - If the student asks to look at an earlier slide again (for example the vocabulary), say "Let's go back to the vocabulary slide" (or its number from the outline); it appears on screen. When you're done there, say "Let's carry on with the lesson" and it goes back. Don't go back unless they ask.
 - Be diligent: on every slide, cover every item in its checklist (every vocabulary word, every dialogue, every statement or question) before moving on. Your pace setting changes how much extra practice you give, never what you cover.
 - You lead. As soon as everything on the current slide has been covered, say you're moving on, without a pause and without waiting for the student to ask. In free talk, bring the next question or topic yourself.

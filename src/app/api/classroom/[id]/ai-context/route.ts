@@ -26,6 +26,7 @@ type Action =
   | { kind: 'resume'; slide?: SlideRef | null }
   | ({ kind: 'slide'; review?: { returnTo: number } } & SlideRef)
   | { kind: 'lesson'; courseId: string; lessonId: string }
+  | { kind: 'not_yet'; missing: string[] }
   | { kind: 'nudge' }
   | { kind: 'time' }
 
@@ -57,6 +58,11 @@ function instruction(a: Action, secondsLeft: number): string | null {
     }
     case 'start':
       return 'The student has joined and can hear you. Greet them now by name and start the lesson as your preferences say (warm-up chat, review of the last lesson, then the slide on screen). Then pause and listen.'
+    case 'not_yet': {
+      const items = (Array.isArray(a.missing) ? a.missing : []).map((m) => q(m, 120)).filter(Boolean).slice(0, 8)
+      if (!items.length) return null
+      return `Not yet: the slide stays on screen, because these are not done on it yet:\n- ${items.join('\n- ')}\nDo them now, one by one, and make sure the student answers or practises each. Then say you're moving on to the next slide.`
+    }
     case 'slide':
     case 'lesson':
       return null // handled in POST (needs the course)

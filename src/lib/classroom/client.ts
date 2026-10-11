@@ -135,6 +135,7 @@ export type StudentAction =
   | { kind: 'resume'; slide?: SlideRef | null }
   | ({ kind: 'slide'; review?: { returnTo: number } } & SlideRef)
   | { kind: 'lesson'; courseId: string; lessonId: string }
+  | { kind: 'not_yet'; missing: string[] }
   | { kind: 'nudge' }
   | { kind: 'time' }
 
@@ -160,17 +161,30 @@ export async function aiOpenLesson(bookingId: string, courseId: string, lessonId
   }
 }
 
+export type AiTurn = { move: 'stay' | 'next' | 'back' | 'return'; slide: number | null; covered: number[]; total: number; missing: string[] }
+
 /** AI lessons: should the slide change after this turn? (a small fast model on our server decides) */
 export async function aiTurn(
   bookingId: string,
-  body: { sessionId: string; courseId: string; lessonId: string; slideId: string; furthest: number; reviewing: boolean; recent: { from: 'student' | 'tutor'; text: string }[] },
-): Promise<{ move: 'stay' | 'next' | 'back' | 'return'; slide: number | null }> {
+  body: {
+    sessionId: string
+    courseId: string
+    lessonId: string
+    slideId: string
+    furthest: number
+    reviewing: boolean
+    covered: number[]
+    cue: boolean
+    lines: { from: 'student' | 'tutor'; text: string }[]
+  },
+): Promise<AiTurn> {
+  const none: AiTurn = { move: 'stay', slide: null, covered: body.covered, total: -1, missing: [] }
   try {
     const r = await call(`/api/classroom/${bookingId}/ai-turn`, { method: 'POST', body: JSON.stringify(body) })
-    if (!r.ok) return { move: 'stay', slide: null }
-    return await r.json()
+    if (!r.ok) return none
+    return { ...none, ...(await r.json()) }
   } catch {
-    return { move: 'stay', slide: null }
+    return none
   }
 }
 

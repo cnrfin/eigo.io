@@ -2,11 +2,13 @@ import OpenAI from 'openai'
 
 /**
  * Slide control for AI lessons, owned by our app rather than the voice model.
- * GPT-Live hands tool calls to a backend model, which was slow (10–20 s) and often
- * didn't happen at all. Instead, after each turn the classroom asks this small, fast
- * model whether the conversation means the slide should change, and changes it itself.
- * (Clear spoken cues like "let's move on to the next slide" are caught in the browser
- * straight away, without waiting for this.)
+ *
+ * After each turn the classroom sends the conversation SINCE THE SLIDE APPEARED.
+ * A small fast model marks which checklist items have been covered (the classroom
+ * keeps a running list per slide) and whether the AI tutor or student wants to
+ * move. The slide only moves on when every item on it has been covered and the
+ * student has taken part: a wish to move on before that gets a "not yet" with the
+ * items still missing, which the classroom passes to the AI tutor.
  */
 let _openai: OpenAI | null = null
 function openai() {
@@ -19,7 +21,15 @@ function openai() {
 }
 const MODEL = process.env.AI_TUTOR_TURN_MODEL || 'gpt-5.4-nano'
 
-export type SlideMove = { move: 'stay' | 'next' | 'back' | 'return'; slide: number | null }
+export type SlideMove = {
+  move: 'stay' | 'next' | 'back' | 'return'
+  slide: number | null
+  /** checklist items (1-based) covered so far on this slide, including earlier turns */
+  covered: number[]
+  total: number
+  /** set when someone wanted to move on but items are still missing */
+  missing: string[]
+}
 
 export async function decideSlideMove(o: {
   slideNo: number
@@ -27,23 +37,30 @@ export async function decideSlideMove(o: {
   furthest: number // furthest slide taught (1-based)
   reviewing: boolean
   checklist: string[]
+  coveredBefore: number[]
+  cue: boolean // the AI tutor just said it's moving on
   outline: string
-  recent: { from: 'student' | 'tutor'; text: string }[]
+  slideLines: { from: 'student' | 'tutor'; text: string }[] // only since this slide appeared
 }): Promise<SlideMove> {
-  const convo = o.recent.map((l) => `${l.from === 'student' ? 'Student' : 'Tutor'}: ${l.text.replace(/\s+/g, ' ').slice(0, 400)}`).join('\n')
-  const system = `You control the slides in a live one-to-one English lesson between an AI tutor and a student, by reading the latest conversation. Decide if the slide on the student's screen should change NOW.
-Return JSON: {"move": "stay" | "next" | "back" | "return", "slide": number | null}
-- "next": the tutor has just said they're moving on to the next slide or next part, or the student asked to move on and the tutor agreed, or the tutor is clearly waiting after finishing everything on the slide. ${o.slideNo >= o.total ? 'This is the last slide, so never "next".' : ''}
-- "back": the student asked to look at an earlier slide again (for example "the vocabulary") and the tutor agreed. "slide" = that slide's number from the outline, from 1 to ${o.furthest}.
-- "return": they are looking back at an earlier slide and the tutor says they'll carry on with the lesson.${o.reviewing ? '' : ' (Not looking back now, so never "return".)'}
-- "stay": anything else, including when the tutor is still in the middle of the slide or says "before we move on". When unsure, "stay".`
+  const n = o.checklist.length
+  const before = new Set(o.coveredBefore.filter((k) => k >= 1 && k <= n))
+  const convo = o.slideLines.map((l) => `${l.from === 'student' ? 'Student' : 'Tutor'}: ${l.text.replace(/\s+/g, ' ').slice(0, 500)}`).join('\n')
+  const system = `You follow a live one-to-one English lesson between an AI tutor and a student, slide by slide. You see ONLY the conversation since the current slide appeared.
+Return JSON: {"covered": number[], "wants_next": boolean, "back": number | null, "return": boolean}
+- "covered": numbers of checklist items that have been FULLY done in this conversation: the tutor taught or asked about that item AND the student responded to it (said the word, answered, practised). Mentioning an item, or the tutor only reading or introducing it, does NOT count. Be strict.
+- "wants_next": the tutor said they're moving on to the next slide or part, or the student asked to move on.
+- "back": the student asked to see an earlier slide again (for example "the vocabulary") and the tutor agreed: that slide's number from the outline (1 to ${o.furthest}), else null.
+- "return": ${o.reviewing ? 'they are looking back at an earlier slide and the tutor says they will carry on with the lesson.' : 'always false.'}`
   const user = `Slide on screen: ${o.slideNo} of ${o.total}${o.reviewing ? ` (looking back; the lesson was on slide ${o.furthest})` : ''}.
 Checklist for this slide:
-${o.checklist.map((t, i) => `${i + 1}. ${t}`).join('\n') || '(none)'}
+${o.checklist.map((t, i) => `${i + 1}. ${t}`).join('\n') || '(nothing to cover)'}
+Already covered earlier on this slide: ${[...before].join(', ') || 'none'}
 Outline:
 ${o.outline}
-Latest conversation (most recent last):
-${convo}`
+Conversation since this slide appeared:
+${convo || '(nothing yet)'}`
+
+  let r: { covered?: unknown; wants_next?: unknown; back?: unknown; return?: unknown } = {}
   try {
     const c = await openai().chat.completions.create(
       {
@@ -53,18 +70,29 @@ ${convo}`
           { role: 'user', content: user },
         ],
         response_format: { type: 'json_object' },
-        max_completion_tokens: 200,
+        max_completion_tokens: 300,
       },
       { timeout: 6000, maxRetries: 0 },
     )
-    const r = JSON.parse(c.choices[0]?.message?.content ?? '{}') as { move?: string; slide?: unknown }
-    const move = (['stay', 'next', 'back', 'return'] as const).find((m) => m === r.move) ?? 'stay'
-    const slide = typeof r.slide === 'number' && Number.isFinite(r.slide) ? Math.round(r.slide) : null
-    if (move === 'next' && o.slideNo >= o.total) return { move: 'stay', slide: null }
-    if (move === 'back' && (!slide || slide < 1 || slide > o.furthest || slide === o.slideNo)) return { move: 'stay', slide: null }
-    if (move === 'return' && !o.reviewing) return { move: 'stay', slide: null }
-    return { move, slide: move === 'back' ? slide : null }
+    r = JSON.parse(c.choices[0]?.message?.content ?? '{}')
   } catch {
-    return { move: 'stay', slide: null }
+    /* treat as "no change" below */
   }
+  const covered = new Set(before)
+  if (Array.isArray(r.covered)) for (const k of r.covered) if (typeof k === 'number' && k >= 1 && k <= n) covered.add(Math.round(k))
+  const coveredList = [...covered].sort((a, b) => a - b)
+  const studentTookPart = o.slideLines.some((l) => l.from === 'student' && l.text.trim().split(/\s+/).length >= 2)
+  const done = covered.size >= n && (n === 0 || studentTookPart)
+  const base = { slide: null, covered: coveredList, total: n, missing: [] as string[] }
+
+  if (o.reviewing && r.return === true) return { ...base, move: 'return' }
+  const back = typeof r.back === 'number' ? Math.round(r.back) : null
+  if (back && back >= 1 && back <= o.furthest && back !== o.slideNo) return { ...base, move: 'back', slide: back }
+
+  const wantsNext = o.cue || r.wants_next === true
+  if (o.reviewing) return { ...base, move: wantsNext ? 'return' : 'stay' }
+  if (!wantsNext || o.slideNo >= o.total) return { ...base, move: 'stay' }
+  if (done) return { ...base, move: 'next' }
+  const missing = o.checklist.filter((_, i) => !covered.has(i + 1))
+  return { ...base, move: 'stay', missing: missing.length ? missing : ['let the student answer or practise before moving on'] }
 }

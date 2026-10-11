@@ -7,8 +7,9 @@ import { decideSlideMove } from '@/lib/ai-tutor/turn'
 
 /**
  * POST /api/classroom/[id]/ai-turn
- *   { sessionId, courseId, lessonId, slideId, furthest, reviewing, recent: [{ from, text }] }
- *   → { move: 'stay' | 'next' | 'back' | 'return', slide }
+ *   { sessionId, courseId, lessonId, slideId, furthest, reviewing, covered, cue, lines: [{ from, text }] }
+ *   → { move: 'stay' | 'next' | 'back' | 'return', slide, covered, total, missing }
+ *   lines = the conversation since this slide appeared; covered = checklist items done so far
  *
  * AI lessons: after each turn, should the slide change? (see lib/ai-tutor/turn.ts)
  */
@@ -21,7 +22,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   const { booking } = ctx
   if (booking.lesson_kind !== 'ai' || booking.user_id !== ctx.user.id) return json(403, { error: 'Not allowed' })
 
-  let b: { sessionId?: string; courseId?: string; lessonId?: string; slideId?: string; furthest?: number; reviewing?: boolean; recent?: { from: string; text: string }[] }
+  let b: { sessionId?: string; courseId?: string; lessonId?: string; slideId?: string; furthest?: number; reviewing?: boolean; covered?: number[]; cue?: boolean; lines?: { from: string; text: string }[] }
   try {
     b = await request.json()
   } catch {
@@ -39,12 +40,13 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   const found = c ? findLesson(c.course, String(b.lessonId ?? '')) : null
   const lesson = found?.lesson
   const i = lesson ? lesson.slides.findIndex((s) => s.id === b.slideId) : -1
-  if (!lesson || i < 0) return json(200, { move: 'stay', slide: null })
+  if (!lesson || i < 0) return json(200, { move: 'stay', slide: null, covered: [], total: 0, missing: [] })
 
-  const recent = (Array.isArray(b.recent) ? b.recent : [])
+  const slideLines = (Array.isArray(b.lines) ? b.lines : [])
     .filter((l) => l && (l.from === 'student' || l.from === 'tutor') && typeof l.text === 'string' && l.text.trim())
-    .slice(-10) as { from: 'student' | 'tutor'; text: string }[]
-  if (!recent.length) return json(200, { move: 'stay', slide: null })
+    .slice(-16) as { from: 'student' | 'tutor'; text: string }[]
+  const stay = { move: 'stay', slide: null, covered: [], total: 0, missing: [] }
+  if (!slideLines.length) return json(200, stay)
 
   const total = lesson.slides.length
   const furthest = Math.min(total, Math.max(i + 1, Math.round(Number(b.furthest) || 0)))
@@ -54,8 +56,10 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     furthest,
     reviewing: !!b.reviewing && i + 1 < furthest,
     checklist: checklist(lesson.slides[i]),
+    coveredBefore: (Array.isArray(b.covered) ? b.covered : []).map(Number).filter(Number.isFinite),
+    cue: !!b.cue,
     outline: lessonOutline(lesson),
-    recent,
+    slideLines,
   })
   return json(200, r)
 }
