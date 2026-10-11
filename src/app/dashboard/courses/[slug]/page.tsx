@@ -9,6 +9,7 @@ import { useDashboardNav } from '@/context/DashboardNavContext'
 import SquircleBox from '@/components/ui/SquircleBox'
 import CourseMascot, { type Dir } from '@/components/courses/CourseMascot'
 import CourseStation from '@/components/courses/CourseStation'
+import ProgressiveBlur from '@/components/ui/ProgressiveBlur'
 
 type Lesson = {
   id: string
@@ -647,10 +648,10 @@ export default function CoursePage() {
               exactly at the pin line (TOP_FADE), so a pinned title is crisp but
               anything scrolling up past it — node OR releasing title — dissolves
               in this same zone */}
-          <div className="pointer-events-none absolute inset-x-0 top-0 z-30" style={{ height: TOP_FADE, background: 'linear-gradient(var(--dash-bg), transparent)' }} />
+          <ProgressiveBlur edge="top" height={TOP_FADE} tint={0.8} className="z-30" />
           {/* tall bottom fade so titles/nodes dissolve well before they reach
               the selected-lesson card sitting over the foot of the track */}
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-30" style={{ height: 260, background: 'linear-gradient(transparent, var(--dash-bg) 70%)' }} />
+          <ProgressiveBlur edge="bottom" height={260} tint={0.95} className="z-30" />
 
           {/* scroll to top */}
           {showTop && (

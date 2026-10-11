@@ -1,6 +1,7 @@
 'use client'
 
 import { Suspense } from 'react'
+import ProgressiveBlur from '@/components/ui/ProgressiveBlur'
 import { usePathname, useRouter } from 'next/navigation'
 import DashboardSidebar from '@/components/dashboard/DashboardSidebar'
 import AppsMenu from '@/components/dashboard/AppsMenu'
@@ -38,21 +39,13 @@ function TopBar() {
   }
 
   return (
-    // Gradient (bg -> transparent) so content scrolling beneath fades out under the
-    // bar. The fade layer is taller than the bar itself for a softer dissolve.
+    // iOS-style progressive blur: content scrolling beneath gets more blurred towards the
+    // top (with a light tint so the breadcrumbs stay readable). Taller than the bar.
     // z-50: must beat page-level headers (e.g. the course page's z-40 accent
     // pill row) so the apps dropdown is never overlapped; page modals still
     // win as equal-z later siblings.
     <div className="sticky top-0 z-50 flex items-center h-14 relative">
-      <div
-        aria-hidden
-        className="absolute inset-x-0 top-0 pointer-events-none"
-        style={{
-          height: '6.5rem',
-          zIndex: -1,
-          background: 'linear-gradient(to bottom, var(--dash-bg) 0%, var(--dash-bg) 54%, transparent 100%)',
-        }}
-      />
+      <ProgressiveBlur edge="top" height="6.5rem" tint={0.75} style={{ zIndex: -1 }} />
       <button
         onClick={() => setMobileOpen(true)}
         className="md:hidden w-9 h-9 mr-1 flex items-center justify-center rounded-lg transition-opacity hover:opacity-70"
