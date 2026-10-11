@@ -12,13 +12,17 @@ import { createLiveSession, endLiveSession } from '@/lib/ai-tutor/openai'
  * (the API key and the tutor's instructions never reach the browser) and
  * returns only the WebRTC answer. Rules (anti-gaming):
  *  - only the booking's owner, only for lesson_kind = 'ai'
- *  - only from 2 minutes before the start until the booked end
+ *  - the lesson lasts its full booked length from when the AI tutor first starts
+ *    (arriving late doesn't cut it short): its end is fixed at the first session and
+ *    reused by every reconnect, so reconnecting never adds time
+ *  - it can first start from 2 minutes before the booked start until the booked end
  *  - one live session per booking: an older one is ended first (reconnects
  *    replace, never add, time)
  * The cron /api/cron/ai-tutor-sweep hangs every session up at the booked end.
  */
 const EARLY_MS = 2 * 60_000
 const MIN_LEFT_MS = 45_000
+const START_GRACE_MS = 20_000
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -31,8 +35,14 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
   const now = Date.now()
   const start = access.window.start.getTime()
-  const end = access.window.end.getTime()
+  const bookedEnd = access.window.end.getTime()
   if (now < start - EARLY_MS) return json(403, { reason: 'too_early', startsAt: access.window.start.toISOString() })
+
+  const db0 = getSupabaseAdmin()
+  const { data: first } = await db0.from('ai_sessions').select('ends_at').eq('booking_id', booking.id).order('started_at', { ascending: true }).limit(1).maybeSingle()
+  // the full length from the first start (+20 s for connecting and the greeting)
+  const end = first?.ends_at ? new Date(first.ends_at as string).getTime() : now + booking.duration_minutes * 60_000 + START_GRACE_MS
+  if (!first && now > bookedEnd) return json(403, { reason: 'ended' })
   if (now > end - MIN_LEFT_MS) return json(403, { reason: 'ended' })
 
   let sdp = ''

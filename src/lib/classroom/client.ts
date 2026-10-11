@@ -134,6 +134,7 @@ export type StudentAction =
   | { kind: 'start'; slide?: SlideRef | null }
   | { kind: 'resume'; slide?: SlideRef | null }
   | ({ kind: 'slide'; review?: { returnTo: number } } & SlideRef)
+  | { kind: 'lesson'; courseId: string; lessonId: string }
   | { kind: 'nudge' }
   | { kind: 'time' }
 
@@ -156,6 +157,20 @@ export async function aiOpenLesson(bookingId: string, courseId: string, lessonId
     return r.ok ? d : { error: d.error || 'Could not open the lesson.' }
   } catch {
     return { error: 'Could not open the lesson.' }
+  }
+}
+
+/** AI lessons: should the slide change after this turn? (a small fast model on our server decides) */
+export async function aiTurn(
+  bookingId: string,
+  body: { sessionId: string; courseId: string; lessonId: string; slideId: string; furthest: number; reviewing: boolean; recent: { from: 'student' | 'tutor'; text: string }[] },
+): Promise<{ move: 'stay' | 'next' | 'back' | 'return'; slide: number | null }> {
+  try {
+    const r = await call(`/api/classroom/${bookingId}/ai-turn`, { method: 'POST', body: JSON.stringify(body) })
+    if (!r.ok) return { move: 'stay', slide: null }
+    return await r.json()
+  } catch {
+    return { move: 'stay', slide: null }
   }
 }
 

@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import { aiOpenLesson, postEvent, saveAiTranscript, sendAiAction, startAiSession, type SlideRef, type StudentAction } from '@/lib/classroom/client'
+import { aiOpenLesson, aiTurn, postEvent, saveAiTranscript, sendAiAction, startAiSession, type SlideRef, type StudentAction } from '@/lib/classroom/client'
 import type { Lesson } from '@/lib/slides/types'
 import { useVolDot } from './audio'
 import ChatPanel from './ChatPanel'
@@ -37,6 +37,11 @@ function findLesson(p: Props): Lesson | null {
   return null
 }
 
+// a clear spoken cue changes the slide at once ("…let's move on to the next slide")
+const NEXT_CUE = /\bnext (slide|page)\b/i
+const NOT_YET = /\bbefore (we|you) (move|go)\b/i
+const RETURN_CUE = /\b(carry on|continue|get back|go back) (with|to) (the|our) lesson\b/i
+
 const mmss = (s: number) => {
   s = Math.max(0, Math.floor(s))
   return String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0')
@@ -67,6 +72,8 @@ export default function AiRoom(props: Props) {
   /** the slide whose content the AI tutor was last given */
   const lastSent = useRef<string | null>(null)
   const lastSpeech = useRef(Date.now())
+  /** called on every transcript fragment (set up below, where the slide controls live) */
+  const speechHook = useRef<(from: Line['from'], line: Line) => void>(() => {})
   const nudged = useRef(false)
 
   /* ---------- slides ---------- */
@@ -122,6 +129,7 @@ export default function AiRoom(props: Props) {
     if (last && last.from === from && startMs - lastEnd.current[from] < 2500) last.text += delta
     else L.push({ from, text: delta.replace(/^\s+/, ''), t: startMs })
     lastEnd.current[from] = endMs
+    speechHook.current(from, L[L.length - 1])
   }, [])
   const flush = useCallback(
     (final: boolean) => {
@@ -130,13 +138,96 @@ export default function AiRoom(props: Props) {
     [info.bookingId],
   )
 
-  /* ---------- tool calls from the tutor ---------- */
+  /* ---------- slides: changed by the classroom itself ---------- */
+  // GPT-Live's tool calls were slow and unreliable for this, so the AI tutor just says it's moving on:
+  // a clear spoken cue moves the slide at once, and after each turn a small model double-checks.
   const { onGo, sendTutorMessage, onOpenLesson } = props
-  /** the furthest slide taught, and whether the student is looking back at an earlier one */
+  /** the furthest slide taught (0-based), and whether the student is looking back at an earlier one */
   const furthest = useRef(0)
   const review = useRef(false)
-  const renewRef = useRef<() => void>(() => {})
-  const [renewing, setRenewing] = useState(false)
+  const lastMove = useRef(0)
+  const moveSlide = useCallback(
+    (kind: 'next' | 'back' | 'return', n?: number): string => {
+      const { slides: S, idx: i } = live.current
+      if (!S.length) return 'There are no slides in this lesson (free talk).'
+      const show = (k: number) => {
+        lastMove.current = Date.now()
+        onGo(S[k].id)
+        return `Showing slide ${k + 1} of ${S.length}.`
+      }
+      if (kind === 'next') {
+        if (review.current) {
+          review.current = false
+          return show(Math.min(S.length - 1, furthest.current))
+        }
+        return i + 1 >= S.length ? 'Already on the last slide.' : show(i + 1)
+      }
+      if (kind === 'return') {
+        if (!review.current) return 'Already on the lesson slide.'
+        review.current = false
+        return show(Math.min(S.length - 1, furthest.current))
+      }
+      const k = Math.round(n ?? 0) - 1
+      if (k < 0 || k > furthest.current || k === i) return 'Not a slide you can go back to.'
+      furthest.current = Math.max(furthest.current, i)
+      review.current = true
+      return show(k)
+    },
+    [onGo],
+  )
+
+  const cued = useRef<Line | null>(null)
+  const turnTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const checking = useRef(false)
+  const checkedSig = useRef('')
+  const checkTurn = useCallback(async () => {
+    const sid = sessionId.current
+    const ref = slideRef()
+    const L = lines.current
+    if (!sid || !ref || !L.length || checking.current || closing.current) return
+    if (Date.now() - lastMove.current < 3000) return
+    const sig = `${L.length}:${L[L.length - 1].text.length}:${ref.slideId}`
+    if (sig === checkedSig.current) return
+    checkedSig.current = sig
+    checking.current = true
+    const asked = Date.now()
+    const r = await aiTurn(info.bookingId, {
+      sessionId: sid,
+      ...ref,
+      furthest: furthest.current + 1,
+      reviewing: review.current,
+      recent: L.slice(-10).map((l) => ({ from: l.from, text: l.text })),
+    })
+    checking.current = false
+    // the slide moved some other way meanwhile: don't move it again
+    if (lastMove.current > asked || slideRef()?.slideId !== ref.slideId) return
+    if (r.move === 'next') moveSlide('next')
+    else if (r.move === 'return') moveSlide('return')
+    else if (r.move === 'back' && r.slide) moveSlide('back', r.slide)
+  }, [info.bookingId, slideRef, moveSlide])
+  useEffect(() => {
+    speechHook.current = (from, line) => {
+      if (from === 'tutor' && cued.current !== line && Date.now() - lastMove.current > 4000) {
+        if (review.current && RETURN_CUE.test(line.text)) {
+          cued.current = line
+          moveSlide('return')
+        } else if (NEXT_CUE.test(line.text) && !NOT_YET.test(line.text)) {
+          cued.current = line
+          moveSlide('next')
+        }
+      }
+      // after a short pause in the conversation, check whether the slide should change
+      if (turnTimer.current) clearTimeout(turnTimer.current)
+      turnTimer.current = setTimeout(() => void checkTurn(), 900)
+    }
+    return () => {
+      if (turnTimer.current) clearTimeout(turnTimer.current)
+    }
+  }, [moveSlide, checkTurn])
+
+  /* ---------- tool calls from the AI tutor (opening a lesson, writing in the chat) ---------- */
+  /** resolves once the "lesson opened" note has been sent, so slide notes come after it */
+  const lessonNote = useRef<Promise<unknown>>(Promise.resolve())
   const runTool = useCallback(
     async (name: string, argsJson: string): Promise<string> => {
       let args: Record<string, unknown> = {}
@@ -145,42 +236,21 @@ export default function AiRoom(props: Props) {
       } catch {
         /* empty */
       }
-      const { slides: S, idx: i } = live.current
-      const goTo = (n: number) => {
-        if (!S.length) return 'There are no slides in this lesson (free talk).'
-        const k = Math.min(S.length, Math.max(1, Math.round(n))) - 1
-        onGo(S[k].id)
-        return `Showing slide ${k + 1} of ${S.length}.`
-      }
       switch (name) {
-        case 'go_to_slide':
-          return goTo(Number(args.slide) || 1)
+        // older sessions may still have the slide tools
         case 'next_slide':
-          // while looking back, "next" means back to where the lesson was
-          if (review.current) {
-            review.current = false
-            return goTo(furthest.current + 1)
-          }
-          return i + 1 >= S.length ? 'Already on the last slide.' : goTo(i + 2)
-        case 'go_back_to_slide': {
-          const n = Math.round(Number(args.slide) || 0)
-          if (n < 1 || n - 1 > furthest.current) return `You can only go back to slides already covered (1 to ${furthest.current + 1}).`
-          if (n - 1 === i) return `Slide ${n} is already on screen.`
-          if (!review.current) furthest.current = Math.max(furthest.current, i)
-          review.current = true
-          return goTo(n) + ` When the student is ready, call return_to_lesson to go back to slide ${furthest.current + 1}.`
-        }
+          return moveSlide('next')
+        case 'go_back_to_slide':
+          return moveSlide('back', Number(args.slide))
         case 'return_to_lesson':
-          if (!review.current) return 'You are already on the lesson slide.'
-          review.current = false
-          return goTo(furthest.current + 1)
+          return moveSlide('return')
         case 'open_lesson': {
           const res = await aiOpenLesson(info.bookingId, String(args.course_id ?? ''), String(args.lesson_id ?? ''))
           if ('error' in res) return res.error
+          // no reconnect: the lesson note goes first, then each slide's content as it appears
+          lessonNote.current = act({ kind: 'lesson', courseId: res.open.courseId, lessonId: res.open.lessonId })
           onOpenLesson(res.open)
-          // let the AI tutor finish its sentence, then renew the session so it gets the lesson plan
-          setTimeout(() => renewRef.current(), 2500)
-          return `Opened ${res.title}. The call reconnects in a moment with this lesson's plan.`
+          return `Opened ${res.title}. It's on the student's screen now.`
         }
         case 'write_in_chat': {
           const text = String(args.text ?? '').slice(0, 200).trim()
@@ -191,7 +261,7 @@ export default function AiRoom(props: Props) {
           return `Unknown tool ${name}.`
       }
     },
-    [onGo, sendTutorMessage, onOpenLesson, info.bookingId],
+    [moveSlide, sendTutorMessage, onOpenLesson, info.bookingId, act],
   )
 
   /* ---------- connect ---------- */
@@ -200,7 +270,6 @@ export default function AiRoom(props: Props) {
       switch (ev.type) {
         case 'session.started': {
           setStatus('live')
-          setRenewing(false)
           lastSpeech.current = Date.now()
           nudged.current = false
           // GPT-Live waits for the caller unless told to greet: ask it to open the lesson now,
@@ -344,20 +413,6 @@ export default function AiRoom(props: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [info.bookingId, props.localMedia.state.currentMicrophoneDeviceId, teardown, flush])
 
-  /* a new lesson was opened: save the transcript, then start a fresh session (it reads the new lesson plan and the recent conversation) */
-  useEffect(() => {
-    renewRef.current = async () => {
-      if (closing.current) return
-      setRenewing(true)
-      setTutorReady(false)
-      closing.current = true
-      gen.current++ // ignore everything the old session still sends (including its session.closed)
-      sendEvent({ type: 'session.close' })
-      await flush(false)
-      void connect()
-    }
-  }, [sendEvent, flush, connect])
-
   /* a dropped connection with time left: reconnect by itself (a few times), the button stays as a fallback */
   const autoTries = useRef(0)
   useEffect(() => {
@@ -405,7 +460,7 @@ export default function AiRoom(props: Props) {
     lastSent.current = slide.id
     const ref = slideRef()
     const looking = review.current && idx < furthest.current
-    if (ref) void act({ kind: 'slide', ...ref, slideId: slide.id, ...(looking ? { review: { returnTo: furthest.current + 1 } } : {}) })
+    if (ref) void lessonNote.current.then(() => act({ kind: 'slide', ...ref, slideId: slide.id, ...(looking ? { review: { returnTo: furthest.current + 1 } } : {}) }))
   }, [status, slide, idx, slideRef, act])
 
   /* ---------- the student's chat messages → context (the tutor can't see the chat) ---------- */
@@ -462,7 +517,8 @@ export default function AiRoom(props: Props) {
     const id = setInterval(() => setNow(Date.now() + clockOffset), 1000)
     return () => clearInterval(id)
   }, [clockOffset])
-  const left = Math.max(0, (endsAt.current - now) / 1000)
+  // the clock shows the lesson's full length from the start (the server adds ~20 s for connecting)
+  const left = Math.min(info.durationMinutes * 60, Math.max(0, (endsAt.current - now) / 1000))
   const noted = useRef<Set<string>>(new Set())
   const timeUp = useRef(false)
   useEffect(() => {
@@ -645,7 +701,7 @@ export default function AiRoom(props: Props) {
             <path d="M5 10v4M9 7v10M13 5v14M17 8v8M21 11v2" />
           </svg>
         </div>
-        {renewing ? t('aiOpening') : t('aiCalling')}
+        {t('aiCalling')}
       </div>
       <header className="top">
         <div className="logo">

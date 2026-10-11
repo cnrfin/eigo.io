@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-admin'
 import { json, loadClassroom } from '@/lib/classroom/server'
 import { appendInstructions } from '@/lib/ai-tutor/openai'
-import { slideInstruction } from '@/lib/ai-tutor/brief'
+import { lessonOpenedInstruction, slideInstruction } from '@/lib/ai-tutor/brief'
 import { findLesson, loadCourse } from '@/lib/classroom/courses'
 
 /**
@@ -25,6 +25,7 @@ type Action =
   | { kind: 'start'; slide?: SlideRef | null }
   | { kind: 'resume'; slide?: SlideRef | null }
   | ({ kind: 'slide'; review?: { returnTo: number } } & SlideRef)
+  | { kind: 'lesson'; courseId: string; lessonId: string }
   | { kind: 'nudge' }
   | { kind: 'time' }
 
@@ -57,12 +58,13 @@ function instruction(a: Action, secondsLeft: number): string | null {
     case 'start':
       return 'The student has joined and can hear you. Greet them now by name and start the lesson as your preferences say (warm-up chat, review of the last lesson, then the slide on screen). Then pause and listen.'
     case 'slide':
+    case 'lesson':
       return null // handled in POST (needs the course)
     case 'resume':
-      return 'You are back with the student after a short reconnect (for example a new lesson was just opened). Do not greet again. If a new lesson was just opened, say so in a few words and teach the slide on screen; otherwise carry on where you were.'
+      return 'You are back with the student after a short reconnect (for example a new lesson was just opened). Do not greet again. Carry on where you were with the slide on screen.'
     case 'nudge':
       if (secondsLeft < 30) return null
-      return 'Nobody has spoken for about 9 seconds. You lead the lesson: if the student is in the middle of a task, give a short, friendly prompt; if everything on this slide is done, move to the next slide now (next_slide) and introduce it. In free talk, ask a new question or bring a new topic.'
+      return 'Nobody has spoken for about 9 seconds. You lead the lesson: if the student is in the middle of a task, give a short, friendly prompt; if everything on this slide is done, say now that you're moving on to the next slide (it appears by itself). In free talk, ask a new question or bring a new topic.'
     case 'time':
       if (secondsLeft > 330) return null
       if (secondsLeft > 125) return 'Time note: about 5 minutes left.'
@@ -112,6 +114,11 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const rv = action.kind === 'slide' && action.review && Number(action.review.returnTo) > 0 ? { returnTo: Math.round(Number(action.review.returnTo)) } : undefined
     const t = found ? slideInstruction(found.lesson, String(ref.slideId), rv) : null
     if (t) texts.push(t)
+  }
+  if (action.kind === 'lesson') {
+    const c = await loadCourse(String(action.courseId))
+    const found = c ? findLesson(c.course, String(action.lessonId)) : null
+    if (c && found) texts.push(lessonOpenedInstruction(c.course, found.lesson, found.number))
   }
   const text = instruction(action, left)
   if (text) texts.push(text)
