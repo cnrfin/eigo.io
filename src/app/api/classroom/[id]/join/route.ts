@@ -10,7 +10,7 @@ const ADMIN_EMAIL = 'cnrfin93@gmail.com'
 async function aiTutorName(userId: string) {
   const { data } = await getSupabaseAdmin().from('ai_tutor_profiles').select('settings').eq('user_id', userId).maybeSingle()
   const n = (data?.settings as { tutorName?: string } | null)?.tutorName?.trim()
-  return n || 'AI Tutor'
+  return n || 'AI tutor'
 }
 
 /**

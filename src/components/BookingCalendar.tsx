@@ -52,6 +52,22 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
   const [sheetOpen, setSheetOpen] = useState(false)
   const [catalogTick, setCatalogTick] = useState(0)
   const accessToken = session?.access_token
+  // the name the student gave their AI tutor (settings), shown on the AI pill; "AI tutor" until they name it
+  const [aiTutorName, setAiTutorName] = useState('')
+  useEffect(() => {
+    if (!aiEnabled || !accessToken) return
+    let alive = true
+    fetch('/api/ai-tutor/settings', { headers: { Authorization: `Bearer ${accessToken}` } })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        const n = typeof d?.settings?.tutorName === 'string' ? d.settings.tutorName.trim() : ''
+        if (alive && n) setAiTutorName(n)
+      })
+      .catch(() => {})
+    return () => {
+      alive = false
+    }
+  }, [aiEnabled, accessToken])
   useEffect(() => {
     if (!COURSE_BOOKING_ENABLED || !classroomEnabled || !accessToken) return
     let alive = true
@@ -384,7 +400,7 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
                   <span className="tp-initial">{(teacherName || 'C').charAt(0)}</span>
                 )}
               </span>
-              {k === 'ai' ? (locale === 'ja' ? 'AIチューター' : 'AI tutor') : (teacherName.split(' ')[0] || 'Connor')}
+              {k === 'ai' ? aiTutorName || (locale === 'ja' ? 'AIチューター' : 'AI tutor') : (teacherName.split(' ')[0] || 'Connor')}
               {k === 'ai' && <span className="tp-off">40% OFF</span>}
             </button>
           ))}

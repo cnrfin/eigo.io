@@ -30,6 +30,7 @@ export type AccessResult =
 export type AccessBooking = BookingTimes & {
   user_id: string
   status: string
+  lesson_kind?: string | null
 }
 
 export type AccessSession = { ended_at: string | null } | null
@@ -49,7 +50,9 @@ export function classroomAccess(
   const window = bookingWindow(booking)
   if (booking.status === 'cancelled') return { allowed: false, reason: 'cancelled', window }
 
-  if (isAdmin) return { allowed: true, role: 'teacher', window }
+  // Admins join as the teacher, except in their own AI lessons, where they are the student
+  // (so the AI tutor, its name and the student-only features work as for any student).
+  if (isAdmin && !(isOwner && booking.lesson_kind === 'ai')) return { allowed: true, role: 'teacher', window }
 
   if (session?.ended_at) return { allowed: false, reason: 'ended', window }
   if (now < window.studentOpensAt) return { allowed: false, reason: 'too_early', window }
