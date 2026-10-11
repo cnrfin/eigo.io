@@ -53,9 +53,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ date, duration, timezone, slots: [] })
   }
 
-  // AI tutor lessons: any 15-minute slot from 5 minutes from now (the tutor is always free)
+  // AI tutor lessons: any 15-minute slot that hasn't started yet (the AI tutor is always free, and the
+  // lesson runs its full length from when it starts, so booking at 21:28 for 21:30 is fine)
   if (searchParams.get('kind') === 'ai') {
-    return NextResponse.json({ date, duration, timezone, slots: allSlotsFromNow(date, timezone, 5 * 60_000), ai: true })
+    return NextResponse.json({ date, duration, timezone, slots: allSlotsFromNow(date, timezone, -60_000), ai: true })
   }
 
   try {
