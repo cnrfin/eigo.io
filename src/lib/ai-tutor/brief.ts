@@ -53,7 +53,9 @@ export function slideText(s: Slide, n: number): string {
     .map((b) => (b.tutorOnly ? `(teacher only) ${blockText(b)}` : blockText(b)))
     .filter(Boolean)
     .join('\n')
-  const notes = s.tutorNotes ? `\nTeacher notes: ${clip(s.tutorNotes.replace(/\[(IMAGE|AUDIO|VIDEO) TO ADD[\s\S]*$/, ''), 500)}` : ''
+  const notes = s.tutorNotes
+    ? `\nNotes (use after the related content, or if asked): ${clip(s.tutorNotes.replace(/\[(IMAGE|AUDIO|VIDEO) TO ADD[\s\S]*$/, ''), 500)}`
+    : ''
   return `--- Slide ${n}${head ? `: ${clip(head, 120)}` : ''}\n${body}${notes}`
 }
 
@@ -66,9 +68,15 @@ export function checklist(s: Slide): string[] {
       case 'vocab':
         for (const v of b.items) out.push(`the word "${v.term}": meaning, pronunciation, and the student uses it`)
         break
-      case 'dialogue':
-        out.push(`the dialogue (${b.lines.length} lines): check understanding and have the student practise it`)
+      case 'dialogue': {
+        const who = [...new Set(b.lines.map((l) => l.speaker))]
+        out.push(
+          who.length > 2
+            ? `the dialogue (${who.join(', ')}): student = ONE character; you read all the others' lines without stopping`
+            : `the dialogue (${who.join(', ')}): read it together, then check understanding`,
+        )
         break
+      }
       case 'list':
         b.items.forEach((it) => out.push(`"${clip(it, 70)}"`))
         break
@@ -98,25 +106,60 @@ export function checklist(s: Slide): string[] {
  * The AI tutor's startup instructions hold only an outline of the lesson, so it can
  * only teach what is on the student's screen.
  */
-export function slideInstruction(lesson: Lesson, slideId: string, review?: { returnTo: number }): string | null {
-  const i = lesson.slides.findIndex((x) => x.id === slideId)
-  if (i < 0) return null
-  const sl = lesson.slides[i]
-  let content = slideText(sl, i + 1)
-  const items = checklist(sl)
-  if (review) {
-    const max = 1900 - 400
-    if (content.length > max) content = content.slice(0, max) + '…'
-    return `LOOKING BACK (the student asked): slide ${i + 1} of ${lesson.slides.length} is on screen again.\n${content}\nHelp with what the student wants to look at here (you don't need to redo the whole slide). When they're ready, say you'll carry on with the lesson: the screen goes back to slide ${review.returnTo} by itself.`
+/** Rough token count (English ≈ 4 chars/token; Japanese ≈ 1 token/char). Appends are limited to 500. */
+export function estTokens(text: string): number {
+  let n = 0
+  for (const ch of text) n += ch.charCodeAt(0) < 128 ? 0.27 : 1.1
+  return Math.ceil(n)
+}
+const PART_MAX = 450
+
+function fitTokens(text: string, max: number): string {
+  if (estTokens(text) <= max) return text
+  let lo = 0
+  let hi = text.length
+  while (lo < hi) {
+    const mid = Math.ceil((lo + hi) / 2)
+    if (estTokens(text.slice(0, mid)) + 1 <= max) lo = mid
+    else hi = mid - 1
   }
+  return text.slice(0, lo) + '…'
+}
+
+/**
+ * The instruction(s) sent each time a slide appears: its content, notes and checklist.
+ * Usually one append; a long slide is split into two (content, then checklist) so each
+ * stays under GPT-Live's 500-token limit instead of losing the notes.
+ */
+export function slideInstructionParts(lesson: Lesson, slideId: string, review?: { returnTo: number }): string[] {
+  const i = lesson.slides.findIndex((x) => x.id === slideId)
+  if (i < 0) return []
+  const sl = lesson.slides[i]
+  const n = `slide ${i + 1} of ${lesson.slides.length}`
+  const content = slideText(sl, i + 1)
+  if (review) {
+    const head = `LOOKING BACK (the student asked): ${n} is on screen again.\n`
+    const tail = `\nHelp with what the student wants to look at here (you don't need to redo the whole slide). When they're ready, say you'll carry on with the lesson: the screen goes back to slide ${review.returnTo} by itself.`
+    return [head + fitTokens(content, PART_MAX - estTokens(head + tail)) + tail]
+  }
+  const items = checklist(sl)
   const list = items.length ? `\nCover ALL of these, in order, without skipping any:\n${items.map((t, k) => `${k + 1}. ${t}`).join('\n')}` : ''
   const last = i === lesson.slides.length - 1
   const tail = last
     ? `\nThis is the last slide: when every item is done, wrap up the lesson.`
-    : `\nWork through the items one by one, and make sure the student answers or practises each. When they're all done, say right away that you're moving on to the next slide (use the words "next slide"), then stop: it appears on screen by itself and you'll get its content. If the student says you've already done something, believe them and move on.`
-  const max = 1900 - list.length - tail.length - 80
-  if (content.length > max) content = content.slice(0, Math.max(400, max)) + '…'
-  return `NOW ON THE STUDENT'S SCREEN: slide ${i + 1} of ${lesson.slides.length}.\n${content}${list}${tail}`
+    : `\nWork through the items one by one; the student answers or practises each. When all are done, say right away that you're moving on to the "next slide", then stop: it appears by itself with its content. If the student says something is already done, believe them and move on.`
+  const head = `NOW ON THE STUDENT'S SCREEN: ${n}.\n`
+  const one = head + content + list + tail
+  if (estTokens(one) <= PART_MAX) return [one]
+  // two parts: what's on the slide (+ notes), then what to cover
+  const second = `(${n}, continued)` + list + tail
+  return [head + fitTokens(content, PART_MAX - estTokens(head)), fitTokens(second, PART_MAX)]
+}
+
+/** One string (tests and older callers). */
+export function slideInstruction(lesson: Lesson, slideId: string, review?: { returnTo: number }): string | null {
+  const parts = slideInstructionParts(lesson, slideId, review)
+  return parts.length ? parts.join('\n') : null
 }
 
 /** Sent when a lesson is opened during the session (no reconnect needed: slide content arrives per slide). */
@@ -154,6 +197,8 @@ How to run the lesson:
 - If the student asks to look at an earlier slide again (for example the vocabulary), say "Let's go back to the vocabulary slide" (or its number from the outline); it appears on screen. When you're done there, say "Let's carry on with the lesson" and it goes back. Don't go back unless they ask.
 - Be diligent: on every slide, cover every item in its checklist (every vocabulary word, every dialogue, every statement or question) before moving on. Your pace setting changes how much extra practice you give, never what you cover.
 - You lead. As soon as everything on the current slide has been covered, say you're moving on, without a pause and without waiting for the student to ask. In free talk, bring the next question or topic yourself.
+- Reading a dialogue together: the student takes ONE character and you take every other character. Read all of your characters' lines yourself, in order, without stopping; pause only when it's the student's line. Never wait for the student on a line that belongs to one of your characters.
+- Explanations and extra points (word meanings, culture, pronunciation tips) come after the content they're about (for example, after reading the dialogue), not before it.
 - Audio clips and videos: ask the student to press play on their screen, then ask about it.
 - Write useful phrases, corrections and new words in the chat with write_in_chat, so the student can save them.
 - If the student wants to do a course, or a different lesson, say you'll open it and call open_lesson (see COURSES below). Leave lesson_id empty to continue where they left off. The lesson opens on the student's screen straight away and you'll get a note about it, then each slide's content.

@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-admin'
 import { json, loadClassroom } from '@/lib/classroom/server'
 import { appendInstructions } from '@/lib/ai-tutor/openai'
-import { lessonOpenedInstruction, slideInstruction } from '@/lib/ai-tutor/brief'
+import { lessonOpenedInstruction, slideInstructionParts } from '@/lib/ai-tutor/brief'
 import { findLesson, loadCourse } from '@/lib/classroom/courses'
 
 /**
@@ -118,8 +118,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const c = await loadCourse(String(ref.courseId))
     const found = c ? findLesson(c.course, String(ref.lessonId)) : null
     const rv = action.kind === 'slide' && action.review && Number(action.review.returnTo) > 0 ? { returnTo: Math.round(Number(action.review.returnTo)) } : undefined
-    const t = found ? slideInstruction(found.lesson, String(ref.slideId), rv) : null
-    if (t) texts.push(t)
+    if (found) texts.push(...slideInstructionParts(found.lesson, String(ref.slideId), rv))
   }
   if (action.kind === 'lesson') {
     const c = await loadCourse(String(action.courseId))
