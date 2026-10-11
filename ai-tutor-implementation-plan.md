@@ -22,6 +22,11 @@
   - Wording: always "AI tutor" / 「AIチューター」, never just "tutor".
   - Voice ▶ previews: `GET /api/ai-tutor/voice-preview/<voice>` makes the clip on first play (GPT-Live itself over a server WebSocket, so the preview is the real lesson voice), stores it in the slide-courses bucket under `_voices/`, and reuses it for everyone. About a cent per voice, once.
 - **Admin:** an "AI tutor (pilot)" permission toggle.
+- **After the first test lesson (2026-10-11):**
+  - The AI classroom uses the same slide + tiles layout as a lesson with Connor (4:3 slide, AI tutor tile, student tile), with the drawing toolbar and the whiteboard (the student's own; the AI tutor can't see them).
+  - Student actions reach the AI tutor: chat messages, word lookups, saved words, true/false and matching answers, and audio/video finishing. `POST /api/classroom/[id]/ai-context` turns each into a fixed-template `session.instructions.append` on the sideband (the browser still can't write instructions). `thinking.append` is only for quiet facts like the slide on screen; per OpenAI it doesn't prompt a reaction.
+  - Time notes come from the server's booked end: 5 min, 2 min and 1 min ("don't say goodbye yet"), then goodbye at about 20 seconds left.
+  - The AI tutor leads: the rules say to move on when a slide is done, and after about 9 seconds of silence the classroom sends a nudge.
 - **Checked:** subset typecheck, lint (no errors), the booking jsdom test (12 new AI checks), a jsdom test of AiRoom with mocked WebRTC (15 checks), and the existing classroom suite.
 - **Not yet:** daily news topics for free talk (V1 free talk uses the student's interests and history); per-slide AI notes in the studio; cost alerts.
 

@@ -1,12 +1,14 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { postEvent, saveAiTranscript, startAiSession } from '@/lib/classroom/client'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { postEvent, saveAiTranscript, sendAiAction, startAiSession, type StudentAction } from '@/lib/classroom/client'
 import type { Lesson } from '@/lib/slides/types'
 import { useVolDot } from './audio'
 import ChatPanel from './ChatPanel'
 import { Ico } from './Icons'
 import SlideStage from './SlideStage'
+import Toolbar from './Toolbar'
+import { computeLayout, type Rect } from '@/lib/classroom/layout'
 import type { RoomProps } from './Room'
 
 /**
@@ -57,6 +59,8 @@ export default function AiRoom(props: Props) {
   const lines = useRef<Line[]>([])
   const lastEnd = useRef<{ student: number; tutor: number }>({ student: -1e9, tutor: -1e9 })
   const closing = useRef(false)
+  const lastSpeech = useRef(Date.now())
+  const nudged = useRef(false)
 
   /* ---------- slides ---------- */
   const lesson = findLesson(props)
@@ -77,10 +81,23 @@ export default function AiRoom(props: Props) {
     (content: string) => sendEvent({ type: 'session.thinking.append', delegation_id: null, content: content.slice(0, 1500) }),
     [sendEvent],
   )
+  /** A student action the AI tutor should react to: our server sends it as an instruction. */
+  const act = useCallback(
+    async (a: StudentAction) => {
+      const sid = sessionId.current
+      if (!sid || closing.current) return
+      const ok = await sendAiAction(info.bookingId, sid, a)
+      // fallback: at least let the AI tutor know quietly
+      if (!ok && a.kind === 'chat') context(`The student wrote in the chat: "${a.text.slice(0, 400)}"`)
+    },
+    [info.bookingId, context],
+  )
 
   /* ---------- transcript ---------- */
   const addText = useCallback((from: Line['from'], delta: string, startMs: number, endMs: number) => {
     if (!delta) return
+    lastSpeech.current = Date.now()
+    nudged.current = false
     const L = lines.current
     const last = L[L.length - 1]
     if (last && last.from === from && startMs - lastEnd.current[from] < 2500) last.text += delta
@@ -295,8 +312,47 @@ export default function AiRoom(props: Props) {
     const fresh = props.messages.slice(seenMsgs.current)
     seenMsgs.current = props.messages.length
     if (status !== 'live') return
-    for (const m of fresh) if (m.from === 'student' && m.text) context(`The student wrote in the chat: "${m.text.slice(0, 400)}"`)
-  }, [props.messages, status, context])
+    for (const m of fresh) if (m.from === 'student' && m.text) void act({ kind: 'chat', text: m.text })
+  }, [props.messages, status, act])
+
+  /* ---------- lookups, saved words and activity answers (from the classroom bus) ---------- */
+  const statusRef = useRef(status)
+  useEffect(() => {
+    statusRef.current = status
+  }, [status])
+  const pendingActs = useRef<string[]>([])
+  const actTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  useEffect(() => {
+    const on = (e: Event) => {
+      const a = (e as CustomEvent<StudentAction>).detail
+      if (!a || statusRef.current !== 'live') return
+      if (a.kind === 'activity') {
+        // quick taps (e.g. a few wrong matches) go as one update
+        pendingActs.current.push(a.text)
+        if (actTimer.current) clearTimeout(actTimer.current)
+        actTimer.current = setTimeout(() => {
+          const text = pendingActs.current.slice(-4).join(' ')
+          pendingActs.current = []
+          void act({ kind: 'activity', text })
+        }, 1500)
+      } else void act(a)
+    }
+    props.bus.addEventListener('student-action', on)
+    return () => {
+      props.bus.removeEventListener('student-action', on)
+      if (actTimer.current) clearTimeout(actTimer.current)
+    }
+  }, [props.bus, act])
+
+  /* audio/video on the slide: tell the AI tutor when it has finished, so it can ask about it */
+  const { onLocalMedia } = props
+  const onMedia = useCallback(
+    (m: Parameters<typeof onLocalMedia>[0]) => {
+      onLocalMedia(m)
+      if (m.action === 'ended' && statusRef.current === 'live') void act({ kind: 'media', text: 'the audio/video on the slide just finished playing. Ask the student about it now.' })
+    },
+    [onLocalMedia, act],
+  )
 
   /* ---------- clock + time notes ---------- */
   const [now, setNow] = useState(() => Date.now() + clockOffset)
@@ -309,14 +365,16 @@ export default function AiRoom(props: Props) {
   const timeUp = useRef(false)
   useEffect(() => {
     if (status !== 'live') return
-    const note = (k: string, text: string) => {
+    // the server picks the wording from the booked end; the AI tutor keeps teaching until ~20 s before
+    const note = (k: string) => {
       if (noted.current.has(k)) return
       noted.current.add(k)
-      context(text)
+      void act({ kind: 'time' })
     }
-    if (left <= 300 && left > 120) note('5', 'Time note: about 5 minutes left in the lesson.')
-    if (left <= 120 && left > 20) note('2', 'Time note: about 2 minutes left. Start wrapping up now.')
-    if (left <= 20) note('0', 'Time note: the lesson time is up. Say a short goodbye now.')
+    if (left <= 300 && left > 120) note('5')
+    if (left <= 120 && left > 60) note('2')
+    if (left <= 60 && left > 25) note('1')
+    if (left <= 25) note('0')
     if (left <= 0 && !timeUp.current) {
       // the server's sweep hangs up too; this just ends it cleanly on our side
       timeUp.current = true
@@ -328,7 +386,16 @@ export default function AiRoom(props: Props) {
         setStatus('ended')
       }, 15_000)
     }
-  }, [left, status, context, sendEvent, flush])
+  }, [left, status, act, sendEvent, flush])
+
+  /* ---------- quiet for a while → remind the AI tutor to lead ---------- */
+  // GPT-Live sometimes waits after a slide is finished; nudge it once per silence
+  useEffect(() => {
+    if (status !== 'live' || left <= 30 || nudged.current) return
+    if (Date.now() - lastSpeech.current < 9000) return
+    nudged.current = true
+    void act({ kind: 'nudge' })
+  }, [now, left, status, act])
 
   useEffect(() => {
     if (status === 'ended') {
@@ -373,6 +440,72 @@ export default function AiRoom(props: Props) {
   }
 
   const freeTalk = !slides.length
+
+  /* ---------- layout: the same slide + tiles layout as a lesson with Connor ---------- */
+  const layoutRef = useRef<HTMLDivElement | null>(null)
+  const appRef = useRef<HTMLDivElement | null>(null)
+  const slideBoxRef = useRef<HTMLDivElement | null>(null)
+  const otherRef = useRef<HTMLDivElement | null>(null)
+  const meRef = useRef<HTMLDivElement | null>(null)
+  const showSlide = !freeTalk || props.whiteboard
+  const rects = useRef(new Map<HTMLElement, Rect>())
+  const place = useCallback((el: HTMLElement | null, r: Rect | null) => {
+    if (!el) return
+    if (!r) {
+      el.style.display = 'none'
+      return
+    }
+    el.style.display = ''
+    const o = rects.current.get(el)
+    rects.current.set(el, r)
+    if (o && o.x === r.x && o.y === r.y && o.w === r.w && o.h === r.h) return
+    Object.assign(el.style, { left: r.x + 'px', top: r.y + 'px', width: r.w + 'px', height: r.h + 'px' })
+  }, [])
+  const doLayout = useCallback(() => {
+    const box = layoutRef.current
+    if (!box) return
+    const res = computeLayout(box.clientWidth, box.clientHeight, { showSlide, chatOpen: props.chatOpen, ratio: 3 / 4 })
+    if (!res) return
+    place(slideBoxRef.current, res.slide)
+    place(otherRef.current, res.other)
+    place(meRef.current, res.me)
+    if (appRef.current) {
+      appRef.current.dataset.mode = res.mode
+      appRef.current.style.setProperty('--lift', res.lift.toFixed(1) + 'px')
+    }
+  }, [place, props.chatOpen, showSlide])
+  useLayoutEffect(() => {
+    const box = layoutRef.current
+    if (!box) return
+    let raf = 0
+    const ro = new ResizeObserver(() => {
+      cancelAnimationFrame(raf)
+      raf = requestAnimationFrame(doLayout)
+    })
+    ro.observe(box)
+    doLayout()
+    return () => {
+      ro.disconnect()
+      cancelAnimationFrame(raf)
+    }
+  }, [doLayout])
+
+  /* ---------- drawing + whiteboard (the student's own; the AI tutor can't see them) ---------- */
+  const [tbOpen, setTbOpen] = useState(false)
+  const surface = props.whiteboard ? 'board' : (slide?.id ?? '')
+  const { closeLookup, setWhiteboard, whiteboard, ink } = props
+  useEffect(() => {
+    closeLookup()
+  }, [surface, closeLookup])
+  const toggleWhiteboard = useCallback(() => {
+    const on = !whiteboard
+    setWhiteboard(on)
+    if (on) {
+      setTbOpen(true)
+      if (ink.tool === 'select') ink.setTool('pen')
+    } else if (freeTalk) setTbOpen(false)
+  }, [whiteboard, setWhiteboard, ink, freeTalk])
+
   const statusText =
     status === 'connecting'
       ? t('aiConnecting')
@@ -389,7 +522,10 @@ export default function AiRoom(props: Props) {
                 : t('aiListening')
 
   return (
-    <div className={`app ai-lesson student${props.chatOpen ? ' chat-open' : ''}${freeTalk ? ' no-course' : ''}`}>
+    <div
+      ref={appRef}
+      className={`app ai-lesson student${freeTalk ? ' no-course' : ''}${props.whiteboard ? ' wb' : ''}${props.prefs.cursors ? '' : ' no-cursors'}${tbOpen ? ' tb-open' : ''}${props.chatOpen ? ' chat-open' : ''}`}
+    >
       <audio ref={audioEl} autoPlay playsInline />
       <header className="top">
         <div className="logo">
@@ -400,11 +536,20 @@ export default function AiRoom(props: Props) {
           <span id="crumb">{freeTalk ? t('aiFreeTalk') : lesson ? lesson.title : '…'}</span>
         </div>
         <div className="spacer" />
-        {!freeTalk && (
-          <div className="info">
-            {idx + 1} / {slides.length}
+        <div className="navwrap">
+          <div className="snav">
+            <button disabled aria-label="Previous slide">
+              <Ico name="left" />
+            </button>
+            <span className="n">{slides.length ? `${idx + 1} / ${slides.length}` : '–'}</span>
+            <button disabled aria-label="Next slide">
+              <Ico name="right" />
+            </button>
           </div>
-        )}
+        </div>
+        <button className={`sq tog${props.whiteboard ? ' on' : ''}`} title={t('whiteboardTitle')} aria-pressed={props.whiteboard} onClick={toggleWhiteboard}>
+          <Ico name="board" />
+        </button>
         <div className={`info${left <= 120 ? ' warn' : ''}`}>{status === 'live' ? mmss(left) : '–'}</div>
         <button className="sq leaveSq" title={t('end')} onClick={leave}>
           <Ico name="leave" />
@@ -414,62 +559,76 @@ export default function AiRoom(props: Props) {
 
       <div className="body">
         <section className="stageArea">
-          <div className="ai-layout">
-            {!freeTalk && (
-              <div className="ai-slideWrap">
-                <SlideStage
-                  setBox={() => {}}
-                  className="slideBox ai-slide tool-select"
-                  slide={slide}
-                  mode="student"
-                  assetBase={props.loaded?.assetBase ?? ''}
-                  characters={props.loaded?.course.characters}
-                  remoteMedia={props.remoteMedia}
-                  onLocalMedia={props.onLocalMedia}
-                  zoomLabel={t('backToWholeSlide')}
-                  ink={props.ink}
-                  surface={slide?.id ?? ''}
-                  bus={props.bus}
-                  otherName={info.other.name}
-                  boardLabel={t('whiteboard')}
-                  onCursor={props.onCursor}
-                  lookup={props.lookup}
-                  vocabApi={props.vocabApi}
-                  activityApi={props.activityApi}
-                  share={null}
-                  onStopShare={() => {}}
-                  onShareRatio={() => {}}
-                />
+          <div className="layout" ref={layoutRef}>
+            <SlideStage
+              setBox={(el) => {
+                slideBoxRef.current = el
+              }}
+              className="slot slideBox tool-select"
+              slide={slide}
+              mode="student"
+              assetBase={props.loaded?.assetBase ?? ''}
+              characters={props.loaded?.course.characters}
+              remoteMedia={props.remoteMedia}
+              onLocalMedia={onMedia}
+              zoomLabel={t('backToWholeSlide')}
+              ink={props.ink}
+              surface={surface}
+              bus={props.bus}
+              otherName={info.other.name}
+              boardLabel={t('whiteboard')}
+              onCursor={props.onCursor}
+              lookup={props.lookup}
+              vocabApi={props.vocabApi}
+              activityApi={props.activityApi}
+              share={null}
+              onStopShare={() => {}}
+              onShareRatio={() => {}}
+            />
+            <div className={`slot tile ai-tile${speaking ? ' speaking' : ''}${status !== 'live' ? ' idle' : ''}`} ref={otherRef}>
+              <div className="face">
+                <div className="ai-orb" aria-hidden>
+                  <span className="ai-ring" />
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+                    <path d="M5 10v4M9 7v10M13 5v14M17 8v8M21 11v2" />
+                  </svg>
+                </div>
               </div>
-            )}
-            <div className={`ai-tutor${speaking ? ' speaking' : ''}${status !== 'live' ? ' idle' : ''}`}>
-              <div className="ai-orb" aria-hidden>
-                <span className="ai-ring" />
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
-                  <path d="M5 10v4M9 7v10M13 5v14M17 8v8M21 11v2" />
-                </svg>
-              </div>
-              <div className="ai-name">
-                {info.other.name}
-                <span className="vol" ref={tutorDot}>
-                  <i />
-                </span>
-              </div>
-              <div className="ai-status" role="status">
-                {status === 'connecting' && <span className="spin" />}
-                {statusText}
-              </div>
-              {(status === 'dropped' || status === 'failed') && (
-                <button className="ebtn cta" onClick={() => void connect()}>
-                  {t('aiReconnect')}
-                </button>
-              )}
-              {!micOn && status === 'live' && <div className="ai-micoff">{t('aiMicOff')}</div>}
-              <span className="vol ai-me" ref={myDot}>
+              <span className="vol" ref={tutorDot}>
                 <i />
+              </span>
+              {status !== 'live' && (
+                <div className="ai-status" role="status">
+                  {status === 'connecting' && <span className="spin" />}
+                  {statusText}
+                  {(status === 'dropped' || status === 'failed') && (
+                    <button className="ebtn cta" onClick={() => void connect()}>
+                      {t('aiReconnect')}
+                    </button>
+                  )}
+                </div>
+              )}
+              <span className="name">{info.other.name}</span>
+            </div>
+            <div className={"slot tile camoff"} ref={meRef}>
+              <div className="face">
+                <div className="avatar" style={{ background: '#fae1d8' }}>
+                  {(info.me.name || '?').trim().charAt(0).toUpperCase()}
+                </div>
+              </div>
+              <span className={`vol${micOn ? '' : ' muted'}`} ref={myDot}>
+                <i />
+                <span className="mut" title={t('muted')}>
+                  <Ico name="micoff" />
+                </span>
+              </span>
+              <span className="name">
+                {info.me.name} {t('you')}
               </span>
             </div>
           </div>
+
+          <Toolbar t={t} ink={props.ink} open={tbOpen} setOpen={setTbOpen} toast={props.toast} enabled={!!surface} />
 
           <nav className="controls">
             <button className={`cbtn ${micOn ? 'on' : 'off'}`} aria-pressed={micOn} onClick={toggleMic}>

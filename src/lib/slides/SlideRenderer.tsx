@@ -468,7 +468,8 @@ function CalloutView({ b }: { b: CalloutBlock }) {
 export interface ActivityApi {
   get: (blockId: string) => unknown
   set: (blockId: string, state: unknown) => void
-  onResult?: (blockId: string, result: { correct: boolean; message: string }) => void
+  /** detail: a plain-English description of what the student did (used by the AI tutor) */
+  onResult?: (blockId: string, result: { correct: boolean; message: string; detail?: string }) => void
 }
 const ActivityContext = createContext<ActivityApi | null>(null)
 export function SlideActivity({ value, children }: { value: ActivityApi | null; children: ReactNode }) {
@@ -522,7 +523,11 @@ function TrueFalseView({ b, blockId, mode }: { b: TrueFalseBlock; blockId: strin
     if (!it) return
     setSt({ answers: [...st.answers, a] })
     const correct = a === it.answer
-    api?.onResult?.(blockId, { correct, message: correct ? `Correct! It’s ${tf(it.answer).toLowerCase()}.` : `Not quite. It’s ${tf(it.answer).toLowerCase()}.` })
+    api?.onResult?.(blockId, {
+      correct,
+      message: correct ? `Correct! It’s ${tf(it.answer).toLowerCase()}.` : `Not quite. It’s ${tf(it.answer).toLowerCase()}.`,
+      detail: `True or false, statement ${n + 1} of ${b.items.length} ("${it.text}"): the student answered ${tf(a).toLowerCase()}, which is ${correct ? 'correct' : `wrong (it's ${tf(it.answer).toLowerCase()})`}.`,
+    })
   }
   return (
     <div className="es-tf">
@@ -613,11 +618,11 @@ function MatchView({ b, blockId, mode, assetBase }: { b: MatchBlock; blockId: st
     if (w === p) {
       const next = [...done, w]
       setSt({ done: next })
-      if (next.length === b.pairs.length) api?.onResult?.(blockId, { correct: true, message: 'All matched!' })
+      if (next.length === b.pairs.length) api?.onResult?.(blockId, { correct: true, message: 'All matched!', detail: `Matching activity: the student matched all ${b.pairs.length} pairs.` })
     } else {
       setShake(p)
       setTimeout(() => setShake(-1), 420)
-      api?.onResult?.(blockId, { correct: false, message: 'Not quite. Try again.' })
+      api?.onResult?.(blockId, { correct: false, message: 'Not quite. Try again.', detail: `Matching activity: the student matched "${b.pairs[w].term}" with the picture of "${b.pairs[p].term}" (wrong; ${done.length} of ${b.pairs.length} done).` })
     }
   }
   const tapWord = (i: number) => {

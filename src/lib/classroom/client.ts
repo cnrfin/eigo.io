@@ -122,6 +122,27 @@ export async function saveAiTranscript(bookingId: string, sessionId: string, lin
   }
 }
 
+/** Something the student did in an AI lesson that the AI tutor should react to. */
+export type StudentAction =
+  | { kind: 'chat'; text: string }
+  | { kind: 'lookup'; term: string; meaning: string }
+  | { kind: 'save'; term: string }
+  | { kind: 'activity'; text: string }
+  | { kind: 'media'; text: string }
+  | { kind: 'nudge' }
+  | { kind: 'time' }
+
+/** AI lessons: tell the AI tutor about a student action. Our server turns it into a fixed-template
+ *  instruction on the live session (the browser can't send instructions itself). */
+export async function sendAiAction(bookingId: string, sessionId: string, action: StudentAction): Promise<boolean> {
+  try {
+    const r = await call(`/api/classroom/${bookingId}/ai-context`, { method: 'POST', body: JSON.stringify({ sessionId, action }) })
+    return r.ok
+  } catch {
+    return false
+  }
+}
+
 /** Teacher: mark the booking as a no-show (or undo it). */
 export async function markNoShow(bookingId: string, on: boolean): Promise<boolean> {
   try {

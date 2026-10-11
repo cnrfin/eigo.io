@@ -136,6 +136,46 @@ function sidebandClose(sessionId: string, timeoutMs = 8000): Promise<boolean> {
 }
 
 /**
+ * Add a trusted instruction to a running session through the sideband WebSocket
+ * (session.instructions.append influences what the AI tutor does and says next;
+ * thinking.append, which the browser may send, is only quiet background).
+ * Resolves true once OpenAI acknowledges it.
+ */
+export function appendInstructions(sessionId: string, content: string, timeoutMs = 6000): Promise<boolean> {
+  return new Promise((resolve) => {
+    let done = false
+    const eventId = 'eigo_' + Math.random().toString(36).slice(2, 10)
+    const finish = (ok: boolean) => {
+      if (done) return
+      done = true
+      clearTimeout(timer)
+      try {
+        ws.close()
+      } catch {
+        /* ignore */
+      }
+      resolve(ok)
+    }
+    const ws = new WebSocket(`wss://api.openai.com/v1/live/sessions/${encodeURIComponent(sessionId)}/attach`, {
+      headers: { Authorization: `Bearer ${key()}` },
+    })
+    const timer = setTimeout(() => finish(false), timeoutMs)
+    ws.on('open', () => ws.send(JSON.stringify({ type: 'session.instructions.append', event_id: eventId, delegation_id: null, content: content.slice(0, 1800) })))
+    ws.on('message', (data) => {
+      try {
+        const ev = JSON.parse(String(data)) as { type?: string; client_event_id?: string; error?: { client_event_id?: string } }
+        if (ev.type === 'session.instructions.appended') finish(true)
+        else if (ev.type === 'error' && (!ev.error?.client_event_id || ev.error.client_event_id === eventId)) finish(false)
+      } catch {
+        /* ignore */
+      }
+    })
+    ws.on('error', () => finish(false))
+    ws.on('close', () => finish(false))
+  })
+}
+
+/**
  * A short spoken clip in one of the voices, for the ▶ preview in the AI tutor settings.
  * Uses GPT-Live itself over a server-side WebSocket (session.start → session.output_audio.delta),
  * so the preview is the exact voice the student will hear in the lesson. GPT-Live expects a

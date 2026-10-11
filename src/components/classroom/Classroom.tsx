@@ -26,6 +26,7 @@ import {
   type WordInfo,
 } from '@/lib/classroom/client'
 import type { ActivityApi, VocabSaveApi } from '@/lib/slides'
+import type { StudentAction } from '@/lib/classroom/client'
 import type { VocabItem } from '@/lib/slides/types'
 import { makeT, type ClassroomT } from '@/lib/classroom/i18n'
 import { audioContext } from './audio'
@@ -519,8 +520,9 @@ export default function Classroom({ info }: { info: JoinInfo }) {
         return
       }
       toast(was ? t('wordRemoved', { term: w.term }) : t('wordAdded', { term: w.term }), was ? undefined : 'ok')
+      if (!was) bus.dispatchEvent(new CustomEvent<StudentAction>('student-action', { detail: { kind: 'save', term: w.term } }))
     },
-    [isTeacher, saved, info.bookingId, toast, t],
+    [isTeacher, saved, info.bookingId, toast, t, bus],
   )
 
   const vocabApi = useMemo<VocabSaveApi | null>(
@@ -546,9 +548,12 @@ export default function Classroom({ info }: { info: JoinInfo }) {
         send({ type: 'act', blockId: id, state: st })
         putActivity(info.bookingId, id, st)
       },
-      onResult: (_id, r) => toast(r.message, r.correct ? 'ok' : 'bad'),
+      onResult: (_id, r) => {
+        toast(r.message, r.correct ? 'ok' : 'bad')
+        if (r.detail) bus.dispatchEvent(new CustomEvent<StudentAction>('student-action', { detail: { kind: 'activity', text: r.detail } }))
+      },
     }),
-    [activity, send, info.bookingId, toast],
+    [activity, send, info.bookingId, toast, bus],
   )
 
   /* word lookup: course vocabulary first (instant), otherwise ask the AI */
@@ -563,6 +568,7 @@ export default function Classroom({ info }: { info: JoinInfo }) {
       })
       if (hit?.id) {
         const info2: WordInfo = { term: hit.term, pos: hit.pos ?? '', ja: hit.ja ?? '', meaning: hit.meaning ?? '', example: hit.example ?? '' }
+        bus.dispatchEvent(new CustomEvent<StudentAction>('student-action', { detail: { kind: 'lookup', term: hit.term, meaning: hit.ja || hit.meaning || '' } }))
         setPopup({
           term: r.term,
           rect: r.rect,
@@ -574,6 +580,7 @@ export default function Classroom({ info }: { info: JoinInfo }) {
       }
       setPopup({ term: r.term, rect: r.rect, status: 'loading' })
       const res = await lookupWord(info.bookingId, r.term, r.sentence)
+      if (res) bus.dispatchEvent(new CustomEvent<StudentAction>('student-action', { detail: { kind: 'lookup', term: res.term, meaning: res.ja || res.meaning || '' } }))
       setPopup((p) => {
         if (!p || p.term !== r.term || p.rect !== r.rect) return p // closed or replaced meanwhile
         if (!res) return { ...p, status: 'error' }
@@ -581,7 +588,7 @@ export default function Classroom({ info }: { info: JoinInfo }) {
         return { ...p, status: 'ok', info: res, key: { source: 'lookup', itemId, ...res } }
       })
     },
-    [lessonVocab, info.bookingId],
+    [lessonVocab, info.bookingId, bus],
   )
   useEffect(
     () =>

@@ -9,15 +9,15 @@ export const AI_MINUTE_RATIO = 0.6
 export const aiMinutesFor = (durationMinutes: number) => Math.ceil(durationMinutes * AI_MINUTE_RATIO)
 
 /**
- * GPT-Live voices offered to students (API names). OpenAI doesn't publish accents or genders
- * for them; notes are only filled in once confirmed by ear. Every voice is asked to speak
+ * GPT-Live voices offered to students (API names). OpenAI's voice table (Managing GPT-Live sessions):
+ * Vesper British/m, Meridian North American/m, Willow Irish/f, Quartz Australian/f. Every voice is asked to speak
  * British English (ACCENT_RULE). Chosen by Connor after auditioning all 14.
  */
 export const TUTOR_VOICES = [
   { id: 'vesper', label: 'Vesper', note: 'Male', noteJa: '男性' },
-  { id: 'meridian', label: 'Meridian', note: '', noteJa: '' },
+  { id: 'meridian', label: 'Meridian', note: 'Male', noteJa: '男性' },
   { id: 'willow', label: 'Willow', note: 'Female', noteJa: '女性' },
-  { id: 'quartz', label: 'Quartz', note: '', noteJa: '' },
+  { id: 'quartz', label: 'Quartz', note: 'Female', noteJa: '女性' },
 ] as const
 
 /** GPT-Live takes its accent from the instructions (OpenAI's custom-voice guide: "Speak British English"). */
