@@ -64,7 +64,7 @@ function instruction(a: Action, secondsLeft: number): string | null {
       return 'You are back with the student after a short reconnect (for example a new lesson was just opened). Do not greet again. Carry on where you were with the slide on screen.'
     case 'nudge':
       if (secondsLeft < 30) return null
-      return 'Nobody has spoken for about 9 seconds. You lead the lesson: if the student is in the middle of a task, give a short, friendly prompt; if everything on this slide is done, say now that you're moving on to the next slide (it appears by itself). In free talk, ask a new question or bring a new topic.'
+      return 'Nobody has spoken for about 9 seconds. You lead the lesson: if the student is in the middle of a task, give a short, friendly prompt; if everything on this slide is done, say now that you’re moving on to the next slide (it appears by itself). In free talk, ask a new question or bring a new topic.'
     case 'time':
       if (secondsLeft > 330) return null
       if (secondsLeft > 125) return 'Time note: about 5 minutes left.'
