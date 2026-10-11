@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import { aiOpenLesson, aiTurn, postEvent, saveAiTranscript, sendAiAction, startAiSession, type SlideRef, type StudentAction } from '@/lib/classroom/client'
+import { aiOpenLesson, aiTurn, postEvent, sendAiReport, saveAiTranscript, sendAiAction, startAiSession, type SlideRef, type StudentAction } from '@/lib/classroom/client'
 import type { Lesson } from '@/lib/slides/types'
 import { useAudioLevel, useVolDot } from './audio'
 import AiOrb from '@/components/ai/AiOrb'
@@ -725,6 +725,47 @@ export default function AiRoom(props: Props) {
     } else if (freeTalk) setTbOpen(false)
   }, [whiteboard, setWhiteboard, ink, freeTalk])
 
+  /* ---------- report a problem (flag button): one tap sends ---------- */
+  const [reportOpen, setReportOpen] = useState(false)
+  const [reportOther, setReportOther] = useState(false)
+  const [reportNote, setReportNote] = useState('')
+  const reportRef = useRef<HTMLDivElement | null>(null)
+  useEffect(() => {
+    if (!reportOpen) return
+    const away = (e: PointerEvent) => {
+      if (reportRef.current && !reportRef.current.contains(e.target as Node)) setReportOpen(false)
+    }
+    const esc = (e: KeyboardEvent) => e.key === 'Escape' && setReportOpen(false)
+    window.addEventListener('pointerdown', away, true)
+    window.addEventListener('keydown', esc)
+    return () => {
+      window.removeEventListener('pointerdown', away, true)
+      window.removeEventListener('keydown', esc)
+    }
+  }, [reportOpen])
+  const { toast } = props
+  const report = useCallback(
+    async (reason: 'slide' | 'audio' | 'content' | 'other', note = '') => {
+      setReportOpen(false)
+      setReportOther(false)
+      setReportNote('')
+      const ref = slideRef()
+      const recent = lines.current
+        .slice(-10)
+        .map((l) => `${l.from === 'student' ? 'Student' : 'AI tutor'}: ${l.text}`)
+        .join('\n')
+      const ok = await sendAiReport(info.bookingId, {
+        reason,
+        note,
+        sessionId: sessionId.current,
+        ...(ref ? { courseId: ref.courseId, lessonId: ref.lessonId, slideId: ref.slideId, slideNo: live.current.idx + 1 } : {}),
+        recent,
+      })
+      toast(ok ? t('reportSent') : t('reportFailed'), ok ? 'ok' : 'bad')
+    },
+    [info.bookingId, slideRef, toast, t],
+  )
+
   const statusText =
     status === 'connecting'
       ? t('aiConnecting')
@@ -775,6 +816,56 @@ export default function AiRoom(props: Props) {
           <Ico name="board" />
         </button>
         <div className={`info${left <= 120 ? ' warn' : ''}`}>{status === 'live' ? mmss(left) : '–'}</div>
+        <div className="rwrap" ref={reportRef}>
+          <button
+            className={`sq tog${reportOpen ? ' on' : ''}`}
+            title={t('report')}
+            aria-label={t('report')}
+            aria-expanded={reportOpen}
+            onClick={() => {
+              setReportOther(false)
+              setReportOpen((o) => !o)
+            }}
+          >
+            <Ico name="flag" />
+          </button>
+          {reportOpen && (
+            <div className="rpop" role="menu">
+              <div className="rhead">{t('report')}</div>
+              <button className="ropt" role="menuitem" onClick={() => void report('slide')}>
+                <Ico name="right" />
+                {t('reportSlide')}
+              </button>
+              <button className="ropt" role="menuitem" onClick={() => void report('audio')}>
+                <Ico name="sound" />
+                {t('reportAudio')}
+              </button>
+              <button className="ropt" role="menuitem" onClick={() => void report('content')}>
+                <Ico name="warning" />
+                {t('reportContent')}
+              </button>
+              {!reportOther ? (
+                <button className="ropt" role="menuitem" onClick={() => setReportOther(true)}>
+                  <Ico name="more" />
+                  {t('reportOther')}
+                </button>
+              ) : (
+                <form
+                  className="rfield"
+                  onSubmit={(e) => {
+                    e.preventDefault()
+                    void report('other', reportNote.trim())
+                  }}
+                >
+                  <input autoFocus value={reportNote} maxLength={300} placeholder={t('reportPlaceholder')} onChange={(e) => setReportNote(e.target.value)} />
+                  <button type="submit" aria-label={t('send')}>
+                    <Ico name="send" />
+                  </button>
+                </form>
+              )}
+            </div>
+          )}
+        </div>
         <button className="sq leaveSq" title={t('end')} onClick={leave}>
           <Ico name="leave" />
           <span>{t('end')}</span>

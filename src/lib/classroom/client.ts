@@ -188,6 +188,19 @@ export async function aiTurn(
   }
 }
 
+/** AI lessons: one-tap problem report (flag button). */
+export async function sendAiReport(
+  bookingId: string,
+  body: { reason: 'slide' | 'audio' | 'content' | 'other'; note?: string; sessionId?: string | null; courseId?: string; lessonId?: string; slideId?: string; slideNo?: number; recent?: string },
+): Promise<boolean> {
+  try {
+    const r = await call(`/api/classroom/${bookingId}/ai-report`, { method: 'POST', body: JSON.stringify(body) })
+    return r.ok
+  } catch {
+    return false
+  }
+}
+
 /** Teacher: mark the booking as a no-show (or undo it). */
 export async function markNoShow(bookingId: string, on: boolean): Promise<boolean> {
   try {

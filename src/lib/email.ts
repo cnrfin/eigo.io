@@ -1015,3 +1015,29 @@ export async function sendVerificationEmail({
 
   return data
 }
+
+/** AI lessons: a student reported a problem from the classroom (flag button). */
+export async function sendAdminAiReport(r: {
+  studentName: string
+  studentEmail: string
+  reason: string
+  note: string
+  where: string
+  recent: string
+  bookingId: string
+}) {
+  const adminEmail = process.env.ADMIN_EMAIL || 'cnrfin93@gmail.com'
+  const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  const content = `
+    <p class="greeting">AI lesson problem report</p>
+    <p><b>${esc(r.reason)}</b>${r.note ? `: ${esc(r.note)}` : ''}</p>
+    <p>${esc(r.studentName)} (${esc(r.studentEmail)})<br>${esc(r.where)}<br>Booking ${esc(r.bookingId)}</p>
+    <pre style="white-space:pre-wrap;font-size:13px;background:#f5f5f5;padding:12px;border-radius:8px">${esc(r.recent || '(no recent conversation)')}</pre>`
+  const { error } = await getResend().emails.send({
+    from: process.env.RESEND_FROM_EMAIL || 'eigo.io <noreply@eigo.io>',
+    to: adminEmail,
+    subject: `AI lesson report: ${r.reason}`,
+    html: emailLayout(content, 'eigo.io — AI lesson report (Admin)'),
+  })
+  if (error) throw error
+}
