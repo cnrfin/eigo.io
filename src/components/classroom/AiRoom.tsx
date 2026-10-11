@@ -149,6 +149,8 @@ export default function AiRoom(props: Props) {
   const furthest = useRef(0)
   const review = useRef(false)
   const lastMove = useRef(0)
+  /** the last ~30 s: no more automatic slide changes (the AI tutor is saying goodbye) */
+  const wrapUp = useRef(false)
   // Per slide: where its conversation starts (the turn check only reads this slide's conversation)
   const slideStart = useRef(0)
   const slideShownAt = useRef(Date.now())
@@ -223,7 +225,7 @@ export default function AiRoom(props: Props) {
     })
     checking.current = false
     // the slide moved some other way meanwhile: don't move it again
-    if (lastMove.current > asked || slideRef()?.slideId !== ref.slideId) return
+    if (lastMove.current > asked || slideRef()?.slideId !== ref.slideId || wrapUp.current) return
     if (r.move === 'next') moveSlide('next')
     else if (r.move === 'return') moveSlide('return')
     else if (r.move === 'back' && r.slide) moveSlide('back', r.slide)
@@ -231,6 +233,7 @@ export default function AiRoom(props: Props) {
   useEffect(() => {
     speechHook.current = (from, line) => {
       const ref = syncSlide()
+      if (wrapUp.current) return
       if (from === 'tutor' && ref && cued.current !== line && Date.now() - lastMove.current > 2500) {
         if (review.current && RETURN_CUE.test(line.text)) {
           cued.current = line
@@ -489,7 +492,7 @@ export default function AiRoom(props: Props) {
     else if (idx >= furthest.current) review.current = false
   }, [idx])
   useEffect(() => {
-    if (status !== 'live' || !slide || lastSent.current === slide.id) return
+    if (status !== 'live' || !slide || lastSent.current === slide.id || wrapUp.current) return
     lastSent.current = slide.id
     const ref = slideRef()
     const looking = review.current && idx < furthest.current
@@ -525,6 +528,9 @@ export default function AiRoom(props: Props) {
           pendingActs.current = []
           void act({ kind: 'activity', text })
         }, 1500)
+      } else if (a.kind === 'lookup' || a.kind === 'save') {
+        // quiet background only: reacting to every lookup broke up the lesson
+        context(a.kind === 'lookup' ? `(Background, don't react) The student looked up "${a.term}".` : `(Background, don't react) The student saved "${a.term}" to their word bank.`)
       } else void act(a)
     }
     props.bus.addEventListener('student-action', on)
@@ -532,7 +538,7 @@ export default function AiRoom(props: Props) {
       props.bus.removeEventListener('student-action', on)
       if (actTimer.current) clearTimeout(actTimer.current)
     }
-  }, [props.bus, act])
+  }, [props.bus, act, context])
 
   /* audio/video on the slide: tell the AI tutor when it has finished, so it can ask about it */
   const { onLocalMedia } = props
@@ -566,16 +572,15 @@ export default function AiRoom(props: Props) {
     if (left <= 120 && left > 60) note('2')
     if (left <= 60 && left > 25) note('1')
     if (left <= 25) note('0')
+    if (left <= 30) wrapUp.current = true
     if (left <= 0 && !timeUp.current) {
-      // the server's sweep hangs up too; this just ends it cleanly on our side
+      // 00:00 ends the lesson here and now (the server's sweep also hangs up, as a backstop)
       timeUp.current = true
-      setTimeout(() => {
-        if (closing.current) return
-        closing.current = true
-        sendEvent({ type: 'session.close' })
-        flush(true)
-        setStatus('ended')
-      }, 15_000)
+      closing.current = true
+      gen.current++ // ignore anything the session still sends
+      sendEvent({ type: 'session.close' })
+      flush(true)
+      setStatus('ended')
     }
   }, [left, status, act, sendEvent, flush])
 
