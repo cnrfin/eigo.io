@@ -20,6 +20,7 @@ type Action =
   | { kind: 'activity'; text: string }
   | { kind: 'media'; text: string }
   | { kind: 'start' }
+  | { kind: 'resume' }
   | { kind: 'nudge' }
   | { kind: 'time' }
 
@@ -51,6 +52,8 @@ function instruction(a: Action, secondsLeft: number): string | null {
     }
     case 'start':
       return 'The student has joined and can hear you. Greet them now by name and start the lesson as your preferences say (warm-up chat, review of the last lesson, or straight into the first slide). Then pause and listen.'
+    case 'resume':
+      return 'You are back with the student after a short reconnect (for example a new lesson was just opened). Do not greet again. If a new lesson is open, say so in a few words and start teaching it from the slide on screen; otherwise carry on where you were.'
     case 'nudge':
       if (secondsLeft < 30) return null
       return 'Nobody has spoken for about 9 seconds. You lead the lesson: if the student is in the middle of a task, give a short, friendly prompt; if everything on this slide is done, move to the next slide now (next_slide) and introduce it. In free talk, ask a new question or bring a new topic.'
@@ -88,7 +91,13 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   if (!sess || sess.ended_at) return json(409, { error: 'Session not live' })
 
   const left = (new Date(sess.ends_at as string).getTime() - Date.now()) / 1000
-  const text = instruction(body.action, left)
+  let action = body.action
+  if (action.kind === 'start') {
+    // a refresh mid-lesson: the student has already been greeted
+    const { data: b } = await getSupabaseAdmin().from('bookings').select('transcript_text').eq('id', booking.id).maybeSingle()
+    if (((b?.transcript_text as string | null) ?? '').trim()) action = { kind: 'resume' }
+  }
+  const text = instruction(action, left)
   if (!text) return json(200, { sent: false })
   const ok = await appendInstructions(sess.session_id as string, text)
   return json(ok ? 200 : 502, { sent: ok })

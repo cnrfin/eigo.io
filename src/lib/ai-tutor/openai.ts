@@ -38,11 +38,14 @@ export async function createLiveSession(opts: {
   backendInstructions: string
   tools: FunctionTool[]
   safetyId: string
+  /** earlier conversation (text messages), e.g. after a reconnect */
+  input?: unknown[]
 }): Promise<{ sessionId: string; sdp: string }> {
   const body = {
     session: {
       model: LIVE_MODEL,
       instructions: opts.instructions,
+      ...(opts.input?.length ? { input: opts.input } : {}),
       audio: { output: { voice: opts.voice } },
       store: false,
       client: { data_channel: { allowed_client_events: BROWSER_ALLOWED_EVENTS } },

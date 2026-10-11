@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import { postEvent, saveAiTranscript, sendAiAction, startAiSession, type StudentAction } from '@/lib/classroom/client'
+import { aiOpenLesson, postEvent, saveAiTranscript, sendAiAction, startAiSession, type StudentAction } from '@/lib/classroom/client'
 import type { Lesson } from '@/lib/slides/types'
 import { useVolDot } from './audio'
 import ChatPanel from './ChatPanel'
@@ -61,6 +61,7 @@ export default function AiRoom(props: Props) {
   const lines = useRef<Line[]>([])
   const lastEnd = useRef<{ student: number; tutor: number }>({ student: -1e9, tutor: -1e9 })
   const closing = useRef(false)
+  const sessionsStarted = useRef(0)
   const lastSpeech = useRef(Date.now())
   const nudged = useRef(false)
 
@@ -108,13 +109,15 @@ export default function AiRoom(props: Props) {
   }, [])
   const flush = useCallback(
     (final: boolean) => {
-      if (sessionId.current) saveAiTranscript(info.bookingId, sessionId.current, lines.current, final)
+      return sessionId.current ? saveAiTranscript(info.bookingId, sessionId.current, lines.current, final) : Promise.resolve()
     },
     [info.bookingId],
   )
 
   /* ---------- tool calls from the tutor ---------- */
-  const { onGo, sendTutorMessage } = props
+  const { onGo, sendTutorMessage, onOpenLesson } = props
+  const renewRef = useRef<() => void>(() => {})
+  const [renewing, setRenewing] = useState(false)
   const runTool = useCallback(
     async (name: string, argsJson: string): Promise<string> => {
       let args: Record<string, unknown> = {}
@@ -137,6 +140,14 @@ export default function AiRoom(props: Props) {
           return i + 1 >= S.length ? 'Already on the last slide.' : goTo(i + 2)
         case 'previous_slide':
           return i <= 0 ? 'Already on the first slide.' : goTo(i)
+        case 'open_lesson': {
+          const res = await aiOpenLesson(info.bookingId, String(args.course_id ?? ''), String(args.lesson_id ?? ''))
+          if ('error' in res) return res.error
+          onOpenLesson(res.open)
+          // let the AI tutor finish its sentence, then renew the session so it gets the lesson plan
+          setTimeout(() => renewRef.current(), 2500)
+          return `Opened ${res.title}. The call reconnects in a moment with this lesson's plan.`
+        }
         case 'write_in_chat': {
           const text = String(args.text ?? '').slice(0, 200).trim()
           if (!text) return 'Nothing to write.'
@@ -146,7 +157,7 @@ export default function AiRoom(props: Props) {
           return `Unknown tool ${name}.`
       }
     },
-    [onGo, sendTutorMessage],
+    [onGo, sendTutorMessage, onOpenLesson, info.bookingId],
   )
 
   /* ---------- connect ---------- */
@@ -155,10 +166,11 @@ export default function AiRoom(props: Props) {
       switch (ev.type) {
         case 'session.started': {
           setStatus('live')
+          setRenewing(false)
           lastSpeech.current = Date.now()
           nudged.current = false
           // GPT-Live waits for the caller unless told to greet: ask it to open the lesson now
-          void act({ kind: 'start' })
+          void act({ kind: sessionsStarted.current++ ? 'resume' : 'start' })
           postEvent(info.bookingId, 'student_joined')
           postEvent(info.bookingId, 'start').then((s) => s && setSession(s))
           const { slides: S, idx: i } = live.current
@@ -283,6 +295,19 @@ export default function AiRoom(props: Props) {
     // micOn is read once at connect time; the toggle below updates live tracks
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [info.bookingId, props.localMedia.state.currentMicrophoneDeviceId, teardown, flush])
+
+  /* a new lesson was opened: save the transcript, then start a fresh session (it reads the new lesson plan and the recent conversation) */
+  useEffect(() => {
+    renewRef.current = async () => {
+      if (closing.current) return
+      setRenewing(true)
+      setTutorReady(false)
+      closing.current = true
+      sendEvent({ type: 'session.close' })
+      await flush(false)
+      void connect()
+    }
+  }, [sendEvent, flush, connect])
 
   const started = useRef(false)
   useEffect(() => {
@@ -550,7 +575,7 @@ export default function AiRoom(props: Props) {
             <path d="M5 10v4M9 7v10M13 5v14M17 8v8M21 11v2" />
           </svg>
         </div>
-        {t('aiCalling')}
+        {renewing ? t('aiOpening') : t('aiCalling')}
       </div>
       <header className="top">
         <div className="logo">

@@ -130,6 +130,7 @@ export type StudentAction =
   | { kind: 'activity'; text: string }
   | { kind: 'media'; text: string }
   | { kind: 'start' }
+  | { kind: 'resume' }
   | { kind: 'nudge' }
   | { kind: 'time' }
 
@@ -141,6 +142,17 @@ export async function sendAiAction(bookingId: string, sessionId: string, action:
     return r.ok
   } catch {
     return false
+  }
+}
+
+/** AI lessons: the AI tutor's open_lesson tool (server resolves "continue where they left off"). */
+export async function aiOpenLesson(bookingId: string, courseId: string, lessonId: string): Promise<{ open: OpenLesson; title: string } | { error: string }> {
+  try {
+    const r = await call(`/api/classroom/${bookingId}/ai-open`, { method: 'POST', body: JSON.stringify({ courseId, lessonId }) })
+    const d = await r.json().catch(() => ({}))
+    return r.ok ? d : { error: d.error || 'Could not open the lesson.' }
+  } catch {
+    return { error: 'Could not open the lesson.' }
   }
 }
 

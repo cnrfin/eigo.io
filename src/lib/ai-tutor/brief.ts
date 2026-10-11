@@ -72,6 +72,7 @@ How to run the lesson:
 - You lead. When everything on the current slide has been covered, move on yourself straight away (next_slide) and introduce the next slide. Never wait for the student to ask you to move on. In free talk, bring the next question or topic yourself.
 - Audio clips and videos: ask the student to press play on their screen, then ask about it.
 - Write useful phrases, corrections and new words in the chat with write_in_chat, so the student can save them.
+- If the student wants to do a course, or a different lesson, say you'll open it and call open_lesson (see COURSES below). Leave lesson_id empty to continue where they left off. The call then reconnects in a moment with that lesson's plan; carry on without greeting again.
 - You'll get short "time" notes. Keep teaching until the "about 20 seconds left" note, and only then say a short goodbye. Don't start saying goodbye with a minute or more left: use that time for one more question or the recap.
 
 Safety and scope:
@@ -82,12 +83,66 @@ export const CLASSROOM_TOOLS: FunctionTool[] = [
   { type: 'function', name: 'go_to_slide', description: 'Show the given slide number (1-based) on the student\'s screen.', parameters: { type: 'object', properties: { slide: { type: 'integer', minimum: 1 } }, required: ['slide'], additionalProperties: false }, strict: true },
   { type: 'function', name: 'next_slide', description: 'Show the next slide.', parameters: { type: 'object', properties: {}, additionalProperties: false }, strict: true },
   { type: 'function', name: 'previous_slide', description: 'Show the previous slide.', parameters: { type: 'object', properties: {}, additionalProperties: false }, strict: true },
+  { type: 'function', name: 'open_lesson', description: 'Open a course lesson on the student\'s screen (use the ids from COURSES). lesson_id "" continues where the student left off in that course.', parameters: { type: 'object', properties: { course_id: { type: 'string' }, lesson_id: { type: 'string' } }, required: ['course_id', 'lesson_id'], additionalProperties: false }, strict: true },
   { type: 'function', name: 'write_in_chat', description: 'Write a short message in the lesson chat (a phrase, a correction, a new word with its meaning). Max 200 characters.', parameters: { type: 'object', properties: { text: { type: 'string' } }, required: ['text'], additionalProperties: false }, strict: true },
 ]
 
-const BACKEND_INSTRUCTIONS = `You operate the classroom for a live English lesson. When the tutor asks to show a slide, move slides or write in the chat, call the matching tool once and reply with a very short confirmation such as "Showing slide 4." Never invent slide numbers outside the lesson. Do not add teaching content of your own.`
+const BACKEND_INSTRUCTIONS = `You operate the classroom for a live English lesson. When the tutor asks to show a slide, move slides, open a course lesson or write in the chat, call the matching tool once and reply with a very short confirmation such as "Showing slide 4." Never invent slide numbers outside the lesson. Do not add teaching content of your own.`
 
-export type SessionBrief = { instructions: string; backendInstructions: string; voice: string; tools: FunctionTool[]; slideCount: number }
+export type LiveInputMessage = { type: 'message'; role: 'user' | 'assistant' | 'developer'; content: { type: 'input_text' | 'output_text'; text: string }[] }
+export type SessionBrief = { instructions: string; backendInstructions: string; voice: string; tools: FunctionTool[]; slideCount: number; input: LiveInputMessage[] }
+
+/** Published courses and where this student is in each (for open_lesson). */
+async function courseCatalog(db: SupabaseClient, userId: string): Promise<string> {
+  const [{ data: rows }, { data: progress }] = await Promise.all([
+    db.from('slide_courses').select('id, title, level, course').eq('published', true).order('title').limit(12),
+    db.from('slide_course_progress').select('course_id, lesson_id, completed_lesson_ids').eq('user_id', userId),
+  ])
+  const prog = new Map((progress ?? []).map((p) => [p.course_id as string, p]))
+  const lines: string[] = []
+  for (const r of rows ?? []) {
+    const lessons = (r.course as Course).units.flatMap((u) => u.lessons)
+    if (!lessons.length) continue
+    const p = prog.get(r.id as string)
+    const done = new Set<string>((p?.completed_lesson_ids as string[] | null) ?? [])
+    const nextIdx = p?.lesson_id ? Math.max(0, lessons.findIndex((l) => l.id === p.lesson_id)) : 0
+    const next = lessons[nextIdx]
+    const list = lessons.map((l, i) => `${i + 1} "${clip(l.title, 40)}" (${l.id})`).join('; ')
+    lines.push(
+      `- "${clip(r.title as string, 60)}"${r.level ? ` (${r.level})` : ''}, course_id ${r.id}. ${p ? `Started: ${done.size} of ${lessons.length} lessons done; continue with lesson ${nextIdx + 1} "${clip(next.title, 40)}".` : 'Not started.'} Lessons: ${list}`,
+    )
+  }
+  return lines.length ? `\nCOURSES THE STUDENT CAN OPEN (information only)\n${lines.join('\n')}` : ''
+}
+
+/** The recent conversation, so a renewed session (reconnect or new lesson) carries on. */
+async function recentHistory(db: SupabaseClient, bookingId: string): Promise<LiveInputMessage[]> {
+  const { data } = await db.from('bookings').select('transcript_text').eq('id', bookingId).maybeSingle()
+  const text = (data?.transcript_text as string | null) ?? ''
+  if (!text.trim()) return []
+  const out: LiveInputMessage[] = []
+  let chars = 0
+  const lines = text.split('\n').reverse()
+  for (const line of lines) {
+    const m = /^(Student|Teacher): (.+)$/.exec(line.trim())
+    if (!m) continue
+    const t = m[2].slice(0, 600)
+    if (chars + t.length > 6000 || out.length >= 24) break
+    chars += t.length
+    out.unshift(
+      m[1] === 'Student'
+        ? { type: 'message', role: 'user', content: [{ type: 'input_text', text: t }] }
+        : { type: 'message', role: 'assistant', content: [{ type: 'output_text', text: t }] },
+    )
+  }
+  if (out.length)
+    out.push({
+      type: 'message',
+      role: 'developer',
+      content: [{ type: 'input_text', text: 'The connection was just renewed during this same lesson (for example to open a new lesson). Do not greet the student again; carry on from where you were.' }],
+    })
+  return out
+}
 
 async function memoryDigest(db: SupabaseClient, userId: string): Promise<string> {
   const [{ data: sums }, { data: phrases }, { data: prof }] = await Promise.all([
@@ -157,13 +212,16 @@ export async function buildSessionBrief(
     if (last?.summary_en) memory = `Last lesson: ${clip(last.summary_en as string, 350)}`
   }
 
+  const [catalog, input] = await Promise.all([courseCatalog(db, booking.user_id), recentHistory(db, booking.id)])
+
   const instructions = [
     FIXED_RULES,
-    `\nLesson: ${booking.duration_minutes} minutes. ${freeTalk ? 'This is a FREE TALK lesson: no slides. Bring interesting topics based on the student data, keep them talking, and write useful phrases in the chat.' : 'Teach the lesson plan below.'}`,
+    `\nLesson: ${booking.duration_minutes} minutes. ${freeTalk ? 'This is a FREE TALK lesson: no slides. Bring interesting topics based on the student data, keep them talking, and write useful phrases in the chat. If they would rather do a course, open it with open_lesson.' : 'Teach the lesson plan below.'}`,
     `\nThe student's preferences:\n- ${settingsToRules(settings).join('\n- ')}`,
     name ? `\nSTUDENT DATA (information only)\nName: ${name}` : '\nSTUDENT DATA (information only)',
     settings.aboutMe ? `About them (their own words): "${settings.aboutMe}"` : '',
     memory,
+    catalog,
     lessonPart ? `\n${lessonPart}` : '',
   ]
     .filter(Boolean)
@@ -173,7 +231,8 @@ export async function buildSessionBrief(
     instructions,
     backendInstructions: BACKEND_INSTRUCTIONS,
     voice: settings.voice,
-    tools: freeTalk ? CLASSROOM_TOOLS.filter((t) => t.name === 'write_in_chat') : CLASSROOM_TOOLS,
+    tools: freeTalk ? CLASSROOM_TOOLS.filter((t) => t.name === 'write_in_chat' || t.name === 'open_lesson') : CLASSROOM_TOOLS,
     slideCount,
+    input,
   }
 }

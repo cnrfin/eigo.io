@@ -64,6 +64,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       voice: brief.voice,
       backendInstructions: brief.backendInstructions,
       tools: brief.tools,
+      input: brief.input,
       safetyId: createHash('sha256').update(`eigo:${booking.user_id}`).digest('hex').slice(0, 32),
     })
   } catch (e) {
