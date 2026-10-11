@@ -133,7 +133,7 @@ export type StudentAction =
   | { kind: 'media'; text: string }
   | { kind: 'start'; slide?: SlideRef | null }
   | { kind: 'resume'; slide?: SlideRef | null }
-  | ({ kind: 'slide' } & SlideRef)
+  | ({ kind: 'slide'; review?: { returnTo: number } } & SlideRef)
   | { kind: 'nudge' }
   | { kind: 'time' }
 

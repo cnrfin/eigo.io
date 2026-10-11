@@ -24,7 +24,7 @@ type Action =
   | { kind: 'media'; text: string }
   | { kind: 'start'; slide?: SlideRef | null }
   | { kind: 'resume'; slide?: SlideRef | null }
-  | ({ kind: 'slide' } & SlideRef)
+  | ({ kind: 'slide'; review?: { returnTo: number } } & SlideRef)
   | { kind: 'nudge' }
   | { kind: 'time' }
 
@@ -109,7 +109,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   if (ref?.courseId && ref.lessonId && ref.slideId) {
     const c = await loadCourse(String(ref.courseId))
     const found = c ? findLesson(c.course, String(ref.lessonId)) : null
-    const t = found ? slideInstruction(found.lesson, String(ref.slideId)) : null
+    const rv = action.kind === 'slide' && action.review && Number(action.review.returnTo) > 0 ? { returnTo: Math.round(Number(action.review.returnTo)) } : undefined
+    const t = found ? slideInstruction(found.lesson, String(ref.slideId), rv) : null
     if (t) texts.push(t)
   }
   const text = instruction(action, left)

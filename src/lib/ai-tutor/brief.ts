@@ -98,12 +98,17 @@ function checklist(s: Slide): string[] {
  * The AI tutor's startup instructions hold only an outline of the lesson, so it can
  * only teach what is on the student's screen.
  */
-export function slideInstruction(lesson: Lesson, slideId: string): string | null {
+export function slideInstruction(lesson: Lesson, slideId: string, review?: { returnTo: number }): string | null {
   const i = lesson.slides.findIndex((x) => x.id === slideId)
   if (i < 0) return null
   const sl = lesson.slides[i]
   let content = slideText(sl, i + 1)
   const items = checklist(sl)
+  if (review) {
+    const max = 1900 - 400
+    if (content.length > max) content = content.slice(0, max) + '…'
+    return `LOOKING BACK (the student asked): slide ${i + 1} of ${lesson.slides.length} is on screen again.\n${content}\nHelp with what the student wants to look at here (you don't need to redo the whole slide). When they're ready, call return_to_lesson to go back to slide ${review.returnTo}, where you were.`
+  }
   const list = items.length ? `\nCover ALL of these, in order, without skipping any:\n${items.map((t, k) => `${k + 1}. ${t}`).join('\n')}` : ''
   const last = i === lesson.slides.length - 1
   const tail = `\nOnly when every item is done, call next_slide${last ? ' (this is the last slide: instead, wrap up the lesson)' : ''}. Don't wait to be asked.`
@@ -135,6 +140,7 @@ How to speak:
 
 How to run the lesson:
 - Go through the slides in order, one at a time, with next_slide. Never skip a slide.
+- If the student asks to look at an earlier slide again (for example the vocabulary), show it with go_back_to_slide (use the outline to find it), help with what they ask about, then return_to_lesson and carry on where you were. Don't go back unless they ask.
 - Be diligent: on every slide, cover every item in its checklist (every vocabulary word, every dialogue, every statement or question) before moving on. Your pace setting changes how much extra practice you give, never what you cover.
 - You lead. As soon as everything on the current slide has been covered, say so briefly and call next_slide yourself, then teach the new slide. Never wait for the student to ask you to move on. In free talk, bring the next question or topic yourself.
 - Audio clips and videos: ask the student to press play on their screen, then ask about it.
@@ -148,12 +154,13 @@ Safety and scope:
 
 export const CLASSROOM_TOOLS: FunctionTool[] = [
   { type: 'function', name: 'next_slide', description: 'Show the next slide.', parameters: { type: 'object', properties: {}, additionalProperties: false }, strict: true },
-  { type: 'function', name: 'previous_slide', description: 'Show the previous slide.', parameters: { type: 'object', properties: {}, additionalProperties: false }, strict: true },
+  { type: 'function', name: 'go_back_to_slide', description: 'Only when the student asks to see an earlier slide again (for example the vocabulary): show that slide number. Only slides already covered.', parameters: { type: 'object', properties: { slide: { type: 'integer', minimum: 1 } }, required: ['slide'], additionalProperties: false }, strict: true },
+  { type: 'function', name: 'return_to_lesson', description: 'After looking back at an earlier slide, return to the slide you were teaching.', parameters: { type: 'object', properties: {}, additionalProperties: false }, strict: true },
   { type: 'function', name: 'open_lesson', description: 'Open a course lesson on the student\'s screen (use the ids from COURSES). lesson_id "" continues where the student left off in that course.', parameters: { type: 'object', properties: { course_id: { type: 'string' }, lesson_id: { type: 'string' } }, required: ['course_id', 'lesson_id'], additionalProperties: false }, strict: true },
   { type: 'function', name: 'write_in_chat', description: 'Write a short message in the lesson chat (a phrase, a correction, a new word with its meaning). Max 200 characters.', parameters: { type: 'object', properties: { text: { type: 'string' } }, required: ['text'], additionalProperties: false }, strict: true },
 ]
 
-const BACKEND_INSTRUCTIONS = `You operate the classroom for a live English lesson. When the tutor asks to show a slide, move slides, open a course lesson or write in the chat, call the matching tool once and reply with a very short confirmation such as "Showing slide 4." Only ever move one slide at a time with next_slide or previous_slide. Do not add teaching content of your own.`
+const BACKEND_INSTRUCTIONS = `You operate the classroom for a live English lesson. When the tutor asks to show a slide, move slides, open a course lesson or write in the chat, call the matching tool once and reply with a very short confirmation such as "Showing slide 4." Only ever move forward one slide at a time with next_slide; go back only with go_back_to_slide when the student asks, then return_to_lesson. Do not add teaching content of your own.`
 
 export type LiveInputMessage = { type: 'message'; role: 'user' | 'assistant' | 'developer'; content: { type: 'input_text' | 'output_text'; text: string }[] }
 export type SessionBrief = { instructions: string; backendInstructions: string; voice: string; tools: FunctionTool[]; slideCount: number; input: LiveInputMessage[] }

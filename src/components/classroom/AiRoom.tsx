@@ -132,6 +132,9 @@ export default function AiRoom(props: Props) {
 
   /* ---------- tool calls from the tutor ---------- */
   const { onGo, sendTutorMessage, onOpenLesson } = props
+  /** the furthest slide taught, and whether the student is looking back at an earlier one */
+  const furthest = useRef(0)
+  const review = useRef(false)
   const renewRef = useRef<() => void>(() => {})
   const [renewing, setRenewing] = useState(false)
   const runTool = useCallback(
@@ -153,9 +156,24 @@ export default function AiRoom(props: Props) {
         case 'go_to_slide':
           return goTo(Number(args.slide) || 1)
         case 'next_slide':
+          // while looking back, "next" means back to where the lesson was
+          if (review.current) {
+            review.current = false
+            return goTo(furthest.current + 1)
+          }
           return i + 1 >= S.length ? 'Already on the last slide.' : goTo(i + 2)
-        case 'previous_slide':
-          return i <= 0 ? 'Already on the first slide.' : goTo(i)
+        case 'go_back_to_slide': {
+          const n = Math.round(Number(args.slide) || 0)
+          if (n < 1 || n - 1 > furthest.current) return `You can only go back to slides already covered (1 to ${furthest.current + 1}).`
+          if (n - 1 === i) return `Slide ${n} is already on screen.`
+          if (!review.current) furthest.current = Math.max(furthest.current, i)
+          review.current = true
+          return goTo(n) + ` When the student is ready, call return_to_lesson to go back to slide ${furthest.current + 1}.`
+        }
+        case 'return_to_lesson':
+          if (!review.current) return 'You are already on the lesson slide.'
+          review.current = false
+          return goTo(furthest.current + 1)
         case 'open_lesson': {
           const res = await aiOpenLesson(info.bookingId, String(args.course_id ?? ''), String(args.lesson_id ?? ''))
           if ('error' in res) return res.error
@@ -372,12 +390,23 @@ export default function AiRoom(props: Props) {
   }, [flush])
 
   /* ---------- slide changes → the new slide's content and checklist for the AI tutor ---------- */
+  const lessonKey = props.open?.lessonId ?? ''
+  useEffect(() => {
+    // a different lesson: start tracking from where it opened
+    furthest.current = live.current.idx
+    review.current = false
+  }, [lessonKey])
+  useEffect(() => {
+    if (!review.current) furthest.current = Math.max(furthest.current, idx)
+    else if (idx >= furthest.current) review.current = false
+  }, [idx])
   useEffect(() => {
     if (status !== 'live' || !slide || lastSent.current === slide.id) return
     lastSent.current = slide.id
     const ref = slideRef()
-    if (ref) void act({ kind: 'slide', ...ref, slideId: slide.id })
-  }, [status, slide, slideRef, act])
+    const looking = review.current && idx < furthest.current
+    if (ref) void act({ kind: 'slide', ...ref, slideId: slide.id, ...(looking ? { review: { returnTo: furthest.current + 1 } } : {}) })
+  }, [status, slide, idx, slideRef, act])
 
   /* ---------- the student's chat messages → context (the tutor can't see the chat) ---------- */
   const seenMsgs = useRef(props.messages.length)
