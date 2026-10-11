@@ -1,4 +1,5 @@
 import WebSocket from 'ws'
+import { ACCENT_RULE } from './settings'
 
 /**
  * Server-only helpers for OpenAI GPT-Live (model gpt-live-1).
@@ -45,7 +46,7 @@ export async function createLiveSession(opts: {
       audio: { output: { voice: opts.voice } },
       store: false,
       client: { data_channel: { allowed_client_events: BROWSER_ALLOWED_EVENTS } },
-      delegation: {
+      ...(opts.tools.length ? { delegation: {
         type: 'responses',
         responses: {
           model: BACKEND_MODEL,
@@ -55,7 +56,7 @@ export async function createLiveSession(opts: {
           parallel_tool_calls: false,
           reasoning: { effort: 'low' },
         },
-      },
+      } } : {}),
     },
     transport: { type: 'webrtc', sdp: opts.sdp },
   }
@@ -132,4 +133,92 @@ function sidebandClose(sessionId: string, timeoutMs = 8000): Promise<boolean> {
       finish(done)
     })
   })
+}
+
+/**
+ * A short spoken clip in one of the voices, for the ▶ preview in the AI tutor settings.
+ * Uses GPT-Live itself over a server-side WebSocket (session.start → session.output_audio.delta),
+ * so the preview is the exact voice the student will hear in the lesson. GPT-Live expects a
+ * live audio stream, so we feed it silence at real-time pace while it speaks.
+ * Returns 24 kHz mono 16-bit PCM.
+ */
+export function speakSample(voice: string, line: string, timeoutMs = 25000): Promise<Buffer> {
+  return new Promise((resolve, reject) => {
+    const parts: Buffer[] = []
+    let done = false
+    let started = false
+    let lastAudio = 0
+    const silence = Buffer.alloc(4800).toString('base64') // 100 ms of 24 kHz PCM16
+    const finish = (err?: Error) => {
+      if (done) return
+      done = true
+      clearTimeout(timer)
+      clearInterval(pump)
+      try {
+        if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'session.close' }))
+        setTimeout(() => ws.close(), 1500)
+      } catch {
+        /* ignore */
+      }
+      if (err && !parts.length) reject(err)
+      else if (!parts.length) reject(new Error('No audio returned'))
+      else resolve(Buffer.concat(parts))
+    }
+    const ws = new WebSocket('wss://api.openai.com/v1/live/sessions', { headers: { Authorization: `Bearer ${key()}` } })
+    const timer = setTimeout(() => finish(new Error('Timed out')), timeoutMs)
+    const pump = setInterval(() => {
+      if (!started || ws.readyState !== WebSocket.OPEN) return
+      ws.send(JSON.stringify({ type: 'session.input_audio.append', audio: silence }))
+      // GPT-Live has no output-done event on the WebSocket: stop after 1.2 s without new audio
+      if (parts.length && Date.now() - lastAudio > 1200) finish()
+    }, 100)
+    ws.on('open', () => {
+      ws.send(
+        JSON.stringify({
+          type: 'session.start',
+          session: {
+            model: LIVE_MODEL,
+            instructions: `${ACCENT_RULE} You are recording a short voice sample. As soon as the session starts, without waiting for the user, say exactly this, warmly and at a relaxed, natural pace, then stop and stay silent: "${line}"`,
+            audio: { format: { type: 'audio/pcm', rate: 24000 }, output: { voice } },
+            store: false,
+          },
+        }),
+      )
+    })
+    ws.on('message', (data) => {
+      let ev: { type?: string; delta?: string; error?: { message?: string } }
+      try {
+        ev = JSON.parse(String(data))
+      } catch {
+        return
+      }
+      if (ev.type === 'session.started') started = true
+      else if (ev.type === 'session.output_audio.delta' && ev.delta) {
+        parts.push(Buffer.from(ev.delta, 'base64'))
+        lastAudio = Date.now()
+      } else if (ev.type === 'session.closed') finish()
+      else if (ev.type === 'error') finish(new Error(ev.error?.message || 'GPT-Live error'))
+    })
+    ws.on('error', (e) => finish(e instanceof Error ? e : new Error(String(e))))
+    ws.on('close', () => finish(new Error('Closed before audio')))
+  })
+}
+
+/** Wrap 24 kHz mono 16-bit PCM in a WAV header. */
+export function pcmToWav(pcm: Buffer, rate = 24000): Buffer {
+  const h = Buffer.alloc(44)
+  h.write('RIFF', 0)
+  h.writeUInt32LE(36 + pcm.length, 4)
+  h.write('WAVE', 8)
+  h.write('fmt ', 12)
+  h.writeUInt32LE(16, 16)
+  h.writeUInt16LE(1, 20)
+  h.writeUInt16LE(1, 22)
+  h.writeUInt32LE(rate, 24)
+  h.writeUInt32LE(rate * 2, 28)
+  h.writeUInt16LE(2, 32)
+  h.writeUInt16LE(16, 34)
+  h.write('data', 36)
+  h.writeUInt32LE(pcm.length, 40)
+  return Buffer.concat([h, pcm])
 }

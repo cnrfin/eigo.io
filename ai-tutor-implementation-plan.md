@@ -1,7 +1,7 @@
 # AI tutor: implementation plan
 
-**Status (2026-10-11): V1 built, waiting on the migration and a live test.**
-- **Database:** `supabase/add-ai-tutor.sql` adds `bookings.lesson_kind` and `ai_minutes_charged`, `user_permissions.ai_enabled`, `ai_sessions` and `ai_tutor_profiles`. **Not applied yet.**
+**Status (2026-10-11): V1 built and the migration applied; waiting on a live test.**
+- **Database:** `supabase/add-ai-tutor.sql` adds `bookings.lesson_kind` and `ai_minutes_charged`, `user_permissions.ai_enabled`, `ai_sessions` and `ai_tutor_profiles`. Applied 2026-10-11.
 - **Server:**
   - `src/lib/ai-tutor/` holds the settings, the session brief, the GPT-Live client and the summary.
   - `POST /api/classroom/[id]/ai-session` starts the tutor.
@@ -15,7 +15,12 @@
   - The AI path in `/api/calendar/book`: 0.6 ratio, no Whereby, no teacher calendar event, any time.
   - Cancelling refunds the AI minutes; rescheduling keeps the lesson an AI lesson.
 - **History and dashboard:** an AI badge, the course/lesson (or フリートーク) on every item, no download for AI lessons, and AI lessons always open in the classroom.
-- **Settings:** a 「マイAIチューター」 card on the Settings page, for pilot users only.
+- **Settings:** an 「AIチューターの設定」 card on the Settings page, for pilot users only.
+  - Grouped in lesson order: Your AI tutor (voice, name, your name), How the AI tutor talks (speed, pace, personality, kind of English, Japanese support), Mistakes and practice, Lesson structure (warm-up, review last lesson, recap), About you.
+  - Each row: title with a line saying what the current choice does (no static subtitles), options on the right.
+  - Lesson focus is a behaviour picker (how the lesson is run), not extra exercises; pace covers free talk too.
+  - Wording: always "AI tutor" / 「AIチューター」, never just "tutor".
+  - Voice ▶ previews: `GET /api/ai-tutor/voice-preview/<voice>` makes the clip on first play (GPT-Live itself over a server WebSocket, so the preview is the real lesson voice), stores it in the slide-courses bucket under `_voices/`, and reuses it for everyone. About a cent per voice, once.
 - **Admin:** an "AI tutor (pilot)" permission toggle.
 - **Checked:** subset typecheck, lint (no errors), the booking jsdom test (12 new AI checks), a jsdom test of AiRoom with mocked WebRTC (15 checks), and the existing classroom suite.
 - **Not yet:** daily news topics for free talk (V1 free talk uses the student's interests and history); per-slide AI notes in the studio; cost alerts.
@@ -24,7 +29,7 @@
 
 **Provider: OpenAI GPT-Live-1.**
 - **Pacing:** Connor tested it and found the pacing and turn-taking the most natural. It's a full-duplex model: it listens while it speaks, handles interruptions and "uh-huh"s, and doesn't cut in on pauses.
-- **Voices:** Connor tested Vale and Arbor on OpenAI's site, but they **aren't in the API's voice list** (they may be ChatGPT-app voices). The API voices are: alloy, ash, ballad, beacon, bossa, brise, cedar, cinder, coral, delta, echo, flitz, gleam, harema, juni, marin, meridian, nira, noeul, nuri, quartz, ripple, sage, shida, shimmer, sillage, stone, tempo, verse, vesper, willow. Vesper is British. Pick the shortlist by testing these in the API playground.
+- **Voices:** Connor tested Vale and Arbor on OpenAI's site, but they **aren't in the API's voice list** (they may be ChatGPT-app voices). The API voices are: alloy, ash, ballad, beacon, bossa, brise, cedar, cinder, coral, delta, echo, flitz, gleam, harema, juni, marin, meridian, nira, noeul, nuri, quartz, ripple, sage, shida, shimmer, sillage, stone, tempo, verse, vesper, willow. Vesper is British. Pick the shortlist by testing these in the API playground. OpenAI doesn't publish accents or genders for them (only Quartz is described, as Australian-influenced). Every session and preview now includes `ACCENT_RULE` ("Speak British English…"), and the list is Vesper, Meridian, Willow and Quartz (chosen 2026-10-11).
 - **Price:** $0.05 per minute, billed per second.
 - **Fallback:** ElevenLabs Agents (British voice library, about $0.08/min plus its AI model).
 

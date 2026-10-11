@@ -626,7 +626,7 @@ export default function SettingsPage() {
           </SquircleCard>
           </motion.div>
 
-          {/* My AI tutor (AI tutor pilot users only; renders nothing otherwise) */}
+          {/* AI tutor settings (AI tutor pilot users only; renders nothing otherwise) */}
           <motion.div variants={{ hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0 } }}>
             <AiTutorSettingsCard locale={locale} />
           </motion.div>

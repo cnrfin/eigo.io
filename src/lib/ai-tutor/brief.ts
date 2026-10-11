@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Block, Course, Lesson, Slide } from '@/lib/slides/types'
 import { findLesson, loadCourse } from '@/lib/classroom/courses'
-import { normalizeSettings, settingsToRules, type TutorSettings } from './settings'
+import { ACCENT_RULE, normalizeSettings, settingsToRules, type TutorSettings } from './settings'
 import type { FunctionTool } from './openai'
 
 /**
@@ -60,6 +60,7 @@ export function slideText(s: Slide, n: number): string {
 const FIXED_RULES = `You are an English tutor for eigo.io, teaching one adult Japanese learner in a live voice lesson. You only speak; the student sees the lesson slides on their screen, and you control which slide they see with your tools.
 
 How to speak:
+- ${ACCENT_RULE}
 - Keep your turns short (one to three sentences), then let the student talk. The student should speak more than you.
 - Learners pause to think, restart sentences and say "えーと" or "um". Never jump in while they are still thinking; wait until they have clearly finished.
 - Never read a slide out word for word. Refer to it ("Look at the dialogue on the screen") and ask questions about it.
@@ -148,7 +149,12 @@ export async function buildSessionBrief(
   }
   const freeTalk = !lessonPart
   const name = settings.callMe || clip(student?.display_name, 30) || ''
-  const memory = settings.useHistory ? await memoryDigest(db, booking.user_id) : ''
+  let memory = settings.useHistory ? await memoryDigest(db, booking.user_id) : ''
+  if (!settings.useHistory && settings.reviewLast) {
+    // the review of the last lesson needs that lesson's summary even when history is off
+    const { data: last } = await db.from('lesson_summaries').select('summary_en').eq('user_id', booking.user_id).order('created_at', { ascending: false }).limit(1).maybeSingle()
+    if (last?.summary_en) memory = `Last lesson: ${clip(last.summary_en as string, 350)}`
+  }
 
   const instructions = [
     FIXED_RULES,

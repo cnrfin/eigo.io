@@ -8,15 +8,24 @@
 export const AI_MINUTE_RATIO = 0.6
 export const aiMinutesFor = (durationMinutes: number) => Math.ceil(durationMinutes * AI_MINUTE_RATIO)
 
-/** GPT-Live voices offered to students (API names). Confirm the shortlist in the pilot. */
+/**
+ * GPT-Live voices offered to students (API names). OpenAI doesn't publish accents or genders
+ * for them; notes are only filled in once confirmed by ear. Every voice is asked to speak
+ * British English (ACCENT_RULE). Chosen by Connor after auditioning all 14.
+ */
 export const TUTOR_VOICES = [
-  { id: 'vesper', label: 'Vesper', note: 'British · male' },
-  { id: 'marin', label: 'Marin', note: 'female' },
-  { id: 'cedar', label: 'Cedar', note: 'male' },
-  { id: 'willow', label: 'Willow', note: 'Irish · female' },
-  { id: 'stone', label: 'Stone', note: 'Irish · male' },
-  { id: 'quartz', label: 'Quartz', note: 'Australian · female' },
+  { id: 'vesper', label: 'Vesper', note: 'Male', noteJa: '男性' },
+  { id: 'meridian', label: 'Meridian', note: '', noteJa: '' },
+  { id: 'willow', label: 'Willow', note: 'Female', noteJa: '女性' },
+  { id: 'quartz', label: 'Quartz', note: '', noteJa: '' },
 ] as const
+
+/** GPT-Live takes its accent from the instructions (OpenAI's custom-voice guide: "Speak British English"). */
+export const ACCENT_RULE = 'Speak British English with a natural, standard southern English accent, and use British vocabulary.'
+
+/** What each voice says in its ▶ preview (made by /api/ai-tutor/voice-preview; editing it makes new clips). */
+export const VOICE_SAMPLE_LINE = "Hi! I'm your AI tutor. Let's practise some English together today. Take your time, there's no rush."
+
 export type TutorVoice = (typeof TUTOR_VOICES)[number]['id']
 
 export type TutorSettings = {
@@ -33,6 +42,7 @@ export type TutorSettings = {
   callMe: string
   aboutMe: string
   warmUp: boolean
+  reviewLast: boolean
   recap: boolean
   useHistory: boolean
 }
@@ -51,6 +61,7 @@ export const DEFAULT_TUTOR_SETTINGS: TutorSettings = {
   callMe: '',
   aboutMe: '',
   warmUp: true,
+  reviewLast: true,
   recap: true,
   useHistory: true,
 }
@@ -78,6 +89,7 @@ export function normalizeSettings(raw: unknown): TutorSettings {
     callMe: str(r.callMe, 30),
     aboutMe: str(r.aboutMe, 600),
     warmUp: typeof r.warmUp === 'boolean' ? r.warmUp : d.warmUp,
+    reviewLast: typeof r.reviewLast === 'boolean' ? r.reviewLast : d.reviewLast,
     recap: typeof r.recap === 'boolean' ? r.recap : d.recap,
     useHistory: typeof r.useHistory === 'boolean' ? r.useHistory : d.useHistory,
   }
@@ -114,13 +126,21 @@ export function settingsToRules(s: TutorSettings): string[] {
       strict: 'Correct pronunciation carefully: model the word or sound, have them repeat, and praise improvement.',
     }[s.pronunciation],
   )
-  const focus = s.focus.map((f) => ({ speaking: 'speaking', listening: 'listening', reading: 'reading aloud', vocabulary: 'vocabulary' })[f])
-  rules.push(`Spend extra time on: ${focus.join(', ')}.`)
+  // lesson focus changes how the lesson is run, not what's in it
+  for (const f of s.focus)
+    rules.push(
+      {
+        speaking: 'Speaking focus: ask open questions and follow-ups so the student does most of the talking; ask them to say more when an answer is short.',
+        listening: 'Listening focus: talk the student through explanations, meanings and examples yourself (in a course, the slide text outside the dialogues), then check they understood with a quick question.',
+        reading: 'Reading-aloud focus: have the student read slide text aloud beyond the dialogues and turn-taking exercises, including explanations, meanings and recaps. In free talk, have them read the phrases you write in the chat.',
+        vocabulary: 'Vocabulary focus: stop on key words and phrases, check the student knows the meaning, and have them use each in a sentence of their own.',
+      }[f],
+    )
   rules.push(
     {
-      relaxed: 'Keep a relaxed pace: cover fewer slides and give more practice on each.',
-      standard: 'Keep a steady pace so the lesson covers its main parts in the booked time.',
-      brisk: 'Keep a brisk pace: move on as soon as the student is comfortable.',
+      relaxed: 'Keep a relaxed pace: cover fewer slides (in free talk, fewer topics) and spend more time on each.',
+      standard: 'Keep a steady pace: cover the main parts of the lesson in the booked time (in free talk, a good mix of topics).',
+      brisk: 'Keep a brisk pace: move to the next slide or topic as soon as the student is comfortable.',
     }[s.pace],
   )
   rules.push(
@@ -135,6 +155,7 @@ export function settingsToRules(s: TutorSettings): string[] {
   if (s.tutorName) rules.push(`Your name is ${s.tutorName}.`)
   if (s.callMe) rules.push(`Call the student "${s.callMe}".`)
   rules.push(s.warmUp ? 'Start with one or two minutes of light warm-up chat.' : 'Start the lesson straight away after a short greeting.')
-  if (s.recap) rules.push('In the last two minutes, recap three key phrases from the lesson and write them in the chat with write_in_chat.')
+  if (s.reviewLast) rules.push('After the greeting (and warm-up, if any), spend two or three minutes reviewing the student\'s last lesson (see "Last lesson" in the student data): ask what they remember and have them use one or two of its phrases. If there is no last lesson, skip this.')
+  if (s.recap) rules.push('In the last three minutes, recap the vocabulary taught in this lesson: go through each key word or phrase, have the student use it in a short sentence, and write the list in the chat with write_in_chat.')
   return rules
 }
