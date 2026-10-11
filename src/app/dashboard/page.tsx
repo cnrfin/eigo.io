@@ -1433,7 +1433,7 @@ function DashboardContent() {
                     <span
                       className="text-xs font-medium px-3 py-1.5 rounded-full"
                       style={{
-                        background: minutesRemaining < 30 ? 'rgba(240, 96, 96, 0.1)' : 'rgba(0, 194, 184, 0.1)',
+                        background: minutesRemaining < 30 ? 'rgba(240, 96, 96, 0.1)' : 'color-mix(in srgb, var(--accent) 10%, transparent)',
                         color: minutesRemaining < 30 ? 'var(--danger)' : 'var(--accent)',
                       }}
                     >
@@ -1931,14 +1931,14 @@ function DashboardContent() {
                                                   disabled={reviewingCardId === card.id}
                                                   className="py-2.5 text-center transition-all hover:opacity-90 disabled:opacity-50"
                                                   style={{
-                                                    background: r.rating === 1 ? 'rgba(239,68,68,0.15)'
-                                                      : r.rating === 2 ? 'rgba(234,179,8,0.15)'
-                                                      : r.rating === 3 ? 'rgba(59,130,246,0.15)'
-                                                      : 'rgba(34,197,94,0.15)',
-                                                    color: r.rating === 1 ? '#ef4444'
-                                                      : r.rating === 2 ? '#ca8a04'
-                                                      : r.rating === 3 ? '#3b82f6'
-                                                      : '#16a34a',
+                                                    background: r.rating === 1 ? 'var(--rose-bg)'
+                                                      : r.rating === 2 ? 'var(--amber-bg)'
+                                                      : r.rating === 3 ? 'var(--blue-bg)'
+                                                      : 'var(--accent-bg)',
+                                                    color: r.rating === 1 ? 'var(--rose)'
+                                                      : r.rating === 2 ? 'var(--amber)'
+                                                      : r.rating === 3 ? 'var(--blue)'
+                                                      : 'var(--accent)',
                                                   }}
                                                 >
                                                   <span className="text-xs font-semibold block">
@@ -1997,7 +1997,7 @@ function DashboardContent() {
                             key={f}
                             onClick={() => { setVocabFilter(f); setVocabVisible(20) }}
                             className="px-2.5 py-1 text-xs font-medium rounded-full transition-all duration-[120ms] ease-out hover:scale-105 active:scale-95"
-                            style={pillTabStyle(vocabFilter === f, theme === 'dark' ? 'dark' : 'light')}
+                            data-fill style={pillTabStyle(vocabFilter === f, theme === 'dark' ? 'dark' : 'light')}
                           >
                             {f === 'all' ? (locale === 'ja' ? 'すべて' : 'All')
                               : f === 'learning' ? (locale === 'ja' ? '学習中' : 'Learning')
@@ -2043,8 +2043,8 @@ function DashboardContent() {
                                   <span
                                     className="w-2 h-2 rounded-full"
                                     style={{
-                                      background: card.comfort_level === 'mastered' ? '#22c55e'
-                                        : card.comfort_level === 'reviewing' ? '#facc15'
+                                      background: card.comfort_level === 'mastered' ? 'var(--accent)'
+                                        : card.comfort_level === 'reviewing' ? 'var(--amber)'
                                         : 'var(--accent)',
                                     }}
                                   />
@@ -2084,12 +2084,12 @@ function DashboardContent() {
                                         <span
                                           className="text-xs px-2 py-0.5 rounded-full"
                                           style={{
-                                            background: card.comfort_level === 'mastered' ? 'rgba(34,197,94,0.15)'
-                                              : card.comfort_level === 'reviewing' ? 'rgba(234,179,8,0.15)'
-                                              : 'rgba(59,130,246,0.15)',
-                                            color: card.comfort_level === 'mastered' ? '#16a34a'
-                                              : card.comfort_level === 'reviewing' ? '#ca8a04'
-                                              : '#3b82f6',
+                                            background: card.comfort_level === 'mastered' ? 'var(--accent-bg)'
+                                              : card.comfort_level === 'reviewing' ? 'var(--amber-bg)'
+                                              : 'var(--blue-bg)',
+                                            color: card.comfort_level === 'mastered' ? 'var(--accent)'
+                                              : card.comfort_level === 'reviewing' ? 'var(--amber)'
+                                              : 'var(--blue)',
                                           }}
                                         >
                                           {card.comfort_level === 'learning' ? (locale === 'ja' ? '学習中' : 'Learning')

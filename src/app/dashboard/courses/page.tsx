@@ -68,7 +68,7 @@ export default function CoursesPage() {
           return (
             <button key={cat.key} onClick={() => setCategory(cat.key)}
               className="px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-[120ms] ease-out hover:scale-[1.03] active:scale-95"
-              style={pillTabStyle(active, theme === 'dark' ? 'dark' : 'light')}
+              data-fill style={pillTabStyle(active, theme === 'dark' ? 'dark' : 'light')}
               aria-pressed={active}>
               {locale === 'ja' ? cat.ja : cat.en}
             </button>
@@ -111,7 +111,7 @@ export default function CoursesPage() {
                   {t(`${lessons.length}レッスン · 完了 ${done}`, `${lessons.length} lessons · ${done} completed`)}
                 </p>
                 <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--card-inset)' }}>
-                  <div className="h-full rounded-full transition-all" style={{ background: 'var(--accent)', width: `${pct}%` }} />
+                  <div className="h-full rounded-full transition-all grow-in" style={{ background: 'var(--accent)', width: `${pct}%` }} />
                 </div>
               </SquircleBox>
             )

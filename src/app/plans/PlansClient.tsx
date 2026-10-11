@@ -204,7 +204,7 @@ export default function PlansPage() {
         className="pointer-events-none absolute inset-0"
         aria-hidden="true"
         style={{
-          background: 'radial-gradient(ellipse 60% 50% at 50% 40%, rgba(0, 194, 184, 0.06) 0%, transparent 70%)',
+          background: 'radial-gradient(ellipse 60% 50% at 50% 40%, color-mix(in srgb, var(--accent) 6%, transparent) 0%, transparent 70%)',
         }}
       />
 

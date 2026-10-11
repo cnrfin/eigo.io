@@ -4,6 +4,7 @@ import { LanguageProvider } from '@/context/LanguageContext'
 import { AuthProvider } from '@/context/AuthContext'
 import { ThemeProvider } from '@/context/ThemeContext'
 import { SquircleNoScript } from '@squircle-js/react'
+import TapFill from '@/components/ui/TapFill'
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
@@ -11,6 +12,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       <LanguageProvider>
         <AuthProvider>
           <SquircleNoScript />
+          <TapFill />
           {children}
         </AuthProvider>
       </LanguageProvider>

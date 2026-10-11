@@ -24,7 +24,7 @@ type Node = { referenceText: string; displayText?: string; targetLabel?: string;
 type Position = { pairs: Node[][] }
 type RecState = 'idle' | 'starting' | 'recording' | 'grading'
 
-const C1 = '#00c2b8'
+const C1 = '#4fa88f' // sage
 const C2 = '#3ad6a0'
 function lerpColor(a: string, b: string, t: number): string {
   const pa = parseInt(a.slice(1), 16), pb = parseInt(b.slice(1), 16)

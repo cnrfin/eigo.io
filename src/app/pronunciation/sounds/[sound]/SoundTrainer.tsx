@@ -165,7 +165,7 @@ export default function SoundTrainer({ data }: { data: SoundTrainerData }) {
           <h2 style={{ ...secTitle, margin: 0 }} className="jp">聞き比べる</h2>
           <div style={{ marginLeft: 'auto', display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             {data.voiceLabels.map((label, i) => (
-              <button key={label} onClick={() => setVoice(i)} aria-pressed={voice === i} className={`jp ${pillCls}`} style={pillTabStyle(voice === i, th)}>{label}</button>
+              <button key={label} onClick={() => setVoice(i)} aria-pressed={voice === i} className={`jp ${pillCls}`} data-fill style={pillTabStyle(voice === i, th)}>{label}</button>
             ))}
           </div>
         </div>
@@ -179,7 +179,7 @@ export default function SoundTrainer({ data }: { data: SoundTrainerData }) {
         <h2 style={secTitle} className="jp">発音のしかた</h2>
         <div style={{ display: 'flex', gap: 8, marginBottom: 18 }}>
           {(['r', 'l'] as const).map((s) => (
-            <button key={s} onClick={() => setTab(s)} aria-pressed={tab === s} className={`jp ${pillCls}`} style={pillTabStyle(tab === s, th)}>{data.sides[s].label} の作り方</button>
+            <button key={s} onClick={() => setTab(s)} aria-pressed={tab === s} className={`jp ${pillCls}`} data-fill style={pillTabStyle(tab === s, th)}>{data.sides[s].label} の作り方</button>
           ))}
         </div>
         <ol style={{ listStyle: 'none', margin: 0, padding: 0 }}>

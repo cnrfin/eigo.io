@@ -1671,7 +1671,7 @@ function AdminContent() {
                               style={{
                                 background: selectedStudentId === s.id
                                   ? 'rgba(255, 255, 255, 0.25)'
-                                  : s.minutesRemaining < 30 ? 'rgba(240, 96, 96, 0.15)' : 'rgba(0, 194, 184, 0.15)',
+                                  : s.minutesRemaining < 30 ? 'rgba(240, 96, 96, 0.15)' : 'color-mix(in srgb, var(--accent) 15%, transparent)',
                                 color: selectedStudentId === s.id
                                   ? 'var(--selected-text)'
                                   : s.minutesRemaining < 30 ? 'var(--danger)' : 'var(--accent)',
@@ -1736,26 +1736,26 @@ function AdminContent() {
                             <p className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: 'var(--text-subtle)' }}>Comfort breakdown</p>
                             <div className="flex rounded-full overflow-hidden h-3 mb-2" style={{ background: 'var(--surface-hover)' }}>
                               {studentProgress.stats.learning > 0 && (
-                                <div style={{ width: `${(studentProgress.stats.learning / studentProgress.stats.totalPhrases) * 100}%`, background: '#3b82f6' }} />
+                                <div className="grow-in" style={{ width: `${(studentProgress.stats.learning / studentProgress.stats.totalPhrases) * 100}%`, background: 'var(--blue)' }} />
                               )}
                               {studentProgress.stats.reviewing > 0 && (
-                                <div style={{ width: `${(studentProgress.stats.reviewing / studentProgress.stats.totalPhrases) * 100}%`, background: '#facc15' }} />
+                                <div className="grow-in" style={{ width: `${(studentProgress.stats.reviewing / studentProgress.stats.totalPhrases) * 100}%`, background: 'var(--amber)' }} />
                               )}
                               {studentProgress.stats.mastered > 0 && (
-                                <div style={{ width: `${(studentProgress.stats.mastered / studentProgress.stats.totalPhrases) * 100}%`, background: '#22c55e' }} />
+                                <div className="grow-in" style={{ width: `${(studentProgress.stats.mastered / studentProgress.stats.totalPhrases) * 100}%`, background: 'var(--accent)' }} />
                               )}
                             </div>
                             <div className="flex gap-4 text-xs" style={{ color: 'var(--text-muted)' }}>
                               <span className="flex items-center gap-1.5">
-                                <span className="w-2 h-2 rounded-full" style={{ background: '#3b82f6' }} />
+                                <span className="w-2 h-2 rounded-full" style={{ background: 'var(--blue)' }} />
                                 Learning ({studentProgress.stats.learning})
                               </span>
                               <span className="flex items-center gap-1.5">
-                                <span className="w-2 h-2 rounded-full" style={{ background: '#facc15' }} />
+                                <span className="w-2 h-2 rounded-full" style={{ background: 'var(--amber)' }} />
                                 Reviewing ({studentProgress.stats.reviewing})
                               </span>
                               <span className="flex items-center gap-1.5">
-                                <span className="w-2 h-2 rounded-full" style={{ background: '#22c55e' }} />
+                                <span className="w-2 h-2 rounded-full" style={{ background: 'var(--accent)' }} />
                                 Mastered ({studentProgress.stats.mastered})
                               </span>
                             </div>
@@ -1781,12 +1781,12 @@ function AdminContent() {
                                     <span
                                       className="text-xs px-2 py-0.5 rounded-full"
                                       style={{
-                                        background: card.comfort_level === 'mastered' ? 'rgba(34,197,94,0.15)'
-                                          : card.comfort_level === 'reviewing' ? 'rgba(234,179,8,0.15)'
-                                          : 'rgba(59,130,246,0.15)',
-                                        color: card.comfort_level === 'mastered' ? '#16a34a'
-                                          : card.comfort_level === 'reviewing' ? '#ca8a04'
-                                          : '#3b82f6',
+                                        background: card.comfort_level === 'mastered' ? 'var(--accent-bg)'
+                                          : card.comfort_level === 'reviewing' ? 'var(--amber-bg)'
+                                          : 'var(--blue-bg)',
+                                        color: card.comfort_level === 'mastered' ? 'var(--accent)'
+                                          : card.comfort_level === 'reviewing' ? 'var(--amber)'
+                                          : 'var(--blue)',
                                       }}
                                     >
                                       {card.comfort_level}
@@ -1825,9 +1825,9 @@ function AdminContent() {
                                     <span
                                       className="w-2 h-2 rounded-full"
                                       style={{
-                                        background: card.comfort_level === 'mastered' ? '#22c55e'
-                                          : card.comfort_level === 'reviewing' ? '#facc15'
-                                          : '#3b82f6',
+                                        background: card.comfort_level === 'mastered' ? 'var(--accent)'
+                                          : card.comfort_level === 'reviewing' ? 'var(--amber)'
+                                          : 'var(--blue)',
                                       }}
                                     />
                                   </div>

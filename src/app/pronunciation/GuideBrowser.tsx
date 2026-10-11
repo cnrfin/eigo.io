@@ -76,12 +76,12 @@ export default function GuideBrowser({ guides }: { guides: BrowserGuide[] }) {
           <span style={{ ...eyebrow, margin: 0, alignSelf: 'center', flex: 'none', padding: '0 2px' }}>子音</span>
           {consonants.map((g) => (
             <button key={g.slug} onClick={() => setActive(g.slug)} aria-pressed={g.slug === active}
-              className={`${styles.chip} ${pillCls}`} style={pillTabStyle(g.slug === active, th)}>{g.shortLabel}</button>
+              className={`${styles.chip} ${pillCls}`} data-fill style={pillTabStyle(g.slug === active, th)}>{g.shortLabel}</button>
           ))}
           <span style={{ ...eyebrow, margin: 0, alignSelf: 'center', flex: 'none', padding: '0 2px' }}>母音</span>
           {vowels.map((g) => (
             <button key={g.slug} onClick={() => setActive(g.slug)} aria-pressed={g.slug === active}
-              className={`${styles.chip} ${pillCls}`} style={pillTabStyle(g.slug === active, th)}>{g.shortLabel}</button>
+              className={`${styles.chip} ${pillCls}`} data-fill style={pillTabStyle(g.slug === active, th)}>{g.shortLabel}</button>
           ))}
         </div>
       </div>

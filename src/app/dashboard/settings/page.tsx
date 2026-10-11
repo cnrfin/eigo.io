@@ -614,7 +614,7 @@ export default function SettingsPage() {
                       onClick={() => handleSetAccent(val)}
                       disabled={savingAccent}
                       className="px-3 py-1 text-xs font-medium rounded-full transition-all duration-[120ms] ease-out hover:scale-[1.03] active:scale-95 disabled:opacity-60"
-                      style={pillTabStyle(accent === val, theme === 'dark' ? 'dark' : 'light')}
+                      data-fill style={pillTabStyle(accent === val, theme === 'dark' ? 'dark' : 'light')}
                     >
                       {val === 'en-GB' ? 'UK 🇬🇧' : 'US 🇺🇸'}
                     </button>

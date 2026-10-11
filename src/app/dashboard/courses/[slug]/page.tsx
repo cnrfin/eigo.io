@@ -56,7 +56,7 @@ function trackWave(slug: string): (idx: number) => number {
 // along the line, poster-style. Level 1 = brand teal. The station marker uses
 // the start colour. All read on both the dark and light track bg.
 const LEVEL_COLORS: [string, string][] = [
-  ['#00c2b8', '#3ad6a0'], // teal → green
+  ['#2f8a75', '#7cc7ae'], // sage
   ['#e85d8a', '#f0913f'], // pink → orange
   ['#4a82e0', '#8a6df0'], // blue → purple
   ['#34a853', '#9ccb3b'], // green → lime
@@ -451,7 +451,7 @@ export default function CoursePage() {
             {t(`${flat.length}レッスン · 完了 ${doneCount}`, `${flat.length} lessons · ${doneCount} completed`)}
           </p>
           <div className="mt-2 h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--card-inset)' }}>
-            <div className="h-full rounded-full transition-all" style={{ background: 'var(--accent)', width: `${flat.length ? Math.round((doneCount / flat.length) * 100) : 0}%` }} />
+            <div className="h-full rounded-full transition-all grow-in" style={{ background: 'var(--accent)', width: `${flat.length ? Math.round((doneCount / flat.length) * 100) : 0}%` }} />
           </div>
           {!entitled && (
             <p className="text-xs mt-4 flex items-center gap-1.5" style={{ color: 'var(--text-muted)' }}>

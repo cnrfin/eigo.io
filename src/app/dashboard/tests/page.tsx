@@ -392,7 +392,7 @@ export default function TestsPage() {
                     {locale === 'ja' ? course.description_ja : course.description}
                   </p>
                   <div className="h-1.5 rounded-full overflow-hidden mt-1" style={{ background: 'var(--card-inset)' }}>
-                    <div className="h-full rounded-full" style={{ background: 'var(--accent)', width: `${lessons.length ? Math.round((done / lessons.length) * 100) : 0}%` }} />
+                    <div className="h-full rounded-full grow-in" style={{ background: 'var(--accent)', width: `${lessons.length ? Math.round((done / lessons.length) * 100) : 0}%` }} />
                   </div>
                 </SquircleBox>
                 <p className="text-[11px] font-semibold uppercase tracking-wider mb-3" style={{ color: 'var(--text-subtle)' }}>

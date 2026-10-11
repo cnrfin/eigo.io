@@ -773,7 +773,7 @@ export default function LessonPlayerPage() {
                   // Incorrect uses a NEUTRAL grey wash (only the ✕ and label
                   // stay red): a wall of red reads as judgement, not feedback.
                   background: answered
-                    ? 'linear-gradient(105deg, rgba(0,194,184,0.26) 0%, rgba(0,194,184,0.12) 45%, rgba(0,194,184,0.05) 100%), var(--dash-bg)'
+                    ? 'linear-gradient(105deg, color-mix(in srgb, var(--accent) 26%, transparent) 0%, color-mix(in srgb, var(--accent) 12%, transparent) 45%, color-mix(in srgb, var(--accent) 5%, transparent) 100%), var(--dash-bg)'
                     : 'linear-gradient(105deg, rgba(127,127,134,0.20) 0%, rgba(127,127,134,0.09) 45%, rgba(127,127,134,0.03) 100%), var(--dash-bg)',
                   borderTop: `1px solid ${answered ? 'var(--accent)' : 'var(--edge)'}`,
                 }}>

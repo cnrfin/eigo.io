@@ -2,46 +2,47 @@
 
 @source "../../";
 
-/* ===== DARK MODE (default) ===== */
+/* ===== DARK MODE (default) =====
+   Neutral ramp shared with the CUPS app (lib/theme.ts) + eigo's sage accent. */
 :root {
   /* Native form controls / scrollbars / media players follow the theme */
   color-scheme: dark;
-  --bg: #0a0a0f;
-  --surface: #16161d;
-  --surface-hover: #2a2a38;
-  --surface-alt: #2a2a36;
-  --text: #e8e8ed;
-  --text-secondary: #9d9daa;
-  --text-muted: #6b6b7a;
-  --text-subtle: #4a4a58;
-  --text-disabled: #353540;
-  --border: #2a2a36;
-  --border-subtle: #1e1e28;
-  --accent: #00c2b8;
-  --accent-hover: #2ed8d0;
-  --accent-light: #5eeae4;
-  --accent-bg: #003d3a;
-  --danger: #f06060;
-  --danger-hover: #f48888;
-  --success: #00c2b8;
-  --success-light: #5eeae4;
-  --warning: #f0b040;
-  --selected-bg: #e8e8ed;
-  --selected-text: #0a0a0f;
-  --card-white: #1c1c25;
-  --header-glass: rgba(10, 10, 15, 0.7);
+  --bg: #16181d;
+  --surface: #2a2d33;
+  --surface-hover: #393f4c;
+  --surface-alt: #393f4c;
+  --text: #ffffff;
+  --text-secondary: #cacaca;
+  --text-muted: #6b6f78;
+  --text-subtle: #4f535c;
+  --text-disabled: #3a3d44;
+  --border: #2a2d33;
+  --border-subtle: #212328;
+  --accent: #7cc7ae;
+  --accent-hover: #95d4be;
+  --accent-light: #a9dec9;
+  --accent-bg: #22352f;
+  --danger: #ef5f64;
+  --danger-hover: #f38a8e;
+  --success: #7cc7ae;
+  --success-light: #a9dec9;
+  --warning: #f2c27a;
+  --selected-bg: #ffffff;
+  --selected-text: #0d1a16;
+  --card-white: #1c1e23;
+  --header-glass: rgba(22, 24, 29, 0.7);
   /* LLM-style dashboard surfaces (dark equivalents of the light spec) */
-  --dash-bg: #0a0a0f;
-  --panel: #16161d;
-  --card: #16161d;
-  --hairline: rgba(255, 255, 255, 0.08);
-  --divider: rgba(255, 255, 255, 0.08);
+  --dash-bg: #16181d;
+  --panel: #212328;
+  --card: #212328;
+  --hairline: rgba(255, 255, 255, 0.06);
+  --divider: rgba(255, 255, 255, 0.07);
   --edge: rgba(255, 255, 255, 0.08);
-  --track-line: #4a4a58; /* course-map dashed connector (dark) */
-  --card-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
-  --inset: #20202a;
-  --card-inset: #20202a;
-  --overlay: rgba(0, 0, 0, 0.85); /* full-screen modal dim */
+  --track-line: #4f535c; /* course-map dashed connector (dark) */
+  --card-shadow: none;
+  --inset: #2a2d33;
+  --card-inset: #2a2d33;
+  --overlay: rgba(12, 13, 16, 0.85); /* full-screen modal dim */
   --item-hover: rgba(255, 255, 255, 0.06);
   --item-active: rgba(255, 255, 255, 0.10);
   --border-hover: rgba(255, 255, 255, 0.14);
@@ -68,58 +69,63 @@
   --v3-cat-adjective-bg: #241c38; --v3-cat-adjective-fg: #b79ae8;
   --v3-cat-verb-bg: #2e2410; --v3-cat-verb-fg: #d8b25f;
   --v3-cat-travel-bg: #13281a; --v3-cat-travel-fg: #6bd88f;
+
+  /* Supporting tints (soft fill + readable ink) for badges, chips and progress */
+  --blue-bg: #1e2c3d; --blue: #7db5f0;
+  --amber-bg: #3a2f1c; --amber: #f2c27a;
+  --rose-bg: #3b2329; --rose: #f09aae;
+  --violet-bg: #2c2640; --violet: #b9a6f2;
 }
 
 /* ===== LIGHT MODE =====
-   Warm-neutral palette: bg #F7F6F5, text #2B2B2D, cards pure white,
-   secondary grey (inputs / inset surfaces) #E9EAE6. The grey/text ramps are
-   neutralised to match (the old ones had a blue-violet tint). */
+   Neutral palette shared with the CUPS app: bg #FCFCFC, cards #F2F2F2,
+   inset surfaces #EBEBEB, sage accent #2F8A75. */
 :root[data-theme="light"] {
   color-scheme: light;
-  --bg: #f7f6f5;
-  --surface: #f0efed;
-  --surface-hover: #dfe0db;
-  --surface-alt: #d2d3cc;
-  --text: #151414;
-  --text-secondary: #515155;
-  --text-muted: #707075;
-  --text-subtle: #9fa0a2;
-  --text-disabled: #c9c9cb;
-  --border: #d6d6d2;
-  --border-subtle: #e4e5e0;
-  --accent: #00a89f;
-  --accent-hover: #008f88;
-  --accent-light: #5eeae4;
-  --accent-bg: #d4f6f4;
-  --danger: #e55050;
-  --danger-hover: #cc3c3c;
-  --success: #00a89f;
-  --success-light: #5eeae4;
-  --warning: #e0a030;
-  --selected-bg: #3a3a3e;
-  --selected-text: #f7f6f5;
+  --bg: #fcfcfc;
+  --surface: #ebebeb;
+  --surface-hover: #e2e2e2;
+  --surface-alt: #d9d9d9;
+  --text: #000000;
+  --text-secondary: #202020;
+  --text-muted: #8a8a8a;
+  --text-subtle: #b5b5b5;
+  --text-disabled: #d0d0d0;
+  --border: #e2e2e2;
+  --border-subtle: #eeeeee;
+  --accent: #2f8a75;
+  --accent-hover: #267462;
+  --accent-light: #8fd3bb;
+  --accent-bg: #e6f3ee;
+  --danger: #e5484d;
+  --danger-hover: #cc3b40;
+  --success: #2f8a75;
+  --success-light: #8fd3bb;
+  --warning: #c08a3a;
+  --selected-bg: #1e1e1e;
+  --selected-text: #ffffff;
   --card-white: #ffffff;
-  --header-glass: rgba(247, 246, 245, 0.7);
+  --header-glass: rgba(252, 252, 252, 0.7);
   /* LLM-style dashboard surfaces — warm off-white bg, white cards/panels.
      BORDERLESS in light mode: cards/buttons separate from the bg by colour +
      shadow alone (hairline transparent); --divider keeps list separators. */
-  --dash-bg: #f7f6f5;
-  --panel: #ffffff;
-  --card: #ffffff;
+  --dash-bg: #fcfcfc;
+  --panel: #f2f2f2;
+  --card: #f2f2f2;
   --hairline: transparent;
   --divider: rgba(0, 0, 0, 0.06);
   --edge: rgba(0, 0, 0, 0.08); /* 1px border for buttons that sit ON cards */
   --track-line: #d7d7da; /* course-map dashed connector (light) — subtle */
   /* Diffuse ambient shadow — a tight, offset shadow concentrates into a dark
      line at the bottom edge that reads as a border; a wide blur doesn't. */
-  --card-shadow: 0 1px 6px rgba(0, 0, 0, 0.04);
-  --inset: #f0efed;
-  --card-inset: #f3f3f3; /* inset boxes that sit ON white cards — softer than --inset */
+  --card-shadow: none;
+  --inset: #ebebeb;
+  --card-inset: #ebebeb; /* inset boxes that sit ON white cards — softer than --inset */
   /* Full-screen modal scrim. Light mode uses a WHITE-OUT (near-opaque warm
      white) rather than a dark dim: floating text needs the page suppressed,
      and dark-on-frosted-white is the light-theme equivalent of dark mode's
      near-black backdrop. */
-  --overlay: rgba(247, 246, 245, 0.93);
+  --overlay: rgba(252, 252, 252, 0.93);
   --item-hover: rgba(0, 0, 0, 0.04);
   --item-active: rgba(0, 0, 0, 0.07);
   --border-hover: rgba(0, 0, 0, 0.10);
@@ -135,6 +141,11 @@
   --v3-cat-adjective-bg: #ece4fb; --v3-cat-adjective-fg: #7358bd;
   --v3-cat-verb-bg: #fbeed6; --v3-cat-verb-fg: #a9741f;
   --v3-cat-travel-bg: #dcf3e2; --v3-cat-travel-fg: #2c9350;
+
+  --blue-bg: #e9f2fc; --blue: #4a86c8;
+  --amber-bg: #fcf2e1; --amber: #c08a3a;
+  --rose-bg: #fcebee; --rose: #c9566f;
+  --violet-bg: #f1edfc; --violet: #8268c6;
 }
 
 /* Japanese text — keep Latin glyphs in Outfit (so mixed strings like "eigo.io は…"
@@ -260,11 +271,11 @@ audio::-webkit-media-controls-panel {
   background: rgba(22, 22, 29, 0.6);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
-  border: 1.5px solid rgba(0, 194, 184, 0.4);
+  border: 1.5px solid color-mix(in srgb, var(--accent) 40%, transparent);
 }
 :root[data-theme="light"] .glass-card-accent {
   background: rgba(255, 255, 255, 0.55);
-  border: 1.5px solid rgba(0, 168, 159, 0.4);
+  border: 1.5px solid color-mix(in srgb, var(--accent) 40%, transparent);
 }
 
 /* Book-trial CTA — white in dark mode, accent in light mode */
@@ -895,4 +906,40 @@ html.lenis, html.lenis body { height: auto; }
 @media (max-width: 640px) {
   .lp-cp-plane { transform: perspective(1100px) rotateX(40deg) !important; }
   .lp-cp-track { height: 300px !important; }
+}
+
+/* ===== Tap-origin fill (CUPS "shockwave" selection) =====
+   Opt in with data-fill; driven by components/ui/TapFill.tsx. A layer in the
+   button's previous background sits above its (already updated) background
+   and below its content; a circular hole grows from the click point. */
+@property --tf-r { syntax: '<length>'; inherits: false; initial-value: 0px; }
+[data-fill] { isolation: isolate; } /* TapFill makes it position:relative only if it's static */
+[data-fill]::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  background: var(--tf-old, transparent);
+  opacity: 0;
+  -webkit-mask: radial-gradient(circle at var(--tf-x, 50%) var(--tf-y, 50%), transparent var(--tf-r), #000 calc(var(--tf-r) + 0.5px));
+  mask: radial-gradient(circle at var(--tf-x, 50%) var(--tf-y, 50%), transparent var(--tf-r), #000 calc(var(--tf-r) + 0.5px));
+}
+[data-fill].tf-run::after {
+  opacity: 1;
+  animation: tf-reveal 320ms cubic-bezier(0.33, 1, 0.68, 1) forwards;
+}
+@keyframes tf-reveal {
+  from { --tf-r: 0px; }
+  to { --tf-r: var(--tf-max, 200px); }
+}
+
+/* ===== Progress bars grow in from the left (opt in with .grow-in on the fill) ===== */
+.grow-in { transform-origin: left center; animation: grow-in 0.9s cubic-bezier(0.22, 1, 0.36, 1) both; }
+@keyframes grow-in { from { transform: scaleX(0); } }
+
+@media (prefers-reduced-motion: reduce) {
+  [data-fill].tf-run::after { animation: none; opacity: 0; }
+  .grow-in { animation: none; }
 }

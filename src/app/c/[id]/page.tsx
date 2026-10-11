@@ -111,7 +111,7 @@ export default async function ChallengeLandingPage({ params }: { params: Promise
               margin: '16px 0 24px',
               padding: '10px 20px',
               borderRadius: 999,
-              background: 'var(--accent-bg, rgba(0,194,184,0.12))',
+              background: 'var(--accent-bg, rgba(47,138,117,0.12))',
               color: 'var(--accent)',
               fontWeight: 800,
               fontSize: 18,

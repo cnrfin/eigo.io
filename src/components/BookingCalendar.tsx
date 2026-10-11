@@ -377,6 +377,7 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
           return (
             <Squircle key={d} asChild cornerRadius={8} cornerSmoothing={0.8}>
               <button
+                data-fill
                 onClick={() => { if (!locked) { setDuration(d); setSelectedBookings([]); setBookingResult(null) } }}
                 disabled={locked}
                 className="px-5 py-2.5 text-sm font-medium transition-all duration-[120ms] ease-out hover:scale-[1.02] active:scale-[0.97] disabled:hover:scale-100 disabled:active:scale-100"
@@ -432,6 +433,7 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
                 <Squircle key={i} asChild cornerRadius={8} cornerSmoothing={0.8}>
                   <button
                     disabled={day === null || isPast(day)}
+                    data-fill
                     onClick={() => handleSelectDay(day)}
                     className="aspect-square flex items-center justify-center text-sm transition-all duration-[120ms] ease-out relative hover:scale-105 active:scale-95 disabled:hover:scale-100 disabled:active:scale-100"
                     style={{
@@ -487,6 +489,7 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
                     return (
                       <Squircle key={time} asChild cornerRadius={8} cornerSmoothing={0.8}>
                         <button
+                          data-fill
                           onClick={() => toggleSlot(time)}
                           disabled={blocked}
                           className="px-2 py-2.5 text-sm transition-all duration-[120ms] ease-out hover:scale-[1.02] active:scale-[0.97] disabled:hover:scale-100 disabled:active:scale-100"

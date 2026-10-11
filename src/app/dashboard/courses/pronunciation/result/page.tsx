@@ -115,7 +115,7 @@ export default function PronunciationResultPage() {
                           <span className="text-sm font-bold tabular-nums shrink-0" style={{ color: barColor(it.score) }}>{it.score}</span>
                         </div>
                         <div className="h-2 rounded-full overflow-hidden" style={{ background: 'var(--inset)' }}>
-                          <div className="h-full rounded-full" style={{ width: `${Math.max(0, Math.min(100, it.score))}%`, background: barColor(it.score) }} />
+                          <div className="h-full rounded-full grow-in" style={{ width: `${Math.max(0, Math.min(100, it.score))}%`, background: barColor(it.score) }} />
                         </div>
                         {it.audioUrl && <audio controls src={it.audioUrl} className="w-full h-9 mt-2" />}
                       </div>

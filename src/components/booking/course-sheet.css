@@ -67,7 +67,7 @@
 .cs-p { display: flex; align-items: center; gap: 10px; font-size: .74rem; color: var(--text-secondary); white-space: nowrap; }
 .cs-info .cs-p { margin-top: 14px; max-width: 300px; }
 .cs-prog { flex: 1; height: 4px; border-radius: 2px; background: var(--cs-track); overflow: hidden; }
-.cs-prog i { display: block; height: 100%; border-radius: 2px; background: var(--accent); }
+.cs-prog i { display: block; height: 100%; border-radius: 2px; background: var(--accent); transform-origin: left center; animation: grow-in 0.9s cubic-bezier(0.22, 1, 0.36, 1) both; }
 
 .cs-search {
   margin: 22px 24px 4px; height: 42px; padding: 0 14px; border-radius: 12px;
