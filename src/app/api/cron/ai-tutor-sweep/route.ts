@@ -47,6 +47,16 @@ export async function GET(request: NextRequest) {
     bookings.add(s.booking_id)
   }
 
+  // Also finish AI lessons whose booked end passed in the last 10 minutes even if every session was
+  // already closed by the page (mark completed, make the summary; both are idempotent).
+  const { data: recent } = await db
+    .from('ai_sessions')
+    .select('booking_id')
+    .lte('ends_at', now.toISOString())
+    .gte('ends_at', new Date(now.getTime() - 10 * 60_000).toISOString())
+    .limit(200)
+  for (const r of recent ?? []) bookings.add(r.booking_id)
+
   for (const id of bookings) {
     await db.from('classroom_sessions').update({ ended_at: now.toISOString(), updated_at: now.toISOString() }).eq('booking_id', id).is('ended_at', null)
     await db.from('bookings').update({ status: 'completed' }).eq('id', id).in('status', ['confirmed', 'no_show'])

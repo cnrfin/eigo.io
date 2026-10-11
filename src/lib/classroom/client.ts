@@ -122,6 +122,8 @@ export async function saveAiTranscript(bookingId: string, sessionId: string, lin
   }
 }
 
+export type SlideRef = { courseId: string; lessonId: string; slideId: string }
+
 /** Something the student did in an AI lesson that the AI tutor should react to. */
 export type StudentAction =
   | { kind: 'chat'; text: string }
@@ -129,8 +131,9 @@ export type StudentAction =
   | { kind: 'save'; term: string }
   | { kind: 'activity'; text: string }
   | { kind: 'media'; text: string }
-  | { kind: 'start' }
-  | { kind: 'resume' }
+  | { kind: 'start'; slide?: SlideRef | null }
+  | { kind: 'resume'; slide?: SlideRef | null }
+  | ({ kind: 'slide' } & SlideRef)
   | { kind: 'nudge' }
   | { kind: 'time' }
 

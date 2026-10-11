@@ -2,6 +2,8 @@ import { NextRequest } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-admin'
 import { json, loadClassroom } from '@/lib/classroom/server'
 import { appendInstructions } from '@/lib/ai-tutor/openai'
+import { slideInstruction } from '@/lib/ai-tutor/brief'
+import { findLesson, loadCourse } from '@/lib/classroom/courses'
 
 /**
  * POST /api/classroom/[id]/ai-context   { sessionId, action }
@@ -13,14 +15,16 @@ import { appendInstructions } from '@/lib/ai-tutor/openai'
  * actions, never write the AI tutor's instructions. Time notes are worked out
  * here from the session's booked end, not from the browser's clock.
  */
+type SlideRef = { courseId: string; lessonId: string; slideId: string }
 type Action =
   | { kind: 'chat'; text: string }
   | { kind: 'lookup'; term: string; meaning: string }
   | { kind: 'save'; term: string }
   | { kind: 'activity'; text: string }
   | { kind: 'media'; text: string }
-  | { kind: 'start' }
-  | { kind: 'resume' }
+  | { kind: 'start'; slide?: SlideRef | null }
+  | { kind: 'resume'; slide?: SlideRef | null }
+  | ({ kind: 'slide' } & SlideRef)
   | { kind: 'nudge' }
   | { kind: 'time' }
 
@@ -51,9 +55,11 @@ function instruction(a: Action, secondsLeft: number): string | null {
       return t ? `On the student's screen: ${t}` : null
     }
     case 'start':
-      return 'The student has joined and can hear you. Greet them now by name and start the lesson as your preferences say (warm-up chat, review of the last lesson, or straight into the first slide). Then pause and listen.'
+      return 'The student has joined and can hear you. Greet them now by name and start the lesson as your preferences say (warm-up chat, review of the last lesson, then the slide on screen). Then pause and listen.'
+    case 'slide':
+      return null // handled in POST (needs the course)
     case 'resume':
-      return 'You are back with the student after a short reconnect (for example a new lesson was just opened). Do not greet again. If a new lesson is open, say so in a few words and start teaching it from the slide on screen; otherwise carry on where you were.'
+      return 'You are back with the student after a short reconnect (for example a new lesson was just opened). Do not greet again. If a new lesson was just opened, say so in a few words and teach the slide on screen; otherwise carry on where you were.'
     case 'nudge':
       if (secondsLeft < 30) return null
       return 'Nobody has spoken for about 9 seconds. You lead the lesson: if the student is in the middle of a task, give a short, friendly prompt; if everything on this slide is done, move to the next slide now (next_slide) and introduce it. In free talk, ask a new question or bring a new topic.'
@@ -97,8 +103,24 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const { data: b } = await getSupabaseAdmin().from('bookings').select('transcript_text').eq('id', booking.id).maybeSingle()
     if (((b?.transcript_text as string | null) ?? '').trim()) action = { kind: 'resume' }
   }
+  // the slide on screen: its full content and checklist, loaded here from the published course
+  const ref = action.kind === 'slide' ? action : action.kind === 'start' || action.kind === 'resume' ? action.slide : null
+  const texts: string[] = []
+  if (ref?.courseId && ref.lessonId && ref.slideId) {
+    const c = await loadCourse(String(ref.courseId))
+    const found = c ? findLesson(c.course, String(ref.lessonId)) : null
+    const t = found ? slideInstruction(found.lesson, String(ref.slideId)) : null
+    if (t) texts.push(t)
+  }
   const text = instruction(action, left)
-  if (!text) return json(200, { sent: false })
-  const ok = await appendInstructions(sess.session_id as string, text)
+  if (text) texts.push(text)
+  if (!texts.length) return json(200, { sent: false })
+  let ok = true
+  for (const t of texts) {
+    let sent = await appendInstructions(sess.session_id as string, t)
+    // appends are limited to 500 tokens: if a long slide is refused, send it without teacher notes
+    if (!sent && t.startsWith('NOW ON THE STUDENT')) sent = await appendInstructions(sess.session_id as string, t.replace(/\nTeacher notes:[^\n]*/, ''))
+    ok = sent && ok
+  }
   return json(ok ? 200 : 502, { sent: ok })
 }

@@ -31,9 +31,9 @@ const CHOICES: Record<ChoiceKey, { title: L; opts: Opt[] }> = {
   pace: {
     title: { ja: 'レッスンのテンポ', en: 'Lesson pace' },
     opts: [
-      { v: 'relaxed', label: { ja: 'じっくり', en: 'Take it slow' }, hint: { ja: 'スライドや話題を少なめにして、ひとつずつじっくり練習します。', en: 'Fewer slides or topics, with more time on each one.' } },
-      { v: 'standard', label: { ja: 'バランスよく', en: 'Balanced' }, hint: { ja: 'コースは時間内にひと通り進め、フリートークは話題をバランスよく広げます。', en: 'Covers the lesson in the time; in free talk, a good mix of topics.' } },
-      { v: 'brisk', label: { ja: 'テンポよく', en: 'Keep it moving' }, hint: { ja: 'できるようになったら、すぐ次のスライドや話題に進みます。', en: 'Moves to the next slide or topic as soon as you’re comfortable.' } },
+      { v: 'relaxed', label: { ja: 'じっくり', en: 'Take it slow' }, hint: { ja: 'スライドの内容はすべて扱い、ひとつずつ多めに練習します。', en: 'Covers everything on each slide, with extra practice on each part.' } },
+      { v: 'standard', label: { ja: 'バランスよく', en: 'Balanced' }, hint: { ja: 'スライドの内容をすべて、ふつうの練習量で進めます。', en: 'Covers everything on each slide with a normal amount of practice.' } },
+      { v: 'brisk', label: { ja: 'テンポよく', en: 'Keep it moving' }, hint: { ja: 'スライドの内容はすべて扱い、できたらすぐ次に進みます。', en: 'Covers everything on each slide, moving on as soon as you’ve got it.' } },
     ],
   },
   tone: {

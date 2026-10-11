@@ -138,9 +138,9 @@ export function settingsToRules(s: TutorSettings): string[] {
     )
   rules.push(
     {
-      relaxed: 'Keep a relaxed pace: cover fewer slides (in free talk, fewer topics) and spend more time on each.',
-      standard: 'Keep a steady pace: cover the main parts of the lesson in the booked time (in free talk, a good mix of topics).',
-      brisk: 'Keep a brisk pace: move to the next slide or topic as soon as the student is comfortable.',
+      relaxed: 'Pace: relaxed. Still cover every item on every slide, but give extra practice on each one before moving on (in free talk, spend longer on each topic).',
+      standard: 'Pace: steady. Cover every item on every slide with normal practice (in free talk, a good mix of topics).',
+      brisk: 'Pace: brisk. Still cover every item on every slide, but move on as soon as the student has it (in free talk, change topics more often).',
     }[s.pace],
   )
   rules.push(

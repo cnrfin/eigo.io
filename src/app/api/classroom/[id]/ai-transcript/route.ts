@@ -61,6 +61,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       })
       .eq('session_id', sess.session_id)
   }
-  if (body.final) waitUntil(summarizeAiLesson(booking.id).catch((e) => console.error('AI lesson summary failed', e)))
+  // Summarise only when the lesson is really over (near the booked end). An early "final" (a session
+  // that dropped) must not lock in a summary of half a lesson; the sweep summarises after the end.
+  const over = Date.now() >= ctx.access.window.end.getTime() - 90_000
+  if (body.final && over) waitUntil(summarizeAiLesson(booking.id).catch((e) => console.error('AI lesson summary failed', e)))
   return json(200, { ok: true })
 }

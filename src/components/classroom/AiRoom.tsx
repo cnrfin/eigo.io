@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import { aiOpenLesson, postEvent, saveAiTranscript, sendAiAction, startAiSession, type StudentAction } from '@/lib/classroom/client'
+import { aiOpenLesson, postEvent, saveAiTranscript, sendAiAction, startAiSession, type SlideRef, type StudentAction } from '@/lib/classroom/client'
 import type { Lesson } from '@/lib/slides/types'
 import { useVolDot } from './audio'
 import ChatPanel from './ChatPanel'
@@ -62,6 +62,10 @@ export default function AiRoom(props: Props) {
   const lastEnd = useRef<{ student: number; tutor: number }>({ student: -1e9, tutor: -1e9 })
   const closing = useRef(false)
   const sessionsStarted = useRef(0)
+  /** connection generation: events from a replaced connection are ignored */
+  const gen = useRef(0)
+  /** the slide whose content the AI tutor was last given */
+  const lastSent = useRef<string | null>(null)
   const lastSpeech = useRef(Date.now())
   const nudged = useRef(false)
 
@@ -75,6 +79,18 @@ export default function AiRoom(props: Props) {
   useEffect(() => {
     live.current = { slides, idx }
   }, [slides, idx])
+  const openNow = useRef(props.open)
+  useEffect(() => {
+    openNow.current = props.open
+  }, [props.open])
+  /** what's on screen, for the server to send the AI tutor (null in free talk) */
+  const slideRef = useCallback((): SlideRef | null => {
+    const o = openNow.current
+    if (!o) return null
+    const { slides: S, idx: i } = live.current
+    const slideId = o.slideId ?? S[i]?.id
+    return slideId ? { courseId: o.courseId, lessonId: o.lessonId, slideId } : null
+  }, [])
 
   const sendEvent = useCallback((ev: Record<string, unknown>) => {
     const ch = dc.current
@@ -169,12 +185,15 @@ export default function AiRoom(props: Props) {
           setRenewing(false)
           lastSpeech.current = Date.now()
           nudged.current = false
-          // GPT-Live waits for the caller unless told to greet: ask it to open the lesson now
-          void act({ kind: sessionsStarted.current++ ? 'resume' : 'start' })
+          // GPT-Live waits for the caller unless told to greet: ask it to open the lesson now,
+          // together with the slide on screen (its content reaches the AI tutor only this way)
+          {
+            const ref = slideRef()
+            lastSent.current = ref?.slideId ?? null
+            void act({ kind: sessionsStarted.current++ ? 'resume' : 'start', slide: ref })
+          }
           postEvent(info.bookingId, 'student_joined')
           postEvent(info.bookingId, 'start').then((s) => s && setSession(s))
-          const { slides: S, idx: i } = live.current
-          if (S.length) context(`On the student's screen now: slide ${i + 1} of ${S.length}.`)
           break
         }
         case 'session.input_transcript.delta':
@@ -193,11 +212,20 @@ export default function AiRoom(props: Props) {
           }
           break
         }
-        case 'session.closed':
-          closing.current = true
-          flush(true)
-          setStatus((s) => (s === 'live' ? 'ended' : s))
+        case 'session.closed': {
+          // Only the booked end ends the lesson. A session that closes earlier (a network
+          // problem, a provider hiccup) leaves the student in the room with a Reconnect button.
+          const timeLeft = endsAt.current - (Date.now() + clockOffset)
+          if (timeLeft <= 60_000) {
+            closing.current = true
+            flush(true)
+            setStatus((s) => (s === 'live' ? 'ended' : s))
+          } else {
+            flush(false)
+            setStatus((s) => (s === 'live' ? 'dropped' : s))
+          }
           break
+        }
         case 'error': {
           const err = ev.error as { message?: string } | undefined
           console.warn('AI tutor error', err?.message)
@@ -205,7 +233,7 @@ export default function AiRoom(props: Props) {
         }
       }
     },
-    [info.bookingId, setSession, context, act, addText, runTool, sendEvent, flush],
+    [info.bookingId, setSession, act, slideRef, addText, runTool, sendEvent, flush, clockOffset],
   )
   const handleRef = useRef(handleEvent)
   useEffect(() => {
@@ -222,6 +250,7 @@ export default function AiRoom(props: Props) {
   }, [])
 
   const connect = useCallback(async () => {
+    const mine = ++gen.current
     teardown()
     closing.current = false
     setStatus('connecting')
@@ -249,6 +278,7 @@ export default function AiRoom(props: Props) {
       const ch = conn.createDataChannel('oai-events')
       dc.current = ch
       ch.addEventListener('message', ({ data }) => {
+        if (gen.current !== mine) return // an older connection (e.g. the one replaced when a lesson was opened)
         try {
           handleRef.current(JSON.parse(String(data)))
         } catch {
@@ -303,11 +333,23 @@ export default function AiRoom(props: Props) {
       setRenewing(true)
       setTutorReady(false)
       closing.current = true
+      gen.current++ // ignore everything the old session still sends (including its session.closed)
       sendEvent({ type: 'session.close' })
       await flush(false)
       void connect()
     }
   }, [sendEvent, flush, connect])
+
+  /* a dropped connection with time left: reconnect by itself (a few times), the button stays as a fallback */
+  const autoTries = useRef(0)
+  useEffect(() => {
+    if (status !== 'dropped' || autoTries.current >= 3) return
+    if (endsAt.current - (Date.now() + clockOffset) < 60_000) return
+    autoTries.current++
+    setTutorReady(false)
+    const id = setTimeout(() => void connect(), 1500)
+    return () => clearTimeout(id)
+  }, [status, connect, clockOffset])
 
   const started = useRef(false)
   useEffect(() => {
@@ -329,14 +371,13 @@ export default function AiRoom(props: Props) {
     }
   }, [flush])
 
-  /* ---------- slide changes → quiet context for the tutor ---------- */
-  const lastSent = useRef<string | null>(null)
+  /* ---------- slide changes → the new slide's content and checklist for the AI tutor ---------- */
   useEffect(() => {
     if (status !== 'live' || !slide || lastSent.current === slide.id) return
     lastSent.current = slide.id
-    const title = slide.header?.title ? `: ${slide.header.title}` : ''
-    context(`On the student's screen now: slide ${idx + 1} of ${slides.length}${title}.`)
-  }, [status, slide, idx, slides.length, context])
+    const ref = slideRef()
+    if (ref) void act({ kind: 'slide', ...ref, slideId: slide.id })
+  }, [status, slide, slideRef, act])
 
   /* ---------- the student's chat messages → context (the tutor can't see the chat) ---------- */
   const seenMsgs = useRef(props.messages.length)
