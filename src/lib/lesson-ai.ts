@@ -131,6 +131,32 @@ export type LessonAnalysis = {
   }[]
 }
 
+/** Words only: no punctuation, capitals or curly quotes; contractions expanded. */
+function spokenWords(s: string): string[] {
+  return s
+    .toLowerCase()
+    .replace(/[’‘`]/g, "'")
+    .replace(/\b(i|you|we|they|he|she|it|that|there|what|who)'(m|re|s|ve|d|ll)\b/g, (_, a: string, b: string) => `${a} ${({ m: 'am', re: 'are', s: 'is', ve: 'have', d: 'would', ll: 'will' } as Record<string, string>)[b]}`)
+    .replace(/\b(\w+)n't\b/g, '$1 not')
+    .replace(/[^a-z0-9' ]+/g, ' ')
+    .split(/\s+/)
+    .filter(Boolean)
+}
+
+/**
+ * Keep only corrections a listener could have heard: the words must differ, and the
+ * correction must not just add words at the end (that's "say more", not a mistake).
+ * Drops punctuation/capitalisation-only "corrections" the model still sometimes makes.
+ */
+export function isSpokenMistake(student: string, correction: string): boolean {
+  const a = spokenWords(student)
+  const b = spokenWords(correction)
+  if (!a.length || !b.length) return false
+  if (a.join(' ') === b.join(' ')) return false
+  if (b.length > a.length && a.every((w, i) => b[i] === w)) return false
+  return true
+}
+
 /**
  * Analyze a lesson transcript using GPT-5.4 Nano.
  * Prefers the cleaned transcript (which preserves genuine student mistakes).
@@ -149,7 +175,10 @@ Return a JSON object with:
 1. "summary_en": A brief 2-3 sentence summary of the lesson in English (what topics were discussed, what the student practiced)
 2. "summary_ja": The same summary in natural Japanese
 3. "key_topics": An array of 2-5 topic tags in English (e.g. "travel", "business email", "daily conversation")
-4. "mistake_patterns": An array of genuine grammar/vocabulary mistakes the student made. Rules:
+4. "mistake_patterns": An array of genuine SPOKEN grammar/vocabulary mistakes the student made. Rules:
+   - This is SPEECH turned into text by speech recognition. Punctuation, capital letters, commas, question marks, full stops, apostrophes and spelling were added by the transcriber, not the student. NEVER flag or "fix" any of them. Judge only the words the student said and their order.
+   - Short answers and fragments are normal and correct in conversation ("I have a flight", "Tomorrow morning", "Yes, sometimes"). Never flag an answer just because it isn't a full sentence or could include more detail.
+   - The correction must change WORDS (a wrong, missing or extra word, wrong form or tense, wrong word order). Adding details, punctuation or capitals is never a correction.
    - ONLY include lines clearly attributed to "Student:" — never flag anything the Teacher said
    - ONLY flag mistakes where the student's version is clearly wrong AND your correction is meaningfully different
    - NEVER flag a sentence that is already correct
@@ -157,6 +186,7 @@ Return a JSON object with:
    - IGNORE repeated words during pronunciation practice — in English lessons the teacher often has the student repeat a word multiple times. This is drilling, not a mistake
    - IGNORE self-corrections (e.g. "Maid. Maid. Classical maid.") — people repeat words to correct themselves or think aloud
    - IGNORE filler phrases and hesitation markers — "how do I say", "what's the word", etc.
+   - Before including a mistake, ask: "Would a teacher listening to this student speak have heard an error?" If not, leave it out.
    - Focus on clear, teachable grammar/vocabulary errors common among Japanese English learners: missing articles, wrong prepositions, tense errors, subject-verb agreement, word order, confusing similar words (borrow/lend, say/tell), direct Japanese translation patterns
    - If you are not confident it's a genuine student mistake, leave it out
    - Quality over quantity — an empty array is perfectly fine if there are no clear mistakes
@@ -191,14 +221,16 @@ IMPORTANT:
     : `Lesson transcript:\n\n${rawTranscript}`
 
   const response = await getOpenAI().chat.completions.create({
-    model: 'gpt-5.4-nano',
+    // mini judges real spoken mistakes much better than nano (one call per lesson)
+    model: process.env.LESSON_ANALYSIS_MODEL || 'gpt-5.4-mini',
     messages: [
       { role: 'system', content: systemPrompt },
       { role: 'user', content: userContent },
     ],
     response_format: { type: 'json_object' },
     temperature: 0.3,
-    max_completion_tokens: 3000,
+    // a reasoning model shares this between thinking and the answer
+    max_completion_tokens: 8000,
   })
 
   const content = response.choices[0]?.message?.content
@@ -213,13 +245,15 @@ IMPORTANT:
     summary_en: parsed.summary_en || '',
     summary_ja: parsed.summary_ja || '',
     key_topics: parsed.key_topics || [],
-    mistake_patterns: (parsed.mistake_patterns || []).map(m => ({
-      type: m.type || 'grammar',
-      example_student: m.example_student || '',
-      correction: m.correction || '',
-      explanation_ja: m.explanation_ja || '',
-      explanation_en: m.explanation_en || '',
-    })),
+    mistake_patterns: (parsed.mistake_patterns || [])
+      .map(m => ({
+        type: m.type || 'grammar',
+        example_student: m.example_student || '',
+        correction: m.correction || '',
+        explanation_ja: m.explanation_ja || '',
+        explanation_en: m.explanation_en || '',
+      }))
+      .filter(m => isSpokenMistake(m.example_student, m.correction)),
     vocabulary_phrases: (parsed.vocabulary_phrases || []).map(v => ({
       phrase_en: v.phrase_en || '',
       example_en: v.example_en || '',
