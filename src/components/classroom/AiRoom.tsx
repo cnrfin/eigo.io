@@ -557,8 +557,16 @@ export default function AiRoom(props: Props) {
     const id = setInterval(() => setNow(Date.now() + clockOffset), 1000)
     return () => clearInterval(id)
   }, [clockOffset])
-  // the clock shows the lesson's full length from the start (the server adds ~20 s for connecting)
-  const left = Math.min(info.durationMinutes * 60, Math.max(0, (endsAt.current - now) / 1000))
+  // The clock starts counting the moment the AI tutor first speaks. The server's end has ~20 s
+  // spare for connecting; counting only from that end made the clock sit at the full length for
+  // the first few seconds of the lesson. Never later than the server's end.
+  const [clockEnd, setClockEnd] = useState<number | null>(null)
+  useEffect(() => {
+    if (!tutorReady || status !== 'live' || clockEnd !== null) return
+    const id = setTimeout(() => setClockEnd(Math.min(endsAt.current, Date.now() + clockOffset + info.durationMinutes * 60_000)), 0)
+    return () => clearTimeout(id)
+  }, [tutorReady, status, clockEnd, clockOffset, info.durationMinutes])
+  const left = Math.min(info.durationMinutes * 60, Math.max(0, ((clockEnd ?? endsAt.current) - now) / 1000))
   const noted = useRef<Set<string>>(new Set())
   const timeUp = useRef(false)
   useEffect(() => {

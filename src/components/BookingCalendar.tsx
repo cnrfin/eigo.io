@@ -20,6 +20,8 @@ type SelectedBooking = { date: string; time: string; dayLabel: string }
 export type BookingResultDetail = { date: string; time: string; success: boolean; reason?: string }
 export type BookingResult = { success: boolean; message: string; details?: BookingResultDetail[] }
 
+const AI_DURATIONS = [15, 30]
+
 export default function BookingCalendar({ selectedDuration, onBookingComplete, rescheduleLesson, hasSubscription = false, testMode = false, classroomEnabled = false, aiEnabled = false, minutesRemaining = null }: { selectedDuration?: number; onBookingComplete?: (result?: BookingResult) => void; rescheduleLesson?: { id: string; googleEventId: string | null }; hasSubscription?: boolean; /** test account (user_permissions.booking_test_mode): every duration and every time of day */ testMode?: boolean; /** classroom pilot: a course can be added to the booking */ classroomEnabled?: boolean; /** AI tutor pilot: Connor / AI tutor picker */ aiEnabled?: boolean; /** plan minutes left this month (usage bar); null hides it */ minutesRemaining?: number | null }) {
   const { t, locale } = useLanguage()
   const { session } = useAuth()
@@ -387,6 +389,8 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
               className={`tp-pill${tutor === k ? ' on' : ''}`}
               onClick={() => {
                 if (tutor === k) return
+                // AI lessons are 15 or 30 minutes (longer voice sessions lose context and tire students)
+                if (k === 'ai' && duration > 30) setDuration(30)
                 setTutor(k)
                 setSelectedBookings([])
                 setBookingResult(null)
@@ -439,7 +443,7 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
 
       {/* Duration selector */}
       <div className="flex gap-2 mb-3 justify-center">
-        {[15, 30, 45, 60, 75].map((d) => {
+        {(isAi ? AI_DURATIONS : [15, 30, 45, 60, 75]).map((d) => {
           const locked = !hasSubscription && !testMode && d !== 15
           return (
             <Squircle key={d} asChild cornerRadius={8} cornerSmoothing={0.8}>

@@ -80,7 +80,8 @@ export async function POST(request: NextRequest) {
       if (!perms.ai_enabled && !isAdmin) {
         return NextResponse.json({ error: 'AI lessons are not available for this account' }, { status: 403 })
       }
-      if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !/^\d{2}:\d{2}$/.test(time) || ![15, 30, 45, 60, 75].includes(duration)) {
+      // AI lessons: 15 or 30 minutes only
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !/^\d{2}:\d{2}$/.test(time) || ![15, 30].includes(duration)) {
         return NextResponse.json({ error: 'Invalid date, time or duration' }, { status: 400 })
       }
       const { jstDate, jstTime } = timezoneToJst(date, time, timezone)
