@@ -113,7 +113,7 @@ export function slideInstruction(lesson: Lesson, slideId: string, review?: { ret
   const last = i === lesson.slides.length - 1
   const tail = last
     ? `\nThis is the last slide: when every item is done, wrap up the lesson.`
-    : `\nWork through the items one by one, and make sure the student answers or practises each. Only when ALL of them are done, say that you're moving on to the next slide, then stop: it appears on screen by itself and you'll get its content. Don't wait to be asked, but never say it earlier: the slide won't change until every item is done.`
+    : `\nWork through the items one by one, and make sure the student answers or practises each. When they're all done, say right away that you're moving on to the next slide (use the words "next slide"), then stop: it appears on screen by itself and you'll get its content. If the student says you've already done something, believe them and move on.`
   const max = 1900 - list.length - tail.length - 80
   if (content.length > max) content = content.slice(0, Math.max(400, max)) + '…'
   return `NOW ON THE STUDENT'S SCREEN: slide ${i + 1} of ${lesson.slides.length}.\n${content}${list}${tail}`

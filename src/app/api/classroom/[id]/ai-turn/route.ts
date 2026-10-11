@@ -2,14 +2,14 @@ import { NextRequest } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-admin'
 import { json, loadClassroom } from '@/lib/classroom/server'
 import { findLesson, loadCourse } from '@/lib/classroom/courses'
-import { checklist, lessonOutline } from '@/lib/ai-tutor/brief'
+import { lessonOutline } from '@/lib/ai-tutor/brief'
 import { decideSlideMove } from '@/lib/ai-tutor/turn'
 
 /**
  * POST /api/classroom/[id]/ai-turn
- *   { sessionId, courseId, lessonId, slideId, furthest, reviewing, covered, cue, lines: [{ from, text }] }
- *   → { move: 'stay' | 'next' | 'back' | 'return', slide, covered, total, missing }
- *   lines = the conversation since this slide appeared; covered = checklist items done so far
+ *   { sessionId, courseId, lessonId, slideId, furthest, reviewing, lines: [{ from, text }] }
+ *   → { move: 'stay' | 'next' | 'back' | 'return', slide }
+ *   lines = the conversation since this slide appeared
  *
  * AI lessons: after each turn, should the slide change? (see lib/ai-tutor/turn.ts)
  */
@@ -40,12 +40,12 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   const found = c ? findLesson(c.course, String(b.lessonId ?? '')) : null
   const lesson = found?.lesson
   const i = lesson ? lesson.slides.findIndex((s) => s.id === b.slideId) : -1
-  if (!lesson || i < 0) return json(200, { move: 'stay', slide: null, covered: [], total: 0, missing: [] })
+  if (!lesson || i < 0) return json(200, { move: 'stay', slide: null })
 
   const slideLines = (Array.isArray(b.lines) ? b.lines : [])
     .filter((l) => l && (l.from === 'student' || l.from === 'tutor') && typeof l.text === 'string' && l.text.trim())
     .slice(-16) as { from: 'student' | 'tutor'; text: string }[]
-  const stay = { move: 'stay', slide: null, covered: [], total: 0, missing: [] }
+  const stay = { move: 'stay', slide: null }
   if (!slideLines.length) return json(200, stay)
 
   const total = lesson.slides.length
@@ -55,9 +55,6 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     total,
     furthest,
     reviewing: !!b.reviewing && i + 1 < furthest,
-    checklist: checklist(lesson.slides[i]),
-    coveredBefore: (Array.isArray(b.covered) ? b.covered : []).map(Number).filter(Number.isFinite),
-    cue: !!b.cue,
     outline: lessonOutline(lesson),
     slideLines,
   })

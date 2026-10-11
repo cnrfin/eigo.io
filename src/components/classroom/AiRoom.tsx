@@ -149,10 +149,11 @@ export default function AiRoom(props: Props) {
   const furthest = useRef(0)
   const review = useRef(false)
   const lastMove = useRef(0)
-  // Per slide: where its conversation starts, and which checklist items are done.
-  // The slide only moves on once every item is done (the server checks), never early.
+  // Per slide: where its conversation starts (the turn check only reads this slide's conversation)
   const slideStart = useRef(0)
-  const coverage = useRef<{ slideId: string; covered: number[]; total: number }>({ slideId: '', covered: [], total: -1 })
+  const slideShownAt = useRef(Date.now())
+  const seenSlide = useRef('')
+  const heldFor = useRef('')
   const moveSlide = useCallback(
     (kind: 'next' | 'back' | 'return', n?: number): string => {
       const { slides: S, idx: i } = live.current
@@ -160,8 +161,9 @@ export default function AiRoom(props: Props) {
       const show = (k: number) => {
         lastMove.current = Date.now()
         slideStart.current = lines.current.length
+        slideShownAt.current = Date.now()
+        seenSlide.current = S[k].id
         breakLine.current = true
-        coverage.current = { slideId: S[k].id, covered: [], total: -1 }
         onGo(S[k].id)
         return `Showing slide ${k + 1} of ${S.length}.`
       }
@@ -186,59 +188,50 @@ export default function AiRoom(props: Props) {
     [onGo],
   )
 
-  const notYetAt = useRef(0)
   const cued = useRef<Line | null>(null)
   const turnTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const checking = useRef(false)
   const checkedSig = useRef('')
-  const checkTurn = useCallback(
-    async (cue = false) => {
-      const sid = sessionId.current
-      const ref = slideRef()
-      if (!sid || !ref || closing.current) return
-      if (coverage.current.slideId !== ref.slideId) {
-        coverage.current = { slideId: ref.slideId, covered: [], total: -1 }
-        slideStart.current = lines.current.length
-        breakLine.current = true
-      }
-      const slideLines = lines.current.slice(slideStart.current)
-      if (!slideLines.length) return
-      if (checking.current) {
-        if (cue) setTimeout(() => void checkTurn(true), 700) // don't lose a "moving on" while a check runs
-        return
-      }
-      if (Date.now() - lastMove.current < 2500) return
-      const sig = `${slideLines.length}:${slideLines[slideLines.length - 1].text.length}:${ref.slideId}:${cue}`
-      if (sig === checkedSig.current) return
-      checkedSig.current = sig
-      checking.current = true
-      const asked = Date.now()
-      const r = await aiTurn(info.bookingId, {
-        sessionId: sid,
-        ...ref,
-        furthest: furthest.current + 1,
-        reviewing: review.current,
-        covered: coverage.current.covered,
-        cue,
-        lines: slideLines.slice(-16).map((l) => ({ from: l.from, text: l.text })),
-      })
-      checking.current = false
-      // the slide moved some other way meanwhile: don't move it again
-      if (lastMove.current > asked || slideRef()?.slideId !== ref.slideId) return
-      if (r.total >= 0) coverage.current = { slideId: ref.slideId, covered: r.covered, total: r.total }
-      if (r.move === 'next') moveSlide('next')
-      else if (r.move === 'return') moveSlide('return')
-      else if (r.move === 'back' && r.slide) moveSlide('back', r.slide)
-      else if (r.missing.length && Date.now() - notYetAt.current > 15_000) {
-        notYetAt.current = Date.now()
-        void act({ kind: 'not_yet', missing: r.missing })
-      }
-    },
-    [info.bookingId, slideRef, moveSlide, act],
-  )
+  /** keep per-slide tracking right when the slide changed some other way (student buttons, a new lesson) */
+  const syncSlide = useCallback(() => {
+    const ref = slideRef()
+    if (ref && seenSlide.current !== ref.slideId) {
+      seenSlide.current = ref.slideId
+      slideStart.current = lines.current.length
+      slideShownAt.current = Date.now()
+      breakLine.current = true
+    }
+    return ref
+  }, [slideRef])
+  const checkTurn = useCallback(async () => {
+    const sid = sessionId.current
+    const ref = syncSlide()
+    if (!sid || !ref || closing.current || checking.current) return
+    const slideLines = lines.current.slice(slideStart.current)
+    if (!slideLines.length || Date.now() - lastMove.current < 2500) return
+    const sig = `${slideLines.length}:${slideLines[slideLines.length - 1].text.length}:${ref.slideId}`
+    if (sig === checkedSig.current) return
+    checkedSig.current = sig
+    checking.current = true
+    const asked = Date.now()
+    const r = await aiTurn(info.bookingId, {
+      sessionId: sid,
+      ...ref,
+      furthest: furthest.current + 1,
+      reviewing: review.current,
+      lines: slideLines.slice(-16).map((l) => ({ from: l.from, text: l.text })),
+    })
+    checking.current = false
+    // the slide moved some other way meanwhile: don't move it again
+    if (lastMove.current > asked || slideRef()?.slideId !== ref.slideId) return
+    if (r.move === 'next') moveSlide('next')
+    else if (r.move === 'return') moveSlide('return')
+    else if (r.move === 'back' && r.slide) moveSlide('back', r.slide)
+  }, [info.bookingId, slideRef, syncSlide, moveSlide])
   useEffect(() => {
     speechHook.current = (from, line) => {
-      if (from === 'tutor' && cued.current !== line && Date.now() - lastMove.current > 2500) {
+      const ref = syncSlide()
+      if (from === 'tutor' && ref && cued.current !== line && Date.now() - lastMove.current > 2500) {
         if (review.current && RETURN_CUE.test(line.text)) {
           cued.current = line
           moveSlide('return')
@@ -246,23 +239,24 @@ export default function AiRoom(props: Props) {
         }
         if (NEXT_CUE.test(line.text) && !NOT_YET.test(line.text)) {
           cued.current = line
-          const cov = coverage.current
-          const ref = slideRef()
+          // only guard against a slip right after the slide appeared, before the student has said anything
           const studentSpoke = lines.current.slice(slideStart.current).some((l) => l.from === 'student')
-          // everything already covered: move at once; otherwise let the server check now
-          if (ref && cov.slideId === ref.slideId && cov.total >= 0 && cov.covered.length >= cov.total && (cov.total === 0 || studentSpoke)) moveSlide('next')
-          else void checkTurn(true)
+          if (studentSpoke || Date.now() - slideShownAt.current > 20_000) moveSlide('next')
+          else if (heldFor.current !== ref.slideId) {
+            heldFor.current = ref.slideId
+            void act({ kind: 'not_yet', missing: ['the student has not had a turn on this slide yet: ask them to try it first'] })
+          }
           return
         }
       }
-      // after a short pause in the conversation, update what's covered
+      // after a short pause in the conversation, the safety-net check
       if (turnTimer.current) clearTimeout(turnTimer.current)
-      turnTimer.current = setTimeout(() => void checkTurn(false), 900)
+      turnTimer.current = setTimeout(() => void checkTurn(), 900)
     }
     return () => {
       if (turnTimer.current) clearTimeout(turnTimer.current)
     }
-  }, [moveSlide, checkTurn, slideRef])
+  }, [moveSlide, checkTurn, syncSlide, act])
 
   /* ---------- tool calls from the AI tutor (opening a lesson, writing in the chat) ---------- */
   /** resolves once the "lesson opened" note has been sent, so slide notes come after it */
@@ -753,11 +747,12 @@ export default function AiRoom(props: Props) {
         <div className="spacer" />
         <div className="navwrap">
           <div className="snav">
-            <button disabled aria-label="Previous slide">
+            {/* the student can always move the slide themselves too; the AI tutor gets the new slide's content */}
+            <button disabled={!slides.length || idx === 0} onClick={() => moveSlide('back', idx)} aria-label="Previous slide">
               <Ico name="left" />
             </button>
             <span className="n">{slides.length ? `${idx + 1} / ${slides.length}` : '–'}</span>
-            <button disabled aria-label="Next slide">
+            <button disabled={!slides.length || idx >= slides.length - 1} onClick={() => moveSlide('next')} aria-label="Next slide">
               <Ico name="right" />
             </button>
           </div>

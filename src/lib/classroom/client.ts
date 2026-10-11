@@ -161,7 +161,7 @@ export async function aiOpenLesson(bookingId: string, courseId: string, lessonId
   }
 }
 
-export type AiTurn = { move: 'stay' | 'next' | 'back' | 'return'; slide: number | null; covered: number[]; total: number; missing: string[] }
+export type AiTurn = { move: 'stay' | 'next' | 'back' | 'return'; slide: number | null }
 
 /** AI lessons: should the slide change after this turn? (a small fast model on our server decides) */
 export async function aiTurn(
@@ -173,12 +173,10 @@ export async function aiTurn(
     slideId: string
     furthest: number
     reviewing: boolean
-    covered: number[]
-    cue: boolean
     lines: { from: 'student' | 'tutor'; text: string }[]
   },
 ): Promise<AiTurn> {
-  const none: AiTurn = { move: 'stay', slide: null, covered: body.covered, total: -1, missing: [] }
+  const none: AiTurn = { move: 'stay', slide: null }
   try {
     const r = await call(`/api/classroom/${bookingId}/ai-turn`, { method: 'POST', body: JSON.stringify(body) })
     if (!r.ok) return none
