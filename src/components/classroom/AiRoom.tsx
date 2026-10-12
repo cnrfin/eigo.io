@@ -41,6 +41,8 @@ function findLesson(p: Props): Lesson | null {
 // a clear spoken cue changes the slide at once ("…let's move on to the next slide")
 const NEXT_CUE = /\bnext (slide|page)\b/i
 const NOT_YET = /\bbefore (we|you) (move|go)\b/i
+// "…I'll press play now" (not a question): the classroom plays the slide's clip once the AI tutor stops talking
+const PLAY_CUE = /\b(press(ing)? play|play (it|the clip|the video|the audio|this clip|this video)|playing (it|the clip|the video) now)\b/i
 const RETURN_CUE = /\b(carry on|continue|get back|go back) (with|to) (the|our) lesson\b/i
 
 const mmss = (s: number) => {
@@ -191,6 +193,18 @@ export default function AiRoom(props: Props) {
     [onGo],
   )
 
+  /* ---------- the AI tutor plays the slide's clip ---------- */
+  const playTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const playedOn = useRef('')
+  const firstClip = () =>
+    document.querySelector<HTMLMediaElement>('.ai-lesson .slideBox [data-block-id] video, .ai-lesson .slideBox [data-block-id] audio')
+  const playClip = useCallback(() => {
+    const el = firstClip()
+    if (!el) return
+    if (el.ended) el.currentTime = 0
+    el.muted = false // autoplaying clips start muted
+    void el.play().catch(() => undefined)
+  }, [])
   const cued = useRef<Line | null>(null)
   const turnTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const checking = useRef(false)
@@ -235,6 +249,19 @@ export default function AiRoom(props: Props) {
     speechHook.current = (from, line) => {
       const ref = syncSlide()
       if (wrapUp.current) return
+      if (from === 'tutor' && ref) {
+        const sentence = line.text.split(/(?<=[.!?])\s+/).find((x) => PLAY_CUE.test(x))
+        const armed = playTimer.current !== null
+        if ((armed || (sentence && !sentence.trim().endsWith('?'))) && playedOn.current !== line.text.slice(0, 40) + ref.slideId) {
+          // wait until the AI tutor has finished its sentence, then play
+          if (playTimer.current) clearTimeout(playTimer.current)
+          playTimer.current = setTimeout(() => {
+            playTimer.current = null
+            playedOn.current = line.text.slice(0, 40) + ref.slideId
+            playClip()
+          }, 900)
+        }
+      }
       if (from === 'tutor' && ref && cued.current !== line && Date.now() - lastMove.current > 2500) {
         if (review.current && RETURN_CUE.test(line.text)) {
           cued.current = line
@@ -260,7 +287,7 @@ export default function AiRoom(props: Props) {
     return () => {
       if (turnTimer.current) clearTimeout(turnTimer.current)
     }
-  }, [moveSlide, checkTurn, syncSlide, act])
+  }, [moveSlide, checkTurn, syncSlide, act, playClip])
 
   /* ---------- tool calls from the AI tutor (opening a lesson, writing in the chat) ---------- */
   /** resolves once the "lesson opened" note has been sent, so slide notes come after it */
@@ -543,12 +570,25 @@ export default function AiRoom(props: Props) {
 
   /* audio/video on the slide: tell the AI tutor when it has finished, so it can ask about it */
   const { onLocalMedia } = props
+  // While a clip plays, the student's mic is off to the AI tutor (so it doesn't hear the clip
+  // through the speakers and react to it), and it's told to stay quiet.
+  const micBeforeClip = useRef<boolean | null>(null)
   const onMedia = useCallback(
     (m: Parameters<typeof onLocalMedia>[0]) => {
       onLocalMedia(m)
-      if (m.action === 'ended' && statusRef.current === 'live') void act({ kind: 'media', text: 'the audio/video on the slide just finished playing. Ask the student about it now.' })
+      if (statusRef.current !== 'live') return
+      const tracks = mic.current?.getAudioTracks() ?? []
+      if (m.action === 'play') {
+        if (micBeforeClip.current === null) micBeforeClip.current = tracks.some((tr) => tr.enabled)
+        tracks.forEach((tr) => (tr.enabled = false))
+        context('A clip is playing on the student\'s screen now. Stay quiet until you are told it has finished.')
+      } else {
+        if (micBeforeClip.current !== null) tracks.forEach((tr) => (tr.enabled = micBeforeClip.current!))
+        micBeforeClip.current = null
+        if (m.action === 'ended') void act({ kind: 'media', text: 'the audio/video on the slide just finished playing. Ask the student about it now.' })
+      }
     },
-    [onLocalMedia, act],
+    [onLocalMedia, act, context],
   )
 
   /* ---------- clock + time notes ---------- */

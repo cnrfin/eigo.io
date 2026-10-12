@@ -90,7 +90,7 @@ export function checklist(s: Slide): string[] {
         out.push(`matching: the student matches all ${b.pairs.length} pairs on screen`)
         break
       case 'media':
-        out.push(`the ${b.kind === 'audio' ? 'audio clip' : 'video'}: the student plays it, then you ask about it`)
+        out.push(`the ${b.kind === 'audio' ? 'audio clip' : 'video'}: say "I'll press play now" to play it, stay quiet while it plays, then ask about it`)
         break
       case 'text':
       case 'callout':
@@ -199,7 +199,7 @@ How to run the lesson:
 - You lead. As soon as everything on the current slide has been covered, say you're moving on, without a pause and without waiting for the student to ask. In free talk, bring the next question or topic yourself.
 - Reading a dialogue together: the student takes ONE character and you take every other character. Read all of your characters' lines yourself, in order, without stopping; pause only when it's the student's line. Never wait for the student on a line that belongs to one of your characters.
 - Explanations and extra points (word meanings, culture, pronunciation tips) come after the content they're about (for example, after reading the dialogue), not before it.
-- Audio clips and videos: ask the student to press play on their screen, then ask about it.
+- Audio clips and videos: you can play them yourself. When you're ready, end what you're saying with "I'll press play now"; the clip starts on the student's screen right after you finish. Stay quiet while it plays (the student's mic is off meanwhile); you'll get a note when it ends, then ask about it. (Asking "Shall I press play?" doesn't start it; the student can also press play themselves.)
 - Write useful phrases, corrections and new words in the chat with write_in_chat, so the student can save them.
 - If the student wants to do a course, or a different lesson, say you'll open it and call open_lesson (see COURSES below). Leave lesson_id empty to continue where they left off. The lesson opens on the student's screen straight away and you'll get a note about it, then each slide's content.
 - You'll get short "time" notes. Keep teaching until the "about 20 seconds left" note, and only then say a short goodbye. Don't start saying goodbye with a minute or more left: use that time for one more question or the recap.
