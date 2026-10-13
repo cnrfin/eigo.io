@@ -7,6 +7,14 @@ import { useTheme } from '@/context/ThemeContext'
 import { useAuth } from '@/context/AuthContext'
 import { DEFAULT_TUTOR_SETTINGS, TUTOR_VOICES, type TutorSettings } from '@/lib/ai-tutor/settings'
 import { ORB_COLORS, orbColor, orbSwatch } from '@/lib/ai-tutor/orb-colors'
+import AiAvatar from '@/components/ai/AiAvatar'
+import { newMood, type AvatarMood } from '@/lib/ai-tutor/avatar-mood'
+
+/** the settings preview avatar smiles for a moment */
+const smile = (m: { current: AvatarMood }) => {
+  m.current.face = 'happy'
+  m.current.until = performance.now() + 1500
+}
 
 /**
  * 「AIチューターの設定」: the student's AI tutor settings (dashboard → Settings).
@@ -141,6 +149,24 @@ export default function AiTutorSettingsCard({ locale }: { locale: string }) {
   const [s, setS] = useState<TutorSettings>(DEFAULT_TUTOR_SETTINGS)
   const [saved, setSaved] = useState(false)
   const [playing, setPlaying] = useState<string | null>(null)
+  // the header preview: smiles when its colour or cheeks change, "talks" while a voice preview plays
+  const previewMood = useRef(newMood())
+  const previewLevel = useRef(0)
+  useEffect(() => {
+    if (!playing) {
+      previewLevel.current = 0
+      return
+    }
+    const t0 = performance.now()
+    const id = setInterval(() => {
+      const t = (performance.now() - t0) / 1000
+      previewLevel.current = Math.max(0, 0.55 + 0.4 * Math.sin(t * 9.1) * Math.sin(t * 2.3 + 1))
+    }, 40)
+    return () => {
+      clearInterval(id)
+      previewLevel.current = 0
+    }
+  }, [playing])
   const [loadingVoice, setLoadingVoice] = useState<string | null>(null)
   const [failed, setFailed] = useState<Record<string, boolean>>({})
   const urls = useRef<Record<string, string>>({})
@@ -214,7 +240,10 @@ export default function AiTutorSettingsCard({ locale }: { locale: string }) {
       }
     }, 500)
   }
-  const set = <K extends keyof TutorSettings>(k: K, v: TutorSettings[K]) => save({ ...s, [k]: v })
+  const set = <K extends keyof TutorSettings>(k: K, v: TutorSettings[K]) => {
+    if (k === 'orbColor' || (k === 'blush' && v)) smile(previewMood)
+    save({ ...s, [k]: v })
+  }
 
   if (!enabled) return null
 
@@ -283,13 +312,19 @@ export default function AiTutorSettingsCard({ locale }: { locale: string }) {
 
   return (
     <SquircleCard radius={20} className="p-5 sm:p-8">
-      <div className="flex items-baseline justify-between mb-1">
-        <h2 className="text-lg font-semibold" style={{ color: 'var(--text)' }}>{ja ? 'AIチューターの設定' : 'AI tutor settings'}</h2>
-        <span className="text-xs" style={{ color: 'var(--accent)', opacity: saved ? 1 : 0, transition: 'opacity .2s' }}>{ja ? '保存しました' : 'Saved'}</span>
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <div className="flex items-baseline gap-3 mb-1">
+            <h2 className="text-lg font-semibold" style={{ color: 'var(--text)' }}>{ja ? 'AIチューターの設定' : 'AI tutor settings'}</h2>
+            <span className="text-xs" style={{ color: 'var(--accent)', opacity: saved ? 1 : 0, transition: 'opacity .2s' }}>{ja ? '保存しました' : 'Saved'}</span>
+          </div>
+          <p className="text-xs" style={{ color: 'var(--text-subtle)' }}>
+            {ja ? '変更は次のAIレッスンから反映されます。' : 'Changes apply from your next AI lesson.'}
+          </p>
+        </div>
+        {/* live preview of the AI tutor's avatar: smiles when its colour or cheeks change, talks during voice previews */}
+        <AiAvatar color={s.orbColor} blush={s.blush} mood={previewMood} level={previewLevel} className="w-14 h-14 sm:w-16 sm:h-16 shrink-0 -my-1" title={s.tutorName || (ja ? 'AIチューター' : 'AI tutor')} />
       </div>
-      <p className="text-xs" style={{ color: 'var(--text-subtle)' }}>
-        {ja ? '変更は次のAIレッスンから反映されます。' : 'Changes apply from your next AI lesson.'}
-      </p>
 
       {group({ ja: 'AIチューター', en: 'Your AI tutor' }, (
         <>
