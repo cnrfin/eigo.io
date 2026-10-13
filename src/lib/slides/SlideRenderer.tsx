@@ -125,10 +125,19 @@ export function imageStyle(b: Pick<ImageBlock, 'fit' | 'crop'>): CSSProperties {
   }
 }
 
+/** A soft fade on one edge (CSS mask): transparent at that edge, fully visible `size`% in. */
+function fadeMask(f: ImageBlock['fade']): CSSProperties | undefined {
+  if (!f) return undefined
+  const to = { left: 'to right', right: 'to left', top: 'to bottom', bottom: 'to top' }[f.edge]
+  const size = Math.min(90, Math.max(5, f.size))
+  const m = `linear-gradient(${to}, transparent 0%, rgba(0,0,0,.35) ${size * 0.4}%, #000 ${size}%)`
+  return { maskImage: m, WebkitMaskImage: m }
+}
+
 function ImageView({ b, assetBase }: { b: ImageBlock; assetBase?: string }) {
   const src = resolveAsset(b.src, assetBase)
   return (
-    <figure className={`es-image${b.rounded ? ' is-rounded' : ''}${src ? ' has-src' : ''}`}>
+    <figure className={`es-image${b.rounded ? ' is-rounded' : ''}${src ? ' has-src' : ''}`} style={src ? fadeMask(b.fade) : undefined}>
       {src ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={src} alt={b.alt} style={imageStyle(b)} draggable={false} />

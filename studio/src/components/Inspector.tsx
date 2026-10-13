@@ -418,6 +418,39 @@ function BlockInspector({
               </Field>
             ) : null}
             <Toggle label="Rounded corners" checked={b.rounded} onChange={(v) => setBlock<ImageBlock>((x) => void (x.rounded = v))} />
+            <Field label="Fade edge" hint="Fades one side of the picture into the slide background.">
+              <Segmented
+                value={b.fade?.edge ?? 'none'}
+                onChange={(v) =>
+                  setBlock<ImageBlock>((x) => {
+                    if (v === 'none') delete x.fade
+                    else x.fade = { edge: v, size: x.fade?.size ?? 30 }
+                  })
+                }
+                options={[
+                  { value: 'none', label: 'None' },
+                  { value: 'left', label: 'Left' },
+                  { value: 'right', label: 'Right' },
+                  { value: 'top', label: 'Top' },
+                  { value: 'bottom', label: 'Bottom' },
+                ]}
+              />
+            </Field>
+            {b.fade ? (
+              <Field label="Fade size">
+                <div className="row gap-6 crop-controls">
+                  <input
+                    type="range"
+                    min={5}
+                    max={90}
+                    step={1}
+                    value={b.fade.size}
+                    onChange={(e) => setBlock<ImageBlock>((x) => void (x.fade = { edge: x.fade!.edge, size: Number(e.target.value) }), 'fadesize')}
+                  />
+                  <span className="muted small">{b.fade.size}%</span>
+                </div>
+              </Field>
+            ) : null}
           </>
         ) : null}
 

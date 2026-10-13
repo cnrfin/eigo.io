@@ -361,3 +361,13 @@ Limits:
 - Course loading, progress, catalog, lesson queue
 - Ratings, summaries, transcripts, history, admin dashboard
 - Pilot flags, booking flow and test mode
+
+## Later idea: 3-minute AI word review (backburner)
+
+"Spend just 3 minutes a day reviewing what you learned." A short GPT-Live call that reviews the student's due words instead of (or as well as) flashcards.
+- Fixed 3-minute session, not a fixed number of words: the app feeds the next due word until time is nearly up (no new word in the last ~20 s, then a short goodbye). Words not reached stay due and lead tomorrow's session; they aren't marked wrong.
+- Order: most overdue and weakest words first, so the backlog that matters most gets done.
+- The app runs the word queue (shows the word on screen, tells the AI tutor which word and what to ask); a small model marks each answer from the transcript (got it / nearly / missed) and updates the same spaced-repetition record as the flashcards. The voice model only talks.
+- Question types: meaning → say the word, use it in a sentence, quick listening check, a short follow-up.
+- Keep flashcards for when students can't speak aloud. Show "N words waiting" so a growing backlog is visible.
+- Cost: about $0.15 per session (≈ ¥700/month if used daily), plus marking; needs an allowance (e.g. one session a day in the plan).

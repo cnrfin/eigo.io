@@ -4,7 +4,8 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import { aiOpenLesson, aiTurn, postEvent, sendAiReport, saveAiTranscript, sendAiAction, startAiSession, type SlideRef, type StudentAction } from '@/lib/classroom/client'
 import type { Lesson } from '@/lib/slides/types'
 import { useAudioLevel, useVolDot } from './audio'
-import AiOrb from '@/components/ai/AiOrb'
+import AiAvatar from '@/components/ai/AiAvatar'
+import { faceForText, newMood } from '@/lib/ai-tutor/avatar-mood'
 import ChatPanel from './ChatPanel'
 import { Ico } from './Icons'
 import SlideStage from './SlideStage'
@@ -67,6 +68,29 @@ export default function AiRoom(props: Props) {
   const sessionId = useRef<string | null>(null)
   const endsAt = useRef<number>(new Date(info.window.end).getTime())
   const lines = useRef<Line[]>([])
+  /* ---------- the avatar's expression (read by AiAvatar every frame) ---------- */
+  const mood = useRef(newMood())
+  const tutorSaid = useRef('')
+  const listenTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  // the AI tutor's words, as they arrive: the sentence being spoken picks the face (held ~2.5 s)
+  const feelTutor = useCallback((delta: string) => {
+    tutorSaid.current = (tutorSaid.current + delta).slice(-240)
+    const sentence = tutorSaid.current.split(/(?<=[.!?])\s+/).pop() ?? ''
+    const face = faceForText(sentence)
+    if (face) {
+      mood.current.face = face
+      mood.current.until = performance.now() + 2500
+    }
+  }, [])
+  // the student speaking: listen (nods, eyes on them) until a moment after they stop
+  const feelStudent = useCallback(() => {
+    mood.current.listening = true
+    mood.current.until = 0
+    tutorSaid.current = ''
+    if (listenTimer.current) clearTimeout(listenTimer.current)
+    listenTimer.current = setTimeout(() => (mood.current.listening = false), 1200)
+  }, [])
+  useEffect(() => () => void (listenTimer.current && clearTimeout(listenTimer.current)), [])
   const lastEnd = useRef<{ student: number; tutor: number }>({ student: -1e9, tutor: -1e9 })
   const closing = useRef(false)
   const sessionsStarted = useRef(0)
@@ -165,6 +189,7 @@ export default function AiRoom(props: Props) {
       if (!S.length) return 'There are no slides in this lesson (free talk).'
       const show = (k: number) => {
         lastMove.current = Date.now()
+        mood.current.slideUntil = performance.now() + 1600 // glance at the new slide
         slideStart.current = lines.current.length
         slideShownAt.current = Date.now()
         seenSlide.current = S[k].id
@@ -349,10 +374,12 @@ export default function AiRoom(props: Props) {
         }
         case 'session.input_transcript.delta':
           addText('student', String(ev.delta ?? ''), Number(ev.start_ms) || 0, Number(ev.end_ms) || 0)
+          if (String(ev.delta ?? '').trim()) feelStudent()
           break
         case 'session.output_transcript.delta':
           setTutorReady(true)
           addText('tutor', String(ev.delta ?? ''), Number(ev.start_ms) || 0, Number(ev.end_ms) || 0)
+          feelTutor(String(ev.delta ?? ''))
           break
         case 'response.event': {
           const inner = ev.event as { type?: string; item?: { type?: string; name?: string; arguments?: string; call_id?: string } }
@@ -384,7 +411,7 @@ export default function AiRoom(props: Props) {
         }
       }
     },
-    [info.bookingId, setSession, act, slideRef, addText, runTool, sendEvent, flush, clockOffset],
+    [info.bookingId, setSession, act, slideRef, addText, runTool, sendEvent, flush, clockOffset, feelTutor, feelStudent],
   )
   const handleRef = useRef(handleEvent)
   useEffect(() => {
@@ -828,7 +855,7 @@ export default function AiRoom(props: Props) {
     >
       <audio ref={audioEl} autoPlay playsInline />
       <div className={`ai-calling${(status === 'connecting' || status === 'live') && !tutorReady ? '' : ' out'}`} role="status" aria-hidden={tutorReady}>
-        <AiOrb className="ai-orb-calling" color={info.aiColor} />
+        <AiAvatar className="ai-orb-calling" color={info.aiColor} blush={info.aiBlush !== false} />
         {t('aiCalling')}
       </div>
       <header className="top">
@@ -942,7 +969,7 @@ export default function AiRoom(props: Props) {
             />
             <div className={`slot tile ai-tile${speaking ? ' speaking' : ''}${status !== 'live' ? ' idle' : ''}`} ref={otherRef}>
               <div className="face">
-                <AiOrb className="ai-orb-tile" color={info.aiColor} level={voiceLevel} title={info.other.name} />
+                <AiAvatar className="ai-orb-tile" color={info.aiColor} blush={info.aiBlush !== false} level={voiceLevel} mood={mood} title={info.other.name} />
               </div>
               <span className="vol" ref={tutorDot}>
                 <i />

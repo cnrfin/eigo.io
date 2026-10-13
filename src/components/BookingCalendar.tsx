@@ -5,7 +5,7 @@ import { useLanguage } from '@/context/LanguageContext'
 import { useTheme } from '@/context/ThemeContext'
 import { pillTabStyle } from '@/lib/pill-tabs'
 import { useAuth } from '@/context/AuthContext'
-import AiOrb from '@/components/ai/AiOrb'
+import AiAvatar from '@/components/ai/AiAvatar'
 import { Squircle } from '@squircle-js/react'
 import SquircleBox from '@/components/ui/SquircleBox'
 import CourseSheet, { type CatalogEntry } from '@/components/booking/CourseSheet'
@@ -58,6 +58,7 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
   // the name the student gave their AI tutor (settings), shown on the AI pill; "AI tutor" until they name it
   const [aiTutorName, setAiTutorName] = useState('')
   const [aiOrbColor, setAiOrbColor] = useState<string | null>(null)
+  const [aiBlush, setAiBlush] = useState(true)
   useEffect(() => {
     if (!aiEnabled || !accessToken) return
     let alive = true
@@ -67,6 +68,7 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
         const n = typeof d?.settings?.tutorName === 'string' ? d.settings.tutorName.trim() : ''
         if (alive && n) setAiTutorName(n)
         if (alive && typeof d?.settings?.orbColor === 'string') setAiOrbColor(d.settings.orbColor)
+        if (alive && typeof d?.settings?.blush === 'boolean') setAiBlush(d.settings.blush)
       })
       .catch(() => {})
     return () => {
@@ -399,7 +401,7 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
               <span className="tp-pic" aria-hidden>
                 {k === 'ai' ? (
                   <span className="tp-ai">
-                    <AiOrb color={aiOrbColor} />
+                    <AiAvatar color={aiOrbColor} blush={aiBlush} />
                   </span>
                 ) : teacherAvatar ? (
                   <img src={teacherAvatar} alt="" referrerPolicy="no-referrer" />

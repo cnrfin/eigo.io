@@ -6,8 +6,7 @@ import { pillTabStyle } from '@/lib/pill-tabs'
 import { useTheme } from '@/context/ThemeContext'
 import { useAuth } from '@/context/AuthContext'
 import { DEFAULT_TUTOR_SETTINGS, TUTOR_VOICES, type TutorSettings } from '@/lib/ai-tutor/settings'
-import { ORB_COLORS, orbColor } from '@/lib/ai-tutor/orb-colors'
-import AiOrb from '@/components/ai/AiOrb'
+import { ORB_COLORS, orbColor, orbSwatch } from '@/lib/ai-tutor/orb-colors'
 
 /**
  * 「AIチューターの設定」: the student's AI tutor settings (dashboard → Settings).
@@ -19,7 +18,7 @@ import AiOrb from '@/components/ai/AiOrb'
 type L = { ja: string; en: string }
 type Opt = { v: string; label: L; hint: L }
 type ChoiceKey = 'speed' | 'pace' | 'tone' | 'formality' | 'japanese' | 'corrections' | 'pronunciation'
-type BoolKey = 'warmUp' | 'reviewLast' | 'recap' | 'useHistory'
+type BoolKey = 'blush' | 'warmUp' | 'reviewLast' | 'recap' | 'useHistory'
 
 const CHOICES: Record<ChoiceKey, { title: L; opts: Opt[] }> = {
   speed: {
@@ -81,6 +80,11 @@ const CHOICES: Record<ChoiceKey, { title: L; opts: Opt[] }> = {
 }
 
 const BOOLS: Record<BoolKey, { title: L; on: L; off: L }> = {
+  blush: {
+    title: { ja: 'ほっぺ', en: 'Rosy cheeks' },
+    on: { ja: 'AIチューターの顔のほっぺを、ほんのりピンクにします。', en: 'The AI tutor’s face has soft pink cheeks.' },
+    off: { ja: 'ほっぺの色はつけません。', en: 'No cheek colour.' },
+  },
   warmUp: {
     title: { ja: 'はじめに雑談', en: 'Warm-up chat' },
     on: { ja: 'レッスンの前に、AIチューターと1〜2分ほど軽く雑談します。', en: 'The AI tutor starts with a minute or two of light chat.' },
@@ -338,11 +342,12 @@ export default function AiTutorSettingsCard({ locale }: { locale: string }) {
                   className="w-9 h-9 rounded-full grid place-items-center transition-transform duration-[120ms] ease-out hover:scale-[1.06] active:scale-95"
                   style={{ boxShadow: on ? '0 0 0 2px var(--accent)' : '0 0 0 1px var(--edge)' }}
                 >
-                  <AiOrb color={c.id} className="w-7 h-7" />
+                  <span className="w-7 h-7 rounded-full" style={{ background: orbSwatch(c) }} />
                 </button>
               )
             }),
           )}
+          {toggle('blush')}
           {text('tutorName', { ja: 'AIチューターの名前', en: 'AI tutor’s name' }, ja ? '例：Emma' : 'e.g. Emma')}
           {text('callMe', { ja: 'あなたの呼び方', en: 'What the AI tutor calls you' }, ja ? '例：Aiko' : 'e.g. Aiko')}
         </>

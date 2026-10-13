@@ -67,7 +67,13 @@ export interface ImageBlock extends BlockBase {
   credit?: string
   rounded: boolean
   /** Which part of the picture shows in the frame (Fill only). x/y are 0–100 (50 = centre); zoom ≥ 1. */
-  crop?: ImageCrop
+  crop?: ImageCrop  /** Fade one edge out so the picture blends into the slide. size = how far the fade reaches, in % of the picture (5–90). */
+  fade?: ImageFade
+}
+
+export interface ImageFade {
+  edge: 'left' | 'right' | 'top' | 'bottom'
+  size: number
 }
 
 export interface ImageCrop {

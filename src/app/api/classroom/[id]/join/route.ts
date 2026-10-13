@@ -9,8 +9,8 @@ const ADMIN_EMAIL = 'cnrfin93@gmail.com'
 /** The name the student gave their AI tutor, or the default. */
 async function aiTutor(userId: string) {
   const { data } = await getSupabaseAdmin().from('ai_tutor_profiles').select('settings').eq('user_id', userId).maybeSingle()
-  const st = data?.settings as { tutorName?: string; orbColor?: string } | null
-  return { name: st?.tutorName?.trim() || 'AI tutor', color: typeof st?.orbColor === 'string' ? st.orbColor : null }
+  const st = data?.settings as { tutorName?: string; orbColor?: string; blush?: boolean } | null
+  return { name: st?.tutorName?.trim() || 'AI tutor', color: typeof st?.orbColor === 'string' ? st.orbColor : null, blush: st?.blush !== false }
 }
 
 /**
@@ -82,6 +82,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     other: { name: role === 'teacher' ? studentName : tutorInfo ? tutorInfo.name : teacherName },
     ai,
     aiColor: tutorInfo?.color ?? null,
+    aiBlush: tutorInfo?.blush ?? true,
     uiLang: role === 'teacher' ? 'en' : student?.preferred_language === 'en' ? 'en' : 'ja',
     nativeLang: student?.native_language || 'ja',
     open,
