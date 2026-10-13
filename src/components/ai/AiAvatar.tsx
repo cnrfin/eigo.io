@@ -100,13 +100,14 @@ let failed = false
 let raf = 0
 let last = 0
 
-// default size: fill the parent's width (zero specificity, so any class can override it)
+// default size: fill the parent's width. Inside @layer base (un-layered CSS beats every Tailwind layer),
+// so Tailwind size classes and other stylesheets can override it.
 let styled = false
 function addBaseStyle() {
   if (styled || typeof document === 'undefined') return
   styled = true
   const st = document.createElement('style')
-  st.textContent = ':where(canvas[data-avatar]){width:100%;height:auto}'
+  st.textContent = '@layer base{:where(canvas[data-avatar]){width:100%;height:auto}}'
   document.head.appendChild(st)
 }
 

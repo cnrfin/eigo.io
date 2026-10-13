@@ -323,7 +323,9 @@ export default function AiTutorSettingsCard({ locale }: { locale: string }) {
           </p>
         </div>
         {/* live preview of the AI tutor's avatar: smiles when its colour or cheeks change, talks during voice previews */}
-        <AiAvatar color={s.orbColor} blush={s.blush} mood={previewMood} level={previewLevel} className="w-14 h-14 sm:w-16 sm:h-16 shrink-0 -my-1" title={s.tutorName || (ja ? 'AIチューター' : 'AI tutor')} />
+        <div className="w-14 sm:w-16 shrink-0 -my-1">
+          <AiAvatar color={s.orbColor} blush={s.blush} mood={previewMood} level={previewLevel} title={s.tutorName || (ja ? 'AIチューター' : 'AI tutor')} />
+        </div>
       </div>
 
       {group({ ja: 'AIチューター', en: 'Your AI tutor' }, (
