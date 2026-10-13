@@ -23,6 +23,8 @@ export type CatalogEntry = {
   sortOrder: number
   chips: { ja: string[]; en: string[] }
   scenes: string[]
+  /** preview video; when set it plays instead of the scene pictures */
+  reel?: string | null
   lessonCount: number
   doneCount: number
   /** 1-based lesson numbers the student can still book, in order */
@@ -41,8 +43,29 @@ const Chevron = ({ dir }: { dir: 'l' | 'r' }) => (
   </svg>
 )
 
+/** The course's preview video (muted, looping). Plays while `playing`; otherwise shows its first frame. */
+function VideoReel({ src, poster, playing }: { src: string; poster?: string; playing: boolean }) {
+  const ref = useRef<HTMLVideoElement | null>(null)
+  useEffect(() => {
+    const v = ref.current
+    if (!v) return
+    if (playing) void v.play().catch(() => undefined)
+    else v.pause()
+  }, [playing])
+  return (
+    <div className={`cs-reel${playing ? ' cs-live' : ''}`}>
+      <video ref={ref} className="cs-vid" src={src} poster={poster} muted loop playsInline preload="metadata" aria-hidden />
+    </div>
+  )
+}
+
 /** Scene pictures: only the current one (and the one fading out) are in the DOM. */
-function Reel({ scenes, playing }: { scenes: string[]; playing: boolean }) {
+function Reel({ scenes, playing, video }: { scenes: string[]; playing: boolean; video?: string | null }) {
+  if (video) return <VideoReel src={video} poster={scenes[0]} playing={playing} />
+  return <SceneReel scenes={scenes} playing={playing} />
+}
+
+function SceneReel({ scenes, playing }: { scenes: string[]; playing: boolean }) {
   const [{ i, prev }, setS] = useState<{ i: number; prev: number | null }>({ i: 0, prev: null })
   useEffect(() => {
     if (!playing || scenes.length < 2) return
@@ -89,7 +112,7 @@ function Card({ c, lang, on, onPick }: { c: CatalogEntry; lang: Lang; on: boolea
     >
       <div style={{ position: 'relative' }}>
         {c.level && <span className="cs-lvl">{c.level}</span>}
-        <Reel scenes={c.scenes} playing={hover} />
+        <Reel scenes={c.scenes} playing={hover} video={c.reel} />
       </div>
       <div className="cs-cb">
         <b>{lang === 'ja' ? c.titleJa : c.title}</b>
@@ -174,7 +197,7 @@ export default function CourseSheet({
         </button>
         <div className="cs-body" ref={body}>
           <div className="cs-hero">
-            <Reel key={c.id} scenes={c.scenes} playing />
+            <Reel key={c.id} scenes={c.scenes} playing video={c.reel} />
             <div className="cs-info" key={`i${c.id}`}>
               {c.level && <span className="cs-kick">{c.level}</span>}
               <h2>{lang === 'ja' ? c.titleJa : c.title}</h2>

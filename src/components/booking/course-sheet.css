@@ -34,7 +34,8 @@
 
 /* scene reel: the current picture fades in over the previous one */
 .cs-reel { position: relative; overflow: hidden; background: var(--inset); }
-.cs-reel img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.cs-reel img, .cs-reel .cs-vid { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.cs-reel .cs-vid { animation: cs-imgin .6s ease both; }
 .cs-reel img.cs-in { animation: cs-imgin .9s ease both; }
 .cs-reel.cs-live img.cs-in { animation: cs-imgin .9s ease both, cs-kb 7s linear both; }
 @keyframes cs-imgin { from { opacity: 0 } }

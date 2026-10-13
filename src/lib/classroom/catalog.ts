@@ -23,7 +23,17 @@ export type CatalogCourse = {
   chips: { ja: string[]; en: string[] }
   /** absolute image URLs, one per lesson that has a picture, in lesson order */
   scenes: string[]
+  /** a short preview video for the course sheet (plays instead of the scene pictures), or null */
+  reel: string | null
   lessonIds: string[]
+}
+
+/**
+ * Preview reels not yet stored with the course: course id → video under /public.
+ * (Trial: c_greatbritain. Later this can be a `reel` field set in the studio.)
+ */
+const PREVIEW_REELS: Record<string, string> = {
+  c_greatbritain: '/course-reels/c_greatbritain.mp4',
 }
 
 type Cached = { version: number; course: CatalogCourse }
@@ -65,6 +75,7 @@ export function summarize(course: Course, assetBase: string): CatalogCourse {
     sortOrder: typeof course.sortOrder === 'number' ? course.sortOrder : 999,
     chips: { ja: clean(course.chips?.ja), en: clean(course.chips?.en) },
     scenes: [...new Set(scenes)].slice(0, 16).map(abs),
+    reel: (course as { reel?: string }).reel ? abs((course as { reel?: string }).reel!) : (PREVIEW_REELS[course.id] ?? null),
     lessonIds: course.units.flatMap((u) => u.lessons.map((l) => l.id)),
   }
 }
