@@ -89,6 +89,7 @@ const tx = (ja: boolean) => ({
   minutes: ja ? '今月の分数を使い切りました。' : "You've used this month's minutes.",
   noSub: ja ? 'プランに登録すると、AIレッスンを始められます。' : 'Choose a plan to start AI lessons.',
   plans: ja ? 'プランを見る' : 'View plans',
+  topup: ja ? 'AI分数を追加' : 'Add AI minutes',
   failed: ja ? '始められませんでした。もう一度お試しください。' : "Couldn't start. Please try again.",
   schedule: ja ? '日時を決めて予約する' : 'Schedule one instead',
   settings: ja ? 'AIチューターの設定' : 'AI tutor settings',
@@ -206,7 +207,12 @@ export function AiStartCard({
       </div>
       {note && <div className={`ais-note${warn ? ' warn' : ''}`}>{note}</div>}
       {usesRest && <div className="ais-note">{t.rest}</div>}
-      {(state?.blocked === 'minutes' || state?.blocked === 'no_subscription') && (
+      {state?.blocked === 'minutes' && (
+        <a className="ais-link" href="/dashboard/topup">
+          {t.topup} →
+        </a>
+      )}
+      {state?.blocked === 'no_subscription' && (
         <a className="ais-link" href="/plans">
           {t.plans} →
         </a>

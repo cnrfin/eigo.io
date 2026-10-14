@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { aiAllowance, getStripe, PLAN_NAMES, planAllowance, planForPriceId } from '@/lib/stripe'
+import { addTopup } from '@/lib/minutes'
 import type { PlanName, BillingInterval, PriceTier } from '@/lib/stripe'
 import { getSupabaseAdmin } from '@/lib/supabase-admin'
 
@@ -63,7 +64,18 @@ export async function POST(request: NextRequest) {
   try {
     switch (event.type) {
       case 'checkout.session.completed': {
-        await handleCheckoutCompleted(supabase, event.data.object as Stripe.Checkout.Session)
+        const session = event.data.object as Stripe.Checkout.Session
+        if (session.metadata?.kind === 'topup') {
+          // AI-minute top-up (one-off payment). On failure answer 500 so Stripe retries; addTopup is idempotent.
+          try {
+            await handleTopup(session)
+          } catch (err) {
+            console.error('Top-up not recorded:', err)
+            return NextResponse.json({ error: 'Top-up not recorded' }, { status: 500 })
+          }
+          break
+        }
+        await handleCheckoutCompleted(supabase, session)
         break
       }
 
@@ -100,6 +112,14 @@ export async function POST(request: NextRequest) {
 }
 
 // ---------- Event handlers ----------
+
+async function handleTopup(session: Stripe.Checkout.Session) {
+  const userId = session.metadata?.supabase_user_id
+  const minutes = parseInt(session.metadata?.minutes || '0', 10)
+  if (!userId || !minutes) throw new Error(`Top-up session ${session.id} is missing metadata`)
+  if (session.payment_status !== 'paid') return // not paid (yet): nothing to add
+  await addTopup(userId, minutes, { source: 'stripe', sessionId: session.id })
+}
 
 async function handleCheckoutCompleted(
   supabase: ReturnType<typeof getSupabaseAdmin>,
