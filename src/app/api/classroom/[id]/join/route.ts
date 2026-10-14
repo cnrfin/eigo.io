@@ -6,11 +6,20 @@ import { json, loadClassroom, personName, publicSession, uiLangFor, wherebyParts
 
 const ADMIN_EMAIL = 'cnrfin93@gmail.com'
 
-/** The name the student gave their AI tutor, or the default. */
-async function aiTutor(userId: string) {
-  const { data } = await getSupabaseAdmin().from('ai_tutor_profiles').select('settings').eq('user_id', userId).maybeSingle()
+/** The name, colour and cheeks the student gave their AI tutor (or the defaults), and whether this is their free welcome call. */
+async function aiTutor(userId: string, bookingId: string) {
+  const db = getSupabaseAdmin()
+  const [{ data }, { data: prof }] = await Promise.all([
+    db.from('ai_tutor_profiles').select('settings').eq('user_id', userId).maybeSingle(),
+    db.from('profiles').select('ai_trial_booking_id').eq('id', userId).maybeSingle(),
+  ])
   const st = data?.settings as { tutorName?: string; orbColor?: string; blush?: boolean } | null
-  return { name: st?.tutorName?.trim() || 'AI tutor', color: typeof st?.orbColor === 'string' ? st.orbColor : null, blush: st?.blush !== false }
+  return {
+    name: st?.tutorName?.trim() || 'AI tutor',
+    color: typeof st?.orbColor === 'string' ? st.orbColor : null,
+    blush: st?.blush !== false,
+    welcome: prof?.ai_trial_booking_id === bookingId,
+  }
 }
 
 /**
@@ -69,7 +78,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     else open = null // unpublished or deleted: fall back to free talk
   }
 
-  const tutorInfo = ai ? await aiTutor(booking.user_id) : null
+  const tutorInfo = ai ? await aiTutor(booking.user_id, booking.id) : null
   return json(200, {
     bookingId: booking.id,
     role,
@@ -83,6 +92,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     ai,
     aiColor: tutorInfo?.color ?? null,
     aiBlush: tutorInfo?.blush ?? true,
+    aiWelcome: tutorInfo?.welcome ?? false,
     uiLang: role === 'teacher' ? 'en' : student?.preferred_language === 'en' ? 'en' : 'ja',
     nativeLang: student?.native_language || 'ja',
     open,

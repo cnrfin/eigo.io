@@ -550,7 +550,7 @@
 .cr .ai-tile .face{background:radial-gradient(120% 90% at 50% 40%,rgba(124,199,174,.14),transparent 70%)}
 .cr .ai-tile .ai-orb-tile{width:clamp(44px,34cqmin,128px);height:auto}
 .cr .ai-tile.idle .ai-orb-tile{filter:saturate(.5);opacity:.75}
-.cr .ai-calling .ai-orb-calling{width:128px;height:auto}
+.cr .ai-calling .ai-orb-calling{width:200px;height:auto;margin:-36px} /* the body is 128px; the rest is room for the intro's ripples */
 .cr .ai-tile .ai-status{position:absolute;left:50%;top:10px;transform:translateX(-50%);display:flex;align-items:center;gap:8px;padding:4px 10px;border-radius:999px;background:rgba(10,10,15,.6);color:#fff;font-size:12px;white-space:nowrap}
 .cr .ai-tile .ai-status .spin{width:12px;height:12px;border-radius:50%;border:2px solid currentColor;border-top-color:transparent;animation:cr-spin .7s linear infinite}
 .cr .ai-tile .ai-status .ebtn{padding:3px 10px;font-size:12px}

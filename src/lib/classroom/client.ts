@@ -52,6 +52,8 @@ export type JoinInfo = {
   /** AI lessons: the AI tutor avatar's colour (ORB_COLORS id) and whether it has rosy cheeks */
   aiColor?: string | null
   aiBlush?: boolean
+  /** the student's free 5-minute welcome call */
+  aiWelcome?: boolean
 }
 
 export type JoinDenied = {

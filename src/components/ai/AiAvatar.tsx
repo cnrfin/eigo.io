@@ -3,6 +3,7 @@
 import { useEffect, useRef } from 'react'
 import { orbColor, orbSwatch } from '@/lib/ai-tutor/orb-colors'
 import { FACES, type AvatarMood, type Face, type FaceSpec } from '@/lib/ai-tutor/avatar-mood'
+import { introPose, type AvatarIntro, type IntroPose } from '@/lib/ai-tutor/avatar-intro'
 
 /**
  * The AI tutor's avatar: a glass pebble in the student's two-tone colour, with a kaomoji face
@@ -14,6 +15,8 @@ import { FACES, type AvatarMood, type Face, type FaceSpec } from '@/lib/ai-tutor
  * canvas, where the face is drawn as vector strokes (browsers allow only ~16 WebGL contexts per page).
  * `level` (0..1, e.g. the AI tutor's voice level) and `mood` (expression, listening, slide) are refs read
  * every frame. Reduced motion: drawn once, calm. No WebGL: a CSS pebble with the same face.
+ * `intro` (optional, the calling screen): the "calling…" animation (lib/ai-tutor/avatar-intro.ts) drives the
+ * avatar until the reveal is over; `inset` leaves room around the body for its ripples.
  */
 
 type Ref<T> = { current: T }
@@ -24,6 +27,8 @@ type Entry = {
   pal: { light: number[]; deep: number[]; accent: number[] }
   level?: Ref<number>
   mood?: Ref<AvatarMood>
+  intro?: Ref<AvatarIntro | null>
+  inset: number
   blush: boolean
   seed: number
   size: number
@@ -39,6 +44,7 @@ type Entry = {
 const VS = 'attribute vec2 p;varying vec2 uv;void main(){uv=p;gl_Position=vec4(p,0.,1.);}'
 const FS = `precision highp float;varying vec2 uv;uniform float t;uniform float lv;uniform float res;uniform vec3 ca;uniform vec3 cb;uniform vec3 cc;
 uniform float amt;uniform float yaw;uniform float pitch;uniform float roll;
+uniform vec3 d1;uniform vec3 d2;uniform vec3 d3;uniform float k;uniform float m;uniform float hs;uniform vec2 st;
 vec3 m3(vec3 x){return x-floor(x*(1./289.))*289.;}vec4 m4(vec4 x){return x-floor(x*(1./289.))*289.;}
 vec4 pm(vec4 x){return m4(((x*34.)+1.)*x);}vec4 ti(vec4 r){return 1.79284291400159-.85373472095314*r;}
 float sn(vec3 v){const vec2 C=vec2(1./6.,1./3.);const vec4 D=vec4(0.,.5,1.,2.);vec3 i=floor(v+dot(v,C.yyy));vec3 x0=v-i+dot(i,C.xxx);
@@ -52,8 +58,9 @@ return 42.*dot(m*m,vec4(dot(p0,x0),dot(p1,x1),dot(p2,x2),dot(p3,x3)));}
 float soft(vec3 p){return sn(p)*.75+sn(p*1.7+3.1)*.25;}
 mat3 ry(float a){float c=cos(a),s=sin(a);return mat3(c,0.,-s,0.,1.,0.,s,0.,c);}
 mat3 rx(float a){float c=cos(a),s=sin(a);return mat3(1.,0.,0.,0.,c,s,0.,-s,c);}
+float smin(float a,float b,float k){float h=clamp(.5+.5*(b-a)/k,0.,1.);return mix(b,a,h)-k*h*(1.-h);}
 // the pebble: a slightly flat, lumpy 3D stone; its outline is where the turned stone meets the screen plane
-float sdf(vec2 p){
+float pebble(vec2 p){
   float cr=cos(roll),sr=sin(roll);p=mat2(cr,sr,-sr,cr)*p;
   float a=atan(p.y,p.x),r=length(p);
   vec3 d=vec3(cos(a),sin(a),0.);float cp=cos(pitch),sp=sin(pitch),cy=cos(yaw),sy=sin(yaw);
@@ -62,7 +69,13 @@ float sdf(vec2 p){
   float l=.05*sin(2.*atan(d.y,d.x)+.6)*(1.-d.z*d.z)+.035*sin(3.*atan(d.y,d.x)+1.)+.06*d.x*d.z-.04*d.y*d.z;
   return r-(.84*e+l+lv*.03*sin(4.*a+t*3.));
 }
-float height(vec2 p){float d=sdf(p);float e=clamp(-d/.55,0.,1.);return sqrt(1.-(1.-e)*(1.-e));}
+// squash/stretch, and (calling screen) three glass dots that melt into the pebble as m goes 0 -> 1
+float sdf(vec2 p){
+  p/=st;float pb=pebble(p);if(m>.999)return pb;
+  float dd=smin(smin(length(p-d1.xy)-d1.z,length(p-d2.xy)-d2.z,k),length(p-d3.xy)-d3.z,k);
+  return mix(dd,pb,m);
+}
+float height(vec2 p){float d=sdf(p);float e=clamp(-d/hs,0.,1.);return sqrt(1.-(1.-e)*(1.-e));}
 void main(){
   float d=sdf(uv);float aa=2.5/res;float mask=1.-smoothstep(-aa,aa,d);
   if(mask<=0.){gl_FragColor=vec4(0.);return;}
@@ -94,7 +107,7 @@ const SPHERE = 44
 const entries = new Set<Entry>()
 let gl: WebGLRenderingContext | null = null
 let glc: HTMLCanvasElement | null = null
-type U = Record<'t' | 'lv' | 'res' | 'ca' | 'cb' | 'cc' | 'amt' | 'yaw' | 'pitch' | 'roll', WebGLUniformLocation | null>
+type U = Record<'t' | 'lv' | 'res' | 'ca' | 'cb' | 'cc' | 'amt' | 'yaw' | 'pitch' | 'roll' | 'd1' | 'd2' | 'd3' | 'k' | 'm' | 'hs' | 'st', WebGLUniformLocation | null>
 let u: U | null = null
 let failed = false
 let raf = 0
@@ -143,7 +156,7 @@ function setup(): boolean {
   const loc = gl.getAttribLocation(pr, 'p')
   gl.enableVertexAttribArray(loc)
   gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0)
-  const names = ['t', 'lv', 'res', 'ca', 'cb', 'cc', 'amt', 'yaw', 'pitch', 'roll'] as const
+  const names = ['t', 'lv', 'res', 'ca', 'cb', 'cc', 'amt', 'yaw', 'pitch', 'roll', 'd1', 'd2', 'd3', 'k', 'm', 'hs', 'st'] as const
   u = Object.fromEntries(names.map((n) => [n, gl!.getUniformLocation(pr, n)])) as U
   gl.clearColor(0, 0, 0, 0)
   return true
@@ -153,11 +166,12 @@ const reducedMotion = () => typeof matchMedia !== 'undefined' && matchMedia('(pr
 
 /* ---------- the face: features placed on a sphere that turns with the head ---------- */
 
-function proj(x: number, y: number, h: Pose): [number, number] {
+/** screen x, y and depth (+ = towards the viewer) of a point on the face */
+function proj(x: number, y: number, h: Pose): [number, number, number] {
   const z = Math.sqrt(Math.max(1, SPHERE * SPHERE - x * x - y * y))
   const x1 = x * Math.cos(h.yaw) + z * Math.sin(h.yaw)
   const z1 = -x * Math.sin(h.yaw) + z * Math.cos(h.yaw)
-  return [x1, y * Math.cos(h.pitch) - z1 * Math.sin(h.pitch)]
+  return [x1, y * Math.cos(h.pitch) - z1 * Math.sin(h.pitch), y * Math.sin(h.pitch) + z1 * Math.cos(h.pitch)]
 }
 /** draw a feature in its own coordinates at (x, y), stretched like the sphere is at that point */
 function at(c: CanvasRenderingContext2D, x: number, y: number, h: Pose, draw: () => void) {
@@ -165,7 +179,11 @@ function at(c: CanvasRenderingContext2D, x: number, y: number, h: Pose, draw: ()
   const P = proj(x, y, h)
   const X = proj(x + e, y, h)
   const Y = proj(x, y + e, h)
+  // fades out as it turns round the side of the head (only when turned far away, e.g. the calling intro)
+  const vis = Math.min(1, P[2] / (SPHERE * 0.35))
+  if (vis <= 0) return
   c.save()
+  c.globalAlpha *= vis
   c.transform((X[0] - P[0]) / e, (X[1] - P[1]) / e, (Y[0] - P[0]) / e, (Y[1] - P[1]) / e, P[0], P[1])
   draw()
   c.restore()
@@ -288,14 +306,20 @@ function extra(c: CanvasRenderingContext2D, x: FaceSpec['extra'], h: Pose, real:
   c.restore()
 }
 
-function drawFace(e: Entry, f: FaceSpec, open: boolean, blink: boolean, real: number) {
+type Body = { bs: number; x: number; y: number; ip: IntroPose | null }
+function drawFace(e: Entry, f: FaceSpec, open: boolean, blink: boolean, real: number, b: Body) {
   const c = e.ctx
-  const S = e.size
+  const S = b.bs
   const h = e.h
+  const st = b.ip?.st ?? [1, 1]
+  if ((b.ip?.faceA ?? 1) <= 0) return
   c.save()
-  c.translate(S / 2 + FACE_X * S, S / 2 + FACE_Y * S)
+  c.globalAlpha = b.ip?.faceA ?? 1
+  // during the intro the head turns far round: keep the face on the glass (drawn only where the body is)
+  if (b.ip) c.globalCompositeOperation = 'source-atop'
+  c.translate(b.x + S / 2 + FACE_X * S, b.y + S / 2 + FACE_Y * S)
   c.rotate((h.roll * Math.PI) / 180)
-  c.scale(S / 100, S / 100)
+  c.scale((S / 100) * st[0], (S / 100) * st[1])
   c.strokeStyle = c.fillStyle = INK
   c.lineWidth = 2.6
   c.lineCap = 'round'
@@ -319,7 +343,7 @@ function drawFace(e: Entry, f: FaceSpec, open: boolean, blink: boolean, real: nu
 
 /* ---------- per frame ---------- */
 
-function update(e: Entry, now: number) {
+function update(e: Entry, now: number, ip: IntroPose | null) {
   const real = now / 1000
   const target = Math.min(1, Math.max(0, e.level?.current ?? 0))
   e.smooth += (target - e.smooth) * (target > e.smooth ? 0.25 : 0.12)
@@ -361,22 +385,51 @@ function update(e: Entry, now: number) {
   h.roll += ((f.roll ?? 0) - h.roll) * 0.12
   h.gx += (gaze[0] - h.gx) * 0.3
   h.gy += (gaze[1] - h.gy) * 0.3
+  // the calling intro sets the head directly; when it ends, the springs above carry on from there
+  let face = f
+  if (ip) {
+    h.yaw = ip.yaw
+    h.pitch = ip.pitch
+    h.roll = ip.roll
+    if (ip.gaze) {
+      h.gx = ip.gaze[0]
+      h.gy = ip.gaze[1]
+    }
+    if (ip.face) face = FACES[ip.face]
+  }
   // a blink every few seconds (not when the eyes are already closed shapes)
   if (real > e.blinkAt + 0.16) e.blinkAt = real + 2.8 + Math.random() * 2.4
   const blink = real > e.blinkAt && real < e.blinkAt + 0.16
-  return { f, open: talking && e.smooth > 0.45, blink, real }
+  return { f: face, open: talking && e.smooth > 0.45, blink, real }
 }
 
+const NO_DOT = [0, 0, 0]
 function draw(e: Entry, now: number) {
   if (!e.size) return
-  const { f, open, blink, real } = update(e, now)
-  e.ctx.clearRect(0, 0, e.size, e.size)
+  const intro = e.gl && e.intro?.current && !reducedMotion() ? e.intro.current : null
+  const ip = intro ? introPose(intro, now) : null
+  const { f, open, blink, real } = update(e, now, ip)
+  const c = e.ctx
+  c.clearRect(0, 0, e.size, e.size)
+  // the body's box: inset (room for ripples), scaled and moved by the intro
+  const full = e.size * e.inset
+  const bs = Math.max(8, Math.min(MAX, Math.round(full * (ip?.zoom ?? 1))))
+  const b: Body = { bs, x: (e.size - bs) / 2, y: (e.size - bs) / 2 + (ip?.offY ?? 0) * full, ip }
+  if (ip?.rings.length) {
+    c.lineWidth = Math.max(1, full * 0.015)
+    for (const [r, a] of ip.rings) {
+      c.beginPath()
+      c.arc(e.size / 2, e.size / 2 + (ip.offY ?? 0) * full, r * full, 0, 7)
+      c.strokeStyle = `rgba(${e.pal.accent.map((v) => Math.round(v * 255)).join(',')},${a})`
+      c.stroke()
+    }
+  }
   if (e.gl && gl && glc && u) {
-    gl.viewport(0, 0, e.size, e.size)
+    gl.viewport(0, 0, bs, bs)
     gl.clear(gl.COLOR_BUFFER_BIT)
     gl.uniform1f(u.t, e.clock + e.seed)
     gl.uniform1f(u.lv, e.smooth)
-    gl.uniform1f(u.res, e.size)
+    gl.uniform1f(u.res, bs)
     gl.uniform3fv(u.ca, e.pal.light)
     gl.uniform3fv(u.cb, e.pal.deep)
     gl.uniform3fv(u.cc, e.pal.accent)
@@ -384,10 +437,18 @@ function draw(e: Entry, now: number) {
     gl.uniform1f(u.yaw, e.h.yaw)
     gl.uniform1f(u.pitch, e.h.pitch)
     gl.uniform1f(u.roll, (e.h.roll * Math.PI) / 180)
+    const d = ip?.dots
+    gl.uniform3fv(u.d1, d?.[0] ?? NO_DOT)
+    gl.uniform3fv(u.d2, d?.[1] ?? NO_DOT)
+    gl.uniform3fv(u.d3, d?.[2] ?? NO_DOT)
+    gl.uniform1f(u.k, ip?.k ?? 0.05)
+    gl.uniform1f(u.m, ip?.m ?? 1)
+    gl.uniform1f(u.hs, ip?.hs ?? 0.55)
+    gl.uniform2fv(u.st, ip?.st ?? [1, 1])
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4)
-    e.ctx.drawImage(glc, 0, glc.height - e.size, e.size, e.size, 0, 0, e.size, e.size)
+    c.drawImage(glc, 0, glc.height - bs, bs, bs, b.x, b.y, bs, bs)
   }
-  drawFace(e, f, open, blink, real)
+  drawFace(e, f, open, blink, real, b)
 }
 
 function tick(now: number) {
@@ -411,6 +472,8 @@ export default function AiAvatar({
   color,
   level,
   mood,
+  intro,
+  inset = 1,
   blush = true,
   className,
   title,
@@ -421,6 +484,10 @@ export default function AiAvatar({
   level?: Ref<number>
   /** expression, listening and slide cues from the classroom; read every frame */
   mood?: Ref<AvatarMood>
+  /** the calling screen's intro animation (AiRoom); read every frame */
+  intro?: Ref<AvatarIntro | null>
+  /** the body's share of the canvas (default 1); less leaves room for the intro's ripples */
+  inset?: number
   /** rosy cheeks (AI tutor settings) */
   blush?: boolean
   className?: string
@@ -442,6 +509,7 @@ export default function AiAvatar({
       // no WebGL: a flat pebble behind the face
       el.style.background = orbSwatch(pal)
       el.style.borderRadius = '52% 48% 50% 50% / 50% 52% 48% 50%'
+      if (inset < 1) el.style.clipPath = `inset(${((1 - inset) * 50).toFixed(1)}% round 50%)`
     }
     const e: Entry = {
       el,
@@ -449,6 +517,8 @@ export default function AiAvatar({
       pal: { light: [...pal.light], deep: [...pal.deep], accent: [...pal.accent] },
       level,
       mood,
+      intro,
+      inset,
       blush,
       seed: Math.random() * 50,
       size: 0,
@@ -489,10 +559,11 @@ export default function AiAvatar({
     e.pal = { light: [...pal.light], deep: [...pal.deep], accent: [...pal.accent] }
     e.level = level
     e.mood = mood
+    e.intro = intro
     e.blush = blush
     if (!e.gl) e.el.style.background = orbSwatch(pal)
     draw(e, performance.now())
-  }, [pal, level, mood, blush])
+  }, [pal, level, mood, intro, blush])
 
   return (
     <canvas

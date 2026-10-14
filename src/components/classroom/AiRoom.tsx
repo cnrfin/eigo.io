@@ -6,6 +6,7 @@ import type { Lesson } from '@/lib/slides/types'
 import { useAudioLevel, useVolDot } from './audio'
 import AiAvatar from '@/components/ai/AiAvatar'
 import { faceForText, newMood } from '@/lib/ai-tutor/avatar-mood'
+import { INTRO_FAIL_MS, INTRO_REVEAL_MS, introFailed, introLive, newIntro, pickIntro, type AvatarIntro } from '@/lib/ai-tutor/avatar-intro'
 import ChatPanel from './ChatPanel'
 import { Ico } from './Icons'
 import SlideStage from './SlideStage'
@@ -70,6 +71,12 @@ export default function AiRoom(props: Props) {
   const [micStream, setMicStream] = useState<MediaStream | null>(null)
   /** the AI tutor has started talking: until then the student sees 'Calling your AI tutor…' */
   const [tutorReady, setTutorReady] = useState(false)
+  /** the "calling…" animation on the calling screen: which one, and where it is (read by AiAvatar every frame) */
+  const intro = useRef<AvatarIntro | null>(null)
+  /** its reveal has finished (the calling screen waits for it, so the face is never cut off mid-turn) */
+  const [introDone, setIntroDone] = useState(true)
+  /** its "couldn't connect" ending is still playing */
+  const [introHold, setIntroHold] = useState(false)
 
   const pc = useRef<RTCPeerConnection | null>(null)
   const dc = useRef<RTCDataChannel | null>(null)
@@ -718,6 +725,37 @@ export default function AiRoom(props: Props) {
   useEffect(() => {
     if (speaking) setTutorReady(true)
   }, [speaking])
+
+  /* ---------- the calling screen's intro ---------- */
+  // a new one each time the calling screen shows; a layout effect, so the avatar's first frame already has it
+  useLayoutEffect(() => {
+    if (status !== 'connecting' || tutorReady) return
+    if (intro.current?.phase !== 'wait') intro.current = newIntro(pickIntro(!!info.aiWelcome), performance.now())
+    setIntroDone(false)
+  }, [status, tutorReady, info.aiWelcome])
+  // connected: play the reveal; the calling screen stays until it's over (and the AI tutor has started talking)
+  useEffect(() => {
+    if (status !== 'live' || introDone) return
+    const i = intro.current
+    if (i?.phase === 'wait') introLive(i, performance.now())
+    const left = i?.phase === 'live' ? INTRO_REVEAL_MS - (performance.now() - i.t0) : 0
+    const id = setTimeout(() => setIntroDone(true), Math.max(0, left))
+    return () => clearTimeout(id)
+  }, [status, introDone])
+  // couldn't connect: a short ending before the calling screen fades and the tile shows Reconnect
+  useEffect(() => {
+    if (status !== 'failed' && status !== 'dropped' && status !== 'too_early') return
+    const i = intro.current
+    if (i?.phase !== 'wait') return
+    introFailed(i, performance.now())
+    setIntroHold(true)
+    const id = setTimeout(() => setIntroHold(false), INTRO_FAIL_MS)
+    return () => {
+      clearTimeout(id)
+      setIntroHold(false)
+    }
+  }, [status])
+  const calling = ((status === 'connecting' || status === 'live') && !(tutorReady && introDone)) || introHold
   useEffect(() => {
     if (status !== 'live' || tutorReady) return
     const id = setTimeout(() => setTutorReady(true), 12_000)
@@ -968,8 +1006,8 @@ export default function AiRoom(props: Props) {
       className={`app ai-lesson student${freeTalk ? ' no-course' : ''}${props.whiteboard ? ' wb' : ''}${props.prefs.cursors ? '' : ' no-cursors'}${tbOpen ? ' tb-open' : ''}${props.chatOpen ? ' chat-open' : ''}`}
     >
       <audio ref={audioEl} autoPlay playsInline />
-      <div className={`ai-calling${(status === 'connecting' || status === 'live') && !tutorReady ? '' : ' out'}`} role="status" aria-hidden={tutorReady}>
-        <AiAvatar className="ai-orb-calling" color={info.aiColor} blush={info.aiBlush !== false} />
+      <div className={`ai-calling${calling ? '' : ' out'}`} role="status" aria-hidden={!calling}>
+        <AiAvatar className="ai-orb-calling" color={info.aiColor} blush={info.aiBlush !== false} level={voiceLevel} intro={intro} inset={0.64} />
         {t('aiCalling')}
       </div>
       <header className="top">
