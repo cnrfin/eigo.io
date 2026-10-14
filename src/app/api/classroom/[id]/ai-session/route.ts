@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server'
 import { createHash } from 'node:crypto'
 import { getSupabaseAdmin } from '@/lib/supabase-admin'
 import { ensureSession, json, loadClassroom } from '@/lib/classroom/server'
+import { STUDENT_EARLY_JOIN_MIN } from '@/lib/classroom/booking-window'
 import { buildSessionBrief } from '@/lib/ai-tutor/brief'
 import { createLiveSession, endLiveSession } from '@/lib/ai-tutor/openai'
 
@@ -15,12 +16,13 @@ import { createLiveSession, endLiveSession } from '@/lib/ai-tutor/openai'
  *  - the lesson lasts its full booked length from when the AI tutor first starts
  *    (arriving late doesn't cut it short): its end is fixed at the first session and
  *    reused by every reconnect, so reconnecting never adds time
- *  - it can first start from 2 minutes before the booked start until the booked end
+ *  - it starts as soon as the student is in the room (from 10 minutes before the booked start)
+ *    until the booked end: the AI tutor is always free, and the length counts from the first start
  *  - one live session per booking: an older one is ended first (reconnects
  *    replace, never add, time)
  * The cron /api/cron/ai-tutor-sweep hangs every session up at the booked end.
  */
-const EARLY_MS = 2 * 60_000
+const EARLY_MS = STUDENT_EARLY_JOIN_MIN * 60_000
 const MIN_LEFT_MS = 45_000
 const START_GRACE_MS = 20_000
 

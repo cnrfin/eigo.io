@@ -8,7 +8,34 @@ import { DEFAULT_ORB_COLOR, orbColorId, type OrbColor } from './orb-colors'
 
 /** Plan minutes charged per booked minute for AI lessons (30 min → 18). */
 export const AI_MINUTE_RATIO = 0.6
-export const aiMinutesFor = (durationMinutes: number) => Math.ceil(durationMinutes * AI_MINUTE_RATIO)
+// (the small epsilon keeps float noise from rounding up: 25 × 0.6 is 15.000000000000002 in JS)
+export const aiMinutesFor = (durationMinutes: number) => Math.ceil(durationMinutes * AI_MINUTE_RATIO - 1e-9)
+
+/** AI lesson lengths (lesson minutes). Students low on plan minutes also get a shorter "use what's left" length. */
+export const AI_LENGTHS = [15, 30] as const
+export const AI_MIN_LENGTH = 5
+export const AI_MAX_LENGTH = 30
+
+/** The longest AI lesson (lesson minutes, up to 30) that the plan minutes left can pay for; 0 if none. */
+export function aiMaxLength(planMinutesLeft: number): number {
+  for (let l = AI_MAX_LENGTH; l >= 1; l--) if (aiMinutesFor(l) <= planMinutesLeft) return l
+  return 0
+}
+
+/**
+ * The AI lesson lengths to offer, given the plan minutes left this month (null = no limit: admins, test accounts).
+ * 15 and 30 when affordable, plus the longest affordable length when it's at least 5 minutes longer than those
+ * (minutes expire at the end of the month, so the rest shouldn't go to waste). Below 5 minutes: none.
+ *   18+ left → [15, 30] · 12–17 → [15, 20–29] · 9–11 → [15] · 3–8 → [5–13] · 0–2 → []
+ */
+export function aiLengthOptions(planMinutesLeft: number | null): number[] {
+  if (planMinutesLeft == null) return [...AI_LENGTHS]
+  const max = aiMaxLength(planMinutesLeft)
+  if (max < AI_MIN_LENGTH) return []
+  const opts: number[] = AI_LENGTHS.filter((l) => l <= max)
+  if (max - (opts[opts.length - 1] ?? 0) >= 5) opts.push(max)
+  return opts
+}
 
 /**
  * GPT-Live voices offered to students (API names). OpenAI's voice table (Managing GPT-Live sessions):

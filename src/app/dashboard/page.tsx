@@ -926,6 +926,7 @@ function DashboardContent() {
   const [subStatus, setSubStatus] = useState<'loading' | 'none' | 'active' | 'past_due'>('loading')
   const [bookingTestMode, setBookingTestMode] = useState(false) // test accounts: any duration, any time
   const [classroomEnabled, setClassroomEnabled] = useState(false)
+  const [bookingTutor, setBookingTutor] = useState<'human' | 'ai'>('human') // the AI modal's "schedule one" opens booking on the AI tutor
   const [aiEnabled, setAiEnabled] = useState(false) // pilot: AI tutor lessons // pilot: lessons open in /classroom/[id]
   const [minutesRemaining, setMinutesRemaining] = useState<number | null>(null)
   const [trialCompleted, setTrialCompleted] = useState<boolean | null>(null) // null = loading
@@ -1416,7 +1417,9 @@ function DashboardContent() {
                   wherebyUrl={wherebyUrl}
                   isAdmin={isAdmin}
                   classroomEnabled={classroomEnabled}
-                  onBook={() => setActiveTab('booking')}
+                  onBook={() => { setBookingTutor('human'); setActiveTab('booking') }}
+                  onBookAi={() => { setBookingTutor('ai'); setActiveTab('booking') }}
+                  aiEnabled={aiEnabled}
                   onReviewPhrases={() => setActiveTab('vocab')}
                   onTakeTests={() => router.push('/dashboard/tests')}
                   onViewPlans={() => (window.location.href = '/plans')}
@@ -1467,6 +1470,7 @@ function DashboardContent() {
                   testMode={bookingTestMode}
                   classroomEnabled={classroomEnabled}
                   aiEnabled={aiEnabled}
+                  initialTutor={bookingTutor}
                   minutesRemaining={subStatus === 'active' ? minutesRemaining : null}
                 />
               </div>

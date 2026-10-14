@@ -245,6 +245,11 @@ export default function AiTutorSettingsCard({ locale }: { locale: string }) {
     save({ ...s, [k]: v })
   }
 
+  // opened from the AI modal's settings button (/dashboard/settings#ai-tutor): scroll here once the card exists
+  useEffect(() => {
+    if (enabled && window.location.hash === '#ai-tutor') document.getElementById('ai-tutor')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }, [enabled])
+
   if (!enabled) return null
 
   /* ---------- building blocks ---------- */
@@ -311,7 +316,8 @@ export default function AiTutorSettingsCard({ locale }: { locale: string }) {
   const focusNow = FOCUS.filter((o) => s.focus.includes(o.v)).map((o) => t(o.hint)).join(' ')
 
   return (
-    <SquircleCard radius={20} className="p-5 sm:p-8">
+    <div id="ai-tutor" className="scroll-mt-24">
+      <SquircleCard radius={20} className="p-5 sm:p-8">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <div className="flex items-baseline gap-3 mb-1">
@@ -452,6 +458,7 @@ export default function AiTutorSettingsCard({ locale }: { locale: string }) {
           {toggle('useHistory')}
         </>
       ))}
-    </SquircleCard>
+      </SquircleCard>
+    </div>
   )
 }

@@ -1,0 +1,50 @@
+/* "Start now" AI lessons: start card + dashboard modal (design: mockups/ai-start-now.html) */
+.ais { position: relative; }
+.ais-head { display: flex; gap: 14px; align-items: center; padding-right: 80px; }
+.ais-compact .ais-head { padding-right: 0; }
+.ais-av { width: 64px; flex: none; }
+.ais-compact .ais-av { width: 48px; }
+.ais-title { font-size: 1rem; font-weight: 600; color: var(--text); }
+.ais-sub { font-size: .75rem; color: var(--text-muted); margin-top: 1px; }
+.ais-resume { margin-top: 14px; font-size: .75rem; color: var(--text-secondary); padding: 9px 12px; border-radius: 12px; background: var(--inset); }
+.ais-compact .ais-resume { background: var(--panel); }
+.ais-row { display: flex; gap: 10px; align-items: center; margin-top: 14px; }
+.ais-pills { display: flex; gap: 6px; flex: none; }
+.ais-pill { padding: 8px 13px; border-radius: 999px; font-size: .75rem; font-weight: 500; transition: transform .12s ease-out; }
+.ais-pill:active:not(:disabled) { transform: scale(.95); }
+.ais-pill:disabled { opacity: .45; }
+.ais-cta {
+  flex: 1; height: 44px; border-radius: 999px; background: var(--accent); color: var(--selected-text);
+  font-size: .85rem; font-weight: 600; transition: transform .12s ease-out, opacity .2s;
+}
+.ais-cta:active:not(:disabled) { transform: scale(.97); }
+.ais-cta:disabled { opacity: .35; cursor: default; }
+.ais-note { font-size: .7rem; color: var(--text-muted); margin-top: 8px; }
+.ais-note.warn { color: var(--warning); }
+.ais-link { display: inline-block; margin-top: 12px; font-size: .75rem; color: var(--text-secondary); }
+.ais-link:hover { color: var(--text); }
+.ais-link + .ais-link { margin-left: 16px; }
+
+/* booking form: the card sits on the form's panel */
+.ais-compact { background: var(--inset); border-radius: 16px; padding: 16px; }
+
+/* modal */
+.ais-scrim {
+  position: fixed; inset: 0; z-index: 80; background: var(--overlay); display: grid; place-items: center; padding: 20px;
+  animation: ais-fade .2s ease-out;
+}
+.ais-modal {
+  position: relative; width: min(460px, 100%); padding: 22px; border-radius: 22px; background: var(--panel);
+  border: 1px solid var(--hairline); box-shadow: 0 20px 60px rgba(0, 0, 0, .25);
+  animation: ais-in .25s ease-out;
+}
+.ais-tr { position: absolute; top: 14px; right: 14px; display: flex; gap: 6px; z-index: 1; }
+.ais-ib {
+  width: 32px; height: 32px; border-radius: 999px; display: grid; place-items: center;
+  background: var(--inset); color: var(--text-muted); transition: transform .12s ease-out, color .15s;
+}
+.ais-ib:hover { color: var(--text); }
+.ais-ib:active { transform: scale(.9); }
+@keyframes ais-fade { from { opacity: 0 } }
+@keyframes ais-in { from { opacity: 0; filter: blur(6px); transform: scale(.98) } }
+@media (prefers-reduced-motion: reduce) { .ais-scrim, .ais-modal { animation: none; } }

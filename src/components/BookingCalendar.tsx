@@ -9,7 +9,8 @@ import AiAvatar from '@/components/ai/AiAvatar'
 import { Squircle } from '@squircle-js/react'
 import SquircleBox from '@/components/ui/SquircleBox'
 import CourseSheet, { type CatalogEntry } from '@/components/booking/CourseSheet'
-import { aiMinutesFor } from '@/lib/ai-tutor/settings'
+import { AI_LENGTHS, aiLengthOptions, aiMinutesFor } from '@/lib/ai-tutor/settings'
+import { AiStartCard, useAiStartState } from '@/components/ai/AiStart'
 import '@/components/booking/tutor-picker.css'
 
 /** Course picker when booking (classroom pilot). Off until the courses are finished: set to true to bring it back. */
@@ -20,20 +21,25 @@ type SelectedBooking = { date: string; time: string; dayLabel: string }
 export type BookingResultDetail = { date: string; time: string; success: boolean; reason?: string }
 export type BookingResult = { success: boolean; message: string; details?: BookingResultDetail[] }
 
-const AI_DURATIONS = [15, 30]
 
-export default function BookingCalendar({ selectedDuration, onBookingComplete, rescheduleLesson, hasSubscription = false, testMode = false, classroomEnabled = false, aiEnabled = false, minutesRemaining = null }: { selectedDuration?: number; onBookingComplete?: (result?: BookingResult) => void; rescheduleLesson?: { id: string; googleEventId: string | null }; hasSubscription?: boolean; /** test account (user_permissions.booking_test_mode): every duration and every time of day */ testMode?: boolean; /** classroom pilot: a course can be added to the booking */ classroomEnabled?: boolean; /** AI tutor pilot: Connor / AI tutor picker */ aiEnabled?: boolean; /** plan minutes left this month (usage bar); null hides it */ minutesRemaining?: number | null }) {
+export default function BookingCalendar({ selectedDuration, onBookingComplete, rescheduleLesson, hasSubscription = false, testMode = false, classroomEnabled = false, aiEnabled = false, minutesRemaining = null, initialTutor = 'human' }: { selectedDuration?: number; onBookingComplete?: (result?: BookingResult) => void; rescheduleLesson?: { id: string; googleEventId: string | null }; hasSubscription?: boolean; /** test account (user_permissions.booking_test_mode): every duration and every time of day */ testMode?: boolean; /** classroom pilot: a course can be added to the booking */ classroomEnabled?: boolean; /** AI tutor pilot: Connor / AI tutor picker */ aiEnabled?: boolean; /** plan minutes left this month (usage bar); null hides it */ minutesRemaining?: number | null; /** which tutor is chosen first */ initialTutor?: 'human' | 'ai' }) {
   const { t, locale } = useLanguage()
   const { session } = useAuth()
   const [currentDate, setCurrentDate] = useState(new Date())
   const { theme } = useTheme()
   const selectedStyle = pillTabStyle(true, theme === 'dark' ? 'dark' : 'light') // shared selected treatment (radius comes from each element)
   const [selectedDay, setSelectedDay] = useState<number | null>(null)
-  const [duration, setDuration] = useState(selectedDuration || (hasSubscription ? 30 : 15))
+  const [pickedDuration, setDuration] = useState(selectedDuration || (initialTutor === 'ai' ? 15 : hasSubscription ? 30 : 15))
   const [availableSlots, setAvailableSlots] = useState<string[]>([])
   // Who teaches: Connor (Whereby) or the AI tutor (pilot). Rescheduling keeps the original kind.
-  const [tutor, setTutor] = useState<'human' | 'ai'>('human')
+  const [tutor, setTutor] = useState<'human' | 'ai'>(initialTutor)
   const isAi = aiEnabled && !rescheduleLesson && tutor === 'ai'
+  // AI lengths: 15 / 30, plus a shorter one that uses up the month's last minutes (they don't roll over)
+  const aiOptions = aiLengthOptions(testMode ? null : minutesRemaining)
+  const aiDurations = aiOptions.length ? aiOptions : [...AI_LENGTHS]
+  const duration = isAi && !aiDurations.includes(pickedDuration) ? aiDurations[0] : pickedDuration
+  // AI pilot: what "start now" can do (lengths, lesson in progress, a teacher lesson soon)
+  const { state: aiStart } = useAiStartState(aiEnabled && !rescheduleLesson)
   const [loadingSlots, setLoadingSlots] = useState(false)
   const [booking, setBooking] = useState(false)
   const [bookingResult, setBookingResult] = useState<{
@@ -391,8 +397,8 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
               className={`tp-pill${tutor === k ? ' on' : ''}`}
               onClick={() => {
                 if (tutor === k) return
-                // AI lessons are 15 or 30 minutes (longer voice sessions lose context and tire students)
-                if (k === 'ai' && duration > 30) setDuration(30)
+                // AI lessons: 15 or 30 minutes, or what's left this month (longer voice sessions lose context and tire students)
+                if (k === 'ai' && !aiDurations.includes(duration)) setDuration(aiDurations[0])
                 setTutor(k)
                 setSelectedBookings([])
                 setBookingResult(null)
@@ -445,8 +451,8 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
 
       {/* Duration selector */}
       <div className="flex gap-2 mb-3 justify-center">
-        {(isAi ? AI_DURATIONS : [15, 30, 45, 60, 75]).map((d) => {
-          const locked = !hasSubscription && !testMode && d !== 15
+        {(isAi ? aiDurations : [15, 30, 45, 60, 75]).map((d) => {
+          const locked = isAi ? !aiOptions.length : !hasSubscription && !testMode && d !== 15
           return (
             <Squircle key={d} asChild cornerRadius={8} cornerSmoothing={0.8}>
               <button
@@ -491,6 +497,16 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
             <span className="tp-ghost" style={{ width: `${Math.min(100, (fullMinutes / Math.max(1, minutesRemaining)) * 100)}%` }} />
             <span className="tp-use" style={{ width: `${Math.min(100, (planMinutes / Math.max(1, minutesRemaining)) * 100)}%` }} />
           </div>
+        </div>
+      )}
+
+      {/* AI pilot: start now (the length above), or book a time below */}
+      {isAi && (
+        <div className="mb-6">
+          <AiStartCard compact locale={locale === 'ja' ? 'ja' : 'en'} profile={{ name: aiTutorName, color: aiOrbColor, blush: aiBlush }} state={aiStart} duration={duration} />
+          <p className="text-xs mt-5 mb-1 text-center" style={{ color: 'var(--text-muted)' }}>
+            {locale === 'ja' ? 'または日時を予約' : 'Or book a time'}
+          </p>
         </div>
       )}
 

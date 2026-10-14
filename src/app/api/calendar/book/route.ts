@@ -9,7 +9,7 @@ import { getUserSubscription, hasEnoughMinutes, recordMinuteUsage } from '@/lib/
 import { getUserPermissions } from '@/lib/user-permissions'
 import { isAdminEmail } from '@/lib/admin-redirect'
 import { nextLessonFor } from '@/lib/classroom/catalog'
-import { aiMinutesFor } from '@/lib/ai-tutor/settings'
+import { AI_MAX_LENGTH, AI_MIN_LENGTH, aiMinutesFor } from '@/lib/ai-tutor/settings'
 
 // POST /api/calendar/book
 // Body: { date: '2026-03-23', time: '17:00', duration: 30, timezone: 'Europe/London', slideCourseId?: 'c_greatbritain' }
@@ -80,8 +80,9 @@ export async function POST(request: NextRequest) {
       if (!perms.ai_enabled && !isAdmin) {
         return NextResponse.json({ error: 'AI lessons are not available for this account' }, { status: 403 })
       }
-      // AI lessons: 15 or 30 minutes only
-      if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !/^\d{2}:\d{2}$/.test(time) || ![15, 30].includes(duration)) {
+      // AI lessons: 15 or 30 minutes, or a shorter length that uses up the month's last minutes (aiLengthOptions);
+      // any whole length from 5 to 30 is fine here, the minute check below decides what they can afford
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !/^\d{2}:\d{2}$/.test(time) || !Number.isInteger(duration) || duration < AI_MIN_LENGTH || duration > AI_MAX_LENGTH) {
         return NextResponse.json({ error: 'Invalid date, time or duration' }, { status: 400 })
       }
       const { jstDate, jstTime } = timezoneToJst(date, time, timezone)

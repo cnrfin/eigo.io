@@ -1,11 +1,14 @@
 'use client'
 
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Squircle } from '@squircle-js/react'
 import { useTheme } from '@/context/ThemeContext'
 import SquircleCard from '@/components/ui/SquircleCard'
 import RiveIcon, { type RiveIconHandle } from '@/components/ui/RiveIcon'
+import AiAvatar from '@/components/ai/AiAvatar'
+import { AiStartModal, useAiProfile } from '@/components/ai/AiStart'
+import { newMood } from '@/lib/ai-tutor/avatar-mood'
 
 type Locale = 'ja' | 'en'
 
@@ -38,6 +41,10 @@ interface HomeViewProps {
   onBook: () => void
   onReviewPhrases: () => void
   onTakeTests: () => void
+  /** pilot: "Talk to AI tutor" (start an AI lesson now) replaces "Take Tests" */
+  aiEnabled?: boolean
+  /** the AI modal's "schedule one instead": booking with the AI tutor chosen */
+  onBookAi?: () => void
   onViewPlans: () => void
   onCancelLesson: (lesson: HomeViewLesson) => void
   onRescheduleLesson: (lesson: HomeViewLesson) => void
@@ -116,10 +123,13 @@ const MESH_DARK: Record<'blueGreen' | 'pinkPurple' | 'yellowOrange', MeshPair> =
   yellowOrange: ['rgba(250,199,117,0.52)', 'rgba(238,128,58,0.48)'],
 }
 
-function ActionButton({ artboard, label, onClick, colors, flat = false }: {
+function ActionButton({ artboard, label, onClick, colors, flat = false, icon, onHover }: {
   artboard: string; label: string; onClick: () => void; colors: MeshPair
   /** Light mode: flat secondary-grey pill — no border, shadow or mesh hover. */
   flat?: boolean
+  /** instead of the Rive icon (the AI tutor's avatar) */
+  icon?: React.ReactNode
+  onHover?: () => void
 }) {
   const [a, b] = colors
   const iconRef = useRef<RiveIconHandle>(null)
@@ -129,8 +139,8 @@ function ActionButton({ artboard, label, onClick, colors, flat = false }: {
     <motion.button
       {...pressAnim}
       onClick={onClick}
-      onMouseEnter={() => iconRef.current?.fire()}
-      className="group relative overflow-hidden flex items-center justify-center px-5 py-3 rounded-full text-sm font-medium"
+      onMouseEnter={() => (icon ? onHover?.() : iconRef.current?.fire())}
+      className={`group relative overflow-hidden flex items-center justify-center py-3 rounded-full text-sm font-medium ${icon ? 'pl-2.5 pr-5' : 'px-5'}`}
       style={flat ? { background: 'var(--inset)', color: 'var(--text)' } : { ...panelStyle, color: 'var(--text)' }}
     >
       {!flat && (
@@ -141,7 +151,7 @@ function ActionButton({ artboard, label, onClick, colors, flat = false }: {
         />
       )}
       <span className="relative z-10 flex items-center gap-2">
-        <RiveIcon ref={iconRef} artboard={artboard} size={16} variant="muted" />
+        {icon ?? <RiveIcon ref={iconRef} artboard={artboard} size={16} variant="muted" />}
         {label}
       </span>
     </motion.button>
@@ -230,6 +240,10 @@ export default function HomeView(props: HomeViewProps) {
   const { locale, greeting, firstName, subStatus, trialCompleted, lessons, loadingLessons, wherebyUrl, isAdmin, classroomEnabled } = props
   const { theme } = useTheme()
   const mesh = theme === 'dark' ? MESH_DARK : MESH
+  // pilot: the AI tutor's avatar on its button, and the start-now modal
+  const ai = useAiProfile(!!props.aiEnabled)
+  const aiMood = useRef(newMood())
+  const [aiOpen, setAiOpen] = useState(false)
 
   let lessonsSection: React.ReactNode = null
   if (lessons.length > 0) {
@@ -304,8 +318,38 @@ export default function HomeView(props: HomeViewProps) {
       <div className="flex flex-wrap justify-center gap-3 mb-10">
         <ActionButton artboard="book" label={locale === 'ja' ? 'レッスン予約' : 'Book lesson'} onClick={props.onBook} colors={mesh.blueGreen} flat={theme !== 'dark'} />
         <ActionButton artboard="phrases" label={locale === 'ja' ? 'フレーズ復習' : 'Review Phrases'} onClick={props.onReviewPhrases} colors={mesh.pinkPurple} flat={theme !== 'dark'} />
-        <ActionButton artboard="exam" label={locale === 'ja' ? 'テスト' : 'Take Tests'} onClick={props.onTakeTests} colors={mesh.yellowOrange} flat={theme !== 'dark'} />
+        {props.aiEnabled ? (
+          <ActionButton
+            artboard="ai"
+            label={locale === 'ja' ? 'AIチューターと話す' : 'Talk to AI tutor'}
+            onClick={() => setAiOpen(true)}
+            onHover={() => {
+              aiMood.current.face = 'happy'
+              aiMood.current.until = performance.now() + 1400
+            }}
+            icon={
+              <span className="block w-[26px] -my-1" aria-hidden>
+                <AiAvatar color={ai.color} blush={ai.blush} mood={aiMood} />
+              </span>
+            }
+            colors={mesh.blueGreen}
+            flat={theme !== 'dark'}
+          />
+        ) : (
+          <ActionButton artboard="exam" label={locale === 'ja' ? 'テスト' : 'Take Tests'} onClick={props.onTakeTests} colors={mesh.yellowOrange} flat={theme !== 'dark'} />
+        )}
       </div>
+      {aiOpen && (
+        <AiStartModal
+          locale={locale}
+          profile={ai}
+          onClose={() => setAiOpen(false)}
+          onSchedule={() => {
+            setAiOpen(false)
+            ;(props.onBookAi ?? props.onBook)()
+          }}
+        />
+      )}
 
       <div className="max-w-xl mx-auto">
         {lessonsSection}

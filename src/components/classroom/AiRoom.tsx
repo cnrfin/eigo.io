@@ -515,6 +515,13 @@ export default function AiRoom(props: Props) {
     return () => clearTimeout(id)
   }, [status, connect, clockOffset])
 
+  /* in the room before the AI tutor may start (only if the device clock is off): keep trying by itself */
+  useEffect(() => {
+    if (status !== 'too_early') return
+    const id = setTimeout(() => void connect(), 15_000)
+    return () => clearTimeout(id)
+  }, [status, connect])
+
   const started = useRef(false)
   useEffect(() => {
     if (started.current) return
