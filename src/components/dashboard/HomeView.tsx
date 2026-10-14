@@ -44,6 +44,8 @@ interface HomeViewProps {
   onTakeTests: () => void
   /** pilot: "Talk to AI tutor" (start an AI lesson now) replaces "Take Tests" */
   aiEnabled?: boolean
+  /** not known yet whether the AI button or Tests goes here (first visit): show a placeholder */
+  aiPending?: boolean
   /** the AI modal's "schedule one instead": booking with the AI tutor chosen */
   onBookAi?: () => void
   onViewPlans: () => void
@@ -326,7 +328,9 @@ export default function HomeView(props: HomeViewProps) {
       <div className="flex flex-wrap justify-center gap-3 mb-10">
         <ActionButton artboard="book" label={locale === 'ja' ? 'レッスン予約' : 'Book lesson'} onClick={props.onBook} colors={mesh.blueGreen} flat={theme !== 'dark'} />
         <ActionButton artboard="phrases" label={locale === 'ja' ? 'フレーズ復習' : 'Review Phrases'} onClick={props.onReviewPhrases} colors={mesh.pinkPurple} flat={theme !== 'dark'} />
-        {props.aiEnabled ? (
+        {props.aiPending ? (
+          <span aria-hidden className="h-[46px] w-[170px] rounded-full animate-pulse" style={{ background: 'var(--inset)' }} />
+        ) : props.aiEnabled ? (
           <ActionButton
             artboard="ai"
             label={locale === 'ja' ? 'AIチューターと話す' : 'Talk to AI tutor'}
@@ -337,7 +341,7 @@ export default function HomeView(props: HomeViewProps) {
             }}
             icon={
               <span className="block w-[26px] -my-1" aria-hidden>
-                <AiAvatar color={ai.color} blush={ai.blush} mood={aiMood} />
+                {ai.ready ? <AiAvatar color={ai.color} blush={ai.blush} mood={aiMood} /> : <span className="block w-[26px] h-[26px] rounded-full animate-pulse" style={{ background: 'var(--inset)' }} />}
               </span>
             }
             colors={mesh.blueGreen}

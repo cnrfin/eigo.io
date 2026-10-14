@@ -21,7 +21,7 @@ import './ai-start.css'
  */
 
 type Locale = 'ja' | 'en'
-export type AiProfile = { name: string; color: string | null; blush: boolean }
+export type AiProfile = { name: string; color: string | null; blush: boolean; /** loaded or remembered (not the default yet) */ ready?: boolean }
 
 /*
  * Warm cache, so the dashboard button, the avatar's colours and the modal (with the course to continue) show
@@ -53,6 +53,8 @@ const accessKey = (uid: string) => `eigo:aiAccess:${uid}`
 
 /** Last known "this student has the AI tutor" (shown until /api/subscription answers). */
 export const cachedAiAccess = (uid: string | undefined) => (uid ? store.get<boolean>(accessKey(uid)) === true : false)
+/** Whether this device has a remembered answer at all (first visit: no). */
+export const hasCachedAiAccess = (uid: string | undefined) => (uid ? store.get<boolean>(accessKey(uid)) !== null : false)
 export const rememberAiAccess = (uid: string | undefined, on: boolean) => uid && store.set(accessKey(uid), on)
 /** Keep the cached profile in step when the student changes their AI tutor settings. */
 export const rememberAiProfile = (uid: string | undefined, p: AiProfile) => uid && store.set(profileKey(uid), p)
@@ -99,7 +101,7 @@ export function useAiProfile(enabled: boolean): AiProfile {
       alive = false
     }
   }, [enabled, token, uid])
-  return p ?? cached ?? { name: '', color: null, blush: true }
+  return p ? { ...p, ready: true } : cached ? { ...cached, ready: true } : { name: '', color: null, blush: true, ready: false }
 }
 
 /** What the student can start right now (lengths, why not, lesson in progress, course to continue). */
@@ -296,6 +298,7 @@ export function AiStartCard({
           <div className="ais-sub">{state?.trial ? t.trialSub : t.sub}</div>
         </div>
       </div>
+      {pickCourse && !state && <div className="ais-course animate-pulse" style={{ background: 'var(--inset)', borderRadius: 13 }} aria-hidden />}
       {pickCourse && state && !state.liveId && !state.blocked ? (
         state.trial ? (
           <div className="cs-picked ais-course ais-fixed">

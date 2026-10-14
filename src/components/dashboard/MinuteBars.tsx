@@ -66,3 +66,21 @@ export default function MinuteBars({ info, locale, onTopup }: { info: MinuteInfo
     </div>
   )
 }
+
+/** Placeholder while the minutes load: same shape as the bars, pulsing (like the Home lesson skeleton). */
+export function MinuteBarsSkeleton() {
+  return (
+    <div className="flex flex-col gap-3 animate-pulse" aria-hidden>
+      {[0, 1].map((i) => (
+        <div key={i}>
+          <div className="flex justify-between mb-1.5">
+            <div className="h-3 w-16 rounded" style={{ background: 'var(--inset)' }} />
+            <div className="h-3 w-12 rounded" style={{ background: 'var(--inset)' }} />
+          </div>
+          <div className="h-1.5 rounded-full" style={{ background: 'var(--inset)' }} />
+        </div>
+      ))}
+      <div className="h-8 rounded-lg" style={{ background: 'var(--inset)' }} />
+    </div>
+  )
+}

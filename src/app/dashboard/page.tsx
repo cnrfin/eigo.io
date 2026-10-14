@@ -17,7 +17,7 @@ import BookingCalendar, { type BookingResult } from '@/components/BookingCalenda
 import { motion, AnimatePresence } from 'framer-motion'
 import { formatNextReview, previewIntervals, type ReviewRating } from '@/lib/srs'
 import HomeView from '@/components/dashboard/HomeView'
-import { cachedAiAccess, rememberAiAccess } from '@/components/ai/AiStart'
+import { cachedAiAccess, hasCachedAiAccess, rememberAiAccess } from '@/components/ai/AiStart'
 import { aiMinutesLeft, type MinuteSnapshot } from '@/lib/minutes-core'
 import PronAnnounceArt from '@/components/dashboard/PronAnnounceArt'
 import { useDashboardNav } from '@/context/DashboardNavContext'
@@ -933,6 +933,8 @@ function DashboardContent() {
   const [aiKnown, setAiKnown] = useState(false) // /api/subscription has answered
   // until then, the last known answer for this student, so "Talk to AI tutor" doesn't pop in late
   const aiShown = aiKnown ? aiEnabled : cachedAiAccess(user?.id)
+  // first visit on this device: don't know yet whether to show "Talk to AI tutor" or "Tests" (placeholder)
+  const aiPending = !aiKnown && !hasCachedAiAccess(user?.id)
   const [minutesRemaining, setMinutesRemaining] = useState<number | null>(null)
   const [aiMinutes, setAiMinutes] = useState<MinuteSnapshot | null>(null) // AI pilot: plan + AI + top-up minutes
   const [aiOnly, setAiOnly] = useState(false) // AI plan: AI tutor lessons only
@@ -1431,6 +1433,7 @@ function DashboardContent() {
                   onBook={() => { setBookingTutor('human'); setActiveTab('booking') }}
                   onBookAi={() => { setBookingTutor('ai'); setActiveTab('booking') }}
                   aiEnabled={aiShown}
+                  aiPending={aiPending}
                   onReviewPhrases={() => setActiveTab('vocab')}
                   onTakeTests={() => router.push('/dashboard/tests')}
                   onViewPlans={() => (window.location.href = '/plans')}
