@@ -55,6 +55,14 @@ export const PLAN_MINUTES: Record<PlanName, number> = {
   test: 0,       // Exam Pass: tests only, no lesson minutes
 }
 
+/**
+ * Minutes for one billing period (subscriptions.minutes_per_month holds this: minutes are counted per billing
+ * period). Monthly plans get one month's minutes; yearly plans get the whole year's up front (12 × monthly).
+ */
+export function planAllowance(plan: PlanName, interval: BillingInterval): number {
+  return PLAN_MINUTES[plan] * (interval === 'yearly' ? 12 : 1)
+}
+
 // ---------- Display prices (JPY) ----------
 
 // Display names for plans

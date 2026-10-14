@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { getStripe, getStripePriceId, PLAN_MINUTES } from '@/lib/stripe'
+import { getStripe, getStripePriceId, planAllowance } from '@/lib/stripe'
 import type { PlanName, BillingInterval } from '@/lib/stripe'
 import { getPriceTier } from '@/lib/subscription'
 
@@ -113,7 +113,7 @@ export async function POST(request: NextRequest) {
         plan,
         interval,
         tier,
-        minutes_per_month: String(PLAN_MINUTES[plan]),
+        minutes_per_month: String(planAllowance(plan, interval)),
       },
       subscription_data: {
         metadata: {
@@ -121,7 +121,7 @@ export async function POST(request: NextRequest) {
           plan,
           interval,
           tier,
-          minutes_per_month: String(PLAN_MINUTES[plan]),
+          minutes_per_month: String(planAllowance(plan, interval)),
         },
       },
     })

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
-import { getStripe, PLAN_MINUTES } from '@/lib/stripe'
+import { getStripe, planAllowance } from '@/lib/stripe'
 import type { PlanName, BillingInterval, PriceTier } from '@/lib/stripe'
 import { getSupabaseAdmin } from '@/lib/supabase-admin'
 
@@ -145,7 +145,7 @@ async function handleCheckoutCompleted(
         billing_interval: interval,
         price_tier: tier,
         status: 'active',
-        minutes_per_month: minutesPerMonth || PLAN_MINUTES[plan],
+        minutes_per_month: minutesPerMonth || planAllowance(plan, interval),
         current_period_start: period.start,
         current_period_end: period.end,
         cancel_at_period_end: false,
@@ -206,13 +206,19 @@ async function handleSubscriptionUpdated(
     updated_at: new Date().toISOString(),
   }
 
-  // Update plan details if present in metadata (e.g. after an upgrade)
-  if (plan && ['light', 'standard', 'test'].includes(plan)) {
-    updateData.plan = plan
-    updateData.minutes_per_month = PLAN_MINUTES[plan]
-  }
-  if (interval && ['monthly', 'yearly'].includes(interval)) {
-    updateData.billing_interval = interval
+  // Update plan details if present in metadata (e.g. after an upgrade). The minutes only change when the plan
+  // or interval actually changed, so renewals and custom allowances (set by hand) are left alone.
+  const { data: current } = await supabase
+    .from('subscriptions')
+    .select('plan, billing_interval')
+    .eq('stripe_subscription_id', subscription.id)
+    .maybeSingle()
+  const newPlan = plan && ['light', 'standard', 'test'].includes(plan) ? plan : null
+  const newInterval = interval && ['monthly', 'yearly'].includes(interval) ? interval : null
+  if (newPlan) updateData.plan = newPlan
+  if (newInterval) updateData.billing_interval = newInterval
+  if (current && ((newPlan && newPlan !== current.plan) || (newInterval && newInterval !== current.billing_interval))) {
+    updateData.minutes_per_month = planAllowance((newPlan ?? current.plan) as PlanName, (newInterval ?? current.billing_interval) as BillingInterval)
   }
 
   const { error } = await supabase

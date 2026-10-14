@@ -4,7 +4,7 @@
  */
 
 import type { PlanName, BillingInterval } from '@/lib/stripe'
-import { PLAN_MINUTES } from '@/lib/stripe'
+import { planAllowance } from '@/lib/stripe'
 
 // ---------- Product ID → Plan mapping ----------
 
@@ -15,10 +15,10 @@ type AppleProductInfo = {
 }
 
 const APPLE_PRODUCT_MAP: Record<string, AppleProductInfo> = {
-  'io.eigo.app.light.monthly': { plan: 'light', interval: 'monthly', minutesPerMonth: PLAN_MINUTES.light },
-  'io.eigo.app.light.yearly': { plan: 'light', interval: 'yearly', minutesPerMonth: PLAN_MINUTES.light },
-  'io.eigo.app.standard.monthly': { plan: 'standard', interval: 'monthly', minutesPerMonth: PLAN_MINUTES.standard },
-  'io.eigo.app.standard.yearly': { plan: 'standard', interval: 'yearly', minutesPerMonth: PLAN_MINUTES.standard },
+  'io.eigo.app.light.monthly': { plan: 'light', interval: 'monthly', minutesPerMonth: planAllowance('light', 'monthly') },
+  'io.eigo.app.light.yearly': { plan: 'light', interval: 'yearly', minutesPerMonth: planAllowance('light', 'yearly') },
+  'io.eigo.app.standard.monthly': { plan: 'standard', interval: 'monthly', minutesPerMonth: planAllowance('standard', 'monthly') },
+  'io.eigo.app.standard.yearly': { plan: 'standard', interval: 'yearly', minutesPerMonth: planAllowance('standard', 'yearly') },
 }
 
 export function parseAppleProductId(productId: string): AppleProductInfo | null {

@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ usage: [] })
     }
 
-    // Fetch all usage records for the current period, joined with booking info
+    // Fetch all usage records for the current billing period
     const supabaseAdmin = getSupabaseAdmin()
     const { data: usage, error } = await supabaseAdmin
       .from('minute_usage')

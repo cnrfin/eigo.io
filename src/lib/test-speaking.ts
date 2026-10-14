@@ -28,7 +28,7 @@ function getOpenAI(): OpenAI {
 const AUDIO_MODEL = process.env.OPENAI_AUDIO_MODEL || 'gpt-audio'
 
 function ffmpegPath(): string {
-  const bundled = join(process.cwd(), 'bin', 'ffmpeg')
+  const bundled = join(/*turbopackIgnore: true*/ process.cwd(), 'bin', 'ffmpeg')
   return existsSync(bundled) ? bundled : 'ffmpeg'
 }
 

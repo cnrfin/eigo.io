@@ -5,7 +5,8 @@ import { deleteWherebyRoom } from '@/lib/whereby'
 import { sendAdminCancellationNotification } from '@/lib/email'
 import { notifyCancellation } from '@/lib/notify'
 import { deleteStudentCalendarEvent } from '@/lib/student-calendar'
-import { getUserSubscription, recordMinuteUsage } from '@/lib/subscription'
+import { recordMinuteUsage } from '@/lib/subscription'
+import { getSupabaseAdmin } from '@/lib/supabase-admin'
 
 // POST /api/calendar/cancel
 // Body: { bookingId: 'uuid', googleEventId: 'string', skipEmail?: boolean }
@@ -82,17 +83,19 @@ export async function POST(request: NextRequest) {
         const lessonStartJST = new Date(`${booking.date}T${booking.start_time}+09:00`)
         const minutesUntilLesson = (lessonStartJST.getTime() - Date.now()) / (1000 * 60)
 
-        const subscription = await getUserSubscription(user.id)
-        if (subscription && minutesUntilLesson >= 15) {
-          // Refund minutes — cancelled with enough notice
-          await recordMinuteUsage(
-            user.id,
-            bookingId,
-            // AI lessons refund the minutes actually charged (60% of the length)
-            booking.ai_minutes_charged ?? booking.duration_minutes,
-            subscription.current_period_start,
-            'cancelled_refund',
-          )
+        if (minutesUntilLesson >= 15) {
+          // Refund exactly what this booking was charged, back to the month it was charged in
+          // (nothing to refund for trial / test-account / admin bookings, which weren't charged)
+          const db = getSupabaseAdmin()
+          const { data: rows } = await db.from('minute_usage').select('minutes_used, period_start, action').eq('booking_id', bookingId)
+          const byWindow = new Map<string, number>()
+          for (const r of rows ?? []) {
+            const v = r.action === 'booked' ? r.minutes_used : r.action === 'cancelled_refund' ? -r.minutes_used : 0
+            byWindow.set(r.period_start, (byWindow.get(r.period_start) ?? 0) + v)
+          }
+          for (const [periodStart, minutes] of byWindow) {
+            if (minutes > 0) await recordMinuteUsage(user.id, bookingId, minutes, periodStart, 'cancelled_refund')
+          }
         }
         // If < 15 min before lesson: no refund, minutes are spent
       } catch (refundError) {

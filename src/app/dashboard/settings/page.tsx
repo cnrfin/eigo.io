@@ -661,7 +661,7 @@ export default function SettingsPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-base font-medium" style={{ color: 'var(--text)' }}>
-                      {subscription.plan === 'light' ? 'Student Lite' : 'Student Standard'}
+                      {({ light: 'Student Lite', standard: 'Student Standard', test: 'Exam Pass' } as Record<string, string>)[subscription.plan] ?? subscription.plan}
                       <span className="text-sm font-normal ml-2" style={{ color: 'var(--text-muted)' }}>
                         ({subscription.billingInterval === 'monthly'
                           ? (locale === 'ja' ? '月額' : 'Monthly')
@@ -686,8 +686,8 @@ export default function SettingsPage() {
                   </span>
                 </div>
 
-                {/* Minute usage bar */}
-                {balance && (
+                {/* Minute usage bar (plans with lesson minutes) */}
+                {balance && balance.minutesPerMonth > 0 && (
                   <div>
                     <div className="flex justify-between text-xs mb-2" style={{ color: 'var(--text-muted)' }}>
                       <span>

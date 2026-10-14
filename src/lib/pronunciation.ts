@@ -16,7 +16,7 @@ import { tmpdir } from 'node:os'
  */
 
 function ffmpegPath(): string {
-  const bundled = join(process.cwd(), 'bin', 'ffmpeg')
+  const bundled = join(/*turbopackIgnore: true*/ process.cwd(), 'bin', 'ffmpeg')
   return existsSync(bundled) ? bundled : 'ffmpeg'
 }
 

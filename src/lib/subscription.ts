@@ -36,7 +36,7 @@ export interface Subscription {
   apple_original_transaction_id: string | null
   apple_product_id: string | null
   payment_source: 'stripe' | 'apple' | null
-  plan: 'light' | 'standard'
+  plan: 'light' | 'standard' | 'test'
   billing_interval: 'monthly' | 'yearly'
   price_tier: PriceTier
   status: string
@@ -74,7 +74,9 @@ export interface MinuteBalance {
 }
 
 /**
- * Calculate a user's remaining minutes for their current billing period.
+ * Calculate a user's remaining minutes for the current billing period.
+ * minutes_per_month is the allowance for the whole billing period: a yearly plan gets the whole year's
+ * minutes up front (12 × the monthly amount), a monthly plan one month's.
  */
 export async function getMinuteBalance(
   userId: string,
@@ -84,7 +86,7 @@ export async function getMinuteBalance(
 
   const supabase = getSupabaseAdmin()
 
-  // Sum all minute_usage for the current period
+  // Sum all minute_usage for the current billing period
   const { data: usageRows, error } = await supabase
     .from('minute_usage')
     .select('minutes_used, action')
