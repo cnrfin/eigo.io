@@ -7,6 +7,7 @@ import { pillTabStyle } from '@/lib/pill-tabs'
 import { useState, useEffect, useRef } from 'react'
 import SquircleCard from '@/components/ui/SquircleCard'
 import AiTutorSettingsCard from '@/components/dashboard/AiTutorSettingsCard'
+import MinuteBars, { minuteInfo, type MinuteInfo } from '@/components/dashboard/MinuteBars'
 import { motion } from 'framer-motion'
 
 // New-design button recipes (match BookingCalendar / HomeView: tween scale,
@@ -36,6 +37,8 @@ export default function SettingsPage() {
     periodStart: string; periodEnd: string;
   } | null>(null)
   const [loadingSub, setLoadingSub] = useState(true)
+  // AI pilot: lesson + AI minute bars with "add AI minutes" (instead of the single minutes bar)
+  const [minutes, setMinutes] = useState<MinuteInfo | null>(null)
   const [openingPortal, setOpeningPortal] = useState(false)
 
   // Avatar upload
@@ -99,6 +102,7 @@ export default function SettingsPage() {
           const data = await res.json()
           setSubscription(data.subscription)
           setBalance(data.balance)
+          setMinutes(minuteInfo(data))
         }
       } catch {
         // ignore
@@ -686,8 +690,25 @@ export default function SettingsPage() {
                   </span>
                 </div>
 
+                {minutes && (
+                  <div className="max-w-sm">
+                    <MinuteBars info={minutes} locale={locale === 'ja' ? 'ja' : 'en'} />
+                    {balance && (
+                      <p className="text-xs mt-3" style={{ color: 'var(--text-subtle)' }}>
+                        {subscription.cancelAtPeriodEnd
+                          ? (locale === 'ja'
+                            ? `${new Date(balance.periodEnd).toLocaleDateString('ja-JP')} に解約されます`
+                            : `Cancels on ${new Date(balance.periodEnd).toLocaleDateString('en-GB')}`)
+                          : (locale === 'ja'
+                            ? `次回更新: ${new Date(balance.periodEnd).toLocaleDateString('ja-JP')}`
+                            : `Renews: ${new Date(balance.periodEnd).toLocaleDateString('en-GB')}`)}
+                      </p>
+                    )}
+                  </div>
+                )}
+
                 {/* Minute usage bar (plans with lesson minutes) */}
-                {balance && balance.minutesPerMonth > 0 && (
+                {!minutes && balance && balance.minutesPerMonth > 0 && (
                   <div>
                     <div className="flex justify-between text-xs mb-2" style={{ color: 'var(--text-muted)' }}>
                       <span>

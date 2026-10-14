@@ -78,6 +78,9 @@ type StudentProfile = {
   avatar_url: string | null
   minutesRemaining: number | null
   minutesPerMonth: number | null
+  /** AI minutes left (AI plan + top-ups) */
+  aiMinutesLeft?: number
+  plan?: string | null
 }
 
 type StudentProgress = {
@@ -359,6 +362,7 @@ function AdminContent() {
 
   // Students
   const [studentList, setStudentList] = useState<StudentProfile[]>([])
+  const [granting, setGranting] = useState(false)
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null)
   const [studentProgress, setStudentProgress] = useState<StudentProgress | null>(null)
   const [loadingStudents, setLoadingStudents] = useState(false)
@@ -1686,6 +1690,39 @@ function AdminContent() {
                       </Squircle>
                     ))}
                   </div>
+
+                  {/* AI minutes for the chosen student: what's left, and a quick +60 */}
+                  {selectedStudentId && (() => {
+                    const s = studentList.find((x) => x.id === selectedStudentId)
+                    if (!s) return null
+                    return (
+                      <div className="flex items-center gap-3 text-sm" style={{ color: 'var(--text-muted)' }}>
+                        <span>
+                          {s.plan ? `${({ light: 'Lite', standard: 'Standard', test: 'Exam Pass', ai: 'AI Plan' } as Record<string, string>)[s.plan] ?? s.plan} · ` : ''}AI minutes: <b style={{ color: 'var(--text)' }}>{s.aiMinutesLeft ?? 0}</b>
+                        </span>
+                        <Squircle asChild cornerRadius={8} cornerSmoothing={0.8}>
+                          <button
+                            disabled={granting}
+                            className="px-3 py-1.5 text-xs font-medium transition-all hover:opacity-90 disabled:opacity-50"
+                            style={{ background: 'var(--surface)', color: 'var(--text)' }}
+                            onClick={async () => {
+                              if (!window.confirm(`Give ${s.display_name || s.email || 'this student'} 60 AI minutes (valid 3 months)?`)) return
+                              setGranting(true)
+                              try {
+                                const r = await fetch('/api/admin/ai-minutes', { method: 'POST', headers: { ...headers(), 'Content-Type': 'application/json' }, body: JSON.stringify({ userId: s.id, minutes: 60 }) })
+                                const d = await r.json().catch(() => ({}))
+                                if (r.ok) setStudentList((list) => list.map((x) => (x.id === s.id ? { ...x, aiMinutesLeft: d.aiMinutesLeft } : x)))
+                              } finally {
+                                setGranting(false)
+                              }
+                            }}
+                          >
+                            {granting ? 'Adding…' : '+60 AI minutes'}
+                          </button>
+                        </Squircle>
+                      </div>
+                    )
+                  })()}
 
                   {/* Student progress content */}
                   {selectedStudentId && (

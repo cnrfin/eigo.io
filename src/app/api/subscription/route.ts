@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
     let aiMinutes = null
     if (features.aiEnabled) {
       const b = await getBalance(user.id)
-      aiMinutes = { total: b.ai.total, left: b.ai.left, topupLeft: b.snapshot.topups.reduce((a, t) => a + t.left, 0), snapshot: b.snapshot }
+      aiMinutes = { total: b.ai.total, left: b.ai.left, topupLeft: b.snapshot.topups.reduce((a, t) => a + t.left, 0), topupTotal: b.topups.reduce((a, t) => a + t.minutes, 0), snapshot: b.snapshot }
     }
     if (!subscription) {
       return NextResponse.json({ subscription: null, balance: null, features, aiMinutes })

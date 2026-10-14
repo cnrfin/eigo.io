@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { createPortal } from 'react-dom'
+import MinuteBars, { minuteInfo, type MinuteInfo } from './MinuteBars'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useLanguage } from '@/context/LanguageContext'
@@ -177,10 +178,29 @@ function NavList({ onNavigate, collapsed = false }: { onNavigate?: () => void; c
   )
 }
 
+/** last known minutes, so the menu opens at its full size straight away (refreshed on every open) */
+let lastMinutes: MinuteInfo | null = null
+
 function SidebarUser({ collapsed = false }: { collapsed?: boolean }) {
-  const { user, signOut, avatarUrl: profileAvatarUrl } = useAuth()
+  const { user, signOut, avatarUrl: profileAvatarUrl, session } = useAuth()
   const { t, locale } = useLanguage()
   const [open, setOpen] = useState(false)
+  // AI pilot: minutes left (lessons + AI) and "add AI minutes", fetched when the menu opens
+  const [minutes, setMinutes] = useState<MinuteInfo | null>(() => lastMinutes)
+  useEffect(() => {
+    if (!open || !session?.access_token) return
+    let alive = true
+    fetch('/api/subscription', { headers: { Authorization: `Bearer ${session.access_token}` } })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        lastMinutes = minuteInfo(d)
+        if (alive) setMinutes(lastMinutes)
+      })
+      .catch(() => {})
+    return () => {
+      alive = false
+    }
+  }, [open, session?.access_token])
   const [pos, setPos] = useState<{ left: number; bottom: number } | null>(null)
   const btnRef = useRef<HTMLButtonElement>(null)
   const menuRef = useRef<HTMLDivElement>(null)
@@ -238,8 +258,13 @@ function SidebarUser({ collapsed = false }: { collapsed?: boolean }) {
         <div
           ref={menuRef}
           className="flex flex-col gap-0.5"
-          style={{ position: 'fixed', left: pos.left, bottom: pos.bottom, minWidth: 180, padding: 6, borderRadius: 12, background: 'var(--card)', border: '1px solid var(--hairline)', boxShadow: 'var(--card-shadow)', zIndex: 60 }}
+          style={{ position: 'fixed', left: pos.left, bottom: pos.bottom, minWidth: minutes ? 240 : 180, padding: 6, borderRadius: 12, background: 'var(--card)', border: '1px solid var(--hairline)', boxShadow: 'var(--card-shadow)', zIndex: 60 }}
         >
+          {minutes && (
+            <div className="px-3 pt-2.5 pb-3 mb-1" style={{ borderBottom: '1px solid var(--divider)' }}>
+              <MinuteBars info={minutes} locale={locale === 'ja' ? 'ja' : 'en'} onTopup={() => setOpen(false)} />
+            </div>
+          )}
           <Link href="/dashboard/settings" onClick={() => setOpen(false)} className="px-3 py-2 text-sm rounded-lg transition-colors hover:opacity-80" style={{ color: 'var(--text-secondary)' }}>
             {t('settings')}
           </Link>

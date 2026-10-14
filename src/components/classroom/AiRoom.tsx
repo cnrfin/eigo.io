@@ -171,7 +171,7 @@ export default function AiRoom(props: Props) {
   /* ---------- slides: changed by the classroom itself ---------- */
   // GPT-Live's tool calls were slow and unreliable for this, so the AI tutor just says it's moving on:
   // a clear spoken cue moves the slide at once, and after each turn a small model double-checks.
-  const { onGo, sendTutorMessage, onOpenLesson } = props
+  const { onGo, sendTutorMessage, onOpenLesson, onCloseCourse } = props
   /** the furthest slide taught (0-based), and whether the student is looking back at an earlier one */
   const furthest = useRef(0)
   const review = useRef(false)
@@ -314,7 +314,10 @@ export default function AiRoom(props: Props) {
     }
   }, [moveSlide, checkTurn, syncSlide, act, playClip])
 
-  /* ---------- tool calls from the AI tutor (opening a lesson, writing in the chat) ---------- */
+  /* ---------- tool calls from the AI tutor (opening/closing a lesson, the whiteboard, writing in the chat) ---------- */
+  // the whiteboard toggle is defined further down; the tool runner reaches it through these refs
+  const whiteboardRef = useRef(props.whiteboard)
+  const showBoard = useRef<(on: boolean) => void>(() => {})
   /** resolves once the "lesson opened" note has been sent, so slide notes come after it */
   const lessonNote = useRef<Promise<unknown>>(Promise.resolve())
   const runTool = useCallback(
@@ -341,6 +344,21 @@ export default function AiRoom(props: Props) {
           onOpenLesson(res.open)
           return `Opened ${res.title}. It's on the student's screen now.`
         }
+        case 'close_lesson': {
+          if (!live.current.slides.length) return 'No course lesson is open: this is already free talk.'
+          onCloseCourse()
+          return 'Closed. This is free talk now: no slides on the screen. Their place in the course is kept.'
+        }
+        case 'show_whiteboard': {
+          const on = args.on === true
+          if (on === whiteboardRef.current) return on ? 'The whiteboard is already on screen.' : 'The whiteboard is already closed.'
+          showBoard.current(on)
+          return on
+            ? "The whiteboard is on the student's screen now. You can't see what they draw: ask them to tell you or type it in the chat."
+            : live.current.slides.length
+              ? "Back to the slides: the student sees the same slide as before."
+              : 'The whiteboard is closed (free talk).'
+        }
         case 'write_in_chat': {
           const text = String(args.text ?? '').slice(0, 200).trim()
           if (!text) return 'Nothing to write.'
@@ -350,7 +368,7 @@ export default function AiRoom(props: Props) {
           return `Unknown tool ${name}.`
       }
     },
-    [moveSlide, sendTutorMessage, onOpenLesson, info.bookingId, act],
+    [moveSlide, sendTutorMessage, onOpenLesson, onCloseCourse, info.bookingId, act],
   )
 
   /* ---------- connect ---------- */
@@ -790,14 +808,21 @@ export default function AiRoom(props: Props) {
   useEffect(() => {
     closeLookup()
   }, [surface, closeLookup])
-  const toggleWhiteboard = useCallback(() => {
-    const on = !whiteboard
-    setWhiteboard(on)
-    if (on) {
-      setTbOpen(true)
-      if (ink.tool === 'select') ink.setTool('pen')
-    } else if (freeTalk) setTbOpen(false)
-  }, [whiteboard, setWhiteboard, ink, freeTalk])
+  const setBoard = useCallback(
+    (on: boolean) => {
+      setWhiteboard(on)
+      if (on) {
+        setTbOpen(true)
+        if (ink.tool === 'select') ink.setTool('pen')
+      } else if (freeTalk) setTbOpen(false)
+    },
+    [setWhiteboard, ink, freeTalk],
+  )
+  const toggleWhiteboard = useCallback(() => setBoard(!whiteboard), [setBoard, whiteboard])
+  useEffect(() => {
+    whiteboardRef.current = whiteboard
+    showBoard.current = setBoard
+  }, [whiteboard, setBoard])
 
   /* ---------- report a problem (flag button): one tap sends ---------- */
   const [reportOpen, setReportOpen] = useState(false)

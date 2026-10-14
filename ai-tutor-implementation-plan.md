@@ -371,3 +371,10 @@ Limits:
 - Question types: meaning → say the word, use it in a sentence, quick listening check, a short follow-up.
 - Keep flashcards for when students can't speak aloud. Show "N words waiting" so a growing backlog is visible.
 - Cost: about $0.15 per session (≈ ¥700/month if used daily), plus marking; needs an allowance (e.g. one session a day in the plan).
+
+## Later idea: daily eigo News (backburner, revisit with more students)
+
+Discussed 2026-10-14. Not now: students who want to read and discuss articles do it with a live tutor for the moment (not to be marketed as an upsell).
+- Engoo and Breaking News English can't be pulled into our product: Engoo licenses its materials commercially (and Daily News is a JavaScript app, so it would mean scraping); Breaking News English's copyright page forbids any monetised use, reproducing it in an app/LMS, or reformatting it. Linking to their pages is fine.
+- Plan if revived: our own British English news lessons. OpenAI web search finds 2–3 reputable sources per story → AI writes an original article at 3 levels (+ 6 vocab words for the word bank, 10 discussion questions; exercises: vocab → read → discuss) with sources listed → a second AI pass checks every sentence against the sources → approval queue in the studio. 3 stories a day, deleted after a week (saved vocab stays in word banks).
+- Cost estimate: ≈ $0.12 per story with gpt-5.4-mini (search ~$10/1,000 calls) → ~$13/month; ~$21/month with the full model for writing. Images/audio extra.

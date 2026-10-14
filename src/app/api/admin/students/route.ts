@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { getMinuteBalance } from '@/lib/subscription'
+import { getBalance } from '@/lib/minutes'
+import { aiMinutesLeft } from '@/lib/minutes-core'
 
 const ADMIN_EMAILS = ['cnrfin93@gmail.com']
 
@@ -48,11 +50,14 @@ export async function GET(request: NextRequest) {
   // Fetch minute balance for each student
   const students = await Promise.all(
     (profiles || []).map(async (p) => {
-      const balance = await getMinuteBalance(p.id)
+      const [balance, pools] = await Promise.all([getMinuteBalance(p.id), getBalance(p.id)])
       return {
         ...p,
         minutesRemaining: balance?.minutesRemaining ?? null,
         minutesPerMonth: balance?.minutesPerMonth ?? null,
+        // AI minutes: the AI plan's plus unexpired top-ups
+        aiMinutesLeft: aiMinutesLeft(pools.snapshot),
+        plan: pools.sub && pools.active ? pools.sub.plan : null,
       }
     })
   )
