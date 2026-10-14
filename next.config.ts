@@ -22,8 +22,31 @@ const nextConfig: NextConfig = {
   // re-include it ONLY for the three routes that actually transcode audio.
   // (Glob note: '**' covers the [id] segment — literal brackets are glob
   // character classes and wouldn't match.)
+  //
+  // The `process.cwd()` in those paths also makes the tracer treat the whole project
+  // folder as a possible runtime file, so a few functions (transcriptions,
+  // audio-extract, pronunciation) were shipping public/, studio/, supabase/, docs and
+  // mockups: ~290 MB each, stored again for every deployment (Vercel Functions
+  // Storage). No server code reads these folders at runtime (public/ is served as
+  // static files, not from functions), so keep them out of every function.
   outputFileTracingExcludes: {
-    '*': ['./bin/ffmpeg'],
+    '*': [
+      './bin/ffmpeg',
+      './public/**',
+      './studio/**',
+      './supabase/**',
+      './scripts/**',
+      './mockups/**',
+      './_to_delete/**',
+      './eigo.io WEB/**',
+      './*.md',
+      './*.html',
+      './*.docx',
+      './*.pptx',
+      './*.sql',
+      './*.mjs',
+      './*.tsbuildinfo',
+    ],
   },
   outputFileTracingIncludes: {
     '/api/tests/attempts/**/submit': ['./bin/ffmpeg'],
@@ -31,6 +54,7 @@ const nextConfig: NextConfig = {
     '/api/cron/grade-attempts': ['./bin/ffmpeg'],
     '/api/recordings/audio-extract': ['./bin/ffmpeg'],
     '/api/courses/pronunciation': ['./bin/ffmpeg'],
+    '/api/transcriptions': ['./bin/ffmpeg'],
   },
 };
 
