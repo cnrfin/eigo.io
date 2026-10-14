@@ -45,6 +45,8 @@ const NOT_YET = /\bbefore (we|you) (move|go)\b/i
 // "…I'll press play now" (not a question): the classroom plays the slide's clip once the AI tutor stops talking
 const PLAY_CUE = /\b(press(ing)? play|play (it|the clip|the video|the audio|this clip|this video)|playing (it|the clip|the video) now)\b/i
 const RETURN_CUE = /\b(carry on|continue|get back|go back) (with|to) (the|our) lesson\b/i
+// "Let's start this lesson again from the beginning": slide 1, then carry on 1, 2, 3… (not a quick look back)
+const RESTART_CUE = /\b(?:I'll|I will|let me|let's|let us|we'll)\s+(?:start|begin)\s+(?:the|this|our)?\s*(?:lesson|course)?\s*(?:again|over|from\s+(?:the\s+)?(?:beginning|start|top|first slide|slide (?:one|1)))\b|\bstart(?:ing)?\s+(?:the\s+lesson\s+)?(?:again|over)\s+from\s+(?:the\s+)?(?:beginning|start|top)\b/i
 // The classroom changes what's on screen when the AI tutor SAYS it will (voice models often say "I'll open it"
 // without calling a tool, so tools alone made students ask twice). Statements only, never questions.
 const OPEN_CUE = /\b(?:I'll|I will|let me|let's|let us|we'll)\s+(?:open|bring up|pull up|put up|start|jump (?:back )?into|go back to|get back to|continue(?: with)?)\s+(?:the|your|our|that|this)?\s*(?:course|lesson)\b/i
@@ -196,7 +198,7 @@ export default function AiRoom(props: Props) {
   const seenSlide = useRef('')
   const heldFor = useRef('')
   const moveSlide = useCallback(
-    (kind: 'next' | 'back' | 'return', n?: number): string => {
+    (kind: 'next' | 'back' | 'return' | 'restart', n?: number): string => {
       const { slides: S, idx: i } = live.current
       if (!S.length) return 'There are no slides in this lesson (free talk).'
       const show = (k: number) => {
@@ -215,6 +217,12 @@ export default function AiRoom(props: Props) {
           return show(Math.min(S.length - 1, furthest.current))
         }
         return i + 1 >= S.length ? 'Already on the last slide.' : show(i + 1)
+      }
+      if (kind === 'restart') {
+        // start the lesson over: slide 1, and the lesson carries on from there (1, 2, 3…), not back to where they were
+        review.current = false
+        furthest.current = 0
+        return i === 0 ? 'Already on the first slide.' : show(0)
       }
       if (kind === 'return') {
         if (!review.current) return 'Already on the lesson slide.'
@@ -301,6 +309,12 @@ export default function AiRoom(props: Props) {
         }
       }
       if (from === 'tutor' && ref && cued.current !== line && Date.now() - lastMove.current > 2500) {
+        const said = line.text.split(/(?<=[.!?])\s+/).pop() ?? ''
+        if (RESTART_CUE.test(said) && !said.trim().endsWith('?')) {
+          cued.current = line
+          moveSlide('restart')
+          return
+        }
         if (review.current && RETURN_CUE.test(line.text)) {
           cued.current = line
           moveSlide('return')
