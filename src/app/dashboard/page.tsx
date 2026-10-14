@@ -17,6 +17,7 @@ import BookingCalendar, { type BookingResult } from '@/components/BookingCalenda
 import { motion, AnimatePresence } from 'framer-motion'
 import { formatNextReview, previewIntervals, type ReviewRating } from '@/lib/srs'
 import HomeView from '@/components/dashboard/HomeView'
+import { cachedAiAccess, rememberAiAccess } from '@/components/ai/AiStart'
 import { aiMinutesLeft, type MinuteSnapshot } from '@/lib/minutes-core'
 import PronAnnounceArt from '@/components/dashboard/PronAnnounceArt'
 import { useDashboardNav } from '@/context/DashboardNavContext'
@@ -929,6 +930,9 @@ function DashboardContent() {
   const [classroomEnabled, setClassroomEnabled] = useState(false)
   const [bookingTutor, setBookingTutor] = useState<'human' | 'ai'>('human') // the AI modal's "schedule one" opens booking on the AI tutor
   const [aiEnabled, setAiEnabled] = useState(false) // pilot: AI tutor lessons // pilot: lessons open in /classroom/[id]
+  const [aiKnown, setAiKnown] = useState(false) // /api/subscription has answered
+  // until then, the last known answer for this student, so "Talk to AI tutor" doesn't pop in late
+  const aiShown = aiKnown ? aiEnabled : cachedAiAccess(user?.id)
   const [minutesRemaining, setMinutesRemaining] = useState<number | null>(null)
   const [aiMinutes, setAiMinutes] = useState<MinuteSnapshot | null>(null) // AI pilot: plan + AI + top-up minutes
   const [aiOnly, setAiOnly] = useState(false) // AI plan: AI tutor lessons only
@@ -1278,6 +1282,8 @@ function DashboardContent() {
           }
           setBookingTestMode(!!data.features?.bookingTestMode)
           setAiEnabled(!!data.features?.aiEnabled)
+          setAiKnown(true)
+          rememberAiAccess(user?.id, !!data.features?.aiEnabled)
           setAiMinutes(data.aiMinutes?.snapshot ?? null)
           setAiOnly(!!data.features?.aiOnly)
           setClassroomEnabled(!!data.features?.classroomEnabled)
@@ -1424,7 +1430,7 @@ function DashboardContent() {
                   classroomEnabled={classroomEnabled}
                   onBook={() => { setBookingTutor('human'); setActiveTab('booking') }}
                   onBookAi={() => { setBookingTutor('ai'); setActiveTab('booking') }}
-                  aiEnabled={aiEnabled}
+                  aiEnabled={aiShown}
                   onReviewPhrases={() => setActiveTab('vocab')}
                   onTakeTests={() => router.push('/dashboard/tests')}
                   onViewPlans={() => (window.location.href = '/plans')}

@@ -56,7 +56,14 @@ async function currentCourse(userId: string): Promise<AiStartState['resume']> {
     .limit(1)
     .maybeSingle()
   const courseId = data?.slide_course_id as string | undefined
-  if (!courseId) return null
+  return courseId ? courseLesson(userId, courseId, false) : null
+}
+
+/**
+ * The lesson an AI lesson in `courseId` starts with: the first one not completed. A finished course gives
+ * null, or its last lesson when the student chose the course themselves (`lastWhenDone`), as booking does.
+ */
+async function courseLesson(userId: string, courseId: string, lastWhenDone: boolean): Promise<AiStartState['resume']> {
   const course = (await loadCatalog()).find((c) => c.id === courseId)
   if (!course?.lessonIds.length) return null
   const { data: prog } = await getSupabaseAdmin()
@@ -66,7 +73,7 @@ async function currentCourse(userId: string): Promise<AiStartState['resume']> {
     .eq('course_id', courseId)
     .maybeSingle()
   const done = new Set<string>((prog?.completed_lesson_ids as string[] | null) ?? [])
-  const lessonId = course.lessonIds.find((id) => !done.has(id))
+  const lessonId = course.lessonIds.find((id) => !done.has(id)) ?? (lastWhenDone ? course.lessonIds[course.lessonIds.length - 1] : undefined)
   if (!lessonId) return null // course finished: free talk
   return { courseId, title: course.title, titleJa: course.titleJa, lessonId, lessonNumber: course.lessonIds.indexOf(lessonId) + 1 }
 }
@@ -133,6 +140,8 @@ export async function startAiNow(
   userId: string,
   unlimited: boolean,
   duration: number,
+  /** the course the student chose: undefined = carry on where they left off, null = free talk */
+  courseId?: string | null,
 ): Promise<{ ok: true; bookingId: string; resumed: boolean } | { ok: false; reason: string; state?: AiStartState }> {
   const { state, balance } = await startState(userId, unlimited)
   if (state.liveId) return { ok: true, bookingId: state.liveId, resumed: true }
@@ -141,6 +150,9 @@ export async function startAiNow(
 
   const parts = state.trial || !balance ? [] : splitAiCharge(balance.snapshot, duration)
   if (!parts) return { ok: false, reason: 'minutes', state }
+  // the welcome call has no course; otherwise their choice (checked here, never trusted from the browser)
+  const course = state.trial ? null : courseId === undefined ? state.resume : courseId === null ? null : await courseLesson(userId, courseId, true)
+  if (courseId && !state.trial && !course) return { ok: false, reason: 'bad_course', state }
   const { date, time } = jstNow(Date.now())
   const { data: row, error } = await getSupabaseAdmin()
     .from('bookings')
@@ -152,8 +164,8 @@ export async function startAiNow(
       status: 'confirmed',
       lesson_kind: 'ai',
       ai_minutes_charged: parts.reduce((a, p) => a + p.minutes, 0),
-      slide_course_id: state.resume?.courseId ?? null,
-      slide_lesson_id: state.resume?.lessonId ?? null,
+      slide_course_id: course?.courseId ?? null,
+      slide_lesson_id: course?.lessonId ?? null,
     })
     .select('id')
     .single()

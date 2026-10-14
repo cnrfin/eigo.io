@@ -129,7 +129,9 @@ export async function lessonQueue(userId: string, courseId: string, lessonIds: s
   const taken = new Set((booked ?? []).map((b) => b.slide_lesson_id as string | null).filter(Boolean))
   const doneCount = lessonIds.filter((id) => done.has(id)).length
   const queue = lessonIds.filter((id) => !done.has(id) && !taken.has(id))
-  return { doneCount, queue }
+  // where the student would carry on right now (first lesson not completed, booked or not): AI start now
+  const next = lessonIds.find((id) => !done.has(id)) ?? null
+  return { doneCount, queue, next }
 }
 
 /** Lesson for a new booking: the first one in the queue, or the last lesson once the course is used up. */

@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
@@ -11,6 +11,7 @@ import { aiMinutesLeft, splitAiCharge } from '@/lib/minutes-core'
 import { newMood } from '@/lib/ai-tutor/avatar-mood'
 import type { AiStartState } from '@/lib/ai-tutor/start'
 import AiAvatar from './AiAvatar'
+import CourseSheet, { type CatalogEntry } from '@/components/booking/CourseSheet'
 import './ai-start.css'
 
 /**
@@ -22,11 +23,65 @@ import './ai-start.css'
 type Locale = 'ja' | 'en'
 export type AiProfile = { name: string; color: string | null; blush: boolean }
 
+/*
+ * Warm cache, so the dashboard button, the avatar's colours and the modal (with the course to continue) show
+ * at once instead of loading in:
+ *  - the profile and "has AI access" are kept in localStorage per user (right on the next visit too)
+ *  - the start state and course list are prefetched when the dashboard loads and kept in memory
+ * Every read still revalidates in the background.
+ */
+const mem: { uid?: string; state?: AiStartState; catalog?: CatalogEntry[]; inflight?: Promise<void> } = {}
+const store = {
+  get<T>(key: string): T | null {
+    try {
+      const v = typeof window !== 'undefined' ? window.localStorage.getItem(key) : null
+      return v ? (JSON.parse(v) as T) : null
+    } catch {
+      return null
+    }
+  },
+  set(key: string, v: unknown) {
+    try {
+      window.localStorage.setItem(key, JSON.stringify(v))
+    } catch {
+      /* private mode etc. */
+    }
+  },
+}
+const profileKey = (uid: string) => `eigo:aiProfile:${uid}`
+const accessKey = (uid: string) => `eigo:aiAccess:${uid}`
+
+/** Last known "this student has the AI tutor" (shown until /api/subscription answers). */
+export const cachedAiAccess = (uid: string | undefined) => (uid ? store.get<boolean>(accessKey(uid)) === true : false)
+export const rememberAiAccess = (uid: string | undefined, on: boolean) => uid && store.set(accessKey(uid), on)
+/** Keep the cached profile in step when the student changes their AI tutor settings. */
+export const rememberAiProfile = (uid: string | undefined, p: AiProfile) => uid && store.set(profileKey(uid), p)
+
+/** Fetch the start state and the course list ahead of time (dashboard load, hovering the button). */
+export function prefetchAiStart(token: string | undefined, uid: string | undefined): Promise<void> {
+  if (!token) return Promise.resolve()
+  if (mem.uid !== uid) Object.assign(mem, { uid, state: undefined, catalog: undefined, inflight: undefined })
+  if (mem.inflight) return mem.inflight
+  const h = { headers: { Authorization: `Bearer ${token}` } }
+  mem.inflight = Promise.all([
+    fetch('/api/ai-tutor/start', h).then((r) => (r.ok ? r.json() : null)).then((d) => d && (mem.state = d as AiStartState)),
+    fetch('/api/slide-courses/catalog', h).then((r) => (r.ok ? r.json() : null)).then((d) => Array.isArray(d?.courses) && (mem.catalog = d.courses)),
+  ])
+    .catch(() => {})
+    .then(() => {
+      mem.inflight = undefined
+    })
+  return mem.inflight
+}
+
 /** The student's AI tutor name, colour and cheeks (AI tutor settings). */
 export function useAiProfile(enabled: boolean): AiProfile {
-  const { session } = useAuth()
+  const { session, user } = useAuth()
   const token = session?.access_token
-  const [p, setP] = useState<AiProfile>({ name: '', color: null, blush: true })
+  const uid = user?.id
+  // fresh from the server once loaded; until then the last known profile for this student
+  const [p, setP] = useState<AiProfile | null>(null)
+  const cached = useMemo(() => (uid ? store.get<AiProfile>(profileKey(uid)) : null), [uid])
   useEffect(() => {
     if (!enabled || !token) return
     let alive = true
@@ -35,28 +90,34 @@ export function useAiProfile(enabled: boolean): AiProfile {
       .then((d) => {
         const s = d?.settings
         if (!alive || !s) return
-        setP({ name: typeof s.tutorName === 'string' ? s.tutorName.trim() : '', color: typeof s.orbColor === 'string' ? s.orbColor : null, blush: s.blush !== false })
+        const next = { name: typeof s.tutorName === 'string' ? s.tutorName.trim() : '', color: typeof s.orbColor === 'string' ? s.orbColor : null, blush: s.blush !== false }
+        setP(next)
+        rememberAiProfile(uid, next)
       })
       .catch(() => {})
     return () => {
       alive = false
     }
-  }, [enabled, token])
-  return p
+  }, [enabled, token, uid])
+  return p ?? cached ?? { name: '', color: null, blush: true }
 }
 
 /** What the student can start right now (lengths, why not, lesson in progress, course to continue). */
 export function useAiStartState(enabled: boolean) {
-  const { session } = useAuth()
+  const { session, user } = useAuth()
   const token = session?.access_token
-  const [state, setState] = useState<AiStartState | null>(null)
+  const [state, setState] = useState<AiStartState | null>(() => (mem.uid === user?.id ? (mem.state ?? null) : null))
   const [tick, setTick] = useState(0)
   useEffect(() => {
     if (!enabled || !token) return
     let alive = true
     fetch('/api/ai-tutor/start', { headers: { Authorization: `Bearer ${token}` } })
       .then((r) => (r.ok ? r.json() : null))
-      .then((d) => alive && d && setState(d as AiStartState))
+      .then((d) => {
+        if (!d) return
+        mem.state = d as AiStartState
+        if (alive) setState(d as AiStartState)
+      })
       .catch(() => {})
     return () => {
       alive = false
@@ -94,7 +155,15 @@ const tx = (ja: boolean) => ({
   schedule: ja ? '日時を決めて予約する' : 'Schedule one instead',
   settings: ja ? 'AIチューターの設定' : 'AI tutor settings',
   close: ja ? '閉じる' : 'Close',
+  welcomeTalk: ja ? '5分のウェルカムトーク' : '5-minute welcome talk',
+  pickCourse: ja ? 'コースを選ぶか、空欄のままでフリートーク' : 'Select a course or leave blank for free talk',
+  lessonN: (n: number) => (ja ? `レッスン${n}` : `Lesson ${n}`),
+  changeCourse: ja ? 'コースを変更' : 'Change course',
+  removeCourse: ja ? 'コースを外す' : 'Remove course',
 })
+
+/** the course picker is open on top of the modal (its Escape closes the picker, not the modal) */
+const courseSheetOpen = { current: false }
 
 /**
  * The start card. With `onDuration` it shows its own 15/30/rest pills (dashboard modal); without, it starts
@@ -108,6 +177,7 @@ export function AiStartCard({
   onDuration,
   onSchedule,
   compact,
+  pickCourse,
 }: {
   locale: Locale
   profile: AiProfile
@@ -116,6 +186,8 @@ export function AiStartCard({
   onDuration?: (d: number) => void
   onSchedule?: () => void
   compact?: boolean
+  /** dashboard modal: the course block can be changed or cleared (free talk) */
+  pickCourse?: boolean
 }) {
   const ja = locale === 'ja'
   const t = tx(ja)
@@ -131,6 +203,40 @@ export function AiStartCard({
     mood.current.until = performance.now() + 1400
   }
 
+  // course: undefined = carry on where they left off (state.resume), null = free talk, or a chosen course id
+  const [choice, setChoice] = useState<string | null | undefined>(undefined)
+  const [catalog, setCatalog] = useState<CatalogEntry[]>(() => mem.catalog ?? [])
+  const [sheet, setSheet] = useState(false)
+  useEffect(() => {
+    if (!pickCourse || !session?.access_token) return
+    let alive = true
+    fetch('/api/slide-courses/catalog', { headers: { Authorization: `Bearer ${session.access_token}` } })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (!Array.isArray(d?.courses)) return
+        mem.catalog = d.courses
+        if (alive) setCatalog(d.courses)
+      })
+      .catch(() => {})
+    return () => {
+      alive = false
+    }
+  }, [pickCourse, session?.access_token])
+  useEffect(() => {
+    courseSheetOpen.current = sheet
+  }, [sheet])
+  const picked: { id: string; title: string; lesson: number; scene?: string } | null =
+    choice === undefined
+      ? state?.resume
+        ? { id: state.resume.courseId, title: ja ? state.resume.titleJa : state.resume.title, lesson: state.resume.lessonNumber, scene: catalog.find((c) => c.id === state.resume!.courseId)?.scenes[0] }
+        : null
+      : choice === null
+        ? null
+        : (() => {
+            const c = catalog.find((x) => x.id === choice)
+            return c ? { id: c.id, title: ja ? c.titleJa : c.title, lesson: c.next ?? c.lessonCount, scene: c.scenes[0] } : null
+          })()
+
   const options = state?.options ?? [...AI_LENGTHS]
   // the free welcome call is always 5 minutes
   const duration = state?.trial ? state.options[0] : chosen
@@ -143,7 +249,7 @@ export function AiStartCard({
       const r = await fetch('/api/ai-tutor/start', {
         method: 'POST',
         headers: { Authorization: `Bearer ${session.access_token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ duration }),
+        body: JSON.stringify(pickCourse && choice !== undefined ? { duration, courseId: choice } : { duration }),
       })
       const d = await r.json().catch(() => ({}))
       if (!r.ok || !d.bookingId) throw new Error(d.error || 'failed')
@@ -190,7 +296,54 @@ export function AiStartCard({
           <div className="ais-sub">{state?.trial ? t.trialSub : t.sub}</div>
         </div>
       </div>
-      {state && !state.liveId && !state.blocked && !state.trial && <div className="ais-resume">{state.resume ? t.resume(state.resume) : t.freeTalk}</div>}
+      {pickCourse && state && !state.liveId && !state.blocked ? (
+        state.trial ? (
+          <div className="cs-picked ais-course ais-fixed">
+            <span className="cs-pmain">
+              <span className="cs-plus ais-icon" aria-hidden>
+                <svg width="16" height="16" viewBox="0 0 256 256" fill="currentColor">
+                  <path d="M128,24A104,104,0,0,0,36.18,176.88L24.83,210.93a16,16,0,0,0,20.24,20.24l34.05-11.35A104,104,0,1,0,128,24Zm0,192a87.87,87.87,0,0,1-44.06-11.81,8,8,0,0,0-6.54-.67L40,216,52.47,178.6a8,8,0,0,0-.66-6.54A88,88,0,1,1,128,216Z" />
+                </svg>
+              </span>
+              <span className="ais-line">
+                <b>{t.welcomeTalk}</b>
+              </span>
+            </span>
+          </div>
+        ) : picked ? (
+          <div className="cs-picked ais-course">
+            <button type="button" className="cs-pmain" onClick={() => setSheet(true)} aria-label={t.changeCourse}>
+              {picked.scene ? <img src={picked.scene} alt="" /> : <span className="cs-ph" />}
+              <span className="ais-line">
+                <b>{picked.title}</b>
+                <span> · {t.lessonN(picked.lesson)}</span>
+              </span>
+            </button>
+            <button type="button" className="cs-x" onClick={() => setChoice(null)} aria-label={t.removeCourse}>
+              ✕
+            </button>
+          </div>
+        ) : (
+          <button type="button" className="cs-add ais-course" onClick={() => setSheet(true)} disabled={!catalog.length}>
+            <span className="cs-plus">＋</span>
+            <span className="ais-line">{t.pickCourse}</span>
+          </button>
+        )
+      ) : (
+        state && !state.liveId && !state.blocked && !state.trial && <div className="ais-resume">{state.resume ? t.resume(state.resume) : t.freeTalk}</div>
+      )}
+      {sheet && catalog.length > 0 && (
+        <CourseSheet
+          courses={catalog}
+          initialId={picked?.id ?? null}
+          lang={locale}
+          onChoose={(id) => {
+            setChoice(id)
+            setSheet(false)
+          }}
+          onClose={() => setSheet(false)}
+        />
+      )}
       <div className="ais-row">
         {onDuration && !state?.liveId && !state?.trial && (
           <div className="ais-pills">
@@ -237,7 +390,7 @@ export function AiStartModal({ locale, profile, onClose, onSchedule }: { locale:
   const duration = picked != null && state?.options.includes(picked) ? picked : (state?.options[0] ?? 15)
 
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && !courseSheetOpen.current && onClose()
     window.addEventListener('keydown', onKey)
     const overflow = document.body.style.overflow
     document.body.style.overflow = 'hidden'
@@ -262,7 +415,7 @@ export function AiStartModal({ locale, profile, onClose, onSchedule }: { locale:
             </svg>
           </button>
         </div>
-        <AiStartCard locale={locale} profile={profile} state={state} duration={duration} onDuration={setPicked} onSchedule={onSchedule} />
+        <AiStartCard locale={locale} profile={profile} state={state} duration={duration} onDuration={setPicked} onSchedule={onSchedule} pickCourse />
       </div>
     </div>,
     document.body,

@@ -29,6 +29,8 @@ export type CatalogEntry = {
   doneCount: number
   /** 1-based lesson numbers the student can still book, in order */
   queue: number[]
+  /** 1-based number of the first lesson not completed (where an AI lesson started now carries on); null when done */
+  next?: number | null
 }
 
 type Lang = 'ja' | 'en'

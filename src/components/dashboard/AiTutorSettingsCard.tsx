@@ -8,6 +8,7 @@ import { useAuth } from '@/context/AuthContext'
 import { DEFAULT_TUTOR_SETTINGS, TUTOR_VOICES, type TutorSettings } from '@/lib/ai-tutor/settings'
 import { ORB_COLORS, orbColor, orbSwatch } from '@/lib/ai-tutor/orb-colors'
 import AiAvatar from '@/components/ai/AiAvatar'
+import { rememberAiProfile } from '@/components/ai/AiStart'
 import { newMood, type AvatarMood } from '@/lib/ai-tutor/avatar-mood'
 
 /** the settings preview avatar smiles for a moment */
@@ -143,7 +144,7 @@ const pillCls = 'px-3 py-1.5 text-xs font-medium rounded-full transition-all dur
 
 export default function AiTutorSettingsCard({ locale }: { locale: string }) {
   const { theme } = useTheme()
-  const { session } = useAuth()
+  const { session, user } = useAuth()
   const token = session?.access_token
   const [enabled, setEnabled] = useState(false)
   const [s, setS] = useState<TutorSettings>(DEFAULT_TUTOR_SETTINGS)
@@ -235,6 +236,8 @@ export default function AiTutorSettingsCard({ locale }: { locale: string }) {
         body: JSON.stringify({ settings: next }),
       }).catch(() => null)
       if (r?.ok) {
+        // keep the dashboard's cached avatar (name, colour, cheeks) in step
+        rememberAiProfile(user?.id, { name: next.tutorName.trim(), color: next.orbColor, blush: next.blush })
         setSaved(true)
         setTimeout(() => setSaved(false), 1500)
       }

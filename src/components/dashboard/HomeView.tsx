@@ -1,13 +1,14 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Squircle } from '@squircle-js/react'
 import { useTheme } from '@/context/ThemeContext'
 import SquircleCard from '@/components/ui/SquircleCard'
 import RiveIcon, { type RiveIconHandle } from '@/components/ui/RiveIcon'
 import AiAvatar from '@/components/ai/AiAvatar'
-import { AiStartModal, useAiProfile } from '@/components/ai/AiStart'
+import { AiStartModal, prefetchAiStart, useAiProfile } from '@/components/ai/AiStart'
+import { useAuth } from '@/context/AuthContext'
 import { newMood } from '@/lib/ai-tutor/avatar-mood'
 
 type Locale = 'ja' | 'en'
@@ -244,6 +245,13 @@ export default function HomeView(props: HomeViewProps) {
   const ai = useAiProfile(!!props.aiEnabled)
   const aiMood = useRef(newMood())
   const [aiOpen, setAiOpen] = useState(false)
+  // load what the modal needs (course to continue, lengths, minutes) in the background, so it opens complete
+  const { session, user } = useAuth()
+  useEffect(() => {
+    if (!props.aiEnabled) return
+    const id = setTimeout(() => void prefetchAiStart(session?.access_token, user?.id), 400)
+    return () => clearTimeout(id)
+  }, [props.aiEnabled, session?.access_token, user?.id])
 
   let lessonsSection: React.ReactNode = null
   if (lessons.length > 0) {

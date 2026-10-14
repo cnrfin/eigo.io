@@ -8,6 +8,20 @@
 .ais-sub { font-size: .75rem; color: var(--text-muted); margin-top: 1px; }
 .ais-resume { margin-top: 14px; font-size: .75rem; color: var(--text-secondary); padding: 9px 12px; border-radius: 12px; background: var(--inset); }
 .ais-compact .ais-resume { background: var(--panel); }
+/* course block (dashboard modal): same height whether a course is chosen or not */
+.ais-course { margin-top: 14px; height: 54px; }
+.ais-course.cs-add { padding-top: 0; padding-bottom: 0; }
+.ais-course .cs-pmain { padding-top: 0; padding-bottom: 0; height: 100%; }
+.ais-course .cs-pmain img, .ais-course .cs-pmain .cs-ph { width: 32px; height: 32px; border-radius: 9px; }
+/* one line: title · lesson, cut off with … when long */
+.ais-line { flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: .85rem; color: var(--text-secondary); }
+.ais-line b { font-weight: 600; color: var(--text); font-size: .85rem; display: inline; }
+.ais-line span { font-size: .85rem; color: var(--text-muted); margin-left: 3px; }
+.ais-icon { width: 32px; height: 32px; background: var(--inset); color: #fff; }
+:root[data-theme="light"] .ais-icon { background: var(--text-subtle); } /* white needs a darker grey in light mode */
+.ais-fixed:hover { background: var(--panel); }
+.ais-fixed .cs-pmain { cursor: default; }
+.ais-fixed .cs-pmain:active { transform: none; }
 .ais-row { display: flex; gap: 10px; align-items: center; margin-top: 14px; }
 .ais-pills { display: flex; gap: 6px; flex: none; }
 .ais-pill { padding: 8px 13px; border-radius: 999px; font-size: .75rem; font-weight: 500; transition: transform .12s ease-out; }
