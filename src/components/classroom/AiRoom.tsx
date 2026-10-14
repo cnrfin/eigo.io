@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import { aiOpenLesson, aiTurn, postEvent, sendAiReport, saveAiTranscript, sendAiAction, startAiSession, type SlideRef, type StudentAction } from '@/lib/classroom/client'
+import { aiCourseTitles, aiOpenLesson, aiTurn, postEvent, sendAiReport, saveAiTranscript, sendAiAction, startAiSession, type SlideRef, type StudentAction } from '@/lib/classroom/client'
 import type { Lesson } from '@/lib/slides/types'
 import { useAudioLevel, useVolDot } from './audio'
 import AiAvatar from '@/components/ai/AiAvatar'
@@ -45,6 +45,14 @@ const NOT_YET = /\bbefore (we|you) (move|go)\b/i
 // "…I'll press play now" (not a question): the classroom plays the slide's clip once the AI tutor stops talking
 const PLAY_CUE = /\b(press(ing)? play|play (it|the clip|the video|the audio|this clip|this video)|playing (it|the clip|the video) now)\b/i
 const RETURN_CUE = /\b(carry on|continue|get back|go back) (with|to) (the|our) lesson\b/i
+// The classroom changes what's on screen when the AI tutor SAYS it will (voice models often say "I'll open it"
+// without calling a tool, so tools alone made students ask twice). Statements only, never questions.
+const OPEN_CUE = /\b(?:I'll|I will|let me|let's|let us|we'll)\s+(?:open|bring up|pull up|put up|start|jump (?:back )?into|go back to|get back to|continue(?: with)?)\s+(?:the|your|our|that|this)?\s*(?:course|lesson)\b/i
+const OPEN_VERB = /\b(?:I'll|I will|let me|let's|let us|we'll)\s+(?:open|bring up|pull up|put up|start)\b/i
+const LESSON_NO = /\blesson\s+(\d{1,2})\b/i
+const CLOSE_CUE = /\b(?:I'll|I will|let me|let's|let us|we'll)\s+(?:close|stop|put away)\s+(?:the|this|our)?\s*(?:course|lesson|slides)\b|\b(?:switch|move|go|change)\s+(?:over\s+)?to\s+free\s+talk\b|\blet's just (?:chat|talk)\b/i
+const BOARD_ON_CUE = /\b(?:I'll|I will|let me|let's|let us|we'll)\s+(?:open|bring up|pull up|put up|show|switch to|use)\s+(?:the|a|our)?\s*whiteboard\b/i
+const BOARD_OFF_CUE = /\b(?:I'll|I will|let me|let's|let us|we'll)\s+(?:close|hide|put away)\s+(?:the|our)?\s*whiteboard\b|\b(?:go|switch|head|get)\s+back\s+to\s+the\s+(?:slides?|lesson)\b/i
 
 const mmss = (s: number) => {
   s = Math.max(0, Math.floor(s))
@@ -103,6 +111,10 @@ export default function AiRoom(props: Props) {
   /** start a new transcript line (a new slide just appeared) */
   const breakLine = useRef(false)
   const speechHook = useRef<(from: Line['from'], line: Line) => void>(() => {})
+  /** what's on screen follows what the AI tutor says (open/close the course, the whiteboard); set up further down */
+  /** when a spoken cue last opened a course (older sessions may also call open_lesson for the same thing) */
+  const cueOpened = useRef<{ at: number; courseId: string } | null>(null)
+  const viewCue = useRef<(line: Line) => void>(() => {})
   const nudged = useRef(false)
 
   /* ---------- slides ---------- */
@@ -274,6 +286,7 @@ export default function AiRoom(props: Props) {
     speechHook.current = (from, line) => {
       const ref = syncSlide()
       if (wrapUp.current) return
+      if (from === 'tutor') viewCue.current(line)
       if (from === 'tutor' && ref) {
         const sentence = line.text.split(/(?<=[.!?])\s+/).find((x) => PLAY_CUE.test(x))
         const armed = playTimer.current !== null
@@ -337,6 +350,9 @@ export default function AiRoom(props: Props) {
         case 'return_to_lesson':
           return moveSlide('return')
         case 'open_lesson': {
+          // older sessions: skip if the spoken cue already opened this course
+          const cue = cueOpened.current
+          if (cue && Date.now() - cue.at < 15_000 && (!args.course_id || String(args.course_id) === cue.courseId)) return 'That course is already open on the screen.'
           const res = await aiOpenLesson(info.bookingId, String(args.course_id ?? ''), String(args.lesson_id ?? ''))
           if ('error' in res) return res.error
           // no reconnect: the lesson note goes first, then each slide's content as it appears
@@ -823,6 +839,58 @@ export default function AiRoom(props: Props) {
     whiteboardRef.current = whiteboard
     showBoard.current = setBoard
   }, [whiteboard, setBoard])
+
+  // course titles, to recognise "I'll open Haruka in the UK now"
+  const titles = useRef<{ id: string; names: string[] }[]>([])
+  useEffect(() => {
+    void aiCourseTitles().then((list) => {
+      titles.current = list.map((c) => ({ id: c.id, names: [c.title, c.titleJa].filter(Boolean).map((n) => n.toLowerCase()) }))
+    })
+  }, [])
+  const acted = useRef(new Set<string>())
+  const cueTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  useEffect(() => {
+    viewCue.current = (line) => {
+      // the sentence being said now; act once it's finished (a short pause), and once per sentence
+      const sentences = line.text.split(/(?<=[.!?])\s+/)
+      const s = sentences[sentences.length - 1] ?? ''
+      if (!s || s.trim().endsWith('?')) return
+      const named = OPEN_VERB.test(s) ? titles.current.find((c) => c.names.some((n) => n.length > 3 && s.toLowerCase().includes(n))) : undefined
+      const kind = BOARD_ON_CUE.test(s) ? 'board_on' : BOARD_OFF_CUE.test(s) ? 'board_off' : CLOSE_CUE.test(s) ? 'close' : OPEN_CUE.test(s) || named ? 'open' : null
+      if (!kind) return
+      const key = `${kind}:${line.text.slice(0, 60)}:${sentences.length}`
+      if (acted.current.has(key)) return
+      if (cueTimer.current) clearTimeout(cueTimer.current)
+      cueTimer.current = setTimeout(() => {
+        cueTimer.current = null
+        if (acted.current.has(key)) return
+        acted.current.add(key)
+        const slidesOpen = live.current.slides.length > 0
+        if (kind === 'board_on' && !whiteboardRef.current) {
+          showBoard.current(true)
+          void act({ kind: 'view', what: 'board_on' })
+        } else if (kind === 'board_off' && whiteboardRef.current) {
+          showBoard.current(false)
+          void act({ kind: 'view', what: 'board_off' })
+        } else if (kind === 'close' && slidesOpen) {
+          onCloseCourse()
+          void act({ kind: 'view', what: 'closed' })
+        } else if (kind === 'open' && (!slidesOpen || (named && named.id !== props.open?.courseId))) {
+          const n = LESSON_NO.exec(s)?.[1]
+          void aiOpenLesson(info.bookingId, named?.id ?? '', n ? `#${n}` : '').then((res) => {
+            if ('error' in res) {
+              void act({ kind: 'view', what: 'open_failed' })
+              return
+            }
+            cueOpened.current = { at: Date.now(), courseId: res.open.courseId }
+            lessonNote.current = act({ kind: 'lesson', courseId: res.open.courseId, lessonId: res.open.lessonId })
+            onOpenLesson(res.open)
+          })
+        }
+      }, 500)
+    }
+  }, [act, onCloseCourse, onOpenLesson, info.bookingId, props.open?.courseId])
+  useEffect(() => () => void (cueTimer.current && clearTimeout(cueTimer.current)), [])
 
   /* ---------- report a problem (flag button): one tap sends ---------- */
   const [reportOpen, setReportOpen] = useState(false)

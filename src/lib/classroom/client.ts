@@ -141,6 +141,7 @@ export type StudentAction =
   | { kind: 'not_yet'; missing: string[] }
   | { kind: 'nudge' }
   | { kind: 'time' }
+  | { kind: 'view'; what: 'closed' | 'board_on' | 'board_off' | 'open_failed' }
 
 /** AI lessons: tell the AI tutor about a student action. Our server turns it into a fixed-template
  *  instruction on the live session (the browser can't send instructions itself). */
@@ -153,7 +154,19 @@ export async function sendAiAction(bookingId: string, sessionId: string, action:
   }
 }
 
-/** AI lessons: the AI tutor's open_lesson tool (server resolves "continue where they left off"). */
+/** AI lessons: the published courses' ids and titles (to recognise "I'll open <course> now"). */
+export async function aiCourseTitles(): Promise<{ id: string; title: string; titleJa: string }[]> {
+  try {
+    const r = await call('/api/slide-courses/catalog', { method: 'GET' })
+    const d = await r.json().catch(() => ({}))
+    return Array.isArray(d.courses) ? d.courses.map((c: { id: string; title: string; titleJa: string }) => ({ id: c.id, title: c.title, titleJa: c.titleJa })) : []
+  } catch {
+    return []
+  }
+}
+
+/** AI lessons: open a course lesson. courseId "" = the student's current course; lessonId "" = where they left off,
+ *  "#N" = lesson N of the course. (The server resolves both.) */
 export async function aiOpenLesson(bookingId: string, courseId: string, lessonId: string): Promise<{ open: OpenLesson; title: string } | { error: string }> {
   try {
     const r = await call(`/api/classroom/${bookingId}/ai-open`, { method: 'POST', body: JSON.stringify({ courseId, lessonId }) })

@@ -29,6 +29,7 @@ type Action =
   | { kind: 'not_yet'; missing: string[] }
   | { kind: 'nudge' }
   | { kind: 'time' }
+  | { kind: 'view'; what: 'closed' | 'board_on' | 'board_off' | 'open_failed' }
 
 const q = (v: unknown, max: number) => (typeof v === 'string' ? v.replace(/\s+/g, ' ').replace(/"/g, "'").trim().slice(0, max) : '')
 
@@ -68,6 +69,12 @@ function instruction(a: Action, secondsLeft: number): string | null {
       return null // handled in POST (needs the course)
     case 'resume':
       return 'You are back with the student after a short reconnect (for example a new lesson was just opened). Do not greet again. Carry on where you were with the slide on screen.'
+    case 'view':
+      if (a.what === 'closed') return "The course is now closed on the student's screen: this is free talk (no slides). Carry on with free talk. Their place in the course is kept."
+      if (a.what === 'board_on') return "The whiteboard is now on the student's screen. You can't see what they draw or write on it: ask them to tell you, or to type it in the chat."
+      if (a.what === 'board_off') return "The whiteboard is closed; the student sees the lesson again (or free talk if no course is open)."
+      if (a.what === 'open_failed') return "The course could not be opened on the student's screen. Tell them briefly and carry on with free talk."
+      return null
     case 'nudge':
       if (secondsLeft < 30) return null
       return 'Nobody has spoken for about 9 seconds. You lead the lesson: if the student is in the middle of a task, give a short, friendly prompt; if everything on this slide is done, say now that you’re moving on to the next slide (it appears by itself). In free talk, ask a new question or bring a new topic.'
