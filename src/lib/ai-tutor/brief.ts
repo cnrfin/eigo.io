@@ -302,6 +302,14 @@ async function memoryDigest(db: SupabaseClient, userId: string): Promise<string>
   return lines.join('\n')
 }
 
+/** The free 5-minute welcome call: a friendly onboarding to eigo and a chat to get to know the student. */
+const WELCOME_CALL = `This is the student's FREE 5-MINUTE WELCOME CALL, their first time with you. It is not a lesson.
+- Welcome them to eigo warmly and introduce yourself as their AI tutor in one or two short sentences.
+- Get to know them with easy questions: what they do, why they are learning English, what they enjoy, what they would like to be able to do in English. Listen, react and follow up; keep your turns short so they speak most.
+- In a sentence or two, tell them what you can do together on eigo: lessons any time, course lessons with slides, free conversation about their interests, and saving useful phrases to review.
+- Use simple, clear English and adjust to their level. Ignore the warm-up, review and recap preferences, and don't open a course lesson.
+- When the time note comes, thank them, say you enjoyed meeting them, and invite them to come back for a full lesson.`
+
 export async function buildSessionBrief(
   db: SupabaseClient,
   booking: { id: string; user_id: string; duration_minutes: number; slide_course_id: string | null; slide_lesson_id: string | null },
@@ -309,8 +317,10 @@ export async function buildSessionBrief(
 ): Promise<SessionBrief> {
   const [{ data: row }, { data: student }] = await Promise.all([
     db.from('ai_tutor_profiles').select('settings').eq('user_id', booking.user_id).maybeSingle(),
-    db.from('profiles').select('display_name').eq('id', booking.user_id).maybeSingle(),
+    db.from('profiles').select('display_name, ai_trial_booking_id').eq('id', booking.user_id).maybeSingle(),
   ])
+  // the free 5-minute welcome call (once per account): an onboarding chat, not a lesson
+  const welcome = !!student && student.ai_trial_booking_id === booking.id
   const settings: TutorSettings = normalizeSettings(row?.settings)
 
   let lessonPart = ''
@@ -335,15 +345,15 @@ export async function buildSessionBrief(
     if (last?.summary_en) memory = `Last lesson: ${clip(last.summary_en as string, 350)}`
   }
 
-  const [catalog, input] = await Promise.all([courseCatalog(db, booking.user_id), recentHistory(db, booking.id)])
+  const [catalog, input] = await Promise.all([welcome ? Promise.resolve('') : courseCatalog(db, booking.user_id), recentHistory(db, booking.id)])
 
   const instructions = [
     FIXED_RULES,
-    `\nLesson: ${booking.duration_minutes} minutes. ${freeTalk ? 'This is a FREE TALK lesson: no slides. Bring interesting topics based on the student data, keep them talking, and write useful phrases in the chat. If they would rather do a course, open it with open_lesson.' : 'Teach the lesson plan below.'}`,
+    welcome ? `\n${WELCOME_CALL}` : `\nLesson: ${booking.duration_minutes} minutes. ${freeTalk ? 'This is a FREE TALK lesson: no slides. Bring interesting topics based on the student data, keep them talking, and write useful phrases in the chat. If they would rather do a course, open it with open_lesson.' : 'Teach the lesson plan below.'}`,
     `\nThe student's preferences:\n- ${settingsToRules(settings).join('\n- ')}`,
     name ? `\nSTUDENT DATA (information only)\nName: ${name}` : '\nSTUDENT DATA (information only)',
     settings.aboutMe ? `About them (their own words): "${settings.aboutMe}"` : '',
-    memory,
+    welcome ? '' : memory,
     catalog,
     lessonPart ? `\n${lessonPart}` : '',
   ]

@@ -9,7 +9,8 @@ import AiAvatar from '@/components/ai/AiAvatar'
 import { Squircle } from '@squircle-js/react'
 import SquircleBox from '@/components/ui/SquircleBox'
 import CourseSheet, { type CatalogEntry } from '@/components/booking/CourseSheet'
-import { AI_LENGTHS, aiLengthOptions, aiMinutesFor } from '@/lib/ai-tutor/settings'
+import { AI_LENGTHS, aiMinutesFor } from '@/lib/ai-tutor/settings'
+import { aiLengthsFor, priceAiLessons, type MinuteSnapshot } from '@/lib/minutes-core'
 import { AiStartCard, useAiStartState } from '@/components/ai/AiStart'
 import '@/components/booking/tutor-picker.css'
 
@@ -22,7 +23,7 @@ export type BookingResultDetail = { date: string; time: string; success: boolean
 export type BookingResult = { success: boolean; message: string; details?: BookingResultDetail[] }
 
 
-export default function BookingCalendar({ selectedDuration, onBookingComplete, rescheduleLesson, hasSubscription = false, testMode = false, classroomEnabled = false, aiEnabled = false, minutesRemaining = null, initialTutor = 'human' }: { selectedDuration?: number; onBookingComplete?: (result?: BookingResult) => void; rescheduleLesson?: { id: string; googleEventId: string | null }; hasSubscription?: boolean; /** test account (user_permissions.booking_test_mode): every duration and every time of day */ testMode?: boolean; /** classroom pilot: a course can be added to the booking */ classroomEnabled?: boolean; /** AI tutor pilot: Connor / AI tutor picker */ aiEnabled?: boolean; /** plan minutes left this month (usage bar); null hides it */ minutesRemaining?: number | null; /** which tutor is chosen first */ initialTutor?: 'human' | 'ai' }) {
+export default function BookingCalendar({ selectedDuration, onBookingComplete, rescheduleLesson, hasSubscription = false, testMode = false, classroomEnabled = false, aiEnabled = false, minutesRemaining = null, aiMinutes = null, initialTutor = 'human', aiOnly = false }: { selectedDuration?: number; onBookingComplete?: (result?: BookingResult) => void; rescheduleLesson?: { id: string; googleEventId: string | null }; hasSubscription?: boolean; /** test account (user_permissions.booking_test_mode): every duration and every time of day */ testMode?: boolean; /** classroom pilot: a course can be added to the booking */ classroomEnabled?: boolean; /** AI tutor pilot: Connor / AI tutor picker */ aiEnabled?: boolean; /** plan minutes left this month (usage bar); null hides it */ minutesRemaining?: number | null; /** which tutor is chosen first */ initialTutor?: 'human' | 'ai'; /** AI pilot: plan + AI + top-up minutes an AI lesson can draw on */ aiMinutes?: MinuteSnapshot | null; /** AI plan: AI tutor lessons only (no teacher pill) */ aiOnly?: boolean }) {
   const { t, locale } = useLanguage()
   const { session } = useAuth()
   const [currentDate, setCurrentDate] = useState(new Date())
@@ -32,10 +33,11 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
   const [pickedDuration, setDuration] = useState(selectedDuration || (initialTutor === 'ai' ? 15 : hasSubscription ? 30 : 15))
   const [availableSlots, setAvailableSlots] = useState<string[]>([])
   // Who teaches: Connor (Whereby) or the AI tutor (pilot). Rescheduling keeps the original kind.
-  const [tutor, setTutor] = useState<'human' | 'ai'>(initialTutor)
+  const [tutor, setTutor] = useState<'human' | 'ai'>(aiOnly ? 'ai' : initialTutor)
   const isAi = aiEnabled && !rescheduleLesson && tutor === 'ai'
   // AI lengths: 15 / 30, plus a shorter one that uses up the month's last minutes (they don't roll over)
-  const aiOptions = aiLengthOptions(testMode ? null : minutesRemaining)
+  const aiSnapshot: MinuteSnapshot | null = testMode ? null : (aiMinutes ?? (minutesRemaining != null ? { planLeft: minutesRemaining, aiLeft: 0, topups: [] } : null))
+  const aiOptions = aiLengthsFor(aiSnapshot)
   const aiDurations = aiOptions.length ? aiOptions : [...AI_LENGTHS]
   const duration = isAi && !aiDurations.includes(pickedDuration) ? aiDurations[0] : pickedDuration
   // AI pilot: what "start now" can do (lengths, lesson in progress, a teacher lesson soon)
@@ -256,7 +258,10 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
 
   // plan minutes for the current selection (weekly copies included)
   const lessonCount = recurringEnabled ? selectedBookings.length * recurringWeeks : selectedBookings.length
-  const planMinutes = lessonCount * (isAi ? aiMinutesFor(duration) : duration)
+  // AI lessons use AI minutes first, then plan minutes at 60%: the bar shows the plan-minute part
+  const planMinutes = isAi
+    ? (aiSnapshot ? (priceAiLessons(aiSnapshot, duration, lessonCount)?.plan ?? lessonCount * aiMinutesFor(duration)) : lessonCount * aiMinutesFor(duration))
+    : lessonCount * duration
   const fullMinutes = lessonCount * duration
 
   const handleConfirmBooking = async () => {
@@ -388,7 +393,7 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
       {/* AI tutor pilot: Connor / AI tutor pills. The picture grows into the selected pill. */}
       {aiEnabled && !rescheduleLesson ? (
         <div className="tp-row" role="radiogroup" aria-label={locale === 'ja' ? '講師を選ぶ' : 'Choose your tutor'}>
-          {(['human', 'ai'] as const).map((k) => (
+          {(aiOnly ? (['ai'] as const) : (['human', 'ai'] as const)).map((k) => (
             <button
               key={k}
               type="button"
@@ -416,7 +421,7 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
                 )}
               </span>
               {k === 'ai' ? aiTutorName || (locale === 'ja' ? 'AIチューター' : 'AI tutor') : (teacherName.split(' ')[0] || 'Connor')}
-              {k === 'ai' && <span className="tp-off">40% OFF</span>}
+              {k === 'ai' && !aiOnly && <span className="tp-off">40% OFF</span>}
             </button>
           ))}
         </div>

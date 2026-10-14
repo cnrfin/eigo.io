@@ -36,11 +36,13 @@ export interface Subscription {
   apple_original_transaction_id: string | null
   apple_product_id: string | null
   payment_source: 'stripe' | 'apple' | null
-  plan: 'light' | 'standard' | 'test'
+  plan: 'light' | 'standard' | 'test' | 'ai'
   billing_interval: 'monthly' | 'yearly'
   price_tier: PriceTier
   status: string
   minutes_per_month: number
+  /** AI minutes per billing period (AI plan; 0 for other plans) */
+  ai_minutes_per_month?: number
   current_period_start: string
   current_period_end: string
   cancel_at_period_end: boolean
@@ -92,6 +94,7 @@ export async function getMinuteBalance(
     .select('minutes_used, action')
     .eq('user_id', userId)
     .eq('period_start', sub.current_period_start)
+    .eq('pool', 'plan') // AI-plan and top-up minutes are separate pools (src/lib/minutes.ts)
 
   if (error) {
     console.error('Failed to fetch minute usage:', error)

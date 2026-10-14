@@ -17,6 +17,7 @@ import BookingCalendar, { type BookingResult } from '@/components/BookingCalenda
 import { motion, AnimatePresence } from 'framer-motion'
 import { formatNextReview, previewIntervals, type ReviewRating } from '@/lib/srs'
 import HomeView from '@/components/dashboard/HomeView'
+import { aiMinutesLeft, type MinuteSnapshot } from '@/lib/minutes-core'
 import PronAnnounceArt from '@/components/dashboard/PronAnnounceArt'
 import { useDashboardNav } from '@/context/DashboardNavContext'
 
@@ -929,6 +930,8 @@ function DashboardContent() {
   const [bookingTutor, setBookingTutor] = useState<'human' | 'ai'>('human') // the AI modal's "schedule one" opens booking on the AI tutor
   const [aiEnabled, setAiEnabled] = useState(false) // pilot: AI tutor lessons // pilot: lessons open in /classroom/[id]
   const [minutesRemaining, setMinutesRemaining] = useState<number | null>(null)
+  const [aiMinutes, setAiMinutes] = useState<MinuteSnapshot | null>(null) // AI pilot: plan + AI + top-up minutes
+  const [aiOnly, setAiOnly] = useState(false) // AI plan: AI tutor lessons only
   const [trialCompleted, setTrialCompleted] = useState<boolean | null>(null) // null = loading
   const HISTORY_PER_PAGE = 10
 
@@ -1275,6 +1278,8 @@ function DashboardContent() {
           }
           setBookingTestMode(!!data.features?.bookingTestMode)
           setAiEnabled(!!data.features?.aiEnabled)
+          setAiMinutes(data.aiMinutes?.snapshot ?? null)
+          setAiOnly(!!data.features?.aiOnly)
           setClassroomEnabled(!!data.features?.classroomEnabled)
         } else {
           setSubStatus('none')
@@ -1448,7 +1453,13 @@ function DashboardContent() {
                   <h1 className="text-2xl sm:text-4xl font-bold" style={{ color: 'var(--text)' }}>
                     {locale === 'ja' ? '予約' : 'Book'}
                   </h1>
-                  {subStatus === 'active' && minutesRemaining !== null && (
+                  {/* AI plan: AI minutes left (AI plan + top-ups) */}
+                  {aiOnly && aiMinutes && (
+                    <span className="text-xs font-medium px-3 py-1.5 rounded-full" style={{ background: 'color-mix(in srgb, var(--accent) 10%, transparent)', color: 'var(--accent)' }}>
+                      {locale === 'ja' ? `AI ${aiMinutesLeft(aiMinutes)}分残り` : `${aiMinutesLeft(aiMinutes)} AI min left`}
+                    </span>
+                  )}
+                  {!aiOnly && subStatus === 'active' && minutesRemaining !== null && (
                     <span
                       className="text-xs font-medium px-3 py-1.5 rounded-full"
                       style={{
@@ -1471,7 +1482,9 @@ function DashboardContent() {
                   classroomEnabled={classroomEnabled}
                   aiEnabled={aiEnabled}
                   initialTutor={bookingTutor}
-                  minutesRemaining={subStatus === 'active' ? minutesRemaining : null}
+                  aiOnly={aiOnly}
+                  minutesRemaining={subStatus === 'active' && !aiOnly ? minutesRemaining : null}
+                  aiMinutes={aiMinutes}
                 />
               </div>
               </motion.div>

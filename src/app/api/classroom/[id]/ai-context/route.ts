@@ -57,7 +57,7 @@ function instruction(a: Action, secondsLeft: number): string | null {
       return t ? `On the student's screen: ${t}` : null
     }
     case 'start':
-      return 'The student has joined and can hear you. Greet them now by name and start the lesson as your preferences say (warm-up chat, review of the last lesson, then the slide on screen). Then pause and listen.'
+      return 'The student has joined and can hear you. Greet them now by name and begin as your instructions say (in a lesson: warm-up chat and review of the last lesson as your preferences say, then the slide on screen; in the welcome call: the welcome). Then pause and listen.'
     case 'not_yet': {
       const items = (Array.isArray(a.missing) ? a.missing : []).map((m) => q(m, 120)).filter(Boolean).slice(0, 8)
       if (!items.length) return null

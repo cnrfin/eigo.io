@@ -9,7 +9,10 @@ import { getUserSubscription, hasEnoughMinutes, recordMinuteUsage } from '@/lib/
 import { getUserPermissions } from '@/lib/user-permissions'
 import { isAdminEmail } from '@/lib/admin-redirect'
 import { nextLessonFor } from '@/lib/classroom/catalog'
-import { AI_MAX_LENGTH, AI_MIN_LENGTH, aiMinutesFor } from '@/lib/ai-tutor/settings'
+import { AI_MAX_LENGTH, AI_MIN_LENGTH } from '@/lib/ai-tutor/settings'
+import { chargeAiLesson, getBalance } from '@/lib/minutes'
+import { aiAccess } from '@/lib/ai-tutor/access'
+import { splitAiCharge, type ChargePart } from '@/lib/minutes-core'
 
 // POST /api/calendar/book
 // Body: { date: '2026-03-23', time: '17:00', duration: 30, timezone: 'Europe/London', slideCourseId?: 'c_greatbritain' }
@@ -77,10 +80,10 @@ export async function POST(request: NextRequest) {
 
     // ---------- AI tutor lesson: any time, 60% of the minutes, no Whereby / no teacher calendar ----------
     if (lessonKind === 'ai') {
-      if (!perms.ai_enabled && !isAdmin) {
+      if (!(await aiAccess(user)).ok) {
         return NextResponse.json({ error: 'AI lessons are not available for this account' }, { status: 403 })
       }
-      // AI lessons: 15 or 30 minutes, or a shorter length that uses up the month's last minutes (aiLengthOptions);
+      // AI lessons: 15 or 30 minutes, or a shorter length that uses up the month's last minutes (aiLengthsFor);
       // any whole length from 5 to 30 is fine here, the minute check below decides what they can afford
       if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !/^\d{2}:\d{2}$/.test(time) || !Number.isInteger(duration) || duration < AI_MIN_LENGTH || duration > AI_MAX_LENGTH) {
         return NextResponse.json({ error: 'Invalid date, time or duration' }, { status: 400 })
@@ -89,17 +92,18 @@ export async function POST(request: NextRequest) {
       if (new Date(`${jstDate}T${jstTime}:00+09:00`).getTime() < Date.now() - 60_000) {
         return NextResponse.json({ error: 'This time has already passed' }, { status: 400 })
       }
-      const aiMinutes = aiMinutesFor(duration)
-      if (!isAdmin && !isTester) {
-        if (!subscription || subscription.status === 'cancelled') {
+      // AI minutes first (AI plan, then top-ups), then plan minutes at 60% (src/lib/minutes-core.ts).
+      // Admins and test accounts aren't charged.
+      const charged = !isAdmin && !isTester
+      const balance = charged ? await getBalance(user.id) : null
+      let parts: ChargePart[] | null = []
+      if (balance) {
+        if (!balance.active && !balance.snapshot.topups.length) {
           return NextResponse.json({ error: 'No active subscription. Please subscribe first.', code: 'NO_SUBSCRIPTION' }, { status: 403 })
         }
-        const minuteCheck = await hasEnoughMinutes(user.id, aiMinutes)
-        if (!minuteCheck.allowed) {
-          return NextResponse.json(
-            { error: `Not enough minutes remaining. You have ${minuteCheck.remaining} minutes left but need ${minuteCheck.needed}.`, code: 'INSUFFICIENT_MINUTES', remaining: minuteCheck.remaining, needed: minuteCheck.needed },
-            { status: 403 },
-          )
+        parts = splitAiCharge(balance.snapshot, duration)
+        if (!parts) {
+          return NextResponse.json({ error: 'Not enough minutes remaining.', code: 'INSUFFICIENT_MINUTES' }, { status: 403 })
         }
       }
       const { data: aiRow, error: aiErr } = await supabase
@@ -111,7 +115,8 @@ export async function POST(request: NextRequest) {
           duration_minutes: duration,
           status: 'confirmed',
           lesson_kind: 'ai',
-          ai_minutes_charged: aiMinutes,
+          // minutes taken from the student's balances (AI + top-up + plan); the exact split is in minute_usage
+          ai_minutes_charged: (parts ?? []).reduce((a, p) => a + p.minutes, 0),
           slide_course_id: slideCourse?.courseId ?? null,
           slide_lesson_id: slideCourse?.lessonId ?? null,
         })
@@ -121,17 +126,22 @@ export async function POST(request: NextRequest) {
         console.error('Failed to store AI booking:', aiErr)
         return NextResponse.json({ error: 'Failed to create booking' }, { status: 500 })
       }
-      if (!isTester && subscription) {
+      if (balance) {
         try {
-          await recordMinuteUsage(user.id, aiRow.id, aiMinutes, subscription.current_period_start, 'booked')
+          await chargeAiLesson(user.id, aiRow.id, duration, balance)
         } catch (usageError) {
           console.error('Failed to record AI minute usage:', usageError)
         }
       }
       return NextResponse.json({
         success: true,
-        booking: { id: aiRow.id, date, time, duration, timezone, status: 'confirmed', lessonKind: 'ai', minutesCharged: aiMinutes },
+        booking: { id: aiRow.id, date, time, duration, timezone, status: 'confirmed', lessonKind: 'ai', charge: parts },
       })
+    }
+
+    // The AI plan is AI tutor lessons only
+    if (subscription?.plan === 'ai' && subscription.status !== 'cancelled' && !isAdmin && !isTester) {
+      return NextResponse.json({ error: 'Your plan includes AI tutor lessons only.', code: 'PLAN_AI_ONLY' }, { status: 403 })
     }
 
     if (!isTrial && !isAdmin && !isTester) {

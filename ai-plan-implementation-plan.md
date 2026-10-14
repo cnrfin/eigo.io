@@ -1,6 +1,6 @@
 # AI plan + AI minute top-ups: implementation plan
 
-Status: Phase 0 built (fixes). Phases 1–4 planned.
+Status: Phases 0–2 built (fixes; migration applied; minutes module; AI plan checkout, access, AI-only booking, welcome call, plans card for pilot students). Phases 3–4 planned.
 **Everything new is visible to pilot students only** (`user_permissions.ai_enabled`, and admins) until the big AI rollout (course slides + new classroom). iOS comes later, rebuilt from the ground up; v1 is web only.
 
 UI rule: keep it simple and clutter-free, in the existing eigo patterns (pill tabs, squircle cards, the plans page). Show only what the student needs to act; no explanations of how the maths works.
@@ -74,8 +74,8 @@ Connor creates in Stripe: rename the Exam Pass product, add the yearly price, ad
 | Phase | What | Notes |
 |---|---|---|
 | 0 | Monthly windows for yearly plans; refunds to the charged month; plan names | **Built** |
-| 1 | Migrations + `minutes.ts` (pools, split charges, refunds, balance) | Every charge goes through it; tests for each rule |
-| 2 | AI plan: Stripe prices, checkout, webhook price → plan, `hasAiAccess`, AI-only booking gate, free 5-minute call | |
+| 1 | Migrations + `minutes.ts` / `minutes-core.ts` (pools, split charges, refunds, balance) | **Built**: migration `add-ai-plan.sql` applied; AI bookings, start now and refunds go through it |
+| 2 | AI plan: Stripe prices, checkout, webhook price → plan, `aiAccess`, AI-only booking gate, free 5-minute call | **Built** (plus the AI plan card on the plans page for pilot students) |
 | 3 | Top-ups: route, webhook branch, top-up page | |
 | 4 | Screens: profile popup bars, start card, plans card, booking, settings, admin | Pilot only |
 | — | Daily 3-minute review | Separate feature; included in the AI plan when built |

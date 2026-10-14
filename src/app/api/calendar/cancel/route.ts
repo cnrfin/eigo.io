@@ -5,8 +5,7 @@ import { deleteWherebyRoom } from '@/lib/whereby'
 import { sendAdminCancellationNotification } from '@/lib/email'
 import { notifyCancellation } from '@/lib/notify'
 import { deleteStudentCalendarEvent } from '@/lib/student-calendar'
-import { recordMinuteUsage } from '@/lib/subscription'
-import { getSupabaseAdmin } from '@/lib/supabase-admin'
+import { refundBooking } from '@/lib/minutes'
 
 // POST /api/calendar/cancel
 // Body: { bookingId: 'uuid', googleEventId: 'string', skipEmail?: boolean }
@@ -84,18 +83,9 @@ export async function POST(request: NextRequest) {
         const minutesUntilLesson = (lessonStartJST.getTime() - Date.now()) / (1000 * 60)
 
         if (minutesUntilLesson >= 15) {
-          // Refund exactly what this booking was charged, back to the month it was charged in
-          // (nothing to refund for trial / test-account / admin bookings, which weren't charged)
-          const db = getSupabaseAdmin()
-          const { data: rows } = await db.from('minute_usage').select('minutes_used, period_start, action').eq('booking_id', bookingId)
-          const byWindow = new Map<string, number>()
-          for (const r of rows ?? []) {
-            const v = r.action === 'booked' ? r.minutes_used : r.action === 'cancelled_refund' ? -r.minutes_used : 0
-            byWindow.set(r.period_start, (byWindow.get(r.period_start) ?? 0) + v)
-          }
-          for (const [periodStart, minutes] of byWindow) {
-            if (minutes > 0) await recordMinuteUsage(user.id, bookingId, minutes, periodStart, 'cancelled_refund')
-          }
+          // Refund exactly what this booking was charged, back to where it came from (plan / AI / top-up, same
+          // billing period); nothing for trial / test-account / admin bookings, which weren't charged
+          await refundBooking(user.id, bookingId)
         }
         // If < 15 min before lesson: no refund, minutes are spent
       } catch (refundError) {

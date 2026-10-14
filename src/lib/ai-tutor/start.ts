@@ -1,12 +1,10 @@
 import { getSupabaseAdmin } from '@/lib/supabase-admin'
-import { getUserPermissions } from '@/lib/user-permissions'
-import { isAdminEmail } from '@/lib/admin-redirect'
-import { getMinuteBalance, getUserSubscription, recordMinuteUsage } from '@/lib/subscription'
+import { chargeAiLesson, getBalance, type Balance } from '@/lib/minutes'
+import { aiLengthsFor, splitAiCharge, type MinuteSnapshot } from '@/lib/minutes-core'
 import { loadCatalog } from '@/lib/classroom/catalog'
-import { aiLengthOptions, aiMinutesFor } from './settings'
 
 /**
- * "Start now" AI lessons (pilot: user_permissions.ai_enabled, and admins).
+ * "Start now" AI lessons (who may: src/lib/ai-tutor/access.ts).
  * Starting now is an instant booking: an AI booking that starts this minute, so minutes, history, summaries,
  * course progress and the end-of-lesson sweep all work exactly as for a booked AI lesson.
  */
@@ -14,6 +12,8 @@ import { aiLengthOptions, aiMinutesFor } from './settings'
 const MIN = 60_000
 /** no instant AI lesson this close before a lesson with the teacher (or during one) */
 const TEACHER_GAP_MIN = 30
+/** the free welcome call (once per account) */
+export const AI_TRIAL_MINUTES = 5
 
 type Row = { id: string; date: string; start_time: string; duration_minutes: number; lesson_kind: string | null }
 const startOf = (b: Row) => new Date(`${b.date}T${String(b.start_time).slice(0, 5)}:00+09:00`).getTime()
@@ -23,8 +23,8 @@ const jstNow = (now: number) => {
 }
 
 export type AiStartState = {
-  /** plan minutes left this month; null = no limit (admin / test account) */
-  remaining: number | null
+  /** what they can spend (plan, AI and top-up minutes); null = no limit (admin / test account) */
+  minutes: MinuteSnapshot | null
   /** AI lesson lengths the student can start (lesson minutes); empty = not enough minutes */
   options: number[]
   /** why they can't start now */
@@ -33,14 +33,10 @@ export type AiStartState = {
   teacherAt: string | null
   /** an AI lesson already in progress: go back to it instead of starting another */
   liveId: string | null
+  /** the free 5-minute welcome call is available (no subscription yet, not used): the only option is 5 */
+  trial: boolean
   /** what an AI lesson started now would continue */
   resume: { courseId: string; title: string; titleJa: string; lessonId: string; lessonNumber: number } | null
-}
-
-export async function canUseAi(user: { id: string; email?: string | null }) {
-  if (isAdminEmail(user.email)) return { ok: true, unlimited: true }
-  const perms = await getUserPermissions(getSupabaseAdmin(), user.id)
-  return { ok: perms.ai_enabled, unlimited: perms.booking_test_mode }
 }
 
 /**
@@ -76,9 +72,13 @@ async function currentCourse(userId: string): Promise<AiStartState['resume']> {
 }
 
 export async function aiStartState(userId: string, unlimited: boolean, now = Date.now()): Promise<AiStartState> {
+  return (await startState(userId, unlimited, now)).state
+}
+
+async function startState(userId: string, unlimited: boolean, now = Date.now()): Promise<{ state: AiStartState; balance: Balance | null }> {
   const db = getSupabaseAdmin()
   const today = jstNow(now - 24 * 3600e3).date // yesterday in JST, to catch lessons running over midnight
-  const [{ data: rows }, balance, sub, resume] = await Promise.all([
+  const [{ data: rows }, balance, resume, { data: prof }] = await Promise.all([
     db
       .from('bookings')
       .select('id, date, start_time, duration_minutes, lesson_kind')
@@ -88,9 +88,9 @@ export async function aiStartState(userId: string, unlimited: boolean, now = Dat
       .order('date')
       .order('start_time')
       .limit(50),
-    unlimited ? Promise.resolve(null) : getMinuteBalance(userId),
-    unlimited ? Promise.resolve(null) : getUserSubscription(userId),
+    unlimited ? Promise.resolve(null) : getBalance(userId),
     currentCourse(userId),
+    db.from('profiles').select('ai_trial_booking_id').eq('id', userId).maybeSingle(),
   ])
   const list = (rows ?? []) as Row[]
 
@@ -107,16 +107,22 @@ export async function aiStartState(userId: string, unlimited: boolean, now = Dat
   }
 
   const teacher = list.find((b) => b.lesson_kind !== 'ai' && startOf(b) - TEACHER_GAP_MIN * MIN <= now && now < startOf(b) + b.duration_minutes * MIN)
-  const remaining = unlimited ? null : (balance?.minutesRemaining ?? 0)
-  const options = aiLengthOptions(remaining)
+  const minutes = balance ? balance.snapshot : null
+  // no subscription and no top-ups: the free 5-minute welcome call, once
+  const noPlan = !!balance && !balance.active && !balance.snapshot.topups.length
+  const trial = noPlan && !prof?.ai_trial_booking_id
+  const options = trial ? [AI_TRIAL_MINUTES] : aiLengthsFor(minutes)
   const blocked: AiStartState['blocked'] = teacher
     ? 'teacher_lesson'
-    : !unlimited && (!sub || sub.status === 'cancelled')
+    : noPlan && !trial
       ? 'no_subscription'
       : !options.length
         ? 'minutes'
         : null
-  return { remaining, options, blocked, teacherAt: teacher ? new Date(startOf(teacher)).toISOString() : null, liveId, resume }
+  return {
+    state: { minutes, options, blocked, teacherAt: teacher ? new Date(startOf(teacher)).toISOString() : null, liveId, trial, resume: trial ? null : resume },
+    balance,
+  }
 }
 
 /**
@@ -128,13 +134,13 @@ export async function startAiNow(
   unlimited: boolean,
   duration: number,
 ): Promise<{ ok: true; bookingId: string; resumed: boolean } | { ok: false; reason: string; state?: AiStartState }> {
-  const state = await aiStartState(userId, unlimited)
+  const { state, balance } = await startState(userId, unlimited)
   if (state.liveId) return { ok: true, bookingId: state.liveId, resumed: true }
   if (state.blocked) return { ok: false, reason: state.blocked, state }
   if (!state.options.includes(duration)) return { ok: false, reason: 'bad_duration', state }
 
-  const sub = unlimited ? null : await getUserSubscription(userId)
-  const charge = aiMinutesFor(duration)
+  const parts = state.trial || !balance ? [] : splitAiCharge(balance.snapshot, duration)
+  if (!parts) return { ok: false, reason: 'minutes', state }
   const { date, time } = jstNow(Date.now())
   const { data: row, error } = await getSupabaseAdmin()
     .from('bookings')
@@ -145,7 +151,7 @@ export async function startAiNow(
       duration_minutes: duration,
       status: 'confirmed',
       lesson_kind: 'ai',
-      ai_minutes_charged: charge,
+      ai_minutes_charged: parts.reduce((a, p) => a + p.minutes, 0),
       slide_course_id: state.resume?.courseId ?? null,
       slide_lesson_id: state.resume?.lessonId ?? null,
     })
@@ -155,9 +161,21 @@ export async function startAiNow(
     console.error('AI start-now booking failed', error)
     return { ok: false, reason: 'error' }
   }
-  if (sub) {
+  if (state.trial) {
+    // claim the welcome call (only if still unused, so two tabs can't both get one)
+    const { data: claimed } = await getSupabaseAdmin()
+      .from('profiles')
+      .update({ ai_trial_booking_id: row.id })
+      .eq('id', userId)
+      .is('ai_trial_booking_id', null)
+      .select('id')
+    if (!claimed?.length) {
+      await getSupabaseAdmin().from('bookings').update({ status: 'cancelled' }).eq('id', row.id)
+      return { ok: false, reason: 'no_subscription' }
+    }
+  } else if (balance) {
     try {
-      await recordMinuteUsage(userId, row.id, charge, sub.current_period_start, 'booked')
+      await chargeAiLesson(userId, row.id as string, duration, balance)
     } catch (e) {
       console.error('AI start-now: minute usage not recorded', e)
     }

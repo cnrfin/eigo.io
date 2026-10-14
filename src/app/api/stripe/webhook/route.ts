@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
-import { getStripe, planAllowance } from '@/lib/stripe'
+import { aiAllowance, getStripe, PLAN_NAMES, planAllowance, planForPriceId } from '@/lib/stripe'
 import type { PlanName, BillingInterval, PriceTier } from '@/lib/stripe'
 import { getSupabaseAdmin } from '@/lib/supabase-admin'
 
@@ -146,6 +146,7 @@ async function handleCheckoutCompleted(
         price_tier: tier,
         status: 'active',
         minutes_per_month: minutesPerMonth || planAllowance(plan, interval),
+        ai_minutes_per_month: aiAllowance(plan, interval),
         current_period_start: period.start,
         current_period_end: period.end,
         cancel_at_period_end: false,
@@ -190,8 +191,10 @@ async function handleSubscriptionUpdated(
   subscription: Stripe.Subscription,
 ) {
   const meta = subscription.metadata
-  const plan = meta?.plan as PlanName | undefined
-  const interval = meta?.interval as BillingInterval | undefined
+  // The price says which plan it is now (Billing Portal switches change the price but not our metadata)
+  const fromPrice = planForPriceId(subscription.items?.data?.[0]?.price?.id)
+  const plan = (fromPrice?.plan ?? meta?.plan) as PlanName | undefined
+  const interval = (fromPrice?.interval ?? meta?.interval) as BillingInterval | undefined
   const period = getSubscriptionPeriod(subscription)
 
   // Stripe uses cancel_at (timestamp) instead of cancel_at_period_end in newer portal flows
@@ -213,12 +216,15 @@ async function handleSubscriptionUpdated(
     .select('plan, billing_interval')
     .eq('stripe_subscription_id', subscription.id)
     .maybeSingle()
-  const newPlan = plan && ['light', 'standard', 'test'].includes(plan) ? plan : null
+  const newPlan = plan && PLAN_NAMES.includes(plan) ? plan : null
   const newInterval = interval && ['monthly', 'yearly'].includes(interval) ? interval : null
   if (newPlan) updateData.plan = newPlan
   if (newInterval) updateData.billing_interval = newInterval
   if (current && ((newPlan && newPlan !== current.plan) || (newInterval && newInterval !== current.billing_interval))) {
-    updateData.minutes_per_month = planAllowance((newPlan ?? current.plan) as PlanName, (newInterval ?? current.billing_interval) as BillingInterval)
+    const p = (newPlan ?? current.plan) as PlanName
+    const i = (newInterval ?? current.billing_interval) as BillingInterval
+    updateData.minutes_per_month = planAllowance(p, i)
+    updateData.ai_minutes_per_month = aiAllowance(p, i)
   }
 
   const { error } = await supabase

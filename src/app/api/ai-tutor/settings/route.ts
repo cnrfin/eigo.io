@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifySupabaseToken } from '@/lib/supabase-jwt'
 import { getSupabaseAdmin } from '@/lib/supabase-admin'
-import { getUserPermissions } from '@/lib/user-permissions'
-import { isAdminEmail } from '@/lib/admin-redirect'
 import { normalizeSettings } from '@/lib/ai-tutor/settings'
+import { aiAccess } from '@/lib/ai-tutor/access'
 
 /**
  * GET /api/ai-tutor/settings   → { enabled, settings }
@@ -23,8 +22,7 @@ export async function GET(request: NextRequest) {
   const user = await auth(request)
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const db = getSupabaseAdmin()
-  const perms = await getUserPermissions(db, user.id)
-  const enabled = perms.ai_enabled || isAdminEmail(user.email)
+  const enabled = (await aiAccess(user)).ok
   if (!enabled) return NextResponse.json({ enabled: false, settings: null })
   const { data } = await db.from('ai_tutor_profiles').select('settings').eq('user_id', user.id).maybeSingle()
   return NextResponse.json({ enabled: true, settings: normalizeSettings(data?.settings) })

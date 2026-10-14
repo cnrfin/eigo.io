@@ -6,7 +6,8 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 import { useTheme } from '@/context/ThemeContext'
 import { pillTabStyle } from '@/lib/pill-tabs'
-import { AI_LENGTHS, aiMinutesFor } from '@/lib/ai-tutor/settings'
+import { AI_LENGTHS } from '@/lib/ai-tutor/settings'
+import { aiMinutesLeft, splitAiCharge } from '@/lib/minutes-core'
 import { newMood } from '@/lib/ai-tutor/avatar-mood'
 import type { AiStartState } from '@/lib/ai-tutor/start'
 import AiAvatar from './AiAvatar'
@@ -72,10 +73,14 @@ const tx = (ja: boolean) => ({
   freeTalk: ja ? 'フリートーク（コースはレッスン中に開けます）' : 'Free talk (you can open a course during the lesson)',
   min: (d: number) => (ja ? `${d}分` : `${d} min`),
   start: ja ? '今すぐ始める' : 'Start now',
+  trial: ja ? '5分の無料体験' : 'Free 5-minute call',
+  trialSub: ja ? 'AIチューターがeigoをご案内します。' : 'Your AI tutor shows you around eigo.',
   starting: ja ? '準備しています…' : 'Getting ready…',
   back: ja ? 'レッスンに戻る' : 'Back to your lesson',
   live: ja ? 'AIレッスンの途中です。' : 'You have an AI lesson in progress.',
   cost: (c: number, after: number) => (ja ? `プランから${c}分 · 残り${after}分` : `Uses ${c} plan min · ${after} left after`),
+  aiCost: (c: number, after: number) => (ja ? `AI ${c}分 · 残り${after}分` : `Uses ${c} AI min · ${after} left after`),
+  mixCost: (a: number, p: number) => (ja ? `AI ${a}分 + プラン${p}分` : `${a} AI min + ${p} plan min`),
   rest: ja ? '今月の残りの分数をすべて使います' : "Uses the rest of this month's minutes",
   teacher: (at: string) => {
     const t = new Date(at).toLocaleTimeString(ja ? 'ja-JP' : 'en-GB', { hour: '2-digit', minute: '2-digit' })
@@ -98,7 +103,7 @@ export function AiStartCard({
   locale,
   profile,
   state,
-  duration,
+  duration: chosen,
   onDuration,
   onSchedule,
   compact,
@@ -126,6 +131,8 @@ export function AiStartCard({
   }
 
   const options = state?.options ?? [...AI_LENGTHS]
+  // the free welcome call is always 5 minutes
+  const duration = state?.trial ? state.options[0] : chosen
   const canStart = !!state && !busy && (!!state.liveId || (!state.blocked && options.includes(duration)))
   const start = async () => {
     if (!canStart || !session) return
@@ -146,7 +153,17 @@ export function AiStartCard({
     }
   }
 
-  const charge = aiMinutesFor(duration)
+  // how this length would be paid for: AI minutes first, then plan minutes at 60%
+  const parts = state?.minutes && !state.trial ? splitAiCharge(state.minutes, duration) : null
+  const fromAi = (parts ?? []).filter((p) => p.pool !== 'plan').reduce((a, p) => a + p.minutes, 0)
+  const fromPlan = (parts ?? []).filter((p) => p.pool === 'plan').reduce((a, p) => a + p.minutes, 0)
+  const costLine = !state?.minutes || !parts
+    ? null
+    : fromAi && fromPlan
+      ? t.mixCost(fromAi, fromPlan)
+      : fromAi
+        ? t.aiCost(fromAi, Math.max(0, aiMinutesLeft(state.minutes) - fromAi))
+        : t.cost(fromPlan, Math.max(0, state.minutes.planLeft - fromPlan))
   const note = !state
     ? null
     : state.liveId
@@ -157,11 +174,9 @@ export function AiStartCard({
           ? t.minutes
           : state.blocked === 'no_subscription'
             ? t.noSub
-            : state.remaining == null
-              ? null
-              : t.cost(charge, Math.max(0, state.remaining - charge))
+            : costLine
   const warn = !!state && (!!state.blocked || !!state.liveId)
-  const usesRest = !!state && !state.blocked && !state.liveId && state.remaining != null && !(AI_LENGTHS as readonly number[]).includes(duration)
+  const usesRest = !!state && !state.trial && !state.blocked && !state.liveId && !!state.minutes && !(AI_LENGTHS as readonly number[]).includes(duration)
 
   return (
     <div className={`ais${compact ? ' ais-compact' : ''}`}>
@@ -171,12 +186,12 @@ export function AiStartCard({
         </div>
         <div className="min-w-0">
           <div className="ais-title">{t.title(profile.name)}</div>
-          <div className="ais-sub">{t.sub}</div>
+          <div className="ais-sub">{state?.trial ? t.trialSub : t.sub}</div>
         </div>
       </div>
-      {state && !state.liveId && !state.blocked && <div className="ais-resume">{state.resume ? t.resume(state.resume) : t.freeTalk}</div>}
+      {state && !state.liveId && !state.blocked && !state.trial && <div className="ais-resume">{state.resume ? t.resume(state.resume) : t.freeTalk}</div>}
       <div className="ais-row">
-        {onDuration && !state?.liveId && (
+        {onDuration && !state?.liveId && !state?.trial && (
           <div className="ais-pills">
             {options.map((d) => (
               <button key={d} type="button" className="ais-pill" style={pillTabStyle(duration === d, th)} onClick={() => onDuration(d)} disabled={!!state?.blocked}>
@@ -186,7 +201,7 @@ export function AiStartCard({
           </div>
         )}
         <button type="button" className="ais-cta" disabled={!canStart} onMouseEnter={smile} onFocus={smile} onClick={() => void start()}>
-          {busy ? t.starting : state?.liveId ? t.back : compact ? `${t.start} · ${t.min(duration)}` : t.start}
+          {busy ? t.starting : state?.liveId ? t.back : state?.trial ? t.trial : compact ? `${t.start} · ${t.min(duration)}` : t.start}
         </button>
       </div>
       {note && <div className={`ais-note${warn ? ' warn' : ''}`}>{note}</div>}
