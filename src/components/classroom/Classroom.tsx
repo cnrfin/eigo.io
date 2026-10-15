@@ -32,7 +32,7 @@ import { makeT, type ClassroomT } from '@/lib/classroom/i18n'
 import { audioContext } from './audio'
 import { Ico, Star } from './Icons'
 import Lobby from './Lobby'
-import Room, { type TileMsg } from './Room'
+import Room, { type SideView, type TileMsg } from './Room'
 import AiRoom from './AiRoom'
 import type { MediaEvent } from './SlideStage'
 import { InkEngine, type InkItem } from './ink'
@@ -270,7 +270,9 @@ export default function Classroom({ info }: { info: JoinInfo }) {
   const [phase, setPhase] = useState<Phase>(() => (savedJoin ? { name: 'room', key: Date.now() } : { name: 'lobby' }))
   const [session, setSession] = useState<SessionInfo>(info.session)
   const [messages, setMessages] = useState<ChatMsg[]>(info.chat)
-  const [chatOpen, setChatOpenRaw] = useState(false)
+  /** the floating side panel: the chat or the word list (one at a time), or closed */
+  const [side, setSideRaw] = useState<SideView | null>(null)
+  const chatOpen = side === 'chat'
   const [unread, setUnread] = useState(0)
   const [speakerId, setSpeakerId] = useState(savedJoin?.speaker || 'default')
   const [endSignal, setEndSignal] = useState(0)
@@ -298,9 +300,9 @@ export default function Classroom({ info }: { info: JoinInfo }) {
     ]
   }, [])
 
-  const setChatOpen = useCallback((o: boolean) => {
-    setChatOpenRaw(o)
-    if (o) setUnread(0)
+  const setSide = useCallback((v: SideView | null) => {
+    setSideRaw(v)
+    if (v === 'chat') setUnread(0)
   }, [])
 
   /* ---------- course lesson on the slide area (null = free talk) ---------- */
@@ -351,12 +353,14 @@ export default function Classroom({ info }: { info: JoinInfo }) {
   }, [open?.courseId, courses, info.bookingId, toast, t])
 
   const chatOpenRef = useRef(chatOpen)
+  const sideRef = useRef(side)
   const phaseRef = useRef(phase.name)
   const openRef = useRef(open)
   const wbRef = useRef(whiteboard)
   const studentDrawRef = useRef(true)
   useEffect(() => {
     chatOpenRef.current = chatOpen
+    sideRef.current = side
     phaseRef.current = phase.name
     openRef.current = open
     wbRef.current = whiteboard
@@ -502,7 +506,7 @@ export default function Classroom({ info }: { info: JoinInfo }) {
       const apply = (on: boolean) => {
         setSaved((p) => {
           const n = new Map(p)
-          if (on) n.set(w.itemId, { itemId: w.itemId, term: w.term, source: w.source, courseId: w.courseId ?? null })
+          if (on) n.set(w.itemId, { itemId: w.itemId, term: w.term, source: w.source, courseId: w.courseId ?? null, ja: w.ja, bookingId: info.bookingId, at: new Date().toISOString() })
           else n.delete(w.itemId)
           return n
         })
@@ -605,6 +609,19 @@ export default function Classroom({ info }: { info: JoinInfo }) {
     setPopup(null)
     lookup.clearSelection()
   }, [lookup])
+
+  /* the word list: words saved in this lesson (also in an earlier visit to the same room), newest first */
+  const lessonWords = useMemo(
+    () =>
+      [...saved.values()]
+        .filter((w) => w.bookingId === info.bookingId)
+        .sort((a, b) => (b.at ?? '').localeCompare(a.at ?? '')),
+    [saved, info.bookingId],
+  )
+  const removeLessonWord = useCallback(
+    (w: SavedWord) => toggleWord({ source: w.source, courseId: w.courseId, itemId: w.itemId, term: w.term }),
+    [toggleWord],
+  )
 
   /* words for the lesson-complete screen */
   const completeWords = useMemo(() => {
@@ -725,11 +742,11 @@ export default function Classroom({ info }: { info: JoinInfo }) {
   useEffect(() => {
     if (phase.name !== 'room') return
     const k = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && chatOpenRef.current && window.innerWidth <= 700) setChatOpen(false)
+      if (e.key === 'Escape' && sideRef.current && window.innerWidth <= 700) setSide(null)
     }
     window.addEventListener('keydown', k)
     return () => window.removeEventListener('keydown', k)
-  }, [phase.name, setChatOpen])
+  }, [phase.name, setSide])
 
   return (
     <>
@@ -758,8 +775,10 @@ export default function Classroom({ info }: { info: JoinInfo }) {
           clockOffset={clockOffset}
           messages={messages}
           sendMessage={sendMessage}
-          chatOpen={chatOpen}
-          setChatOpen={setChatOpen}
+          side={side}
+          setSide={setSide}
+          lessonWords={lessonWords}
+          onRemoveWord={removeLessonWord}
           unread={unread}
           tileMsgs={tileMsgs}
           toast={toast}
@@ -805,8 +824,10 @@ export default function Classroom({ info }: { info: JoinInfo }) {
           clockOffset={clockOffset}
           messages={messages}
           sendMessage={sendMessage}
-          chatOpen={chatOpen}
-          setChatOpen={setChatOpen}
+          side={side}
+          setSide={setSide}
+          lessonWords={lessonWords}
+          onRemoveWord={removeLessonWord}
           unread={unread}
           tileMsgs={tileMsgs}
           toast={toast}

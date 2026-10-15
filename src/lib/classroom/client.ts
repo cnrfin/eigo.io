@@ -324,9 +324,20 @@ export async function translateMessage(bookingId: string, messageId: string): Pr
   }
 }
 
-export type SavedWord = { itemId: string; term: string; source: 'course' | 'lookup' | 'chat'; courseId: string | null }
+export type WordSource = 'course' | 'lookup' | 'chat' | 'tutor'
+export type SavedWord = {
+  itemId: string
+  term: string
+  source: WordSource
+  courseId: string | null
+  /** Japanese meaning, when we have one */
+  ja?: string
+  /** the lesson it was saved in, and when (the word list shows this lesson's words, newest first) */
+  bookingId?: string | null
+  at?: string
+}
 export type SaveWordInput = {
-  source: 'course' | 'lookup' | 'chat'
+  source: WordSource
   courseId?: string | null
   itemId: string
   term: string

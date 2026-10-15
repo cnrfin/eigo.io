@@ -10,6 +10,7 @@ import type { ClassroomT } from '@/lib/classroom/i18n'
 import { computeLayout, type Rect } from '@/lib/classroom/layout'
 import { useVolDot } from './audio'
 import ChatPanel from './ChatPanel'
+import WordList, { WordsButton } from './WordList'
 import { Ico } from './Icons'
 import Library from './Library'
 import SlideStage, { type MediaEvent, type SlideStageHandle } from './SlideStage'
@@ -40,6 +41,8 @@ import type { SaveWordInput, SavedWord } from '@/lib/classroom/client'
 export type TileMsg = { id: string; from: 'teacher' | 'student'; text: string; out?: boolean }
 
 export type RoomProps = Props
+/** what the floating side panel shows */
+export type SideView = 'chat' | 'words'
 type Props = {
   info: JoinInfo
   t: ClassroomT
@@ -50,8 +53,12 @@ type Props = {
   clockOffset: number
   messages: ChatMsg[]
   sendMessage: (text: string) => Promise<boolean>
-  chatOpen: boolean
-  setChatOpen: (o: boolean) => void
+  /** the floating side panel: the chat or the word list, or closed */
+  side: SideView | null
+  setSide: (v: SideView | null) => void
+  /** words saved in this lesson, newest first (the word list) */
+  lessonWords: SavedWord[]
+  onRemoveWord: (w: SavedWord) => void
   unread: number
   tileMsgs: { other: TileMsg | null; me: TileMsg | null }
   toast: (msg: string, kind?: 'ok' | 'bad') => void
@@ -289,7 +296,6 @@ export default function Room(props: Props) {
       if (!box) return
       const res = computeLayout(box.clientWidth, box.clientHeight, {
         showSlide,
-        chatOpen: props.chatOpen,
         ratio: sharing ? shareRatio : 3 / 4,
       })
       if (!res) return
@@ -301,7 +307,7 @@ export default function Room(props: Props) {
         appRef.current.style.setProperty('--lift', res.lift.toFixed(1) + 'px')
       }
     },
-    [place, props.chatOpen, showSlide, sharing, shareRatio],
+    [place, showSlide, sharing, shareRatio],
   )
   useLayoutEffect(() => {
     const box = layoutRef.current
@@ -321,7 +327,7 @@ export default function Room(props: Props) {
   useLayoutEffect(() => {
     doLayout(!firstLayout.current)
     firstLayout.current = false
-  }, [props.chatOpen, showSlide, sharing, shareRatio, doLayout])
+  }, [showSlide, sharing, shareRatio, doLayout])
 
   /* ---------- slides ---------- */
   const found = findLesson(props.loaded, props.open)
@@ -636,7 +642,7 @@ export default function Room(props: Props) {
     <>
       <div
         ref={appRef}
-        className={`app${props.open ? '' : ' no-course'}${props.whiteboard ? ' wb' : ''}${sharing ? ' sharing' : ''}${prefs.cursors ? '' : ' no-cursors'}${canDraw ? '' : ' no-draw'}${tbOpen ? ' tb-open' : ''}${isTeacher ? '' : ' student'}${props.chatOpen ? ' chat-open' : ''}${recording ? ' recording' : ''}`}
+        className={`app${props.open ? '' : ' no-course'}${props.whiteboard ? ' wb' : ''}${sharing ? ' sharing' : ''}${prefs.cursors ? '' : ' no-cursors'}${canDraw ? '' : ' no-draw'}${tbOpen ? ' tb-open' : ''}${isTeacher ? '' : ' student'}${props.side ? ' side-open' : ''}${recording ? ' recording' : ''}`}
       >
         <header className="top">
           <div className="logo">
@@ -898,9 +904,9 @@ export default function Room(props: Props) {
                 </button>
               )}
               <button
-                className={`cbtn${props.chatOpen ? ' on' : ''}`}
-                aria-pressed={props.chatOpen}
-                onClick={() => props.setChatOpen(!props.chatOpen)}
+                className={`cbtn${props.side === 'chat' ? ' on' : ''}`}
+                aria-pressed={props.side === 'chat'}
+                onClick={() => props.setSide(props.side === 'chat' ? null : 'chat')}
               >
                 <span className="cface">
                   <Ico name="chat" />
@@ -908,6 +914,14 @@ export default function Room(props: Props) {
                 <span className={`badge${props.unread > 0 ? ' show' : ''}`}>{props.unread || ''}</span>
                 <span className="lbl">{t('chat')}</span>
               </button>
+              {!isTeacher && (
+                <WordsButton
+                  t={t}
+                  on={props.side === 'words'}
+                  count={props.lessonWords.length}
+                  onClick={() => props.setSide(props.side === 'words' ? null : 'words')}
+                />
+              )}
               {isTeacher && (
                 <button className="cbtn teachOnly" onClick={() => setLibOpen(true)}>
                   <span className="cface">
@@ -930,8 +944,12 @@ export default function Room(props: Props) {
               bookingId={info.bookingId}
               savedIds={props.savedIds}
               onSaveWord={props.onSaveWord}
-              onClose={() => props.setChatOpen(false)}
+              onClose={() => props.setSide(null)}
+              hidden={props.side === 'words'}
             />
+            {!isTeacher && (
+              <WordList t={t} words={props.lessonWords} hidden={props.side !== 'words'} onRemove={props.onRemoveWord} onClose={() => props.setSide(null)} />
+            )}
           </aside>
         </div>
       </div>

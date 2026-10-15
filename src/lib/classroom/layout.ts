@@ -30,7 +30,8 @@ export function computeLayout(
   H: number,
   opts: {
     showSlide: boolean
-    chatOpen: boolean
+    /** forces the stacked layout (the side panel used to take width; it now floats over the edge, so nothing passes it) */
+    chatOpen?: boolean
     /** height / width of the slide area: 3/4 for slides, the shape of a shared screen while sharing */
     ratio?: number
   },

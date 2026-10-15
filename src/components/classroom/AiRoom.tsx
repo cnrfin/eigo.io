@@ -8,6 +8,7 @@ import AiAvatar from '@/components/ai/AiAvatar'
 import { faceForText, newMood } from '@/lib/ai-tutor/avatar-mood'
 import { INTRO_FAIL_MS, INTRO_REVEAL_MS, introFailed, introLive, newIntro, pickIntro, type AvatarIntro } from '@/lib/ai-tutor/avatar-intro'
 import ChatPanel from './ChatPanel'
+import WordList, { WordsButton } from './WordList'
 import { Ico } from './Icons'
 import SlideStage from './SlideStage'
 import Toolbar from './Toolbar'
@@ -843,7 +844,7 @@ export default function AiRoom(props: Props) {
   const doLayout = useCallback(() => {
     const box = layoutRef.current
     if (!box) return
-    const res = computeLayout(box.clientWidth, box.clientHeight, { showSlide, chatOpen: props.chatOpen, ratio: 3 / 4 })
+    const res = computeLayout(box.clientWidth, box.clientHeight, { showSlide, ratio: 3 / 4 })
     if (!res) return
     place(slideBoxRef.current, res.slide)
     place(otherRef.current, res.other)
@@ -852,7 +853,7 @@ export default function AiRoom(props: Props) {
       appRef.current.dataset.mode = res.mode
       appRef.current.style.setProperty('--lift', res.lift.toFixed(1) + 'px')
     }
-  }, [place, props.chatOpen, showSlide])
+  }, [place, showSlide])
   useLayoutEffect(() => {
     const box = layoutRef.current
     if (!box) return
@@ -1003,7 +1004,7 @@ export default function AiRoom(props: Props) {
   return (
     <div
       ref={appRef}
-      className={`app ai-lesson student${freeTalk ? ' no-course' : ''}${props.whiteboard ? ' wb' : ''}${props.prefs.cursors ? '' : ' no-cursors'}${tbOpen ? ' tb-open' : ''}${props.chatOpen ? ' chat-open' : ''}`}
+      className={`app ai-lesson student${freeTalk ? ' no-course' : ''}${props.whiteboard ? ' wb' : ''}${props.prefs.cursors ? '' : ' no-cursors'}${tbOpen ? ' tb-open' : ''}${props.side ? ' side-open' : ''}`}
     >
       <audio ref={audioEl} autoPlay playsInline />
       <div className={`ai-calling${calling ? '' : ' out'}`} role="status" aria-hidden={!calling}>
@@ -1166,13 +1167,14 @@ export default function AiRoom(props: Props) {
               </span>
               <span className="lbl">{t('mic')}</span>
             </button>
-            <button className={`cbtn${props.chatOpen ? ' on' : ''}`} aria-pressed={props.chatOpen} onClick={() => props.setChatOpen(!props.chatOpen)}>
+            <button className={`cbtn${props.side === 'chat' ? ' on' : ''}`} aria-pressed={props.side === 'chat'} onClick={() => props.setSide(props.side === 'chat' ? null : 'chat')}>
               <span className="cface">
                 <Ico name="chat" />
               </span>
               <span className={`badge${props.unread > 0 ? ' show' : ''}`}>{props.unread || ''}</span>
               <span className="lbl">{t('chat')}</span>
             </button>
+            <WordsButton t={t} on={props.side === 'words'} count={props.lessonWords.length} onClick={() => props.setSide(props.side === 'words' ? null : 'words')} />
           </nav>
         </section>
 
@@ -1187,7 +1189,16 @@ export default function AiRoom(props: Props) {
             bookingId={info.bookingId}
             savedIds={props.savedIds}
             onSaveWord={props.onSaveWord}
-            onClose={() => props.setChatOpen(false)}
+            onClose={() => props.setSide(null)}
+            hidden={props.side === 'words'}
+          />
+          <WordList
+            t={t}
+            words={props.lessonWords}
+            tutorName={info.other.name}
+            hidden={props.side !== 'words'}
+            onRemove={props.onRemoveWord}
+            onClose={() => props.setSide(null)}
           />
         </aside>
       </div>

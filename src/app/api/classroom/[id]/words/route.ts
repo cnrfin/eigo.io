@@ -5,9 +5,11 @@ import { json, loadClassroom } from '@/lib/classroom/server'
 /**
  * The student's word list from the classroom (review cards).
  *
- * GET     → { saved: [{ itemId, term, source, courseId }] } words saved from
- *           courses, lookups and chat (so the classroom can show them as saved)
- * POST    { source: 'course'|'lookup'|'chat', courseId?, itemId, term, pos?, meaning?, ja?, example? }
+ * GET     → { saved: [{ itemId, term, source, courseId, ja, bookingId, at }] } words saved from
+ *           courses, lookups, chat and the AI tutor (so the classroom can show them as saved,
+ *           and the word list can show the ones saved in this lesson)
+ * POST    { source: 'course'|'lookup'|'chat'|'tutor', courseId?, itemId, term, pos?, meaning?, ja?, example? }
+ *           ('tutor' = phrases the AI tutor saved for the student; needs supabase/add-ai-panel.sql)
  *           → saves the word (vocabulary_phrases) and makes a review card that's
  *             due now (vocabulary_cards), like the + on a lesson summary
  * DELETE  ?itemId=… → removes it again
@@ -17,7 +19,7 @@ import { json, loadClassroom } from '@/lib/classroom/server'
  * Only the student saves (the teacher's taps are just looking).
  */
 
-const SOURCES = ['course', 'lookup', 'chat'] as const
+const SOURCES = ['course', 'lookup', 'chat', 'tutor'] as const
 type Source = (typeof SOURCES)[number]
 const groupFor = (source: Source, courseId?: string | null) => (source === 'course' && courseId ? courseId : source)
 
@@ -27,7 +29,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   if (ctx instanceof Response) return ctx
   const { data } = await getSupabaseAdmin()
     .from('vocabulary_phrases')
-    .select('source, source_course_id, source_item_id, phrase_en')
+    .select('source, source_course_id, source_item_id, phrase_en, translation_ja, booking_id, created_at')
     .eq('user_id', ctx.booking.user_id)
     .in('source', [...SOURCES])
   return json(200, {
@@ -36,6 +38,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       term: r.phrase_en,
       source: r.source,
       courseId: r.source === 'course' ? r.source_course_id : null,
+      ja: r.translation_ja || '',
+      bookingId: r.booking_id,
+      at: r.created_at,
     })),
   })
 }

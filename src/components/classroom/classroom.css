@@ -73,7 +73,7 @@
 .cr .sq:active,.cr .cbtn:active .cface{transform:scale(.92)}
 
 /* body */
-.cr .body{flex:1;display:flex;min-height:0}
+.cr .body{flex:1;display:flex;min-height:0;position:relative}
 .cr .stageArea{flex:1;position:relative;min-width:0;display:flex;flex-direction:column}
 .cr .layout{flex:1;position:relative;margin:0 12px}
 .cr .slot{position:absolute;transform-origin:0 0;backface-visibility:hidden}
@@ -187,12 +187,17 @@
 @media (max-width:560px){.cr .cbtn .lbl{display:none}.cr .controls{height:72px;gap:6px}.cr .cbtn{width:48px}.cr .cface{width:46px;height:46px}.cr .top .sq.hideS{display:none}}
 @media (max-height:520px){.cr .cbtn .lbl{display:none}.cr .controls{height:68px}}
 
-/* chat panel */
-.cr .chat{flex:none;width:0;overflow:hidden}
-.cr .app.chat-open .chat{width:min(360px,100vw)}
-.cr .chatIn{width:min(360px,100vw);height:100%;padding:0 12px 12px 0;transform:translateX(24px);opacity:0;transition:transform .42s var(--ease),opacity .25s}
-.cr .app.chat-open .chatIn{transform:none;opacity:1}
-.cr .chatCard{height:100%;border-radius:12px;background:var(--well);display:flex;flex-direction:column;box-shadow:0 0 0 1px var(--hairline)}
+/* side panel: the chat or the word list (one at a time). It floats over the right edge, so opening it
+   never squeezes the slide, whiteboard or video tiles. */
+.cr .chat{position:absolute;top:0;right:0;bottom:calc(var(--ctrl-h,112px) + var(--lift,0px));z-index:14;width:min(360px,100vw);pointer-events:none;transition:bottom .42s var(--ease)}
+/* it stops above the bottom controls (which move up with --lift), so the chat and word-list buttons stay reachable */
+@media (max-height:520px){.cr .chat{--ctrl-h:68px}}
+.cr .app.side-open .chat{pointer-events:auto}
+.cr .chatIn{width:100%;height:100%;padding:0 12px 12px 0;transform:translateX(24px);opacity:0;transition:transform .42s var(--ease),opacity .25s}
+.cr .chatIn[hidden]{display:none}
+.cr .app.side-open .chatIn{transform:none;opacity:1}
+.cr .chatCard{height:100%;border-radius:12px;background:var(--panel);display:flex;flex-direction:column;box-shadow:0 0 0 1px var(--hairline),0 1px 2px rgba(0,0,0,.5),0 16px 48px rgba(0,0,0,.35)}
+[data-theme=light] .cr .chatCard{box-shadow:0 1px 6px rgba(0,0,0,.04),0 16px 48px rgba(0,0,0,.10)}
 .cr .chatCard header{display:flex;align-items:center;padding:14px 10px 10px 18px}
 .cr .chatCard h3{flex:1;font-size:16px;font-weight:600}
 .cr .ib{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;color:var(--text-muted)}
@@ -241,7 +246,7 @@
 .cr .filemsg b{display:block;font-weight:600;font-size:13px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .cr .filemsg small{font-size:11.5px;opacity:.7}
 .cr .filemsg img{display:block;max-width:220px;max-height:160px;border-radius:10px}
-@media (max-width:700px){.cr .app.chat-open .chat{position:fixed;right:0;top:64px;bottom:0;z-index:15}.cr .chatIn{padding:0 8px 8px}
+@media (max-width:700px){.cr .app.side-open .chat{position:fixed;right:0;top:64px;bottom:0;z-index:15}.cr .chatIn{padding:0 8px 8px}
   .cr .chatCard{background:rgba(22,22,29,.92);-webkit-backdrop-filter:blur(28px) saturate(1.4);backdrop-filter:blur(28px) saturate(1.4);box-shadow:none;border:1px solid rgba(255,255,255,.07)}
   [data-theme=light] .cr .chatCard{background:rgba(255,255,255,.92);border-color:rgba(0,0,0,.06)}}
 @media (max-width:600px){.cr .layout{margin:0 6px}.cr .cface{width:52px!important;height:52px!important;border-radius:14px}.cr .controls{gap:10px!important}.cr .top{gap:6px;padding:0 8px}.cr .logo{display:none}.cr .info{display:none}.cr .top .sq{width:40px;height:40px}.cr .snav{height:40px}.cr .snav button{width:32px;height:32px}.cr .snav #gridBtn,.cr .snav #closeCourse{display:none}.cr .snav .n{min-width:52px;font-size:13px}.cr .top .sq.leaveSq{width:auto}}
@@ -555,3 +560,23 @@
 .cr .ai-tile .ai-status .spin{width:12px;height:12px;border-radius:50%;border:2px solid currentColor;border-top-color:transparent;animation:cr-spin .7s linear infinite}
 .cr .ai-tile .ai-status .ebtn{padding:3px 10px;font-size:12px}
 .cr .info.warn{color:var(--warning)}
+
+/* word list (design: mockups/ai-panel.html) */
+.cr .wlist h3{display:flex;align-items:baseline;gap:8px}
+.cr .wlist .wn{font-size:13px;font-weight:500;color:var(--text-muted)}
+.cr .wrows{flex:1;overflow-y:auto;padding:0 8px 10px}
+.cr .wr{position:relative;display:flex;align-items:center;gap:10px;padding:10px 10px;border-radius:12px}
+.cr .wr:hover{background:var(--item-hover)}
+.cr .wt{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.cr .wt b{font-size:14px;font-weight:600;line-height:1.35;overflow-wrap:anywhere}
+.cr .wt span{font-size:12px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cr .wsrc{flex:none;font-size:11px;color:var(--text-muted);padding:2px 8px;border-radius:999px;background:var(--inset)}
+.cr .wsrc.ai{color:var(--accent);background:var(--accent-bg)}
+.cr .wx{position:absolute;right:8px;top:50%;margin-top:-14px;width:28px;height:28px;border-radius:999px;display:none;place-items:center;color:var(--text-muted);background:var(--panel);transition:transform .12s ease-out}
+.cr .wx .ico{width:14px;height:14px}
+.cr .wx:active{transform:scale(.9)}
+.cr .wr:hover .wx,.cr .wx:focus-visible{display:grid}
+.cr .wr:hover .wsrc{visibility:hidden}
+@media (hover:none){.cr .wx{display:grid;position:static;margin:0;flex:none}.cr .wr:hover .wsrc{visibility:visible}}
+.cr .wempty{padding:6px 18px;font-size:13px;line-height:1.7;color:var(--text-muted)}
+.cr .badge.soft{background:var(--accent);color:var(--selected-text)}

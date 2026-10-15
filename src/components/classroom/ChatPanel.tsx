@@ -6,7 +6,7 @@ import type { ClassroomT } from '@/lib/classroom/i18n'
 import { Ico } from './Icons'
 
 /**
- * Lesson chat (right-hand panel). Messages are stored by author (teacher /
+ * Lesson chat (the side panel, shared with the word list). Messages are stored by author (teacher /
  * student) so both sides render them correctly; the teacher's bubbles are
  * peach. Enter sends, Shift+Enter makes a new line, and Japanese IME
  * composition never sends by accident.
@@ -27,6 +27,7 @@ export default function ChatPanel({
   bookingId,
   savedIds,
   onSaveWord,
+  hidden,
 }: {
   t: ClassroomT
   role: 'teacher' | 'student'
@@ -38,6 +39,8 @@ export default function ChatPanel({
   bookingId: string
   savedIds: Map<string, SavedWord>
   onSaveWord: (w: SaveWordInput) => void
+  /** the side panel is showing the word list instead */
+  hidden?: boolean
 }) {
   const [trs, setTrs] = useState<Record<string, Tr>>({})
   const toggleTr = async (m: ChatMsg) => {
@@ -83,7 +86,7 @@ export default function ChatPanel({
   }
 
   return (
-    <div className="chatIn">
+    <div className="chatIn" hidden={hidden}>
       <div className="chatCard">
         <header>
           <h3>{t('chatTitle')}</h3>
