@@ -9,7 +9,7 @@
   "roles": [
     {
       "id": "a",
-      "name": { "ja": "あなた", "en": "You" },
+      "name": { "ja": "前から住んでいる人", "en": "Long-time housemate" },
       "persona": "A Japanese person who has lived in the share house for a year.",
       "levels": [
         {

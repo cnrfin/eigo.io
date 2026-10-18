@@ -3,13 +3,13 @@
   "category": "friends",
   "title": { "ja": "誕生日をお祝いする", "en": "Celebrating a friend's birthday" },
   "summary": { "ja": "友だちの誕生日をお祝いして、プレゼントを渡し、近況を話す。", "en": "Wish a friend happy birthday, give them a present and catch up." },
-  "setting": "A café in Tokyo on a weekday afternoon. It's a friend's birthday, and the student has brought a present to give them.",
+  "setting": "A café in Tokyo on a weekday afternoon. It's the birthday of Olivia, a friend from abroad, and their Japanese friend has brought a present to give them.",
   "image": "",
   "studentRole": "a",
   "roles": [
     {
       "id": "a",
-      "name": { "ja": "あなた", "en": "You" },
+      "name": { "ja": "日本人の友だち", "en": "Japanese friend" },
       "persona": "A Japanese person meeting a friend on their birthday.",
       "levels": [
         {
@@ -23,7 +23,7 @@
         {
           "tutor": "You are Olivia, the student's friend from abroad, and it's your birthday today. Speak at natural pace. Open by arriving at the café, saying hi and sitting down; wait for them to wish you happy birthday. Open the present happily and ask why they chose it. When asked about your plans for the year, say you want to run a half marathon.",
           "tasks": [
-            { "id": "wish", "title": { "ja": "お祝いしてプレゼントを渡す", "en": "Wish them happy birthday" }, "hints": ["お祝いを言って、プレゼントを渡しましょう", "Happy birthday! I got you …", "Happy birthday! I got you a little something."] },
+            { "id": "wish", "title": { "ja": "お祝いしてプレゼントを渡す", "en": "Say happy birthday and give the present" }, "hints": ["お祝いを言って、プレゼントを渡しましょう", "Happy birthday! I got you …", "Happy birthday! I got you a little something."] },
             { "id": "why", "title": { "ja": "選んだ理由を伝える", "en": "Explain why you chose it" }, "hints": ["そのプレゼントを選んだ理由を伝えましょう", "I chose it because you …", "I chose it because you said you love tea."] },
             { "id": "cake", "title": { "ja": "ケーキをごちそうする", "en": "Offer to buy cake" }, "hints": ["今日はおごるよと言って、ケーキをすすめましょう", "This is my treat. Let's get …!", "This is my treat. Let's get some cake!"] },
             { "id": "year", "title": { "ja": "今年の目標を聞く", "en": "Ask about their plans for the year" }, "hints": ["今年やりたいことを聞きましょう", "Do you have any … for this year?", "Do you have any big plans for this year?"] }

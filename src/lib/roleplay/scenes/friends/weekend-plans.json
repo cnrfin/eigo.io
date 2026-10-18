@@ -9,7 +9,7 @@
   "roles": [
     {
       "id": "a",
-      "name": { "ja": "あなた", "en": "You" },
+      "name": { "ja": "日本人の友だち", "en": "Japanese friend" },
       "persona": "A Japanese person who wants to go to the festival this weekend with a friend.",
       "levels": [
         {
@@ -48,7 +48,7 @@
     },
     {
       "id": "b",
-      "name": { "ja": "友だち", "en": "Friend" },
+      "name": { "ja": "海外出身の友だち", "en": "Friend from abroad" },
       "persona": "Sam, a friend from abroad who lives in Tokyo and loves music.",
       "levels": [
         {
@@ -60,7 +60,7 @@
           ]
         },
         {
-          "tutor": "You are Ren, the student's Japanese friend, speaking at natural pace. Open by saying hi and saying you found a flyer for something fun; invite them to the Midori Park Autumn Festival this weekend. When asked, explain there are food stalls, live music and a craft market, and entry is free. Ask which day is better for them, and what they'd most like to see.",
+          "tutor": "You are Ren, the student's Japanese friend, speaking at natural pace. Open by saying hi and saying you found a flyer for something fun; invite them to the Midori Park Autumn Festival this weekend. When asked, explain there are food stalls, live music and a craft market. Only when asked about the cost, say entry is free. Ask which day is better for them, and what they'd most like to see.",
           "tasks": [
             { "id": "whats-on", "title": { "ja": "何があるか聞く", "en": "Ask what's on" }, "hints": ["フェスで何があるか聞きましょう", "What's on at …?", "What's on at the festival?"] },
             { "id": "cost", "title": { "ja": "入場料がかかるか聞く", "en": "Ask if it costs money" }, "hints": ["入場料がかかるか聞きましょう", "Do we need to …?", "Do we need to pay to get in?"] },

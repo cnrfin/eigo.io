@@ -9,7 +9,7 @@
   "roles": [
     {
       "id": "a",
-      "name": { "ja": "あなた", "en": "You" },
+      "name": { "ja": "日本人の友だち", "en": "Japanese friend" },
       "persona": "A Japanese person having lunch with a friend who is new to Japan.",
       "levels": [
         {
@@ -43,7 +43,7 @@
     },
     {
       "id": "b",
-      "name": { "ja": "友だち", "en": "Friend" },
+      "name": { "ja": "海外出身の友だち", "en": "Friend from abroad" },
       "persona": "Leo, a friend from abroad who moved to Japan a month ago.",
       "levels": [
         {

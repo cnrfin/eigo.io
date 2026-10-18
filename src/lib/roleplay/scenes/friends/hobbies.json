@@ -9,7 +9,7 @@
   "roles": [
     {
       "id": "a",
-      "name": { "ja": "あなた", "en": "You" },
+      "name": { "ja": "日本人の友だち", "en": "Japanese friend" },
       "persona": "A Japanese person chatting with a friend about hobbies.",
       "levels": [
         {
@@ -44,7 +44,7 @@
     },
     {
       "id": "b",
-      "name": { "ja": "友だち", "en": "Friend" },
+      "name": { "ja": "海外出身の友だち", "en": "Friend from abroad" },
       "persona": "Jamie, a friend from abroad who works in Tokyo.",
       "levels": [
         {
@@ -57,7 +57,7 @@
           ]
         },
         {
-          "tutor": "You are Sota, the student's Japanese friend, speaking at natural pace. Open by saying hi and asking what they've been doing lately in their free time. Ask how they got into it. When asked about yours, say you play tennis every Saturday because it's good exercise, and invite them to play sometime.",
+          "tutor": "You are Sota, the student's Japanese friend, speaking at natural pace. Open by saying hi and asking what they've been doing lately in their free time. Ask how they got into it. When asked about yours, say you play tennis because it's good exercise, and invite them to play sometime. Only when asked when, say every Saturday morning.",
           "tasks": [
             { "id": "lately", "title": { "ja": "最近始めたことを話す", "en": "Talk about something new you do" }, "hints": ["最近始めた趣味を話しましょう", "I've just started … It's …", "I've just started baking bread. It's really fun."] },
             { "id": "why", "title": { "ja": "始めたきっかけを話す", "en": "Say why you started" }, "hints": ["始めたきっかけを話しましょう", "I started because …", "I started because I missed the bread from home."] },

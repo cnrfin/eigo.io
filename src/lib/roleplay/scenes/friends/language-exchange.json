@@ -9,7 +9,7 @@
   "roles": [
     {
       "id": "a",
-      "name": { "ja": "あなた", "en": "You" },
+      "name": { "ja": "日本人の参加者", "en": "Japanese participant" },
       "persona": "A Japanese person at the language exchange who wants to practise English and make friends.",
       "levels": [
         {

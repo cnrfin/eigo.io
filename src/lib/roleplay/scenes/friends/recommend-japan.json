@@ -3,13 +3,13 @@
   "category": "friends",
   "title": { "ja": "日本のおすすめを紹介する", "en": "Recommending things to do in Japan" },
   "summary": { "ja": "日本に遊びに来た友だちに、おすすめの食べ物や場所、行き方を教える。", "en": "Tell a visiting friend what to eat, where to go and how to get there." },
-  "setting": "A café in Tokyo on a Sunday morning. A friend from abroad has just arrived for a one-week holiday, their first time in Japan, and wants ideas for the week.",
+  "setting": "A café in Tokyo on a Sunday morning. A friend from abroad arrived two days ago for a one-week holiday, their first time in Japan, and wants ideas for the rest of the week.",
   "image": "",
   "studentRole": "a",
   "roles": [
     {
       "id": "a",
-      "name": { "ja": "あなた", "en": "You" },
+      "name": { "ja": "東京に住む友だち", "en": "Friend in Tokyo" },
       "persona": "A Japanese person who lives in Tokyo and is meeting a friend visiting Japan.",
       "levels": [
         {

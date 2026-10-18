@@ -3,13 +3,13 @@
   "category": "friends",
   "title": { "ja": "旅行の思い出を話す", "en": "Sharing travel stories" },
   "summary": { "ja": "旅行で行った場所やよかったこと、ハプニングを話して、相手の旅の話も聞く。", "en": "Talk about where you went, the best part and what went wrong, and hear their stories too." },
-  "setting": "A café on a weekday evening. The student has just come back from a four-day trip to Okinawa and is catching up with a friend.",
+  "setting": "A café on a weekday evening. A Japanese friend has just come back from a four-day trip to Okinawa and is catching up with Ben, a friend from abroad.",
   "image": "",
   "studentRole": "a",
   "roles": [
     {
       "id": "a",
-      "name": { "ja": "あなた", "en": "You" },
+      "name": { "ja": "旅行帰りの友だち", "en": "Friend back from a trip" },
       "persona": "A Japanese person who has just come back from a four-day trip to Okinawa.",
       "levels": [
         {
@@ -44,7 +44,7 @@
     },
     {
       "id": "b",
-      "name": { "ja": "友だち", "en": "Friend" },
+      "name": { "ja": "海外出身の友だち", "en": "Friend from abroad" },
       "persona": "Ben, a friend from abroad who lives in Japan.",
       "levels": [
         {

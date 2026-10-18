@@ -3,13 +3,13 @@
   "category": "friends",
   "title": { "ja": "誘いを上手に断る・予定を変える", "en": "Saying no and changing plans" },
   "summary": { "ja": "友だちの誘いを感じよく断って、理由を伝え、別の日を提案する。", "en": "Turn down a friend's invitation kindly, give a reason and suggest another time." },
-  "setting": "A phone call on a Thursday evening. A friend calls to invite the student to a barbecue by the river on Saturday at 12.",
+  "setting": "A phone call on a Thursday evening. Emma, a friend from abroad, calls a Japanese friend to invite them to a barbecue by the river on Saturday at 12.",
   "image": "",
   "studentRole": "a",
   "roles": [
     {
       "id": "a",
-      "name": { "ja": "あなた", "en": "You" },
+      "name": { "ja": "日本人の友だち", "en": "Japanese friend" },
       "persona": "A Japanese person who can't go to a friend's barbecue on Saturday.",
       "levels": [
         {
@@ -48,7 +48,7 @@
     },
     {
       "id": "b",
-      "name": { "ja": "友だち", "en": "Friend" },
+      "name": { "ja": "海外出身の友だち", "en": "Friend from abroad" },
       "persona": "Emma, a friend from abroad who is organising a barbecue by the river on Saturday at 12.",
       "levels": [
         {
