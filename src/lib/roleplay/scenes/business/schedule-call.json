@@ -1,0 +1,105 @@
+{
+  "id": "schedule-call",
+  "category": "business",
+  "title": { "ja": "電話・ビデオ通話で日程調整", "en": "Setting up a meeting on a call" },
+  "summary": { "ja": "時差を考えながら打ち合わせの日時を提案し、決めた内容を確認する。", "en": "Suggest a meeting time across time zones and confirm what you agree." },
+  "setting": "A short video call in early November between someone in the Tokyo office and Laura Bennett, a client in London, to book a one-hour video meeting about renewing their contract in the week of 9 November.",
+  "image": "",
+  "studentRole": "a",
+  "roles": [
+    {
+      "id": "a",
+      "name": { "ja": "あなた（東京）", "en": "You (Tokyo)" },
+      "persona": "A member of the Tokyo office calling a client to arrange a meeting about renewing their contract.",
+      "levels": [
+        {
+          "tutor": "You are Laura Bennett, a client in London. Speak slowly and simply. Open by answering the video call with a friendly hello; wait for the student to say why they're calling. Say mornings are best for you. London is 9 hours behind Tokyo, so accept Thursday at 5:30 p.m. Tokyo time (8:30 a.m. in London); politely say no to the other free times, which are too early or too late in London.",
+          "tasks": [
+            { "id": "purpose", "title": { "ja": "電話の目的を伝える", "en": "Say why you're calling" }, "hints": ["来週の打ち合わせの日を決めたいと伝えましょう", "I'd like to set up …", "I'd like to set up a meeting for next week."] },
+            { "id": "propose", "title": { "ja": "日時を提案する", "en": "Suggest a time" }, "hints": ["カレンダーを見て、日時を提案しましょう", "How about … at … Tokyo time?", "How about Thursday at 5:30 p.m. Tokyo time?"] },
+            { "id": "confirm", "title": { "ja": "日時を確認する", "en": "Confirm the time" }, "hints": ["決まった日時を確認しましょう", "Great. So that's … at …", "Great. So that's Thursday at 5:30 our time."] },
+            { "id": "invite", "title": { "ja": "招待を送ると伝える", "en": "Say you'll send an invite" }, "hints": ["カレンダーの招待を送ると伝えましょう", "I'll send you …", "I'll send you a calendar invite."] }
+          ]
+        },
+        {
+          "tutor": "You are Laura Bennett, a client in London, speaking at natural pace with a little small talk. Open by answering the video call with a friendly hello; wait for the student to say why they're calling. When asked when you're free, say mornings in London are best for you, any day next week. London is 9 hours behind Tokyo, so accept Thursday at 5:30 p.m. Tokyo time (8:30 a.m. in London); the other free times are too early or too late for you. Then ask how long the meeting will take.",
+          "tasks": [
+            { "id": "purpose", "title": { "ja": "打ち合わせの目的を伝える", "en": "Explain what the meeting is for" }, "hints": ["契約更新について話す打ち合わせをしたいと伝えましょう", "I'd like to set up a call to …", "I'd like to set up a call to talk about the contract renewal."] },
+            { "id": "ask", "title": { "ja": "相手の都合を聞く", "en": "Ask when they're free" }, "hints": ["来週いつが空いているか聞きましょう", "When are you … next week?", "When are you free next week?"] },
+            { "id": "propose", "title": { "ja": "両方の時間で提案する", "en": "Suggest a time in both time zones" }, "hints": ["東京とロンドンの両方の時間で提案しましょう", "How about … our time? That's … in London.", "How about Thursday at 5:30 p.m. our time? That's 8:30 a.m. in London."] },
+            { "id": "length", "title": { "ja": "所要時間を伝える", "en": "Say how long it'll take" }, "hints": ["打ち合わせの長さを伝えましょう", "It should take about …", "It should take about an hour."] },
+            { "id": "invite", "title": { "ja": "招待を送ると伝える", "en": "Say you'll send an invite" }, "hints": ["ビデオ会議のリンク付きで招待を送ると伝えましょう", "I'll send you a calendar invite with …", "I'll send you a calendar invite with the video link."] }
+          ]
+        },
+        {
+          "tutor": "You are Laura Bennett, a client in London, speaking at natural speed with some small talk. Open by answering the video call with a friendly hello; wait for the student to explain why they're calling. Mornings in London are best for you. When asked, say you're happy for the student's manager to join.",
+          "tasks": [
+            { "id": "purpose", "title": { "ja": "電話の目的を伝える", "en": "Explain why you're calling" }, "hints": ["契約更新の打ち合わせを設定したいと伝えましょう", "I'm calling to set up …", "I'm calling to set up a meeting about the contract renewal."] },
+            { "id": "propose", "title": { "ja": "両方の時間で提案する", "en": "Suggest a time in both time zones" }, "hints": ["東京とロンドンの両方の時間で提案しましょう", "Would … Tokyo time work? That's … in London.", "Would Thursday at 5:30 p.m. Tokyo time work? That's 8:30 a.m. in London."] },
+            { "id": "confirm", "title": { "ja": "新しい日時を確認する", "en": "Confirm the new time" }, "hints": ["決まった日時を、両方の時間で確認しましょう", "Just to confirm: … Tokyo time, … for you.", "Just to confirm: Friday at 8 a.m. Tokyo time, Thursday at 6 p.m. for you."] },
+            { "id": "manager", "title": { "ja": "上司の参加を確認する", "en": "Ask if your manager can join" }, "hints": ["上司も参加していいか聞きましょう", "Would it be okay if …?", "Would it be okay if my manager joined us?"] },
+            { "id": "invite", "title": { "ja": "招待を送ると伝える", "en": "Say you'll send an invite" }, "hints": ["両方の時間を書いた招待を送ると伝えましょう", "I'll send you an invite with …", "I'll send you an invite with both time zones on it."] }
+          ],
+          "twist": {
+            "after": "propose",
+            "tutor": "Agree at first, then remember you'll be at a conference in New York all that week. New York is 14 hours behind Tokyo in November, so 5:30 p.m. Tokyo time would be 3:30 a.m. for you. Say so, and ask for another time; early evening in New York is fine. Accept Friday at 8 a.m. Tokyo time, which is Thursday at 6 p.m. in New York.",
+            "task": { "id": "timezone", "title": { "ja": "時差に合わせて別の時間を提案する", "en": "Suggest a time for New York" }, "hints": ["ニューヨークとの時差を考えて、別の時間を提案しましょう", "How about … Tokyo time? That's … for you.", "How about Friday at 8 a.m. Tokyo time? That's 6 p.m. Thursday for you."] }
+          }
+        }
+      ]
+    },
+    {
+      "id": "b",
+      "name": { "ja": "取引先（ロンドン）", "en": "Client (London)" },
+      "persona": "Laura Bennett, a client based in London.",
+      "levels": [
+        {
+          "tutor": "You are Yuki from the Tokyo office, calling Laura, a client in London. Speak slowly and simply. Open by saying hello on the video call; wait for Laura to answer, then say you'd like to set up a meeting next week. Ask when Laura is free. London is 9 hours behind Tokyo: suggest Thursday at 5:30 p.m. Tokyo time, which is 8:30 a.m. in London.",
+          "tasks": [
+            { "id": "hello", "title": { "ja": "あいさつに答える", "en": "Answer their hello" }, "hints": ["あいさつに答えましょう", "Hi …! Good to …", "Hi Yuki! Good to hear from you."] },
+            { "id": "free", "title": { "ja": "都合のいい時間帯を伝える", "en": "Say when you're free" }, "hints": ["午前中がいいと伝えましょう", "… are best for me.", "Mornings are best for me."] },
+            { "id": "accept", "title": { "ja": "提案を受ける", "en": "Accept the time" }, "hints": ["その時間で大丈夫と伝えましょう", "Yes, … is fine …", "Yes, 8:30 is fine for me."] },
+            { "id": "bye", "title": { "ja": "お礼を言って電話を終える", "en": "Thank them and say goodbye" }, "hints": ["お礼を言って、あいさつしましょう", "Thanks, Yuki. See you …", "Thanks, Yuki. See you on Thursday!"] }
+          ]
+        },
+        {
+          "tutor": "You are Yuki from the Tokyo office, calling Laura, a client in London, speaking at natural pace. Open by saying hello and that you'd like to set up a meeting next week. When asked, say it's about the contract renewal and will take about an hour. Ask when Laura is free, then suggest Thursday at 5:30 p.m. Tokyo time; give it in Tokyo time only, so Laura can check the London time (9 hours behind).",
+          "tasks": [
+            { "id": "what", "title": { "ja": "打ち合わせの内容を聞く", "en": "Ask what the meeting is about" }, "hints": ["何についての打ち合わせか聞きましょう", "Sure. What's …?", "Sure. What's the meeting about?"] },
+            { "id": "free", "title": { "ja": "都合を詳しく伝える", "en": "Say when you're free" }, "hints": ["ロンドン時間の午前11時までならいいと伝えましょう", "Mornings are best for me, …", "Mornings are best for me, before 11 London time."] },
+            { "id": "check", "title": { "ja": "ロンドンの時間を確認する", "en": "Check the time in London" }, "hints": ["ロンドンの時間で何時になるか確認しましょう", "So that's … London time, right?", "So that's 8:30 a.m. London time, right?"] },
+            { "id": "length", "title": { "ja": "所要時間を聞く", "en": "Ask how long it will take" }, "hints": ["どのくらいかかるか聞きましょう", "How long do you think …?", "How long do you think it'll take?"] },
+            { "id": "link", "title": { "ja": "リンクを送ってもらう", "en": "Ask for the video link" }, "hints": ["ビデオ会議のリンクを送ってもらいましょう", "Could you send me …?", "Could you send me the video link?"] }
+          ]
+        },
+        {
+          "tutor": "You are Yuki from the Tokyo office, calling Laura, a client in London, speaking at natural speed with small talk. Open by saying hello and that you'd like to set up a meeting about the contract renewal in the week of 9 November. When asked what to prepare, ask Laura to bring this year's order figures. Suggest Thursday at 5:30 p.m. Tokyo time (8:30 a.m. in London). When Laura can't make it and asks for an evening time, check the time difference (New York is 14 hours behind Tokyo in November) and offer Friday at 8 a.m. Tokyo time; let Laura work out the New York time (Thursday at 6 p.m.).",
+          "tasks": [
+            { "id": "prepare", "title": { "ja": "準備することを聞く", "en": "Ask what to prepare" }, "hints": ["準備しておくことがあるか聞きましょう", "Sure. Is there anything …?", "Sure. Is there anything you'd like me to prepare?"] },
+            { "id": "newyork", "title": { "ja": "その週はニューヨークにいると伝える", "en": "Say you'll be in New York" }, "hints": ["その週はニューヨークにいるので、その時間は難しいと伝えましょう", "Actually, I'll be in … that week, so …", "Actually, I'll be in New York that week, so that's too early for me."] },
+            { "id": "evening", "title": { "ja": "夕方の時間をお願いする", "en": "Ask for an evening time" }, "hints": ["ニューヨーク時間の夕方にできないか聞きましょう", "Could we do … my time instead?", "Could we do early evening my time instead?"] },
+            { "id": "confirm", "title": { "ja": "新しい時間を確認する", "en": "Confirm the new time" }, "hints": ["ニューヨーク時間で確認しましょう", "So that's … New York time. That …", "So that's Thursday at 6 p.m. New York time. That works for me."] },
+            { "id": "invite", "title": { "ja": "招待に両方の時間を書いてもらう", "en": "Ask for both times in the invite" }, "hints": ["招待に両方の時間を書いてもらいましょう", "Could you put … in the invite?", "Could you put both time zones in the invite?"] }
+          ]
+        }
+      ]
+    }
+  ],
+  "prop": {
+    "label": { "ja": "カレンダー", "en": "Calendar" },
+    "title": "Tokyo office calendar · 9–13 November 2026 (Tokyo time)",
+    "sections": [
+      { "heading": "FREE TIMES", "items": [
+        { "name": "Tue 10 Nov", "value": "16:00–17:00", "key": "4 p.m.|16:00" },
+        { "name": "Wed 11 Nov", "value": "11:00–12:00", "key": "11 a.m.|11:00" },
+        { "name": "Thu 12 Nov", "value": "17:30–18:30", "key": "5:30|17:30" },
+        { "name": "Fri 13 Nov", "value": "8:00–9:00", "key": "8 a.m.|8:00" }
+      ] },
+      { "heading": "TIME DIFFERENCE IN NOVEMBER", "items": [
+        { "name": "London", "value": "9 hours behind Tokyo", "key": "London" },
+        { "name": "New York", "value": "14 hours behind Tokyo", "key": "New York" }
+      ] }
+    ],
+    "foot": "Meeting: contract renewal · about 1 hour · video call"
+  }
+}

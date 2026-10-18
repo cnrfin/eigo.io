@@ -1,0 +1,108 @@
+{
+  "id": "negotiation",
+  "category": "business",
+  "title": { "ja": "価格・納期の交渉", "en": "Negotiating price and delivery" },
+  "summary": { "ja": "見積もりについて話し合い、値引きの条件や納期を交渉して合意する。", "en": "Talk through a quote, negotiate the price and delivery, and close the deal." },
+  "setting": "A video call between a sales rep at a lighting company in Tokyo and a buyer for a chain of furniture stores in Australia. The buyer has received a quote for the DL-200 desk lamp.",
+  "image": "",
+  "studentRole": "a",
+  "roles": [
+    {
+      "id": "a",
+      "name": { "ja": "あなた（営業）", "en": "You (sales)" },
+      "persona": "A sales rep at a Tokyo lighting company, discussing a quote with an overseas buyer.",
+      "levels": [
+        {
+          "tutor": "You are Anna Lopez, the buyer. Speak slowly and simply, one question at a time. Open by saying hello and that you've seen the quote; wait for the seller to talk about it. Ask the price per lamp, then when they can deliver, then whether there's a discount. When you hear the price for 3,000 units, say you'll order 3,000.",
+          "tasks": [
+            { "id": "price", "title": { "ja": "単価を伝える", "en": "Say the price" }, "hints": ["1台あたりの価格を伝えましょう", "It's … per unit.", "It's 18 dollars per unit."] },
+            { "id": "delivery", "title": { "ja": "納期を伝える", "en": "Say the delivery time" }, "hints": ["納期を伝えましょう", "We can deliver in …", "We can deliver in six weeks."] },
+            { "id": "discount", "title": { "ja": "数量割引を伝える", "en": "Offer the volume discount" }, "hints": ["3,000台以上なら安くなると伝えましょう", "For 3,000 units, it's …", "For 3,000 units, it's 16 dollars each."] },
+            { "id": "next", "title": { "ja": "次の手続きを伝える", "en": "Say what happens next" }, "hints": ["契約書を送ると伝えましょう", "Great. I'll send you …", "Great. I'll send you the contract today."] }
+          ]
+        },
+        {
+          "tutor": "You are Anna Lopez, the buyer, speaking at natural pace. Open by saying hello and that you've had a look at the quote; wait for the seller to sum it up. Ask whether there's a better price for a bigger order, then ask about payment terms. Then ask whether they could go down to 15 dollars. When they say 16 dollars is their best price, accept it for 3,000 units and wait for them to say what happens next.",
+          "tasks": [
+            { "id": "summary", "title": { "ja": "見積もりの内容をまとめる", "en": "Sum up the quote" }, "hints": ["見積もりの数量と単価をまとめて伝えましょう", "So, that's … at … each.", "So, that's 2,000 lamps at 18 dollars each."] },
+            { "id": "condition", "title": { "ja": "条件付きで値引きを提案する", "en": "Offer a lower price, with a condition" }, "hints": ["3,000台注文なら16ドルにできると伝えましょう", "If you order …, we can offer …", "If you order 3,000, we can offer 16 dollars per unit."] },
+            { "id": "payment", "title": { "ja": "支払い条件を伝える", "en": "Explain the payment terms" }, "hints": ["支払い条件を伝えましょう", "Payment is due …", "Payment is due 30 days after delivery."] },
+            { "id": "refuse", "title": { "ja": "これ以上は下げられないと伝える", "en": "Say no politely" }, "hints": ["これ以上は下げられないと、丁寧に伝えましょう", "I'm sorry, but … is our best …", "I'm sorry, but 16 dollars is our best price."] },
+            { "id": "next", "title": { "ja": "次の手続きを伝える", "en": "Say what happens next" }, "hints": ["新しい見積書を今日送ると伝えましょう", "I'll send you … today.", "I'll send you a revised quote today."] }
+          ]
+        },
+        {
+          "tutor": "You are Anna Lopez, the buyer, speaking at natural speed and negotiating firmly but politely. Open by saying hello and that you've had a chance to look at the quote; wait for the seller to start. Say another supplier has offered 15 dollars per unit, and listen to the seller's reasons. Agree to 3,000 units at 16 dollars if it's offered.",
+          "tasks": [
+            { "id": "open", "title": { "ja": "話し合いを始める", "en": "Open the discussion" }, "hints": ["見積もりを見てもらったお礼を言って、質問がないか聞きましょう", "Thanks for looking at … Do you have …?", "Thanks for looking at our quote. Do you have any questions?"] },
+            { "id": "value", "title": { "ja": "価格に見合う理由を説明する", "en": "Explain why the price is fair" }, "hints": ["2年保証があることなど、価格に見合う理由を説明しましょう", "I understand. But our lamps come with …", "I understand. But our lamps come with a two-year warranty."] },
+            { "id": "deal", "title": { "ja": "条件付きで値引きを提案する", "en": "Offer a deal" }, "hints": ["3,000台なら16ドルにできると提案しましょう", "If you order …, we can do …", "If you order 3,000, we can do 16 dollars per unit."] },
+            { "id": "close", "title": { "ja": "合意内容を確認する", "en": "Confirm the deal" }, "hints": ["合意した数量・納期・単価をまとめて確認しましょう", "So that's … in …, at … each.", "So that's 3,000 lamps in five weeks, at 17 dollars each."] }
+          ],
+          "twist": {
+            "after": "deal",
+            "tutor": "Accept 3,000 units at 16 dollars, then say your store opening has moved forward, so you need the lamps a week earlier: in five weeks, not six. Ask whether that's possible. When the seller offers express production, accept it at 17 dollars per unit.",
+            "task": { "id": "earlier", "title": { "ja": "納期の前倒しに対応する", "en": "Handle the earlier delivery" }, "hints": ["特急生産なら5週間で届けられると、追加料金も伝えましょう", "We can deliver in … with …, for …", "We can deliver in five weeks with express production, for an extra dollar per unit."] }
+          }
+        }
+      ]
+    },
+    {
+      "id": "b",
+      "name": { "ja": "バイヤー", "en": "Buyer" },
+      "persona": "Anna Lopez, a buyer for a chain of furniture stores in Australia.",
+      "levels": [
+        {
+          "tutor": "You are Kenji, a sales rep at a Tokyo lighting company. Speak slowly and simply. Open by saying hello and asking whether the buyer has seen your quote. When asked, answer from the quote: 18 dollars per unit, delivery six weeks after the order, and 16 dollars per unit for 3,000 or more.",
+          "tasks": [
+            { "id": "price", "title": { "ja": "単価を聞く", "en": "Ask the price" }, "hints": ["1台いくらか聞きましょう", "How much is …?", "How much is it per unit?"] },
+            { "id": "delivery", "title": { "ja": "納期を聞く", "en": "Ask when they can deliver" }, "hints": ["いつ届けられるか聞きましょう", "When can you …?", "When can you deliver the lamps?"] },
+            { "id": "discount", "title": { "ja": "値引きをお願いする", "en": "Ask for a discount" }, "hints": ["値引きできないか聞きましょう", "Can you give us …?", "Can you give us a discount?"] },
+            { "id": "order", "title": { "ja": "注文を決める", "en": "Decide to order" }, "hints": ["3,000台注文すると伝えましょう", "Okay, we'll …", "Okay, we'll order 3,000, then."] }
+          ]
+        },
+        {
+          "tutor": "You are Kenji, a sales rep at a Tokyo lighting company, speaking at natural pace. Open by saying hello and asking whether the buyer has had a look at the quote. When asked, explain from the quote: 16 dollars per unit for 3,000 or more, payment 30 days after delivery, and a two-year warranty. If asked for 15 dollars, say politely that 16 dollars is your best price.",
+          "tasks": [
+            { "id": "bigger", "title": { "ja": "大口注文の価格を聞く", "en": "Ask about a bigger order" }, "hints": ["もっと多く注文したら安くなるか聞きましょう", "Is there a better price if …?", "Is there a better price if we order more?"] },
+            { "id": "payment", "title": { "ja": "支払い条件を聞く", "en": "Ask about payment terms" }, "hints": ["支払い条件を聞きましょう", "What are your …?", "What are your payment terms?"] },
+            { "id": "lower", "title": { "ja": "さらに値下げを頼む", "en": "Ask for a lower price" }, "hints": ["15ドルにできないか聞きましょう", "Could you go down to …?", "Could you go down to 15 dollars?"] },
+            { "id": "warranty", "title": { "ja": "保証について聞く", "en": "Ask about the warranty" }, "hints": ["保証が付いているか聞きましょう", "Does the price include …?", "Does the price include a warranty?"] },
+            { "id": "quote", "title": { "ja": "見積書の出し直しを頼む", "en": "Ask for a new quote" }, "hints": ["3,000台で見積書を出し直してもらいましょう", "Could you send us a … for …?", "Could you send us a new quote for 3,000 units?"] }
+          ]
+        },
+        {
+          "tutor": "You are Kenji, a sales rep at a Tokyo lighting company, speaking at natural speed. Open by thanking the buyer for looking at the quote and asking if they have any questions. Defend your price politely (two-year warranty, shipping included). When asked what you can do, offer 16 dollars per unit for 3,000 or more. When asked about earlier delivery, explain express production: delivery in five weeks, for one dollar more per unit.",
+          "tasks": [
+            { "id": "compare", "title": { "ja": "他社の価格を伝える", "en": "Mention another offer" }, "hints": ["他社が15ドルを提示していると、やんわり伝えましょう", "To be honest, another supplier has …", "To be honest, another supplier has offered us 15 dollars."] },
+            { "id": "deal", "title": { "ja": "条件を引き出す", "en": "Ask what they can do" }, "hints": ["3,000台ならどこまで対応できるか聞きましょう", "What can you do if …?", "What can you do if we order 3,000?"] },
+            { "id": "earlier", "title": { "ja": "納期の前倒しを頼む", "en": "Ask for earlier delivery" }, "hints": ["店のオープンが早まったので、1週間早く届けられないか聞きましょう", "Our store opening has … Could you …?", "Our store opening has moved forward. Could you deliver a week earlier?"] },
+            { "id": "agree", "title": { "ja": "合意して契約書を頼む", "en": "Agree and ask for the contract" }, "hints": ["合意して、契約書を送ってもらいましょう", "Okay, let's go with … Please send …", "Okay, let's go with that. Please send the contract."] }
+          ]
+        }
+      ]
+    }
+  ],
+  "prop": {
+    "label": { "ja": "見積書", "en": "Quote" },
+    "title": "QUOTE · DL-200 desk lamp",
+    "sections": [
+      { "heading": "PRICE", "items": [
+        { "name": "Quantity", "value": "2,000 units", "key": "2,000|2000" },
+        { "name": "Unit price", "value": "US$18", "key": "18 dollars|$18" },
+        { "name": "Unit price for 3,000 units or more", "value": "US$16", "key": "16 dollars|$16|3,000|3000" }
+      ] },
+      { "heading": "DELIVERY", "items": [
+        { "name": "Standard delivery", "value": "6 weeks after the order", "key": "six weeks|6 weeks" },
+        { "name": "Express production (5 weeks)", "value": "+US$1 per unit", "key": "express|five weeks|5 weeks|a week earlier" },
+        { "name": "Shipping by sea", "value": "included in the price", "key": "shipping|by sea" }
+      ] },
+      { "heading": "TERMS", "items": [
+        { "name": "Payment", "value": "30 days after delivery", "key": "30 days|payment terms" },
+        { "name": "Warranty", "value": "2 years", "key": "warranty|two years|two-year|2 years" },
+        { "name": "Quote valid until", "value": "31 October 2026", "key": "31 October|October 31" }
+      ] }
+    ],
+    "foot": "All prices in US dollars, per unit"
+  }
+}

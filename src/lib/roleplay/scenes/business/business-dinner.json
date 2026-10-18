@@ -1,0 +1,114 @@
+{
+  "id": "business-dinner",
+  "category": "business",
+  "title": { "ja": "出張先で取引先と会食", "en": "Dinner with a client on a business trip" },
+  "summary": { "ja": "取引先との食事で、お礼を伝え、料理を注文し、雑談を楽しむ。", "en": "Thank your host, order from the menu and make small talk over dinner." },
+  "setting": "A restaurant in London on the first evening of a business trip. Olivia Hart, whose company has just started buying from the Tokyo company, has invited a visitor from the Tokyo office to dinner.",
+  "image": "",
+  "studentRole": "a",
+  "roles": [
+    {
+      "id": "a",
+      "name": { "ja": "あなた（出張中）", "en": "You (visiting)" },
+      "persona": "A member of the Tokyo office on a business trip to London, having dinner with a client.",
+      "levels": [
+        {
+          "tutor": "You are Olivia Hart, the client, who has invited the student to dinner. Speak slowly and simply. Open by welcoming the student to the restaurant and saying you're happy they could come; wait for them to thank you. Ask what they'd like to eat, and recommend the roast chicken if they're not sure. Then ask what they'd like to drink. When the food arrives, ask if they like it.",
+          "tasks": [
+            { "id": "thank", "title": { "ja": "招待のお礼を言う", "en": "Thank them for inviting you" }, "hints": ["招待してくれたお礼を言いましょう", "Thank you for …", "Thank you for inviting me."] },
+            { "id": "order", "title": { "ja": "料理を注文する", "en": "Order a main dish" }, "hints": ["メインの料理を注文しましょう", "I'll have the …, please.", "I'll have the roast chicken, please."] },
+            { "id": "drink", "title": { "ja": "飲み物を注文する", "en": "Order a drink" }, "hints": ["飲み物を注文しましょう", "… for me, please.", "Sparkling water for me, please."] },
+            { "id": "taste", "title": { "ja": "料理をほめる", "en": "Say the food is good" }, "hints": ["料理がおいしいと伝えましょう", "This is really …!", "This is really delicious!"] }
+          ]
+        },
+        {
+          "tutor": "You are Olivia Hart, the client, speaking at natural pace with a little small talk. Open by welcoming the student and asking how the flight was. When asked for a recommendation, recommend the steak, and ask how they'd like it cooked. Later, mention that you love living in London; when asked about places to visit, suggest a walk along the river in the evening. At the end, say dinner is on you.",
+          "tasks": [
+            { "id": "trip", "title": { "ja": "フライトの感想を話す", "en": "Talk about your trip" }, "hints": ["フライトの感想を、ひとこと詳しく話しましょう", "The flight was …, but …", "The flight was long, but I slept a little."] },
+            { "id": "recommend", "title": { "ja": "おすすめを聞く", "en": "Ask for a recommendation" }, "hints": ["おすすめの料理を聞きましょう", "What would you …?", "What would you recommend here?"] },
+            { "id": "order", "title": { "ja": "焼き加減も伝えて注文する", "en": "Order the steak your way" }, "hints": ["焼き加減も伝えて注文しましょう", "I'll have the …, …, please.", "I'll have the steak, medium, please."] },
+            { "id": "city", "title": { "ja": "街のおすすめを聞く", "en": "Ask about the city" }, "hints": ["週末に行くといい場所を聞きましょう", "Is there anywhere you'd recommend …?", "Is there anywhere you'd recommend visiting this weekend?"] },
+            { "id": "thank", "title": { "ja": "ごちそうになったお礼を言う", "en": "Thank them for dinner" }, "hints": ["ごちそうになったお礼を言いましょう", "Thank you for …", "Thank you for a lovely dinner."] }
+          ]
+        },
+        {
+          "tutor": "You are Olivia Hart, the client, speaking at natural speed with plenty of small talk. Open by welcoming the student and raising your glass; wait for them to say a few words. Help them choose from the menu. When asked how you spend your weekends, say you go sailing on the coast when the weather is good. At the end, say dinner is on you.",
+          "tasks": [
+            { "id": "toast", "title": { "ja": "お礼を言って乾杯する", "en": "Thank them and make a toast" }, "hints": ["お礼を言って、これからの仕事に乾杯しましょう", "Thank you for … Here's to …", "Thank you for having me. Here's to working together!"] },
+            { "id": "order", "title": { "ja": "理由を添えて注文する", "en": "Order and give a reason" }, "hints": ["あまりお腹が空いていないので、軽めにすると伝えて注文しましょう", "I'm not very hungry, so I'll just have …", "I'm not very hungry, so I'll just have the soup and the risotto."] },
+            { "id": "smalltalk", "title": { "ja": "週末の過ごし方を聞く", "en": "Ask about their weekends" }, "hints": ["話題を変えて、週末の過ごし方を聞きましょう", "So, how do you usually …?", "So, how do you usually spend your weekends?"] },
+            { "id": "invite", "title": { "ja": "次は東京でごちそうすると伝える", "en": "Offer to host them in Tokyo" }, "hints": ["お礼を言って、次は東京でごちそうすると伝えましょう", "This was wonderful. Next time you're in Tokyo, …", "This was wonderful. Next time you're in Tokyo, dinner's on me."] }
+          ],
+          "twist": {
+            "after": "order",
+            "tutor": "Ask casually about a rumour that the student's company is launching a new product in Europe next year, which hasn't been announced yet. If they politely avoid it, push gently once, then laugh it off and change the subject.",
+            "task": { "id": "secret", "title": { "ja": "話せないことをやんわり断る", "en": "Politely avoid the question" }, "hints": ["まだ発表前で話せないと、感じよく伝えましょう", "I'm afraid I can't … yet. It hasn't …", "I'm afraid I can't talk about that yet. It hasn't been announced."] }
+          }
+        }
+      ]
+    },
+    {
+      "id": "b",
+      "name": { "ja": "取引先", "en": "Client" },
+      "persona": "Olivia Hart, a client in London who has invited the visitor from Tokyo to dinner.",
+      "levels": [
+        {
+          "tutor": "You are Kenji from the Tokyo office, on a business trip to London. Speak slowly and simply. Open by saying hello and thanking Olivia for the invitation; wait to be welcomed. When asked about your flight, say it was long but okay. When Olivia recommends a dish, order it. When asked what you'd like to drink, ask for sparkling water.",
+          "tasks": [
+            { "id": "welcome", "title": { "ja": "歓迎してフライトについて聞く", "en": "Welcome them and ask about the flight" }, "hints": ["歓迎して、フライトはどうだったか聞きましょう", "Welcome to London! How was …?", "Welcome to London! How was your flight?"] },
+            { "id": "recommend", "title": { "ja": "おすすめを伝える", "en": "Recommend a dish" }, "hints": ["おすすめの料理を伝えましょう", "I'd recommend the …", "I'd recommend the fish and chips."] },
+            { "id": "drink", "title": { "ja": "飲み物を聞く", "en": "Ask what they'd like to drink" }, "hints": ["飲み物は何がいいか聞きましょう", "What would you like …?", "What would you like to drink?"] },
+            { "id": "toast", "title": { "ja": "乾杯する", "en": "Make a toast" }, "hints": ["乾杯しましょう", "Cheers! Here's to …", "Cheers! Here's to working together!"] }
+          ]
+        },
+        {
+          "tutor": "You are Kenji from the Tokyo office, on a business trip to London, speaking at natural pace. Open by saying hello and thanking Olivia for the invitation. When asked about your hotel, say it's nice and close to the office. Ask what burrata is. Later, say you have a free day on Saturday and ask what you could do. At the end, offer to pay for dinner.",
+          "tasks": [
+            { "id": "hotel", "title": { "ja": "ホテルについて聞く", "en": "Ask about their hotel" }, "hints": ["ホテルはどうか聞きましょう", "How's your hotel? Is it …?", "How's your hotel? Is it close to the office?"] },
+            { "id": "explain", "title": { "ja": "料理を説明する", "en": "Explain a dish" }, "hints": ["ブラータがどんな料理か説明しましょう", "Burrata is a … It's …", "Burrata is a soft Italian cheese. It's very creamy."] },
+            { "id": "sights", "title": { "ja": "週末の過ごし方をすすめる", "en": "Suggest something to do" }, "hints": ["土曜日の過ごし方をすすめましょう", "You should … It's lovely …", "You should walk along the river. It's lovely in the evening."] },
+            { "id": "dessert", "title": { "ja": "デザートをすすめる", "en": "Offer dessert" }, "hints": ["デザートはどうか聞きましょう", "Would you like …? The … is …", "Would you like dessert? The sticky toffee pudding is great here."] },
+            { "id": "pay", "title": { "ja": "ごちそうすると伝える", "en": "Insist on paying" }, "hints": ["相手が払おうとしたら、ごちそうすると伝えましょう", "Please, this is … You're …", "Please, this is on me. You're our guest."] }
+          ]
+        },
+        {
+          "tutor": "You are Kenji from the Tokyo office, on your first business trip to London, speaking at natural speed with small talk. Open by saying hello and thanking Olivia for the invitation. Say you don't eat red meat and ask for advice on the menu. When asked about the Tokyo office, say things are busy but going well. At the end, offer to pay, and accept politely when Olivia insists.",
+          "tasks": [
+            { "id": "welcome", "title": { "ja": "歓迎して雑談を始める", "en": "Welcome them and make small talk" }, "hints": ["歓迎して、ロンドンは初めてか聞きましょう", "It's great to … Is this your first …?", "It's great to see you here. Is this your first time in London?"] },
+            { "id": "recommend", "title": { "ja": "相手に合わせておすすめする", "en": "Recommend something they can eat" }, "hints": ["赤身の肉を食べない相手に、料理をすすめましょう", "If you don't eat …, I'd recommend …", "If you don't eat red meat, I'd recommend the fish and chips."] },
+            { "id": "business", "title": { "ja": "仕事の調子を聞く", "en": "Ask how business is going" }, "hints": ["東京オフィスの様子を聞きましょう", "How are things going …?", "How are things going at the Tokyo office?"] },
+            { "id": "praise", "title": { "ja": "取引への感謝を伝える", "en": "Say you're happy with their work" }, "hints": ["最初の注文がうまくいったことへの感謝を伝えましょう", "We've been really happy with …", "We've been really happy with how the first order went."] },
+            { "id": "pay", "title": { "ja": "ごちそうすると伝える", "en": "Insist on paying" }, "hints": ["ごちそうすると伝えましょう", "Please, let me … You're …", "Please, let me get this. You're our guest."] }
+          ]
+        }
+      ]
+    }
+  ],
+  "prop": {
+    "label": { "ja": "メニュー", "en": "Menu" },
+    "title": "THE RIVERSIDE KITCHEN",
+    "sections": [
+      { "heading": "STARTERS", "items": [
+        { "name": "Soup of the day", "value": "£7", "key": "soup" },
+        { "name": "Smoked salmon", "value": "£11", "key": "salmon" },
+        { "name": "Burrata (soft Italian cheese) with tomatoes", "value": "£10", "key": "burrata" }
+      ] },
+      { "heading": "MAINS", "items": [
+        { "name": "Roast chicken", "value": "£22", "key": "chicken" },
+        { "name": "Fish and chips", "value": "£19", "key": "fish and chips" },
+        { "name": "Sirloin steak", "value": "£32", "key": "steak" },
+        { "name": "Mushroom risotto (vegetarian)", "value": "£18", "key": "risotto" }
+      ] },
+      { "heading": "DESSERTS", "items": [
+        { "name": "Sticky toffee pudding", "value": "£8", "key": "sticky toffee|pudding" },
+        { "name": "Ice cream", "value": "£6", "key": "ice cream" }
+      ] },
+      { "heading": "DRINKS", "items": [
+        { "name": "House wine (red or white), glass", "value": "£9", "key": "wine" },
+        { "name": "Local beer", "value": "£7", "key": "beer" },
+        { "name": "Sparkling water", "value": "£4", "key": "sparkling water|water" }
+      ] }
+    ],
+    "foot": "A 12.5% service charge is added to the bill"
+  }
+}

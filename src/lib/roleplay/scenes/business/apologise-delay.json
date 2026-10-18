@@ -1,0 +1,105 @@
+{
+  "id": "apologise-delay",
+  "category": "business",
+  "title": { "ja": "トラブル・遅れを謝って説明する", "en": "Apologising for a delay" },
+  "summary": { "ja": "プロジェクトの遅れを取引先に謝り、理由と新しい日程、対策を説明する。", "en": "Apologise to a client for a delay and explain why, the new date and what you're doing about it." },
+  "setting": "A video call between a project manager at a web company in Tokyo and Michael Tan, a client in Singapore whose new online shop the company is building. The launch planned for 16 November will be two weeks late.",
+  "image": "",
+  "studentRole": "a",
+  "roles": [
+    {
+      "id": "a",
+      "name": { "ja": "あなた（担当者）", "en": "You (project manager)" },
+      "persona": "A project manager at a Tokyo web company that is building a client's online shop.",
+      "levels": [
+        {
+          "tutor": "You are Michael Tan, the client. Speak slowly and simply. Open by saying hello and asking how the project is going; wait for the student to explain. React with surprise to the bad news, then ask why, and what the new date is. Then ask how you'll know things are on track.",
+          "tasks": [
+            { "id": "sorry", "title": { "ja": "遅れを謝る", "en": "Apologise for the delay" }, "hints": ["公開が遅れることを謝りましょう", "I'm very sorry, but …", "I'm very sorry, but the launch will be late."] },
+            { "id": "reason", "title": { "ja": "理由を伝える", "en": "Give the reason" }, "hints": ["遅れの理由を伝えましょう", "The payment page needs …", "The payment page needs more security checks."] },
+            { "id": "date", "title": { "ja": "新しい日付を伝える", "en": "Give the new date" }, "hints": ["新しい公開日を伝えましょう", "The new launch date is …", "The new launch date is December 1st."] },
+            { "id": "report", "title": { "ja": "毎週の報告を約束する", "en": "Promise weekly updates" }, "hints": ["毎週金曜日に報告すると伝えましょう", "We'll send you a report …", "We'll send you a report every Friday."] }
+          ]
+        },
+        {
+          "tutor": "You are Michael Tan, the client, speaking at natural pace. Open by saying hello and asking how the project is going; wait for the student to explain. Be disappointed but polite: ask why it's late, when it will launch now, and what they're doing to keep to the new date. Then ask how you'll know things are on track.",
+          "tasks": [
+            { "id": "sorry", "title": { "ja": "謝って遅れを伝える", "en": "Apologise and give the news" }, "hints": ["謝って、2週間遅れると伝えましょう", "I'm sorry, but the launch will be …", "I'm sorry, but the launch will be two weeks late."] },
+            { "id": "reason", "title": { "ja": "理由を説明する", "en": "Explain why" }, "hints": ["支払いページのセキュリティ確認に時間がかかったと説明しましょう", "The payment page needed …, which took …", "The payment page needed extra security checks, which took longer than expected."] },
+            { "id": "date", "title": { "ja": "新しい日付を伝える", "en": "Give the new date" }, "hints": ["新しい公開日を曜日も入れて伝えましょう", "The new launch date is …", "The new launch date is Tuesday, December 1st."] },
+            { "id": "action", "title": { "ja": "対策を伝える", "en": "Say what you're doing about it" }, "hints": ["開発者を1人増やしたと伝えましょう", "We've added …", "We've added another developer to the team."] },
+            { "id": "report", "title": { "ja": "毎週の報告を約束する", "en": "Promise weekly updates" }, "hints": ["毎週金曜日に進捗を報告すると伝えましょう", "We'll send you a progress report …", "We'll send you a progress report every Friday."] }
+          ]
+        },
+        {
+          "tutor": "You are Michael Tan, the client, speaking at natural speed. Open by saying hello and asking how the project is going; wait for the student to explain. You're unhappy, because you've planned a sale for the launch in mid-November. Ask detailed questions: what went wrong, and how confident they are about the new date. Later, ask how you'll know things are on track.",
+          "tasks": [
+            { "id": "news", "title": { "ja": "悪い知らせを伝える", "en": "Break the bad news" }, "hints": ["前置きをしてから、公開が2週間遅れると伝えましょう", "I'm afraid I have … The launch will be …", "I'm afraid I have some bad news. The launch will be two weeks late."] },
+            { "id": "reason", "title": { "ja": "理由を説明する", "en": "Explain why" }, "hints": ["支払いページのセキュリティ確認に時間がかかったと説明しましょう", "The payment page needed …, which took …", "The payment page needed extra security checks, which took longer than expected."] },
+            { "id": "plan", "title": { "ja": "新しい日付と対策を伝える", "en": "Give the new date and your plan" }, "hints": ["新しい公開日と、開発者を増やしたことを伝えましょう", "The new launch date is …, and we've …", "The new launch date is December 1st, and we've added another developer."] },
+            { "id": "report", "title": { "ja": "報告を約束して安心させる", "en": "Reassure them" }, "hints": ["毎週金曜日に進捗を報告すると約束しましょう", "To keep you updated, we'll …", "To keep you updated, we'll send you a progress report every Friday."] }
+          ],
+          "twist": {
+            "after": "plan",
+            "tutor": "Say the delay will cost your company money, because the launch sale has to move, and ask for a discount on the project fee. If the student says they need to check first, accept that and ask when you'll hear back.",
+            "task": { "id": "discount", "title": { "ja": "値引きの要求に対応する", "en": "Respond to the discount request" }, "hints": ["その場では決められないので、上司と相談して金曜日までに返事すると伝えましょう", "I understand. I'll talk to … and get back to you by …", "I understand. I'll talk to my manager and get back to you by Friday."] }
+          }
+        }
+      ]
+    },
+    {
+      "id": "b",
+      "name": { "ja": "取引先", "en": "Client" },
+      "persona": "Michael Tan, a manager at a retail company in Singapore whose new online shop is being built.",
+      "levels": [
+        {
+          "tutor": "You are Kenji, the project manager at a Tokyo web company. Speak slowly and simply. Open by saying hello and that you're very sorry, but the launch will be late. When asked, explain from the timeline: the payment page needs more security checks, and the new launch date is December 1st. When asked to keep the client updated, promise a report every Friday.",
+          "tasks": [
+            { "id": "when", "title": { "ja": "新しい日付を聞く", "en": "Ask for the new date" }, "hints": ["驚いて、新しい日付を聞きましょう", "Oh no. When is …?", "Oh no. When is the new date?"] },
+            { "id": "why", "title": { "ja": "理由を聞く", "en": "Ask why" }, "hints": ["理由を聞きましょう", "I see. Why is it …?", "I see. Why is it late?"] },
+            { "id": "sure", "title": { "ja": "その日付で確実か確認する", "en": "Check the new date is firm" }, "hints": ["新しい日付は確実か聞きましょう", "Are you sure about …?", "Are you sure about December 1st?"] },
+            { "id": "update", "title": { "ja": "報告をお願いする", "en": "Ask to be kept updated" }, "hints": ["進み具合を教えてほしいと頼みましょう", "Okay. Please keep me …", "Okay. Please keep me updated."] }
+          ]
+        },
+        {
+          "tutor": "You are Kenji, the project manager at a Tokyo web company, speaking at natural pace. Open by saying hello and apologising: the launch will be two weeks late. When asked, explain from the timeline: the payment page needed extra security checks, and the new date is December 1st. When asked what you're doing about it, say you've added another developer and will send a progress report every Friday.",
+          "tasks": [
+            { "id": "concern", "title": { "ja": "残念な気持ちを伝える", "en": "Say you're disappointed" }, "hints": ["残念だと伝えて、困ることを話しましょう", "That's disappointing. We've already …", "That's disappointing. We've already told our customers."] },
+            { "id": "why", "title": { "ja": "何があったか聞く", "en": "Ask what happened" }, "hints": ["何があったのか聞きましょう", "What happened? Why …?", "What happened? Why is it late?"] },
+            { "id": "date", "title": { "ja": "新しい日付を確認する", "en": "Confirm the new date" }, "hints": ["新しい公開日を確認しましょう", "So the new launch date is …?", "So the new launch date is December 1st?"] },
+            { "id": "action", "title": { "ja": "対策を聞く", "en": "Ask what they're doing about it" }, "hints": ["また遅れないように何をしているか聞きましょう", "What are you doing to make sure …?", "What are you doing to make sure it doesn't happen again?"] }
+          ]
+        },
+        {
+          "tutor": "You are Kenji, the project manager at a Tokyo web company, speaking at natural speed. Open by saying hello and that you're afraid you have some bad news: the launch will be two weeks late. When asked, explain from the timeline: extra security checks on the payment page, a new launch date of December 1st, an extra developer from 26 October, and a progress report every Friday. When asked for a discount, say you can't decide that now, but you'll talk to your manager and reply by Friday.",
+          "tasks": [
+            { "id": "impact", "title": { "ja": "影響を伝える", "en": "Explain the impact" }, "hints": ["11月中旬にセールを予定していたので困ると伝えましょう", "That's a problem for us. We've planned …", "That's a problem for us. We've planned a sale for mid-November."] },
+            { "id": "confidence", "title": { "ja": "新しい日付の確実さを聞く", "en": "Ask how sure they are" }, "hints": ["新しい日付にどのくらい自信があるか聞きましょう", "How confident are you …?", "How confident are you about the new date?"] },
+            { "id": "discount", "title": { "ja": "値引きをお願いする", "en": "Ask for a discount" }, "hints": ["遅れを理由に、値引きを検討してもらえないか聞きましょう", "Given the delay, would you consider …?", "Given the delay, would you consider a discount?"] },
+            { "id": "next", "title": { "ja": "受け入れて次の約束をする", "en": "Accept, and agree the next step" }, "hints": ["毎週の報告を頼んで、金曜日にまた話そうと伝えましょう", "Okay. Please send me …, and let's …", "Okay. Please send me weekly updates, and let's talk again on Friday."] }
+          ]
+        }
+      ]
+    }
+  ],
+  "prop": {
+    "label": { "ja": "プロジェクト日程", "en": "Project timeline" },
+    "title": "New online shop · Project timeline",
+    "sections": [
+      { "heading": "SCHEDULE", "items": [
+        { "name": "Design", "value": "done (30 September)", "key": "design" },
+        { "name": "Development", "value": "was until 30 October → now until 13 November", "key": "development" },
+        { "name": "Testing", "value": "16–27 November", "key": "testing" },
+        { "name": "Launch", "value": "was 16 November → now Tuesday 1 December", "key": "December 1|December 1st|1 December|launch date" }
+      ] },
+      { "heading": "WHY", "items": [
+        { "name": "Extra security checks for the payment page", "key": "security|payment page" }
+      ] },
+      { "heading": "WHAT WE'RE DOING", "items": [
+        { "name": "One more developer on the team", "value": "from 26 October", "key": "developer" },
+        { "name": "Progress report by email", "value": "every Friday", "key": "progress report|report|every Friday" }
+      ] }
+    ],
+    "foot": "Delay: two weeks"
+  }
+}

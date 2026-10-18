@@ -1,0 +1,110 @@
+{
+  "id": "customer-call",
+  "category": "business",
+  "title": { "ja": "海外のお客様からの問い合わせ電話", "en": "A call from an overseas customer" },
+  "summary": { "ja": "届かない注文について電話を受け、状況を調べて、解決策を伝える。", "en": "Take a call about an order that hasn't arrived, check it and offer a solution." },
+  "setting": "The customer service line of Kaze Tableware, an online shop in Japan that sells tableware overseas. It's Tuesday 20 October. Sarah Wilson, a customer in Canada, is calling because the order hasn't arrived.",
+  "image": "",
+  "studentRole": "a",
+  "roles": [
+    {
+      "id": "a",
+      "name": { "ja": "あなた（カスタマー担当）", "en": "You (customer service)" },
+      "persona": "A member of the customer service team at Kaze Tableware, answering the phone in English.",
+      "levels": [
+        {
+          "tutor": "You are Sarah Wilson, a customer in Canada. Speak slowly and simply. Open with just 'Hello? Is this Kaze Tableware?' and wait for the student to answer. Then say your order hasn't arrived. Give your order number, KT-48213, when asked. Accept when they offer to send it again.",
+          "tasks": [
+            { "id": "answer", "title": { "ja": "電話に出る", "en": "Answer the phone" }, "hints": ["お店の名前を言って、用件を聞きましょう", "Yes, this is … How can I …?", "Yes, this is Kaze Tableware. How can I help you?"] },
+            { "id": "number", "title": { "ja": "注文番号を聞く", "en": "Ask for the order number" }, "hints": ["注文番号を聞きましょう", "Can I have …, please?", "Can I have your order number, please?"] },
+            { "id": "sorry", "title": { "ja": "謝って調べると伝える", "en": "Say sorry and check" }, "hints": ["謝って、調べると伝えましょう", "I'm very sorry. Let me …", "I'm very sorry. Let me check."] },
+            { "id": "resend", "title": { "ja": "再送すると伝える", "en": "Offer to send it again" }, "hints": ["速達でもう一度送ると伝えましょう", "We'll send it again by …", "We'll send it again by express."] }
+          ]
+        },
+        {
+          "tutor": "You are Sarah Wilson, a customer in Canada, speaking at natural pace. Open with just 'Hello? Is this Kaze Tableware?' and wait for the student to answer. Explain that your order should have arrived by 14 October and still hasn't. Give your order number, KT-48213, and your name when asked. Ask how long express takes, and ask what happens next.",
+          "tasks": [
+            { "id": "answer", "title": { "ja": "店名と名前を言って電話に出る", "en": "Answer with the shop and your name" }, "hints": ["お店の名前と自分の名前を言って、用件を聞きましょう", "Thank you for calling … This is … How …?", "Thank you for calling Kaze Tableware. This is Yuki. How can I help?"] },
+            { "id": "details", "title": { "ja": "注文番号と名前を聞く", "en": "Ask for the order number and name" }, "hints": ["注文番号とお名前を聞きましょう", "Could I have your … and …, please?", "Could I have your order number and name, please?"] },
+            { "id": "tracking", "title": { "ja": "配送状況を説明する", "en": "Explain the tracking" }, "hints": ["9日にカナダに着いてから、更新がないと説明しましょう", "It arrived in Canada on …, but …", "It arrived in Canada on the 9th, but there's been no update since."] },
+            { "id": "resend", "title": { "ja": "速達での再送を提案する", "en": "Offer to resend it" }, "hints": ["無料で速達で送り直せることと、日数を伝えましょう", "We'll resend it by … for free. It takes …", "We'll resend it by express for free. It takes 3 to 4 days."] },
+            { "id": "email", "title": { "ja": "メールで連絡すると伝える", "en": "Say you'll email them" }, "hints": ["新しい追跡番号をメールすると伝えましょう", "I'll email you … today.", "I'll email you the new tracking number today."] }
+          ]
+        },
+        {
+          "tutor": "You are Sarah Wilson, a customer in Canada, speaking at natural speed. You're disappointed but polite. Open with just 'Hello? Is this Kaze Tableware?' and wait for the student to answer. Explain that your order, KT-48213, should have arrived by 14 October and still hasn't. Listen to the options and ask questions about them.",
+          "tasks": [
+            { "id": "answer", "title": { "ja": "店名と名前を言って電話に出る", "en": "Answer with the shop and your name" }, "hints": ["お店の名前と自分の名前を言って、用件を聞きましょう", "Thank you for calling … This is … How …?", "Thank you for calling Kaze Tableware. This is Yuki. How can I help?"] },
+            { "id": "explain", "title": { "ja": "謝って状況を説明する", "en": "Apologise and explain the tracking" }, "hints": ["謝って、9日から荷物が動いていないと説明しましょう", "I'm very sorry. It reached Canada on …, but …", "I'm very sorry. It reached Canada on the 9th, but it hasn't moved since."] },
+            { "id": "options", "title": { "ja": "2つの選択肢を示す", "en": "Offer two options" }, "hints": ["速達での無料再送か、全額返金を提案しましょう", "We can … for free, or …", "We can resend it by express for free, or give you a full refund."] },
+            { "id": "close", "title": { "ja": "次の対応を伝える", "en": "Say what you'll do next" }, "hints": ["今日発送して、追跡番号をメールすると伝えましょう", "I'll send it out … and email you …", "I'll send it out today and email you the tracking number."] }
+          ],
+          "twist": {
+            "after": "options",
+            "tutor": "Say the tea set is a birthday present for your mother, and you really need it by Saturday the 24th. Ask whether express will get there in time. Then choose the express resend.",
+            "task": { "id": "deadline", "title": { "ja": "期限について答える", "en": "Answer about the deadline" }, "hints": ["今日速達で送れば、土曜日までに届く見込みだと伝えましょう", "If we ship it … today, it should …", "If we ship it by express today, it should arrive by Saturday."] }
+          }
+        }
+      ]
+    },
+    {
+      "id": "b",
+      "name": { "ja": "お客様", "en": "Customer" },
+      "persona": "Sarah Wilson, a customer in Vancouver, Canada, whose order hasn't arrived.",
+      "levels": [
+        {
+          "tutor": "You are Yuki from Kaze Tableware's customer service. Speak slowly and simply. Open by answering the phone: 'Kaze Tableware, how can I help you?' Ask for the order number. When asked when it will arrive, say the parcel is stuck in Canada, so you'll send it again by express, and it takes 3 to 4 days.",
+          "tasks": [
+            { "id": "problem", "title": { "ja": "困っていることを伝える", "en": "Say what the problem is" }, "hints": ["注文した品物が届かないと伝えましょう", "Hi. My order hasn't …", "Hi. My order hasn't arrived yet."] },
+            { "id": "number", "title": { "ja": "注文番号を伝える", "en": "Give your order number" }, "hints": ["注文番号を伝えましょう", "My order number is …", "My order number is KT-48213."] },
+            { "id": "when", "title": { "ja": "いつ届くか聞く", "en": "Ask when it will arrive" }, "hints": ["いつ届くか聞きましょう", "When will …?", "When will it arrive, then?"] },
+            { "id": "thanks", "title": { "ja": "お礼を言う", "en": "Thank them" }, "hints": ["お礼を言いましょう", "Thank you for …", "Thank you for your help."] }
+          ]
+        },
+        {
+          "tutor": "You are Yuki from Kaze Tableware's customer service, speaking at natural pace. Open by answering the phone with the shop name and your name. Ask for the order number and name. When asked, check the tracking: the parcel arrived in Canada on 9 October with no update since. Offer to send it again by express (3 to 4 days); when asked, say it's free of charge.",
+          "tasks": [
+            { "id": "explain", "title": { "ja": "状況を詳しく説明する", "en": "Explain the problem" }, "hints": ["1日に注文したティーセットがまだ届かないと伝えましょう", "I ordered … on …, but it …", "I ordered a tea set on October 1st, but it hasn't arrived."] },
+            { "id": "details", "title": { "ja": "注文番号と名前を伝える", "en": "Give your order number and name" }, "hints": ["注文番号と名前を伝えましょう", "It's …, under the name …", "It's KT-48213, under the name Sarah Wilson."] },
+            { "id": "tracking", "title": { "ja": "配送状況を調べてもらう", "en": "Ask them to check the tracking" }, "hints": ["追跡情報を調べてもらいましょう", "Could you check …?", "Could you check the tracking for me?"] },
+            { "id": "cost", "title": { "ja": "送料がかかるか聞く", "en": "Ask if you have to pay" }, "hints": ["速達の送料を払う必要があるか聞きましょう", "Do I have to pay for …?", "Do I have to pay for the express shipping?"] },
+            { "id": "email", "title": { "ja": "新しい追跡番号をお願いする", "en": "Ask for the new tracking number" }, "hints": ["新しい追跡番号をメールで送ってもらいましょう", "Could you email me …?", "Could you email me the new tracking number?"] }
+          ]
+        },
+        {
+          "tutor": "You are Yuki from Kaze Tableware's customer service, speaking at natural speed. Open by answering the phone with the shop name and your name. Find the order (KT-48213): it arrived in Canada on 9 October and hasn't moved since, so apologise and offer to resend it by express for free (3 to 4 days) or give a full refund. When told the deadline, say that if you ship it by express today, it should arrive by Saturday. When asked what happens if the first parcel turns up later, say you'll email a free return label so it can be sent back.",
+          "tasks": [
+            { "id": "explain", "title": { "ja": "問題をはっきり伝える", "en": "Explain the problem clearly" }, "hints": ["3週間近く前に注文した品物がまだ届かないと、はっきり伝えましょう", "I ordered … almost three weeks ago, and it …", "I ordered a tea set almost three weeks ago, and it still hasn't arrived."] },
+            { "id": "deadline", "title": { "ja": "いつまでに必要か伝える", "en": "Say when you need it" }, "hints": ["誕生日プレゼントなので、土曜日までに必要だと伝えましょう", "It's a …, so I really need it by …", "It's a birthday present, so I really need it by Saturday."] },
+            { "id": "first", "title": { "ja": "最初の荷物について聞く", "en": "Ask about the first parcel" }, "hints": ["あとから最初の荷物が届いたらどうするか聞きましょう", "What happens if …?", "What happens if the first parcel arrives later?"] },
+            { "id": "thanks", "title": { "ja": "対応にお礼を言う", "en": "Thank them for their help" }, "hints": ["すぐに対応してくれたお礼を言いましょう", "Thank you for sorting …", "Thank you for sorting this out so quickly."] }
+          ]
+        }
+      ]
+    }
+  ],
+  "prop": {
+    "label": { "ja": "注文情報", "en": "Order details" },
+    "title": "KAZE TABLEWARE · Order KT-48213",
+    "sections": [
+      { "heading": "ORDER", "items": [
+        { "name": "Customer", "value": "Sarah Wilson · Vancouver, Canada", "key": "Wilson|Sarah" },
+        { "name": "Ordered", "value": "1 October", "key": "1 October|October 1|October 1st" },
+        { "name": "Ceramic tea set (blue)", "value": "¥12,000", "key": "tea set" },
+        { "name": "Matcha bowls × 2", "value": "¥6,000", "key": "bowl|bowls" },
+        { "name": "Total, with airmail shipping (¥3,500)", "value": "¥21,500", "key": "21,500|21500|total" }
+      ] },
+      { "heading": "DELIVERY", "items": [
+        { "name": "Shipped by tracked airmail", "value": "3 October", "key": "shipped|airmail|3 October|October 3|October 3rd" },
+        { "name": "Expected delivery", "value": "10–14 October", "key": "expected|14 October|October 14|October 14th" },
+        { "name": "Tracking", "value": "Arrived in Canada 9 October · no update since", "key": "9 October|October 9|the 9th|no update|hasn't moved" }
+      ] },
+      { "heading": "IF A PARCEL IS LOST (no tracking update for 7 days)", "items": [
+        { "name": "Resend by express, free of charge", "value": "3–4 days to Canada", "key": "express|resend|send it again|3 to 4 days" },
+        { "name": "Or: full refund", "key": "refund" },
+        { "name": "If the first parcel arrives later", "value": "free return label", "key": "return label|first parcel" }
+      ] }
+    ],
+    "foot": "Customer service · Mon–Fri, 9:00–18:00 (Japan time)"
+  }
+}

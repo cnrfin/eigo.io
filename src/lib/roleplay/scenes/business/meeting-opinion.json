@@ -1,0 +1,106 @@
+{
+  "id": "meeting-opinion",
+  "category": "business",
+  "title": { "ja": "会議で意見を言う・やんわり反対する", "en": "Giving your opinion in a meeting" },
+  "summary": { "ja": "同僚の案に意見を言い、やんわり反対して、折衷案で合意する。", "en": "Give your view on a colleague's idea, disagree politely and agree on a compromise." },
+  "setting": "A marketing team meeting on a video call. The team is deciding how to split the ¥5 million budget for the spring campaign. Alex Kim has proposed spending 70% of it on online video ads.",
+  "image": "",
+  "studentRole": "a",
+  "roles": [
+    {
+      "id": "a",
+      "name": { "ja": "あなた", "en": "You" },
+      "persona": "A member of the marketing team who thinks in-store events matter too.",
+      "levels": [
+        {
+          "tutor": "You are Alex Kim, a colleague on the marketing team. Speak slowly and simply. Open by saying hello and explaining your idea in one or two short sentences: spend 70% of the budget on video ads. Then ask what the student thinks. When the student suggests half and half, don't answer straight away: say 'Hmm, half and half…' and wait for them to ask what you think; then agree.",
+          "tasks": [
+            { "id": "agree", "title": { "ja": "賛成できる点を伝える", "en": "Say what you agree with" }, "hints": ["動画広告はいいアイデアだと伝えましょう", "I agree. … are a good idea.", "I agree. Video ads are a good idea."] },
+            { "id": "but", "title": { "ja": "別の意見を言う", "en": "Give a different view" }, "hints": ["店頭イベントも大事だと伝えましょう", "But I think … are important too.", "But I think in-store events are important too."] },
+            { "id": "suggest", "title": { "ja": "提案する", "en": "Make a suggestion" }, "hints": ["半分ずつにしようと提案しましょう", "How about …?", "How about half and half?"] },
+            { "id": "ask", "title": { "ja": "相手の意見を聞く", "en": "Ask what they think" }, "hints": ["相手の意見を聞きましょう", "What do you …?", "What do you think, Alex?"] }
+          ]
+        },
+        {
+          "tutor": "You are Alex Kim, a colleague on the marketing team, speaking at natural pace. Open by saying hello and explaining your idea: spend 70% of the ¥5 million budget on online video ads, because young customers spend so much time online. Then ask for the student's opinion. When asked about last year, answer from the agenda: 45% of new customers came from in-store events. If the student suggests 50-50, counter with 60-40, and agree when they accept.",
+          "tasks": [
+            { "id": "opinion", "title": { "ja": "理由をつけて意見を言う", "en": "Give your opinion with a reason" }, "hints": ["理由をつけて意見を言いましょう", "I think video ads are … because …", "I think video ads are a good idea because young people are online a lot."] },
+            { "id": "doubt", "title": { "ja": "やんわり反対する", "en": "Disagree gently" }, "hints": ["70%は多すぎるかもしれないと、やんわり伝えましょう", "I'm not sure about … That seems …", "I'm not sure about 70 percent. That seems like a lot."] },
+            { "id": "data", "title": { "ja": "去年のデータを聞く", "en": "Ask about last year" }, "hints": ["去年のデータを聞きましょう", "Do we have any … from …?", "Do we have any numbers from last year?"] },
+            { "id": "suggest", "title": { "ja": "折衷案を出す", "en": "Suggest a compromise" }, "hints": ["半分ずつにしてはどうか提案しましょう", "Maybe we could …", "Maybe we could split it 50-50."] },
+            { "id": "sumup", "title": { "ja": "決まったことをまとめる", "en": "Sum up the decision" }, "hints": ["60対40で決まったことをまとめましょう", "So, … for video and … for events. Is everyone …?", "So, 60 percent for video and 40 for events. Is everyone happy with that?"] }
+          ]
+        },
+        {
+          "tutor": "You are Alex Kim, a colleague on the marketing team, speaking at natural speed and with confidence. Open by saying hello and presenting your idea: 70% of the ¥5 million budget on online video ads, because they're easier to measure. Ask what the student thinks. When the student suggests a compromise, push back once: in-store events cost more per new customer (¥3,500, against ¥2,000 for video ads). Then agree to 60-40 with a review of the results in April.",
+          "tasks": [
+            { "id": "acknowledge", "title": { "ja": "受け止めてから反対する", "en": "Acknowledge, then disagree" }, "hints": ["相手の意見を受け止めてから、心配な点を伝えましょう", "I see your point, but I'm a little worried about …", "I see your point, but I'm a little worried about putting so much into video."] },
+            { "id": "data", "title": { "ja": "データで理由を示す", "en": "Back it up with data" }, "hints": ["去年の数字を使って理由を示しましょう", "Last year, … of our new customers came from …", "Last year, 45 percent of our new customers came from in-store events."] },
+            { "id": "compromise", "title": { "ja": "折衷案を出す", "en": "Suggest a compromise" }, "hints": ["60対40にしてはどうか提案しましょう", "What if we did … video and … events?", "What if we did 60 percent video and 40 percent events?"] },
+            { "id": "pushback", "title": { "ja": "反論に答える", "en": "Answer their pushback" }, "hints": ["もっともだと認めて、両方試して比べようと提案しましょう", "That's fair. Maybe we could … and compare …", "That's fair. Maybe we could try both and compare the results in April."] },
+            { "id": "sumup", "title": { "ja": "まとめて全員に確認する", "en": "Sum up and check" }, "hints": ["決まったことをまとめて、全員に確認しましょう", "So, we'll go with … and review … Does that …?", "So, we'll go with 60-40 and review it in April. Does that work for everyone?"] }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b",
+      "name": { "ja": "同僚", "en": "Colleague" },
+      "persona": "Alex Kim, a colleague on the marketing team who wants to spend most of the budget on online video ads.",
+      "levels": [
+        {
+          "tutor": "You are Yuki, a colleague on the marketing team. Speak slowly and simply. Open by saying hello and asking Alex to share the idea for the budget. When asked what you think, say video ads are a good idea, but in-store events are important too, and suggest half and half.",
+          "tasks": [
+            { "id": "idea", "title": { "ja": "自分の案を伝える", "en": "Share your idea" }, "hints": ["動画広告にもっとお金を使おうと提案しましょう", "I think we should spend more on …", "I think we should spend more on video ads."] },
+            { "id": "ask", "title": { "ja": "相手の意見を聞く", "en": "Ask what they think" }, "hints": ["相手の意見を聞きましょう", "What do you …?", "What do you think, Yuki?"] },
+            { "id": "agree", "title": { "ja": "折衷案に賛成する", "en": "Agree to the compromise" }, "hints": ["その案でいいと伝えましょう", "Okay, that sounds …", "Okay, that sounds fair."] },
+            { "id": "thanks", "title": { "ja": "お礼を言う", "en": "Thank them" }, "hints": ["意見をくれたお礼を言いましょう", "Thanks for …", "Thanks for your ideas."] }
+          ]
+        },
+        {
+          "tutor": "You are Yuki, a colleague on the marketing team, speaking at natural pace. Open by saying hello and asking Alex to explain the plan for the ¥5 million budget. When asked for your opinion, say 70% seems like a lot, because 45% of new customers came from in-store events last year. When Alex answers, suggest 60-40 as a compromise.",
+          "tasks": [
+            { "id": "propose", "title": { "ja": "理由をつけて提案する", "en": "Propose your plan with a reason" }, "hints": ["70%を動画広告にしたいと、理由もつけて伝えましょう", "I'd like to put … into video ads. Most of …", "I'd like to put 70 percent into video ads. Most of our customers are online."] },
+            { "id": "opinion", "title": { "ja": "相手の意見を聞く", "en": "Ask for their opinion" }, "hints": ["相手の意見を聞きましょう", "What do you think …?", "What do you think about that?"] },
+            { "id": "answer", "title": { "ja": "懸念に答える", "en": "Answer their concern" }, "hints": ["そうですねと認めつつ、動画広告は効果を測りやすいと伝えましょう", "That's true, but video ads are …", "That's true, but video ads are easier to measure."] },
+            { "id": "accept", "title": { "ja": "折衷案を受け入れる", "en": "Accept the compromise" }, "hints": ["60対40で合意しましょう", "Okay, I can …", "Okay, I can go with 60-40."] },
+            { "id": "next", "title": { "ja": "次の作業を引き受ける", "en": "Say what you'll do next" }, "hints": ["計画を直して、みんなに送ると伝えましょう", "I'll update … and send …", "I'll update the plan and send it to everyone."] }
+          ]
+        },
+        {
+          "tutor": "You are Yuki, a colleague on the marketing team, speaking at natural speed. Open by saying hello and asking Alex to present the idea for the ¥5 million budget. Disagree politely: you're worried about putting so much into video, because 45% of last year's new customers came from in-store events. When Alex pushes back on cost, suggest 60-40. When Alex agrees, thank them.",
+          "tasks": [
+            { "id": "propose", "title": { "ja": "自分の案を説明する", "en": "Present your idea" }, "hints": ["動画広告に70%を使いたいと、理由もつけて伝えましょう", "I'd like to put … into video ads. They're …", "I'd like to put 70 percent into video ads. They're easier to measure."] },
+            { "id": "respond", "title": { "ja": "相手のデータを認める", "en": "Respond to their data" }, "hints": ["いい指摘だと認めましょう", "That's a good point. I didn't …", "That's a good point. I didn't know events did so well."] },
+            { "id": "push", "title": { "ja": "やんわり反論する", "en": "Push back politely" }, "hints": ["イベントは新規客1人あたりのコストが高いと、やんわり伝えましょう", "But events cost … Is it …?", "But events cost more per new customer. Is it worth it?"] },
+            { "id": "accept", "title": { "ja": "条件付きで合意する", "en": "Agree, with a condition" }, "hints": ["4月に結果を見直すなら、60対40でいいと伝えましょう", "Okay, let's try …, as long as …", "Okay, let's try 60-40, as long as we review the results in April."] },
+            { "id": "next", "title": { "ja": "次の作業を引き受ける", "en": "Say what you'll do next" }, "hints": ["金曜日までに計画を直して共有すると伝えましょう", "I'll update the plan and …", "I'll update the plan and share it by Friday."] }
+          ]
+        }
+      ]
+    }
+  ],
+  "prop": {
+    "label": { "ja": "会議の議題", "en": "Agenda" },
+    "title": "Marketing meeting · Spring campaign",
+    "sections": [
+      { "heading": "BUDGET", "items": [
+        { "name": "Total budget", "value": "¥5 million", "key": "5 million|five million" },
+        { "name": "Campaign starts", "value": "1 March", "key": "1 March|March 1|March 1st" }
+      ] },
+      { "heading": "ALEX'S PROPOSAL", "items": [
+        { "name": "Online video ads", "value": "70%", "key": "video|70 percent|70%" },
+        { "name": "In-store events", "value": "30%", "key": "in-store|events|30 percent|30%" }
+      ] },
+      { "heading": "LAST YEAR", "items": [
+        { "name": "New customers who came from in-store events", "value": "45%", "key": "45 percent|45%|last year" },
+        { "name": "Cost per new customer: video ads", "value": "¥2,000", "key": "2,000|2000" },
+        { "name": "Cost per new customer: in-store events", "value": "¥3,500", "key": "3,500|3500|per new customer" }
+      ] },
+      { "heading": "TODAY", "items": [
+        { "name": "Agree how to split the budget", "key": "split|60-40|50-50|half and half" }
+      ] }
+    ],
+    "foot": "Results review: April"
+  }
+}

@@ -1,0 +1,104 @@
+{
+  "id": "airport-pickup",
+  "category": "business",
+  "title": { "ja": "空港で取引先を出迎える", "en": "Meeting a visitor at the airport" },
+  "summary": { "ja": "空港で来訪者を出迎え、今日の予定を説明して、ホテルへ案内する。", "en": "Meet a visitor at arrivals, explain the plan for the day and take them to the taxi." },
+  "setting": "The arrivals hall at Haneda Airport, Terminal 3, in the afternoon. Someone from the Tokyo office is waiting with a name sign for David Moore, a manager visiting from the Sydney office.",
+  "image": "",
+  "studentRole": "a",
+  "roles": [
+    {
+      "id": "a",
+      "name": { "ja": "出迎え担当", "en": "Host" },
+      "persona": "A member of the Tokyo office meeting a visitor from the Sydney office at the airport.",
+      "levels": [
+        {
+          "tutor": "You are David Moore, arriving from Sydney. Speak slowly and simply. Open by walking up to the student, who is holding a sign with your name, and just saying 'Hello!'; wait for them to check who you are. When asked, say the flight was good. Follow the student to the taxi.",
+          "tasks": [
+            { "id": "name", "title": { "ja": "相手を確認する", "en": "Check who they are" }, "hints": ["名前を確認しましょう", "Hi! Are you …?", "Hi! Are you David Moore?"] },
+            { "id": "welcome", "title": { "ja": "歓迎する", "en": "Welcome them" }, "hints": ["歓迎して、名前を伝えましょう", "Welcome to …! I'm …", "Welcome to Tokyo! I'm Yuki."] },
+            { "id": "flight", "title": { "ja": "フライトについて聞く", "en": "Ask about the flight" }, "hints": ["フライトはどうだったか聞きましょう", "How was …?", "How was your flight?"] },
+            { "id": "taxi", "title": { "ja": "タクシーに案内する", "en": "Show the way to the taxi" }, "hints": ["タクシー乗り場へ案内しましょう", "The taxi is …", "The taxi is this way."] }
+          ]
+        },
+        {
+          "tutor": "You are David Moore, arriving from Sydney, speaking at natural pace. Open by walking up to the student, who is holding a sign with your name, and saying hello; wait for them to introduce themselves. When asked, say the flight was fine but you didn't sleep much. You have a suitcase and a heavy bag. Ask what the plan is for today, and what's happening this evening.",
+          "tasks": [
+            { "id": "intro", "title": { "ja": "自己紹介する", "en": "Introduce yourself" }, "hints": ["相手を確認して、自己紹介しましょう", "Hi, you must be … I'm … from …", "Hi, you must be David. I'm Yuki from the Tokyo office."] },
+            { "id": "flight", "title": { "ja": "フライトについて聞く", "en": "Ask about the flight" }, "hints": ["フライトの様子と、眠れたか聞きましょう", "How was …? Did you …?", "How was your flight? Did you get any sleep?"] },
+            { "id": "bags", "title": { "ja": "荷物を持つと申し出る", "en": "Offer to help with the bags" }, "hints": ["荷物を持つと申し出ましょう", "Can I take …?", "Can I take one of your bags?"] },
+            { "id": "hotel", "title": { "ja": "まずホテルへ行くと説明する", "en": "Explain the first step" }, "hints": ["まずホテルへ行くことと、かかる時間を伝えましょう", "We'll go to … first. It's about …", "We'll go to your hotel first. It's about 30 minutes by taxi."] },
+            { "id": "dinner", "title": { "ja": "夕食の予定を伝える", "en": "Tell them about dinner" }, "hints": ["7時にチームと夕食があると伝えましょう", "We're having dinner with … at …", "We're having dinner with the team at 7."] }
+          ]
+        },
+        {
+          "tutor": "You are David Moore, a manager from the Sydney office, speaking at natural speed with small talk. Open by walking up to the student, who is holding a sign with your name, and saying hello; wait for them to welcome you. When asked about food, say you eat almost everything, but not pork.",
+          "tasks": [
+            { "id": "welcome", "title": { "ja": "温かく歓迎する", "en": "Welcome them warmly" }, "hints": ["歓迎して、会えてうれしいと伝えましょう", "Welcome to Tokyo, …! It's great to …", "Welcome to Tokyo, David! It's great to finally meet you in person."] },
+            { "id": "bags", "title": { "ja": "荷物を手伝う", "en": "Offer to help with the bags" }, "hints": ["荷物を持つと申し出て、タクシーの場所も伝えましょう", "Let me take … The taxi …", "Let me take your suitcase. The taxi is just outside."] },
+            { "id": "plan", "title": { "ja": "変更後の予定を説明する", "en": "Explain the new plan" }, "hints": ["まずホテルに行き、夕食は7時からと伝えましょう", "We'll go to … first, and dinner is …", "We'll go to your hotel first, and dinner is at 7."] },
+            { "id": "food", "title": { "ja": "食べられないものを聞く", "en": "Ask about food" }, "hints": ["夕食は焼き鳥なので、食べられないものがないか聞きましょう", "We're going to … Is there anything …?", "We're going to a yakitori place. Is there anything you don't eat?"] }
+          ],
+          "twist": {
+            "after": "welcome",
+            "tutor": "Apologise that your flight landed two hours late, so it's now nearly 5 p.m. and the office tour at 4:30 has been missed. Say you're quite tired and ask whether you'll still have time for the office tour today. Accept the student's new plan.",
+            "task": { "id": "delay", "title": { "ja": "遅れに合わせて予定を変える", "en": "Change the plan for the delay" }, "hints": ["気にしないでと伝えて、オフィス見学は明日の朝にしようと提案しましょう", "Don't worry. Let's do … tomorrow …", "Don't worry. Let's do the office tour tomorrow morning instead."] }
+          }
+        }
+      ]
+    },
+    {
+      "id": "b",
+      "name": { "ja": "来訪者", "en": "Visitor" },
+      "persona": "David Moore, a manager from the Sydney office visiting Tokyo for the first time.",
+      "levels": [
+        {
+          "tutor": "You are Yuki from the Tokyo office, waiting in the arrivals hall with a sign saying 'David Moore'. Speak slowly and simply. Open by asking 'Are you David Moore?'. Then welcome the visitor and ask about the flight. When asked, say the hotel is about 30 minutes by taxi.",
+          "tasks": [
+            { "id": "yes", "title": { "ja": "名前を名乗る", "en": "Say who you are" }, "hints": ["そうですと答えて、あいさつしましょう", "Yes, I'm … Nice to …", "Yes, I'm David. Nice to meet you."] },
+            { "id": "thanks", "title": { "ja": "出迎えのお礼を言う", "en": "Thank them for meeting you" }, "hints": ["迎えに来てくれたお礼を言いましょう", "Thank you for …", "Thank you for meeting me."] },
+            { "id": "flight", "title": { "ja": "フライトについて答える", "en": "Say how the flight was" }, "hints": ["フライトがどうだったか答えましょう", "It was …, thanks.", "It was good, thanks."] },
+            { "id": "hotel", "title": { "ja": "ホテルまでの時間を聞く", "en": "Ask how far the hotel is" }, "hints": ["ホテルまでどのくらいか聞きましょう", "How far is …?", "How far is the hotel?"] }
+          ]
+        },
+        {
+          "tutor": "You are Yuki from the Tokyo office, meeting the visitor in the arrivals hall, speaking at natural pace. Open by saying hello and checking the visitor is David Moore. Ask about the flight. When asked, explain the plan from the itinerary: the hotel first, the office tour at 4:30, and dinner with the team at 7. When asked about cash, say there's an ATM in the arrivals lobby.",
+          "tasks": [
+            { "id": "thanks", "title": { "ja": "出迎えのお礼を言う", "en": "Thank them for coming" }, "hints": ["迎えに来てくれたお礼を言いましょう", "Thanks for coming to …", "Thanks for coming to meet me."] },
+            { "id": "flight", "title": { "ja": "フライトについて詳しく話す", "en": "Talk about the flight" }, "hints": ["フライトの様子を、ひとこと詳しく話しましょう", "It was fine, but I didn't …", "It was fine, but I didn't sleep much."] },
+            { "id": "plan", "title": { "ja": "今日の予定を聞く", "en": "Ask about today's plan" }, "hints": ["今日の予定を聞きましょう", "What's the plan …?", "What's the plan for today?"] },
+            { "id": "cash", "title": { "ja": "ATMの場所を聞く", "en": "Ask where the ATM is" }, "hints": ["円を下ろしたいので、ATMの場所を聞きましょう", "I need some … Is there …?", "I need some yen. Is there an ATM near here?"] }
+          ]
+        },
+        {
+          "tutor": "You are Yuki from the Tokyo office, meeting the visitor in the arrivals hall, speaking at natural speed with small talk. Open by welcoming David and saying you saw on the arrivals board that the flight was two hours late; it's now nearly 5 p.m. When asked about the office tour, suggest doing it tomorrow morning instead, before the 10 a.m. meeting. Dinner tonight is at a yakitori restaurant at 7; when told about food David doesn't eat, say it's no problem and you'll tell the restaurant. When asked about dinner clothes, say it's casual.",
+          "tasks": [
+            { "id": "sorry", "title": { "ja": "待たせたことを謝る", "en": "Apologise for the late arrival" }, "hints": ["2時間遅れて待たせたことを謝りましょう", "Sorry to keep you … The flight was …", "Sorry to keep you waiting. The flight was two hours late."] },
+            { "id": "tour", "title": { "ja": "オフィス見学について聞く", "en": "Ask about the office tour" }, "hints": ["今日のオフィス見学にまだ間に合うか聞きましょう", "Is it still okay to …?", "Is it still okay to do the office tour today?"] },
+            { "id": "food", "title": { "ja": "食べられないものを伝える", "en": "Mention food you don't eat" }, "hints": ["豚肉を食べないことを伝えましょう", "Just so you know, I don't …", "Just so you know, I don't eat pork."] },
+            { "id": "dress", "title": { "ja": "夕食の服装を聞く", "en": "Ask what to wear to dinner" }, "hints": ["着替えたほうがいいか聞きましょう", "Should I change for …, or is …?", "Should I change for dinner, or is this okay?"] }
+          ]
+        }
+      ]
+    }
+  ],
+  "prop": {
+    "label": { "ja": "日程表", "en": "Itinerary" },
+    "title": "David Moore · Tokyo visit, day 1",
+    "sections": [
+      { "heading": "TODAY", "items": [
+        { "name": "Flight from Sydney lands · Haneda Terminal 3", "value": "14:30", "key": "2:30|14:30|lands|landed" },
+        { "name": "Taxi to the Sakura Hotel, Shinagawa (about 30 min)", "value": "15:15", "key": "taxi|hotel|30 minutes" },
+        { "name": "Office tour", "value": "16:30", "key": "office tour|tour" },
+        { "name": "Dinner with the team · yakitori restaurant (casual)", "value": "19:00", "key": "dinner|yakitori|7 p.m.|19:00" }
+      ] },
+      { "heading": "TOMORROW", "items": [
+        { "name": "Meeting with the sales team, Tokyo office", "value": "10:00", "key": "10 a.m.|sales team" }
+      ] },
+      { "heading": "AT THE AIRPORT", "items": [
+        { "name": "ATM", "value": "in the arrivals lobby", "key": "ATM|cash" }
+      ] }
+    ],
+    "foot": "Meeting point: the arrivals exit, with a name sign"
+  }
+}
