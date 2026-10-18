@@ -14,7 +14,6 @@ export default function ProgressiveBlur({
   height,
   tint = 0.6,
   maxBlur = 16,
-  steps = 6,
   className,
   style,
 }: {
@@ -25,13 +24,11 @@ export default function ProgressiveBlur({
   tint?: number
   /** blur (px) of the strongest layer */
   maxBlur?: number
-  /** how many blur layers (fewer is cheaper over long scrolling lists; 6 is the smoothest ramp) */
-  steps?: number
   className?: string
   style?: CSSProperties
 }) {
-  // N layers, blur doubling each step up to maxBlur
-  const N = Math.max(2, Math.round(steps))
+  // 6 layers, blur doubling each step up to maxBlur
+  const N = 6
   const dir = edge === 'top' ? 'to top' : 'to bottom' // gradient runs from the soft side to the edge
   const band = 100 / (N + 1)
   const layers = Array.from({ length: N }, (_, i) => {

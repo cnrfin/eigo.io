@@ -181,17 +181,11 @@
 .cs-rl.new span:last-child { color: var(--accent); font-weight: 600; }
 .cs-rpk { display: inline-block; font-size: .62rem; font-weight: 700; color: var(--accent); margin-right: 6px; }
 
-/* the top edge blur (ProgressiveBlur, as on the dashboard), tinted with the sheet's own background */
-.cs-sheet { --dash-bg: var(--panel); }
-.cs-edge { z-index: 4; border-radius: inherit; }
 /* switching コース / ロールプレイ: only the inside fades over */
 .cs-swap { animation: cs-swap .22s ease-out; }
 @keyframes cs-swap { from { opacity: 0 } }
 @media (prefers-reduced-motion: reduce) { .cs-swap { animation: none; } }
 
-/* the top edge blur (ProgressiveBlur, as on the dashboard), tinted with the sheet's own background */
-.cs-sheet { --dash-bg: var(--panel); }
-.cs-edge { z-index: 4; border-radius: inherit; }
 /* switching コース / ロールプレイ: only the inside fades over */
 .cs-swap { animation: cs-swap .2s ease-out; }
 @keyframes cs-swap { from { opacity: 0 } }

@@ -742,8 +742,9 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
                 <button type="button" className="cs-add" onClick={() => setSheetOpen(true)}>
                   <span className="cs-plus">＋</span>
                   {rpOn ? (
-                    <span style={{ color: 'var(--text)' }}>
-                      {locale === 'ja' ? 'コース・ロールプレイを選ぶか、空欄でフリートーク' : 'Choose a course or role-play, or leave blank for free talk'}
+                    <span>
+                      <b className="block font-semibold" style={{ color: 'var(--text)' }}>{locale === 'ja' ? 'コース・ロールプレイを選ぶ' : 'Choose a course or role-play'}</b>
+                      <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{locale === 'ja' ? '空欄のままならフリートーク' : 'Leave blank for free talk'}</span>
                     </span>
                   ) : (
                     <span>

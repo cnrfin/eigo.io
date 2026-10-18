@@ -161,7 +161,8 @@ const tx = (ja: boolean) => ({
   close: ja ? '閉じる' : 'Close',
   welcomeTalk: ja ? '5分のウェルカムトーク' : '5-minute welcome talk',
   pickCourse: ja ? 'コースを選ぶか、空欄のままでフリートーク' : 'Select a course or leave blank for free talk',
-  pickAny: ja ? 'コース・ロールプレイを選ぶか、空欄でフリートーク' : 'Choose a course or role-play, or leave blank for free talk',
+  pickAny: ja ? 'コース・ロールプレイを選ぶ' : 'Choose a course or role-play',
+  pickAnySub: ja ? '空欄のままならフリートーク' : 'Leave blank for free talk',
   rp: ja ? 'ロールプレイ' : 'Role-play',
   changeRp: ja ? 'ロールプレイを変更' : 'Change role-play',
   removeRp: ja ? 'ロールプレイを外す' : 'Remove role-play',
@@ -369,7 +370,14 @@ export function AiStartCard({
         ) : (
           <button type="button" className="cs-add ais-course" onClick={() => setSheet(true)} disabled={!catalog.length && !rpList?.length}>
             <span className="cs-plus">＋</span>
-            <span className="ais-line">{rpList?.length ? t.pickAny : t.pickCourse}</span>
+            {rpList?.length ? (
+              <span className="ais-two">
+                <b>{t.pickAny}</b>
+                <span>{t.pickAnySub}</span>
+              </span>
+            ) : (
+              <span className="ais-line">{t.pickCourse}</span>
+            )}
           </button>
         )
       ) : (

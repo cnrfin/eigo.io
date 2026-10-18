@@ -3,7 +3,6 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import './course-sheet.css'
-import ProgressiveBlur from '@/components/ui/ProgressiveBlur'
 import { CATEGORY_NAMES, LEVEL_NAMES, nextLevel, type Category, type LevelIndex, type SceneSummary } from '@/lib/roleplay/types'
 
 /**
@@ -237,8 +236,6 @@ export default function CourseSheet({
   return createPortal(
     <div className="cs-scrim" onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div className="cs-sheet" role="dialog" aria-modal="true" aria-label={showRp ? tx.roleplays : lang === 'ja' ? 'コースを選ぶ' : 'Choose a course'}>
-        {/* the dashboard's top edge: content blurs as it scrolls under the toggle and close button */}
-        <ProgressiveBlur edge="top" height={76} tint={0.55} steps={3} className="cs-edge" />
         {toggle}
         <CloseBtn label={tx.close} onClose={onClose} />
         {showRp ? (

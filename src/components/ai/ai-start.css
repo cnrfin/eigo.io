@@ -17,6 +17,11 @@
 .ais-line { flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: .85rem; color: var(--text-secondary); }
 .ais-line b { font-weight: 600; color: var(--text); font-size: .85rem; display: inline; }
 .ais-line span { font-size: .85rem; color: var(--text-muted); margin-left: 3px; }
+/* the empty block, two short lines (one long line didn't fit the card) */
+.ais-two { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; line-height: 1.3; }
+.ais-two b, .ais-two span { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.ais-two b { font-size: .85rem; font-weight: 600; color: var(--text); }
+.ais-two span { font-size: .74rem; color: var(--text-muted); }
 .ais-icon { width: 32px; height: 32px; background: var(--inset); color: #fff; }
 :root[data-theme="light"] .ais-icon { background: var(--text-subtle); } /* white needs a darker grey in light mode */
 .ais-fixed:hover { background: var(--panel); }
