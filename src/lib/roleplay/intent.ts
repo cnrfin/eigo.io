@@ -13,6 +13,10 @@ export type PanelIntent =
   | { kind: 'pick'; id: string }
   | { kind: 'start'; id: string | null }
   | { kind: 'mode'; mode: 'rp' | 'course' }
+  /** the mission-complete screen: swap roles, play it again, or another scene */
+  | { kind: 'swap' }
+  | { kind: 'again' }
+  | { kind: 'next' }
 
 const RP = /\brole[- ]?plays?\b|ロールプレイ/i
 const COURSE = /\bcourses?\b|コース/i
@@ -29,6 +33,9 @@ function bareStart(s: string): boolean {
   if (/[\u3040-\u30ff\u4e00-\u9fff]/.test(s)) return s.replace(/[\s、。！？!?.,]/g, '').length <= 12
   return s.replace(FILLER, ' ').replace(/[^a-z]+/gi, '').length === 0
 }
+const SWAP = /\b(?:swap|switch|change|trade)\b(?:\s+\w+){0,2}?\s+(?:roles?|parts?|places|sides)\b|\blet'?s swap\b|\bswap (?:please|now)\b|交代|入れ替|役を(?:変|か)え|役割を(?:変|か)え/i
+const AGAIN = /\b(?:again|one more time|once more|redo|do it over)\b|もう一度|もう1回|もう一回|もういっかい|もう一度やり/i
+const NEXT_SCENE = /\b(?:another|a different|the next|next)\s+(?:scene|one|role[- ]?play|situation)\b|次のシーン|別のシーン|ほかの|他の(?:シーン|ロールプレイ)/i
 const LESSONISH = /\b(?:courses?|lessons?|slides?)\b|コース|レッスン|スライド/i
 const START = /\b(?:let'?s (?:do|try|start|go with|go for|play)|(?:I'd|I would|I want to|I wanna) (?:like to )?(?:do|try|play)|can we (?:do|try)|start|go with|go for)\b|はじめ|始め|(?:に|で)します|やりたい|やります/i
 const ORDINALS: [RegExp, number][] = [
@@ -67,7 +74,7 @@ export function findItem(text: string, items: PanelItem[], ordinals = true): Pan
 export function panelIntent(
   text: string,
   who: 'student' | 'tutor',
-  panel: 'picker' | 'roleplay' | null,
+  panel: 'picker' | 'roleplay' | 'done' | null,
   items: { rp: PanelItem[]; course: PanelItem[] },
   mode: 'rp' | 'course' = 'rp',
 ): PanelIntent | null {
@@ -82,6 +89,13 @@ export function panelIntent(
     if (FREE_TALK.test(s)) return { kind: 'close' }
   }
   if (panel === 'roleplay') return null
+  if (panel === 'done') {
+    // swap first ("let's swap and do it again" is a swap)
+    if (SWAP.test(s)) return { kind: 'swap' }
+    if (NEXT_SCENE.test(s)) return { kind: 'next' }
+    if (AGAIN.test(s)) return { kind: 'again' }
+    return null
+  }
 
   // with nothing on screen, talk about a course or a lesson ("let's start from the first lesson") is never a role-play
   if (panel !== 'picker' && LESSONISH.test(s) && !RP.test(s)) return null

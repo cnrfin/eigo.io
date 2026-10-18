@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server'
-import { roleplayInstruction, sceneById } from '@/lib/roleplay'
+import { otherRole, roleOf, roleplayInstruction, sceneById } from '@/lib/roleplay'
 import { getSupabaseAdmin } from '@/lib/supabase-admin'
 import { json, loadClassroom } from '@/lib/classroom/server'
 import { appendInstructions } from '@/lib/ai-tutor/openai'
@@ -34,6 +34,10 @@ type Action =
   | { kind: 'view'; what: 'closed' | 'board_on' | 'board_off' | 'open_failed' }
   | { kind: 'card'; what: 'saved' | 'chose'; text: string; style?: string }
   | { kind: 'roleplay'; sceneId: string; role: 'a' | 'b'; level: 0 | 1 | 2 }
+  /** every task on the student's list is ticked: the AI tutor brings the scene to an end */
+  | { kind: 'roleplay_tasks_done' }
+  /** the mission-complete screen is up: spoken feedback, then swap / again / another */
+  | { kind: 'roleplay_done'; sceneId: string; role: 'a' | 'b'; done: { task: string; said: string }[]; missed: string[]; canSwap: boolean }
   | { kind: 'panel'; what: 'picker' | 'closed' | 'course' }
 
 const q = (v: unknown, max: number) => (typeof v === 'string' ? v.replace(/\s+/g, ' ').replace(/"/g, "'").trim().slice(0, max) : '')
@@ -92,6 +96,25 @@ function instruction(a: Action, secondsLeft: number): string | null {
       const scene = sceneById(a.sceneId)
       if (!scene) return null
       return roleplayInstruction(scene, a.role === 'b' ? 'b' : 'a', a.level === 1 || a.level === 2 ? a.level : 0)
+    }
+    case 'roleplay_tasks_done':
+      return 'The student has now done every task on their list. Bring the scene to a natural close in character within a line or two, then say "That\'s the end of the role-play!"'
+    case 'roleplay_done': {
+      const scene = sceneById(a.sceneId)
+      if (!scene) return null
+      const mine = roleOf(scene, a.role === 'b' ? 'b' : 'a')
+      const yours = roleOf(scene, otherRole(a.role === 'b' ? 'b' : 'a'))
+      const done = (Array.isArray(a.done) ? a.done : []).slice(0, 8).map((d) => `- ${q(d.task, 80)}: "${q(d.said, 160)}"`).join('\n')
+      const missed = (Array.isArray(a.missed) ? a.missed : []).slice(0, 6).map((m) => q(m, 80)).filter(Boolean)
+      const offer = a.canSwap
+        ? `swap roles (this time they play ${yours.name.en} and you play ${mine.name.en}), try it again, or try another scene`
+        : 'try it again or try another scene'
+      return `The role-play is over and the mission-complete screen is on the student's screen. Step out of character now and give short spoken feedback, in 3 short sentences (under 30 seconds in all), each one on its own:
+1. One specific thing they did well, quoting their own words.
+2. One thing to try next time: "A more natural way is: <a better version of one of their lines>".
+3. Ask if they'd like to ${offer}. Then wait for their answer.${missed.length ? `\nThey didn't get to: ${missed.join('; ')}. You can mention one of these as the thing to try.` : ''}
+What they said for each task:
+${done || '(nothing recorded)'}`
     }
     case 'panel':
       if (a.what === 'picker') return "The list of role-plays (and courses) is now on the student's screen. Briefly suggest one that fits their goals, or let them choose; they tap or say one. Don't start a role-play until it's on their screen."

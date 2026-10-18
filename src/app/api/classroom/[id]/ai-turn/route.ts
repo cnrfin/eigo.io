@@ -3,15 +3,18 @@ import { getSupabaseAdmin } from '@/lib/supabase-admin'
 import { json, loadClassroom } from '@/lib/classroom/server'
 import { findLesson, loadCourse } from '@/lib/classroom/courses'
 import { lessonOutline } from '@/lib/ai-tutor/brief'
-import { decideScreenAction, decideSlideMove, type SlideMove } from '@/lib/ai-tutor/turn'
+import { decideScreenAction, decideSlideMove, decideTicks, type SlideMove } from '@/lib/ai-tutor/turn'
+import { sceneById } from '@/lib/roleplay'
+import type { Tick } from '@/lib/roleplay/ticks'
 import type { Decision, Named, Screen, ScreenView } from '@/lib/ai-tutor/actions'
 
 /**
  * POST /api/classroom/[id]/ai-turn
  *   { sessionId, courseId?, lessonId?, slideId?, furthest?, reviewing?, lines?: [{ from, text }],   ← slide check
  *     screen?: { view, board, pickerMode?, roleplay?, wrappingUp? }, courses?: [{id,title}], scenes?: [{id,title}],
- *     recent?: [{ from, text }] }                                                                     ← action judge
- *   → { move: 'stay' | 'next' | 'back' | 'return', slide, action, quote }
+ *     recent?: [{ from, text }],                                                                      ← action judge
+ *     roleplay?: { sceneId, role, level, twisted, done: [taskId], lines: [{ from, text }] } }          ← role-play ticks
+ *   → { move: 'stay' | 'next' | 'back' | 'return', slide, action, quote, ticks: [{ id, said }] }
  *
  * AI lessons, after each pause:
  *  - the slide check (lib/ai-tutor/turn.ts decideSlideMove): with a course open, should the slide change?
@@ -53,6 +56,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     courses?: unknown
     scenes?: unknown
     recent?: unknown
+    roleplay?: { sceneId?: string; role?: string; level?: number; twisted?: boolean; done?: unknown; lines?: unknown }
   }
   try {
     b = await request.json()
@@ -102,7 +106,22 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       : null
   const judge: Promise<Decision> = screen && recent.length ? decideScreenAction(screen, { courses: cleanNamed(b.courses), scenes: cleanNamed(b.scenes) }, recent) : Promise.resolve(none)
 
-  const [move, decision] = await Promise.all([slideCheck, judge])
+  // 3) a role-play being played: which of the student's tasks are done now (lib/roleplay/ticks.ts)
+  const rp = b.roleplay
+  const scene = rp ? sceneById(rp.sceneId) : null
+  const ticks: Promise<Tick[]> =
+    rp && scene
+      ? decideTicks(
+          scene,
+          rp.role === 'b' ? 'b' : 'a',
+          rp.level === 1 || rp.level === 2 ? rp.level : 0,
+          !!rp.twisted,
+          (Array.isArray(rp.done) ? rp.done : []).filter((x): x is string => typeof x === 'string').slice(0, 12),
+          cleanLines(rp.lines, 24),
+        )
+      : Promise.resolve([])
+
+  const [move, decision, done] = await Promise.all([slideCheck, judge, ticks])
   if (decision.action.kind !== 'none') console.info('ai-action', JSON.stringify({ booking: booking.id, screen: screen?.view, action: decision.action, quote: decision.quote }))
-  return json(200, { ...move, ...decision })
+  return json(200, { ...move, ...decision, ticks: done })
 }

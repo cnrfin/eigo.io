@@ -1,5 +1,7 @@
 import OpenAI from 'openai'
 import { actionPrompt, validateDecision, type Decision, type Named, type Screen } from './actions'
+import { openTasks, ticksPrompt, validateTicks, type Tick } from '@/lib/roleplay/ticks'
+import type { LevelIndex, RoleId, Scene } from '@/lib/roleplay/types'
 
 /**
  * Slide control for AI lessons, owned by our app rather than the voice model.
@@ -116,5 +118,43 @@ export async function decideScreenAction(
   } catch (e) {
     console.error('ai-action failed', e instanceof Error ? e.message : e)
     return none
+  }
+}
+
+/** Role-plays (phase 3b): which of the student's remaining tasks are now done (lib/roleplay/ticks.ts). */
+export async function decideTicks(
+  scene: Scene,
+  role: RoleId,
+  level: LevelIndex,
+  twisted: boolean,
+  done: string[],
+  lines: { from: 'student' | 'tutor'; text: string }[],
+): Promise<Tick[]> {
+  const open = openTasks(scene, role, level, twisted, done)
+  if (!open.length || !lines.some((l) => l.from === 'student')) return []
+  const { system, user } = ticksPrompt(scene, role, level, open, lines)
+  try {
+    const base = {
+      model: MODEL,
+      messages: [
+        { role: 'system' as const, content: system },
+        { role: 'user' as const, content: user },
+      ],
+      response_format: { type: 'json_object' as const },
+      max_completion_tokens: 1200,
+    }
+    let c
+    try {
+      c = await openai().chat.completions.create({ ...base, reasoning_effort: 'low' } as never, { timeout: 7000, maxRetries: 0 })
+    } catch (e) {
+      if (!/reasoning|effort/i.test(e instanceof Error ? e.message : String(e))) throw e
+      c = await openai().chat.completions.create(base, { timeout: 7000, maxRetries: 0 })
+    }
+    const raw = c.choices[0]?.message?.content ?? ''
+    if (!raw.trim()) return []
+    return validateTicks(JSON.parse(raw), open.map((t) => t.id), lines)
+  } catch (e) {
+    console.error('ai-ticks failed', e instanceof Error ? e.message : e)
+    return []
   }
 }

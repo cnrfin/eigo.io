@@ -218,6 +218,10 @@ export type StudentAction =
   | { kind: 'card'; what: 'saved' | 'chose'; text: string; style?: string }
   /** a role-play starts on the AI panel (the server sends the AI tutor the scene, its character and the tasks) */
   | { kind: 'roleplay'; sceneId: string; role: 'a' | 'b'; level: 0 | 1 | 2 }
+  /** every task on the student's list is ticked: the AI tutor brings the scene to an end */
+  | { kind: 'roleplay_tasks_done' }
+  /** the mission-complete screen is up: spoken feedback, then swap / again / another */
+  | { kind: 'roleplay_done'; sceneId: string; role: 'a' | 'b'; done: { task: string; said: string }[]; missed: string[]; canSwap: boolean }
   /** the AI panel: the picker opened, or the student closed it */
   | { kind: 'panel'; what: 'picker' | 'closed' | 'course' }
 
@@ -261,6 +265,8 @@ export type AiTurn = {
   /** the action judge (lib/ai-tutor/actions.ts): a screen change, already checked on the server */
   action?: ScreenAction
   quote?: string
+  /** a role-play: the student's tasks done now, with their words (lib/roleplay/ticks.ts) */
+  ticks?: { id: string; said: string }[]
 }
 
 /** AI lessons: should the slide change after this turn? (a small fast model on our server decides) */
@@ -280,6 +286,8 @@ export async function aiTurn(
     courses?: { id: string; title: string }[]
     scenes?: { id: string; title: string }[]
     recent?: { from: 'student' | 'tutor'; text: string }[]
+    /** a role-play being played: which tasks are done now */
+    roleplay?: { sceneId: string; role: 'a' | 'b'; level: 0 | 1 | 2; twisted: boolean; done: string[]; lines?: { from: 'student' | 'tutor'; text: string }[] }
   },
 ): Promise<AiTurn> {
   const none: AiTurn = { move: 'stay', slide: null, action: { kind: 'none' }, quote: '' }

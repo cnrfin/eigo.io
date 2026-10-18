@@ -697,4 +697,60 @@
 .cr .apn-gt span{font-size:12px;color:var(--text-muted)}
 .cr .apn-gt .apn-said{font-size:12.5px;color:var(--accent);animation:apn-info .4s var(--ease)}
 .cr .apn-mission .apn-foot{padding:10px 0 14px}
+.cr .apn-mission{position:absolute;inset:0;display:flex;flex-direction:column;overflow:hidden}
+/* the prop (menu…): a button top right, the sheet slides up over the checklist */
+.cr .apn-propbtn{flex:none;height:34px;padding:0 13px 0 10px;border-radius:999px;background:var(--inset);font-size:12.5px;font-weight:600;display:inline-flex;align-items:center;gap:6px;transition:transform .12s ease-out,background .2s,color .2s}
+.cr .apn-propbtn:active{transform:scale(.95)}
+.cr .apn-propbtn.on{background:var(--accent-bg);color:var(--accent)}
+.cr .apn-propbtn .ico{width:16px;height:16px}
+.cr .apn-prop{position:absolute;left:14px;right:14px;top:84px;bottom:14px;z-index:4;border-radius:16px;background:#f6efe4;color:#2b2420;padding:16px 20px;display:flex;flex-direction:column;gap:4px;overflow-y:auto;font-family:Georgia,"Hiragino Mincho ProN",serif;box-shadow:0 1px 2px rgba(0,0,0,.3),0 12px 40px rgba(0,0,0,.3);transform:translateY(calc(100% + 30px));visibility:hidden;transition:transform .45s var(--ease),visibility 0s .45s}
+.cr .apn-prop.open{transform:none;visibility:visible;transition:transform .45s var(--ease)}
+.cr .apn-pt{text-align:center;font-size:18px;letter-spacing:.08em}
+.cr .apn-ps{font-size:11px;letter-spacing:.16em;color:#8a7a68;border-bottom:1px solid rgba(0,0,0,.1);padding-bottom:4px;margin-top:8px;text-transform:uppercase}
+.cr .apn-pi{display:flex;align-items:baseline;gap:8px;font-size:14.5px;padding:3px 8px;margin:0 -8px;border-radius:8px;transition:background .3s}
+.cr .apn-pd{flex:1;border-bottom:1px dotted rgba(0,0,0,.25);transform:translateY(-4px)}
+.cr .apn-pi.hit{background:rgba(124,199,174,.35)}
+.cr .apn-pf{margin-top:auto;text-align:center;font-size:12px;color:#8a7a68;padding-top:8px;border-top:1px dashed rgba(0,0,0,.15)}
+/* the twist's task */
+.cr .apn-goal.twist{box-shadow:inset 0 0 0 1.5px var(--warning);animation:apn-twin .55s var(--ease)}
+.cr .apn-goal.twist.done{box-shadow:none}
+.cr .apn-tw{font-size:10.5px;font-weight:700;color:var(--warning);margin-left:6px}
+@keyframes apn-twin{from{opacity:0;transform:translateY(8px)}}
+/* a hint, above the timer: after a silence on the student's turn, one step further each time */
+.cr .apn-hbox{margin-top:10px;padding:10px 13px;border-radius:14px;background:var(--inset);display:flex;align-items:center;gap:10px;animation:apn-hin .4s var(--ease);flex:none}
+@keyframes apn-hin{from{opacity:0;transform:translateY(6px)}}
+.cr .apn-hk{font-size:11px;font-weight:700;color:var(--accent);flex:none}
+.cr .apn-hv{flex:1;font-size:13.5px;color:var(--text-secondary)}
+.cr .apn-hv.full{font-size:15px;font-weight:600;color:var(--text)}
+.cr .apn-hdots{display:flex;gap:3px}.cr .apn-hdots i{width:5px;height:5px;border-radius:999px;background:var(--edge)}.cr .apn-hdots i.on{background:var(--accent)}
+.cr .apn-timer{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-muted);font-variant-numeric:tabular-nums;margin-top:10px;flex:none}
+.cr .apn-bar{flex:1;height:4px;border-radius:2px;background:var(--inset);overflow:hidden}.cr .apn-bar i{display:block;height:100%;background:var(--accent);border-radius:2px;transition:width 1s linear}
+/* mission complete */
+.cr .apn-done{position:absolute;inset:0;display:flex;flex-direction:column;padding:22px;overflow-y:auto;animation:apn-info .5s var(--ease)}
+.cr .apn-dt{display:flex;align-items:center;gap:14px}
+.cr .apn-medal{width:58px;height:58px;border-radius:999px;background:var(--accent);display:grid;place-items:center;color:#0d1a16;flex:none;animation:apn-mpop .7s var(--ease)}
+.cr .apn-medal .ico{width:30px;height:30px}
+@keyframes apn-mpop{0%{transform:scale(.4);opacity:0}60%{transform:scale(1.1)}}
+.cr .apn-ticks{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+.cr .apn-ticks span{font-size:12px;padding:4px 10px;border-radius:999px;background:var(--accent-bg);color:var(--accent);display:inline-flex;align-items:center;gap:4px}
+.cr .apn-ticks span.miss{background:var(--inset);color:var(--text-muted)}
+.cr .apn-ticks .ico{width:12px;height:12px}
+.cr .apn-best{margin-top:12px;padding:11px 14px;border-radius:14px;background:var(--inset);display:grid;grid-template-columns:1fr auto;gap:2px 12px;align-items:baseline}
+.cr .apn-bl,.cr .apn-bm{font-size:11.5px;color:var(--text-muted)}.cr .apn-bm{font-variant-numeric:tabular-nums;text-align:right}
+.cr .apn-bq{grid-column:1/-1;font-size:15px;font-weight:600}
+.cr .apn-fb{margin-top:14px;flex:1;min-height:0;display:flex;flex-direction:column;gap:8px}
+.cr .apn-fbl{display:flex;gap:10px;align-items:flex-start;font-size:14px;line-height:1.5;animation:apn-hin .45s var(--ease)}
+.cr .apn-fic{width:24px;height:24px;border-radius:999px;display:grid;place-items:center;flex:none;margin-top:1px;background:var(--accent-bg);color:var(--accent)}
+.cr .apn-fbl.pen .apn-fic{background:rgba(242,194,122,.16);color:var(--warning)}
+.cr .apn-fbl.users .apn-fic{background:var(--inset);color:var(--text-muted)}
+.cr .apn-fic .ico{width:14px;height:14px}
+.cr .apn-acts{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:14px}
+.cr .apn-btn{height:40px;padding:0 16px;border-radius:999px;font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:6px;background:var(--inset);transition:transform .12s ease-out}
+.cr .apn-btn:active{transform:scale(.95)}
+.cr .apn-btn.pri{background:var(--accent);color:#0d1a16}
+[data-theme=light] .cr .apn-btn.pri{color:#fff}
+.cr .apn-btn .ico{width:16px;height:16px}
+.cr .apn-btn .ico.flip{transform:scaleX(-1)}
+.cr .apn-acts .apn-end{margin-left:auto}
+@media (prefers-reduced-motion:reduce){.cr .apn-prop,.cr .apn-hbox,.cr .apn-done,.cr .apn-medal,.cr .apn-goal.twist,.cr .apn-fbl{animation:none;transition:none}}
 @media (prefers-reduced-motion:reduce){.cr .apn,.cr .apn-info,.cr .apn-reel img{animation:none}}
