@@ -9,7 +9,7 @@
   "roles": [
     {
       "id": "a",
-      "name": { "ja": "あなた（営業）", "en": "You (sales)" },
+      "name": { "ja": "営業担当", "en": "Sales rep" },
       "persona": "A sales rep at a Tokyo lighting company, discussing a quote with an overseas buyer.",
       "levels": [
         {

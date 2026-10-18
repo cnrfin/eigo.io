@@ -43,11 +43,11 @@ The full type is in `src/lib/roleplay/types.ts`. Field by field:
 | `category` | the folder: `travel` · `help` · `service` · `friends` · `business` |
 | `title` | `{ "ja", "en" }`. The scene name in the picker. Japanese about 10–20 characters, like 「ホテルにチェックイン」 |
 | `summary` | `{ "ja", "en" }`. One line under the title: what you'll do. Japanese 60 characters max |
-| `setting` | English, 1–2 sentences, for the AI tutor: where and when, who is there |
+| `setting` | English, 1–2 sentences, for the AI tutor: where and when, who is there. It's used in **both** roles, so name the characters ("Emma calls a Japanese friend…"), never "the student" (the checker flags it) |
 | `image` | `""` |
 | `studentRole` | always `"a"` |
 | `roles` | exactly two: `a` (the student's first role) and `b` |
-| `roles[].name` | `{ "ja", "en" }`, short: 「店員」 / "Staff" |
+| `roles[].name` | `{ "ja", "en" }`, short: 「店員」 / "Staff". After a swap the AI tutor plays this role ("You play: Staff"), so describe the character, never 「あなた」 / "You" (the checker flags it): 「日本人の友だち」 / "Japanese friend", 「東京の同僚」 / "Colleague (Tokyo)" |
 | `roles[].persona` | English, one sentence: who this character is (the AI tutor plays it after a swap) |
 | `roles[].levels` | exactly three: 初級, 中級, 上級 |
 | `levels[].tutor` | English, 2–4 sentences: how the AI tutor plays the **other** character at this level (see Levels) |
@@ -83,6 +83,10 @@ The same scene at three levels. Change the **language demand**, not the situatio
 
 The `tutor` note tells the AI tutor, in English: its speed and sentence length, what it asks or does so each task comes up, and any concrete details it should use (names, numbers, what it orders, what's sold out). Write it to the AI tutor ("You are a tourist… Speak slowly…"). Never write the student's lines into the tutor note.
 
+Two things the AI tutor will do unless the note says otherwise:
+- **It speaks first.** If the student's first task is something they'd say unprompted (greeting a customer, offering help, inviting a friend), tell the tutor how to open without taking that line: "Open by walking in and looking at the menu; wait for the staff to greet you."
+- **It answers everything it knows at once.** If a later task has the student ask for something (the price, the day, whether entry is free), the note must hold it back: "Only when asked about the cost, say entry is free." Otherwise the tutor says it first and the student's question no longer makes sense.
+
 ### Twists (上級 only, about half of the scenes)
 
 Something unexpected that the student has to deal with: the card machine is broken, the room isn't ready, the dish has shellfish, the train is cancelled. It happens after one of the tasks (`after`, a task in the middle, not the last one), and adds one task for the student.
@@ -116,6 +120,7 @@ At most 4 sections, about 6 items each.
 - a word or phrase that's actually said, matched whole: `"latte"`, `"10:15"`, `"check-in"`, `"Wi-Fi"`, `"side entrance"` (it won't light up on "Riverside")
 - spellings or names people might use, separated by `|`: `"colour|color"`, `"bill|check"`
 - no two items with the same key, or a key that's part of another item's key (both would light up). The checker flags these.
+- no bare small numbers or everyday words: `"30"` lights up on "30 minutes" and `"video"` on "video call". Use the phrase people say about the item: `"30 percent"`, `"18 dollars"`, `"video ads"`. Note that `$` and `%` are dropped when matching, so `"$18"` is the same as `"18"`. The checker warns about these.
 
 ## Japan and the language
 

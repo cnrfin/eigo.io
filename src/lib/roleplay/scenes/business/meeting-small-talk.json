@@ -9,7 +9,7 @@
   "roles": [
     {
       "id": "a",
-      "name": { "ja": "あなた（東京）", "en": "You (Tokyo)" },
+      "name": { "ja": "東京の同僚", "en": "Colleague (Tokyo)" },
       "persona": "A member of the Tokyo team who hosts the weekly project call with the Singapore office.",
       "levels": [
         {
