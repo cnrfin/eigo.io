@@ -30,6 +30,7 @@ type Action =
   | { kind: 'nudge' }
   | { kind: 'time' }
   | { kind: 'view'; what: 'closed' | 'board_on' | 'board_off' | 'open_failed' }
+  | { kind: 'card'; what: 'saved' | 'chose'; text: string; style?: string }
 
 const q = (v: unknown, max: number) => (typeof v === 'string' ? v.replace(/\s+/g, ' ').replace(/"/g, "'").trim().slice(0, max) : '')
 
@@ -75,6 +76,14 @@ function instruction(a: Action, secondsLeft: number): string | null {
       if (a.what === 'board_off') return "The whiteboard is closed; the student sees the lesson again (or free talk if no course is open)."
       if (a.what === 'open_failed') return "The course could not be opened on the student's screen. Tell them briefly and carry on with free talk."
       return null
+    case 'card': {
+      const t = q(a.text, 160)
+      if (!t) return null
+      if (a.what === 'saved')
+        return `"${t}" is now in the student's word list (saved for them automatically from the card on their screen). If it fits, mention it in a few words ("I've saved that for you"); don't repeat the whole phrase again.`
+      const style = a.style === 'polite' ? 'more polite' : a.style === 'casual' ? 'more casual' : 'standard'
+      return `On the card on their screen, the student chose the ${style} version: "${t}". Ask them to say it.`
+    }
     case 'nudge':
       if (secondsLeft < 30) return null
       return 'Nobody has spoken for about 9 seconds. You lead the lesson: if the student is in the middle of a task, give a short, friendly prompt; if everything on this slide is done, say now that you’re moving on to the next slide (it appears by itself). In free talk, ask a new question or bring a new topic.'

@@ -500,7 +500,8 @@ export default function Classroom({ info }: { info: JoinInfo }) {
   }, [courses])
 
   const toggleWord = useCallback(
-    async (w: SaveWordInput) => {
+    /** quiet: no toast and no note to the AI tutor (the AI lesson's cards show and say their own) */
+    async (w: SaveWordInput, opts?: { quiet?: boolean }) => {
       if (isTeacher) return
       const was = saved.has(w.itemId)
       const apply = (on: boolean) => {
@@ -524,6 +525,7 @@ export default function Classroom({ info }: { info: JoinInfo }) {
         toast(t('saveFailed'), 'bad')
         return
       }
+      if (opts?.quiet) return
       toast(was ? t('wordRemoved', { term: w.term }) : t('wordAdded', { term: w.term }), was ? undefined : 'ok')
       if (!was) bus.dispatchEvent(new CustomEvent<StudentAction>('student-action', { detail: { kind: 'save', term: w.term } }))
     },
@@ -619,7 +621,7 @@ export default function Classroom({ info }: { info: JoinInfo }) {
     [saved, info.bookingId],
   )
   const removeLessonWord = useCallback(
-    (w: SavedWord) => toggleWord({ source: w.source, courseId: w.courseId, itemId: w.itemId, term: w.term }),
+    (w: SavedWord, opts?: { quiet?: boolean }) => toggleWord({ source: w.source, courseId: w.courseId, itemId: w.itemId, term: w.term }, opts),
     [toggleWord],
   )
 

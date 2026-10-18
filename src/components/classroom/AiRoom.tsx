@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import { aiCourseTitles, aiOpenLesson, aiTurn, postEvent, sendAiReport, saveAiTranscript, sendAiAction, startAiSession, type SlideRef, type StudentAction } from '@/lib/classroom/client'
+import { aiAssist, aiCourseTitles, aiOpenLesson, aiTurn, postEvent, sendAiReport, saveAiTranscript, sendAiAction, startAiSession, type SlideRef, type StudentAction } from '@/lib/classroom/client'
 import type { Lesson } from '@/lib/slides/types'
 import { useAudioLevel, useVolDot } from './audio'
 import AiAvatar from '@/components/ai/AiAvatar'
@@ -9,6 +9,9 @@ import { faceForText, newMood } from '@/lib/ai-tutor/avatar-mood'
 import { INTRO_FAIL_MS, INTRO_REVEAL_MS, introFailed, introLive, newIntro, pickIntro, type AvatarIntro } from '@/lib/ai-tutor/avatar-intro'
 import ChatPanel from './ChatPanel'
 import WordList, { WordsButton } from './WordList'
+import AiCards, { type HearFn, type ShownCard } from './AiCards'
+import { shrinkInto } from './save-fly'
+import { lastExchange, mayHaveCard, tutorItemId, type SayStyle } from '@/lib/ai-tutor/cards'
 import { Ico } from './Icons'
 import SlideStage from './SlideStage'
 import Toolbar from './Toolbar'
@@ -182,6 +185,7 @@ export default function AiRoom(props: Props) {
     breakLine.current = false
     lastEnd.current[from] = endMs
     speechHook.current(from, L[L.length - 1])
+    cardHook.current(from)
   }, [])
   const flush = useCallback(
     (final: boolean) => {
@@ -189,6 +193,106 @@ export default function AiRoom(props: Props) {
     },
     [info.bookingId],
   )
+
+  /* ---------- cards: corrections and "How do I say…?" (lib/ai-tutor/cards.ts) ---------- */
+  const [shown, setShown] = useState<ShownCard | null>(null)
+  /** the card listens to what the student says from when it appears ("save it", the phrase…) */
+  const cardHear = useRef<HearFn | null>(null)
+  const [undo, setUndo] = useState<{ id: number; itemId: string; term: string; already: boolean } | null>(null)
+  const cardFrom = useRef(0)
+  const cardSeq = useRef(0)
+  const shownRef = useRef<ShownCard | null>(null)
+  const assistTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const assistSig = useRef('')
+  const { onSaveWord, onRemoveWord, savedIds } = props
+  const savedRef = useRef(savedIds)
+  const sideRef = useRef(props.side)
+  useEffect(() => {
+    shownRef.current = shown
+    savedRef.current = savedIds
+    sideRef.current = props.side
+  })
+  const saveTerm = useCallback(
+    (term: string, ja: string) => {
+      const itemId = tutorItemId(term)
+      const already = savedRef.current.has(itemId)
+      if (!already) onSaveWord({ source: 'tutor', itemId, term, ja }, { quiet: true })
+      void act({ kind: 'card', what: 'saved', text: term })
+      return { itemId, already }
+    },
+    [onSaveWord, act],
+  )
+  /** the card shrinks into the word-bank button (or, with the word list open, into its new top row), then it's saved */
+  const saveFromCard = useCallback(
+    (el: HTMLElement, term: string, ja: string) => {
+      let target: HTMLElement | DOMRect | null = document.querySelector<HTMLElement>('[data-words-btn] .cface')
+      if (sideRef.current === 'words') {
+        const list = document.querySelector<HTMLElement>('.wlist .wrows') ?? document.querySelector<HTMLElement>('.wlist .wempty')
+        const r = list?.getBoundingClientRect()
+        const row = list?.querySelector<HTMLElement>('.wr')?.getBoundingClientRect()
+        if (r) target = new DOMRect(r.left + 8, r.top, r.width - 16, row?.height ?? 52)
+      }
+      const id = shownRef.current?.id ?? 0
+      const finish = () => {
+        setShown((c) => (c?.id === id ? null : c))
+        const r = saveTerm(term, ja)
+        setUndo({ id: ++cardSeq.current, itemId: r.itemId, term, already: r.already })
+      }
+      if (target) shrinkInto(el, target, { radius: sideRef.current === 'words' ? 12 : 14, onDone: finish })
+      else finish()
+    },
+    [saveTerm],
+  )
+  const showCard = useCallback(
+    (c: ShownCard['card']) => {
+      // a card that was still up gets saved as it goes (it was going to be saved anyway)
+      const prev = shownRef.current?.card
+      if (prev) saveTerm(prev.kind === 'correction' ? prev.now : prev.options[0].text, prev.kind === 'correction' ? prev.ja : prev.heard)
+      cardFrom.current = lines.current.length
+      setUndo(null)
+      setShown({ id: ++cardSeq.current, card: c })
+    },
+    [saveTerm],
+  )
+  /** after the AI tutor's turn: ask the helper only when the turn looks like a correction or "How do I say…?" */
+  const runAssist = useCallback(async () => {
+    const sid = sessionId.current
+    if (!sid || closing.current) return
+    const recent = lines.current.slice(-6).map((l) => ({ from: l.from, text: l.text }))
+    const ex = lastExchange(recent)
+    if (!mayHaveCard(ex.student, ex.tutor)) return
+    const sig = `${lines.current.length}:${ex.tutor.length}`
+    if (sig === assistSig.current) return
+    assistSig.current = sig
+    const c = await aiAssist(info.bookingId, { sessionId: sid, lines: recent })
+    if (c && !closing.current) showCard(c)
+  }, [info.bookingId, showCard])
+  const cardHook = useRef<(from: Line['from']) => void>(() => {})
+  useEffect(() => {
+    cardHook.current = (from) => {
+      if (from === 'tutor') {
+        if (assistTimer.current) clearTimeout(assistTimer.current)
+        assistTimer.current = setTimeout(() => void runAssist(), 1300)
+      } else if (shownRef.current) {
+        cardHear.current?.(
+          lines.current
+            .slice(cardFrom.current)
+            .filter((l) => l.from === 'student')
+            .map((l) => l.text)
+            .join(' '),
+        )
+      }
+    }
+    return () => {
+      if (assistTimer.current) clearTimeout(assistTimer.current)
+    }
+  }, [runAssist])
+  useEffect(() => {
+    if (!undo) return
+    const id = setTimeout(() => setUndo((u) => (u?.id === undo.id ? null : u)), 4000)
+    return () => clearTimeout(id)
+  }, [undo])
+  const onChose = useCallback((style: SayStyle, text: string) => void act({ kind: 'card', what: 'chose', text, style }), [act])
 
   /* ---------- slides: changed by the classroom itself ---------- */
   // GPT-Live's tool calls were slow and unreliable for this, so the AI tutor just says it's moving on:
@@ -1156,6 +1260,23 @@ export default function AiRoom(props: Props) {
                 {info.me.name} {t('you')}
               </span>
             </div>
+            <AiCards t={t} shown={status === 'live' ? shown : null} hearRef={cardHear} onSave={saveFromCard} onClose={() => setShown(null)} onChose={onChose} />
+            {undo && !shown && (
+              <div className="aic-undo" role="status">
+                <Ico name="check" />
+                {undo.already ? t('cardAlready') : t('cardSaved')}
+                {!undo.already && (
+                  <button
+                    onClick={() => {
+                      onRemoveWord({ itemId: undo.itemId, term: undo.term, source: 'tutor', courseId: null }, { quiet: true })
+                      setUndo(null)
+                    }}
+                  >
+                    {t('cardUndo')}
+                  </button>
+                )}
+              </div>
+            )}
           </div>
 
           <Toolbar t={t} ink={props.ink} open={tbOpen} setOpen={setTbOpen} toast={props.toast} enabled={!!surface} />

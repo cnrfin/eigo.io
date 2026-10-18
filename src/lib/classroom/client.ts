@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useRef } from 'react'
+import type { Card } from '@/lib/ai-tutor/cards'
 import type { RealtimeChannel } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
 import type { Course } from '@/lib/slides/types'
@@ -130,6 +131,16 @@ export async function saveAiTranscript(bookingId: string, sessionId: string, lin
 export type SlideRef = { courseId: string; lessonId: string; slideId: string }
 
 /** Something the student did in an AI lesson that the AI tutor should react to. */
+/** AI lessons: a correction or "How do I say…?" card for the AI tutor's last turn (null = none). */
+export async function aiAssist(bookingId: string, body: { sessionId: string; lines: { from: 'student' | 'tutor'; text: string }[] }): Promise<Card | null> {
+  try {
+    const r = await call(`/api/classroom/${bookingId}/ai-assist`, { method: 'POST', body: JSON.stringify(body) })
+    return r.ok ? (((await r.json()).card as Card | null) ?? null) : null
+  } catch {
+    return null
+  }
+}
+
 export type StudentAction =
   | { kind: 'chat'; text: string }
   | { kind: 'lookup'; term: string; meaning: string }
@@ -144,6 +155,8 @@ export type StudentAction =
   | { kind: 'nudge' }
   | { kind: 'time' }
   | { kind: 'view'; what: 'closed' | 'board_on' | 'board_off' | 'open_failed' }
+  /** a card on the student's screen: its phrase was saved to the word list, or they picked a version */
+  | { kind: 'card'; what: 'saved' | 'chose'; text: string; style?: string }
 
 /** AI lessons: tell the AI tutor about a student action. Our server turns it into a fixed-template
  *  instruction on the live session (the browser can't send instructions itself). */

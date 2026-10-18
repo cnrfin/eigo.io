@@ -580,3 +580,34 @@
 @media (hover:none){.cr .wx{display:grid;position:static;margin:0;flex:none}.cr .wr:hover .wsrc{visibility:visible}}
 .cr .wempty{padding:6px 18px;font-size:13px;line-height:1.7;color:var(--text-muted)}
 .cr .badge.soft{background:var(--accent);color:var(--selected-text)}
+
+/* AI lessons: correction / "How do I say…?" card, sliding up over whatever is on screen (design: mockups/ai-panel.html) */
+.cr .aic{position:absolute;left:50%;bottom:14px;z-index:12;width:min(520px,calc(100% - 28px));transform:translateX(-50%);background:var(--panel);border:1px solid var(--hairline);border-radius:20px;box-shadow:0 1px 2px rgba(0,0,0,.5),0 12px 40px rgba(0,0,0,.35);padding:16px 18px;animation:aic-in .45s var(--ease)}
+[data-theme=light] .cr .aic{box-shadow:0 1px 6px rgba(0,0,0,.04),0 16px 48px rgba(0,0,0,.10)}
+@keyframes aic-in{from{opacity:0;filter:blur(6px);transform:translate(-50%,16px) scale(.98)}}
+.cr .aic-h{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-muted);margin-bottom:10px}
+.cr .aic-x{margin-left:auto;width:28px;height:28px;border-radius:999px;background:var(--inset);display:grid;place-items:center;color:var(--text-muted);transition:transform .12s ease-out}
+.cr .aic-x .ico{width:14px;height:14px}
+.cr .aic-x:active{transform:scale(.9)}
+.cr .aic-was{font-size:13px;color:var(--text-muted);text-decoration:line-through;text-decoration-color:var(--danger);text-decoration-thickness:1.5px}
+.cr .aic-heard{font-size:13px;color:var(--text-muted)}
+.cr .aic-now{font-size:19px;font-weight:600;letter-spacing:-.005em;line-height:1.35;margin-top:4px}
+.cr .aic-now mark{background:var(--accent-bg);color:inherit;border-radius:5px;padding:0 2px;margin:0 -2px}
+.cr .aic-why{font-size:12.5px;color:var(--text-secondary);margin-top:6px}
+.cr .aic-alts{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.cr .aic-alt{font-size:12.5px;padding:6px 12px;border-radius:999px;border:1px solid var(--edge);color:var(--text-muted);transition:transform .12s ease-out}
+.cr .aic-alt:active{transform:scale(.95)}
+.cr .aic-alt.on{border-color:var(--accent);color:var(--accent);background:var(--accent-bg)}
+.cr .aic-acts{display:flex;align-items:center;gap:10px;margin-top:14px}
+.cr .aic-save{height:38px;padding:0 15px;border-radius:999px;background:var(--inset);font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:6px;transition:transform .12s ease-out}
+.cr .aic-save .ico{width:16px;height:16px}
+.cr .aic-save:active{transform:scale(.95)}
+.cr .aic-said{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--accent)}
+.cr .aic-said .ico{width:16px;height:16px}
+/* after saving: a small pill with an undo */
+.cr .aic-undo{position:absolute;left:50%;bottom:16px;z-index:12;transform:translateX(-50%);height:40px;padding:0 6px 0 14px;border-radius:999px;background:var(--selected-bg);color:var(--selected-text);display:flex;align-items:center;gap:8px;font-size:13px;font-weight:500;white-space:nowrap;box-shadow:0 10px 30px rgba(0,0,0,.25);animation:aic-pill .35s var(--ease)}
+.cr .aic-undo .ico{width:16px;height:16px}
+.cr .aic-undo button{height:28px;padding:0 10px;border-radius:999px;font-size:12.5px;font-weight:600;opacity:.7}
+.cr .aic-undo button:hover{opacity:1}
+@keyframes aic-pill{from{opacity:0;transform:translate(-50%,10px)}}
+@media (prefers-reduced-motion:reduce){.cr .aic,.cr .aic-undo{animation:none}}

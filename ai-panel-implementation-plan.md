@@ -1,6 +1,6 @@
 # AI classroom: panel, cards, word list and welcome call: implementation plan
 
-Status: phase 1 built (side panel with chat and word list in both classrooms, save animations in `save-fly.ts`; migration `supabase/add-ai-panel.sql` written, not yet applied). Design: `mockups/ai-panel.html` (agreed with Connor). Pilot students only (`user_permissions.ai_enabled`) and admins until the big AI rollout, except the word list, which also goes into the tutor classroom.
+Status: phases 1–2 built. Phase 1: side panel with chat and word list in both classrooms, save animations (`save-fly.ts`). Phase 2: correction and "How do I say…?" cards in all AI lessons (`AiCards.tsx`, helper `ai-assist` + `lib/ai-tutor/assist.ts` / `cards.ts`, voice matching `voice-match.ts`); migration `add-ai-panel.sql` applied.
 
 UI rule: simple and clutter-free, existing eigo patterns, no AI-generated UI hallmarks. No "listening" badge anywhere: the student can always answer by voice, and each screen's instruction line ("タップか声で答えてください") says so.
 
@@ -127,7 +127,7 @@ No new tables. The About-you save updates `ai_tutor_profiles.settings.aboutMe` (
 | Phase | What | Notes |
 |---|---|---|
 | 1 | Side panel: chat and word list, floating, in both classrooms; `tutor` word source; the save shrink and flash | Useful on its own (tutor classroom too). Migration item 1 |
-| 2 | Helper and cards: corrections and "How do I say…?" in all AI lessons; voice matching for cards; brief wording for corrections | Card JSON from the extended `ai-turn` |
+| 2 | Helper and cards: corrections and "How do I say…?" in all AI lessons; voice matching for cards; brief wording for corrections | **Built.** The helper is its own small route (`ai-assist`), asked only after turns that look like a correction or a translation (`mayHaveCard`), rather than part of `ai-turn` |
 | 3 | Panel host and layout; role-play; course picks; free-talk-only gating; welcome-call script, About-you card and save | The full welcome call works end to end after this |
 | 4 | Exercises (gap, mistake, order, read aloud) with voice answers | Built from the lesson's own corrections and phrases |
 | 5 | End-of-call screen and stats | Migration item 2 |

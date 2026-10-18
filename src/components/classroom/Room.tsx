@@ -58,7 +58,7 @@ type Props = {
   setSide: (v: SideView | null) => void
   /** words saved in this lesson, newest first (the word list) */
   lessonWords: SavedWord[]
-  onRemoveWord: (w: SavedWord) => void
+  onRemoveWord: (w: SavedWord, opts?: { quiet?: boolean }) => void
   unread: number
   tileMsgs: { other: TileMsg | null; me: TileMsg | null }
   toast: (msg: string, kind?: 'ok' | 'bad') => void
@@ -87,7 +87,7 @@ type Props = {
   vocabApi: VocabSaveApi | null
   activityApi: ActivityApi
   savedIds: Map<string, SavedWord>
-  onSaveWord: (w: SaveWordInput) => void
+  onSaveWord: (w: SaveWordInput, opts?: { quiet?: boolean }) => void
   closeLookup: () => void
 }
 
