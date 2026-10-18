@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import { aiAssist, aiCourseTitles, aiOpenLesson, aiTurn, postEvent, sendAiReport, saveAiTranscript, sendAiAction, startAiSession, type SlideRef, type StudentAction } from '@/lib/classroom/client'
+import { aiAssist, aiCourses, aiCourseTitles, aiOpenLesson, aiRoleplays, aiRoleplayScene, aiTurn, postEvent, sendAiReport, saveAiTranscript, sendAiAction, startAiSession, type PanelCourse, type SlideRef, type StudentAction } from '@/lib/classroom/client'
 import type { Lesson } from '@/lib/slides/types'
 import { useAudioLevel, useVolDot } from './audio'
 import AiAvatar from '@/components/ai/AiAvatar'
@@ -10,6 +10,8 @@ import { INTRO_FAIL_MS, INTRO_REVEAL_MS, introFailed, introLive, newIntro, pickI
 import ChatPanel from './ChatPanel'
 import WordList, { WordsButton } from './WordList'
 import AiCards, { type HearFn, type ShownCard } from './AiCards'
+import { PanelPicker, RoleplayMission, type PanelHear, type PanelState } from './AiPanel'
+import type { SceneSummary } from '@/lib/roleplay/types'
 import { shrinkInto } from './save-fly'
 import { cueCard, fitDraft, lastExchange, mayHaveCard, mergeCard, tutorItemId, type Card, type SayStyle } from '@/lib/ai-tutor/cards'
 import { hasJapanese, words as wordsOf } from '@/lib/ai-tutor/voice-match'
@@ -62,6 +64,8 @@ const RESTART_CUE = /\b(?:I'll|I will|let me|let's|let us|we'll)\s+(?:start|begi
 // without calling a tool, so tools alone made students ask twice). Statements only, never questions.
 const OPEN_CUE = /\b(?:I'll|I will|let me|let's|let us|we'll)\s+(?:open|bring up|pull up|put up|start|jump (?:back )?into|go back to|get back to|continue(?: with)?)\s+(?:the|your|our|that|this)?\s*(?:course|lesson)\b/i
 const OPEN_VERB = /\b(?:I'll|I will|let me|let's|let us|we'll)\s+(?:open|bring up|pull up|put up|start)\b/i
+/** opens the role-play list on the AI panel (free talk only): "Let's look at some role-plays" */
+const ROLEPLAY_CUE = /\b(?:let'?s|let us|we can|you can|here are|have a look at|take a look at)\b[^.?!]*\brole[- ]?plays?\b/i
 const LESSON_NO = /\blesson\s+(\d{1,2})\b/i
 const CLOSE_CUE = /\b(?:I'll|I will|let me|let's|let us|we'll)\s+(?:close|stop|put away)\s+(?:the|this|our)?\s*(?:course|lesson|slides)\b|\b(?:switch|move|go|change)\s+(?:over\s+)?to\s+free\s+talk\b|\blet's just (?:chat|talk)\b/i
 const BOARD_ON_CUE = /\b(?:I'll|I will|let me|let's|let us|we'll)\s+(?:open|bring up|pull up|put up|show|switch to|use)\s+(?:the|a|our)?\s*whiteboard\b/i
@@ -214,6 +218,8 @@ export default function AiRoom(props: Props) {
   const [shown, setShown] = useState<ShownCard | null>(null)
   /** the card listens to what the student says from when it appears ("save it", the phrase…) */
   const cardHear = useRef<HearFn | null>(null)
+  /** the AI panel's picker listens too ("the café one", "let's start") */
+  const panelHear = useRef<PanelHear | null>(null)
   const [undo, setUndo] = useState<{ id: number; itemId: string; term: string; already: boolean } | null>(null)
   const cardFrom = useRef(0)
   const cardSeq = useRef(0)
@@ -361,7 +367,9 @@ export default function AiRoom(props: Props) {
         if (last?.from === 'tutor') cueNow(last)
         if (assistTimer.current) clearTimeout(assistTimer.current)
         assistTimer.current = setTimeout(() => void runAssist(), 1300)
-      } else if (shownRef.current) {
+      }
+      if (from === 'student' && panelHear.current) panelHear.current(lines.current[lines.current.length - 1]?.text ?? '')
+      if (from === 'student' && shownRef.current) {
         cardHear.current?.(
           lines.current
             .slice(cardFrom.current)
@@ -1019,6 +1027,59 @@ export default function AiRoom(props: Props) {
 
   const freeTalk = !slides.length
 
+  /* ---------- the AI panel (free talk only): the role-play / course picker and role-plays ---------- */
+  const [panel, setPanel] = useState<PanelState | null>(null)
+  // a course opening (by voice, tap or the AI tutor) puts the panel away: it's for free talk only
+  if (panel && !freeTalk) setPanel(null)
+  const panelOn = !!panel && freeTalk && !props.whiteboard
+  const panelBoxRef = useRef<HTMLDivElement | null>(null)
+  const [rpList, setRpList] = useState<SceneSummary[] | null>(null)
+  const [courseList, setCourseList] = useState<PanelCourse[] | null>(null)
+  const [rpDone] = useState<Record<string, string>>({})
+  const openPicker = useCallback(
+    (mode: 'rp' | 'course' = 'rp') => {
+      if (whiteboardRef.current) showBoard.current(false)
+      setPanel({ view: 'picker', mode })
+      void aiRoleplays().then(setRpList)
+      void aiCourses().then(setCourseList)
+      void act({ kind: 'panel', what: 'picker' })
+    },
+    [act],
+  )
+  const closePanel = useCallback(() => {
+    setPanel(null)
+    void act({ kind: 'panel', what: 'closed' })
+  }, [act])
+  const startRoleplay = useCallback(
+    async (s: SceneSummary) => {
+      const scene = await aiRoleplayScene(s.id)
+      if (!scene) return
+      setPanel({ view: 'roleplay', scene, role: scene.studentRole, level: s.next })
+      void act({ kind: 'roleplay', sceneId: scene.id, role: scene.studentRole, level: s.next })
+    },
+    [act],
+  )
+  const openCourseFromPanel = useCallback(
+    async (c: PanelCourse) => {
+      const res = await aiOpenLesson(info.bookingId, c.id, '')
+      if ('error' in res) {
+        void act({ kind: 'view', what: 'open_failed' })
+        return
+      }
+      cueOpened.current = { at: Date.now(), courseId: res.open.courseId }
+      lessonNote.current = act({ kind: 'lesson', courseId: res.open.courseId, lessonId: res.open.lessonId })
+      setPanel(null)
+      onOpenLesson(res.open)
+    },
+    [act, info.bookingId, onOpenLesson],
+  )
+  const openPickerRef = useRef(openPicker)
+  const panelRef = useRef(panel)
+  useEffect(() => {
+    openPickerRef.current = openPicker
+    panelRef.current = panel
+  })
+
   /* ---------- layout: the same slide + tiles layout as a lesson with Connor ---------- */
   const layoutRef = useRef<HTMLDivElement | null>(null)
   const appRef = useRef<HTMLDivElement | null>(null)
@@ -1042,16 +1103,17 @@ export default function AiRoom(props: Props) {
   const doLayout = useCallback(() => {
     const box = layoutRef.current
     if (!box) return
-    const res = computeLayout(box.clientWidth, box.clientHeight, { showSlide, ratio: 3 / 4 })
+    const res = computeLayout(box.clientWidth, box.clientHeight, { showSlide: showSlide || panelOn, ratio: 3 / 4, square: panelOn })
     if (!res) return
-    place(slideBoxRef.current, res.slide)
+    place(slideBoxRef.current, panelOn ? null : res.slide)
+    place(panelBoxRef.current, panelOn ? res.slide : null)
     place(otherRef.current, res.other)
     place(meRef.current, res.me)
     if (appRef.current) {
       appRef.current.dataset.mode = res.mode
       appRef.current.style.setProperty('--lift', res.lift.toFixed(1) + 'px')
     }
-  }, [place, showSlide])
+  }, [place, showSlide, panelOn])
   useLayoutEffect(() => {
     const box = layoutRef.current
     if (!box) return
@@ -1107,7 +1169,7 @@ export default function AiRoom(props: Props) {
       const s = sentences[sentences.length - 1] ?? ''
       if (!s || s.trim().endsWith('?')) return
       const named = OPEN_VERB.test(s) ? titles.current.find((c) => c.names.some((n) => n.length > 3 && s.toLowerCase().includes(n))) : undefined
-      const kind = BOARD_ON_CUE.test(s) ? 'board_on' : BOARD_OFF_CUE.test(s) ? 'board_off' : CLOSE_CUE.test(s) ? 'close' : OPEN_CUE.test(s) || named ? 'open' : null
+      const kind = ROLEPLAY_CUE.test(s) ? 'roleplays' : BOARD_ON_CUE.test(s) ? 'board_on' : BOARD_OFF_CUE.test(s) ? 'board_off' : CLOSE_CUE.test(s) ? 'close' : OPEN_CUE.test(s) || named ? 'open' : null
       if (!kind) return
       const key = `${kind}:${line.text.slice(0, 60)}:${sentences.length}`
       if (acted.current.has(key)) return
@@ -1117,7 +1179,10 @@ export default function AiRoom(props: Props) {
         if (acted.current.has(key)) return
         acted.current.add(key)
         const slidesOpen = live.current.slides.length > 0
-        if (kind === 'board_on' && !whiteboardRef.current) {
+        if (kind === 'roleplays') {
+          // free talk only: with a course open, "role-play" on a slide never opens anything
+          if (!slidesOpen && panelRef.current?.view !== 'roleplay') openPickerRef.current('rp')
+        } else if (kind === 'board_on' && !whiteboardRef.current) {
           showBoard.current(true)
           void act({ kind: 'view', what: 'board_on' })
         } else if (kind === 'board_off' && whiteboardRef.current) {
@@ -1233,6 +1298,17 @@ export default function AiRoom(props: Props) {
         <button className={`sq tog${props.whiteboard ? ' on' : ''}`} title={t('whiteboardTitle')} aria-pressed={props.whiteboard} onClick={toggleWhiteboard}>
           <Ico name="board" />
         </button>
+        {freeTalk && (
+          <button
+            className={`sq tog${panelOn ? ' on' : ''}`}
+            title={t('panelTitle')}
+            aria-label={t('panelTitle')}
+            aria-pressed={panelOn}
+            onClick={() => (panelOn ? closePanel() : panel && props.whiteboard ? setBoard(false) : openPicker('rp'))}
+          >
+            <Ico name="grid" />
+          </button>
+        )}
         <div className={`info${left <= 120 ? ' warn' : ''}`}>{status === 'live' ? mmss(left) : '–'}</div>
         <div className="rwrap" ref={reportRef}>
           <button
@@ -1318,6 +1394,33 @@ export default function AiRoom(props: Props) {
               onStopShare={() => {}}
               onShareRatio={() => {}}
             />
+            <div className="slot panelBox" ref={panelBoxRef} style={{ display: 'none' }}>
+              {panelOn && panel?.view === 'picker' && (
+                <PanelPicker
+                  t={t}
+                  lang={info.uiLang === 'en' ? 'en' : 'ja'}
+                  mode={panel.mode}
+                  setMode={(mode) => setPanel({ view: 'picker', mode })}
+                  scenes={rpList}
+                  courses={courseList}
+                  hearRef={panelHear}
+                  onStartRoleplay={(sc) => void startRoleplay(sc)}
+                  onOpenCourse={(c) => void openCourseFromPanel(c)}
+                />
+              )}
+              {panelOn && panel?.view === 'roleplay' && (
+                <RoleplayMission
+                  t={t}
+                  lang={info.uiLang === 'en' ? 'en' : 'ja'}
+                  scene={panel.scene}
+                  role={panel.role}
+                  level={panel.level}
+                  tutorName={info.other.name}
+                  done={rpDone}
+                  onEnd={closePanel}
+                />
+              )}
+            </div>
             <div className={`slot tile ai-tile${speaking ? ' speaking' : ''}${status !== 'live' ? ' idle' : ''}`} ref={otherRef}>
               <div className="face">
                 <AiAvatar className="ai-orb-tile" color={info.aiColor} blush={info.aiBlush !== false} level={voiceLevel} mood={mood} title={info.other.name} />

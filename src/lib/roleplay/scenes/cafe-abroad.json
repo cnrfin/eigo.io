@@ -1,0 +1,104 @@
+{
+  "id": "cafe-abroad",
+  "category": "travel",
+  "title": { "ja": "海外のカフェで注文", "en": "Ordering at a café abroad" },
+  "summary": { "ja": "飲み物を注文して、サイズや支払い方法を伝える。", "en": "Order a drink, choose a size and pay." },
+  "setting": "A busy café in a city abroad where English is the shared language (it could be London, Bangkok or Lisbon). Morning, a short queue.",
+  "image": "/roleplay/cafe-abroad.jpg",
+  "studentRole": "a",
+  "roles": [
+    {
+      "id": "a",
+      "name": { "ja": "お客さん", "en": "Customer" },
+      "persona": "A Japanese traveller ordering a drink.",
+      "levels": [
+        {
+          "tutor": "You are the barista. Speak slowly, in short simple sentences, and ask one thing at a time. Offer easy choices (\"Small, regular or large?\").",
+          "tasks": [
+            { "id": "order", "title": { "ja": "飲み物を注文する", "en": "Order a drink" }, "hints": ["飲み物を注文しましょう", "A …, please.", "A coffee, please."] },
+            { "id": "size", "title": { "ja": "サイズを伝える", "en": "Say the size" }, "hints": ["サイズを伝えましょう", "…, please.", "Regular, please."] },
+            { "id": "pay", "title": { "ja": "支払い方法を伝える", "en": "Say how you'll pay" }, "hints": ["カードか現金か伝えましょう", "Card / Cash, please.", "Card, please."] }
+          ]
+        },
+        {
+          "tutor": "You are the barista. Speak at a natural but clear pace. Ask about size, then whether they want anything else, and answer questions about the Wi-Fi (the password is on the receipt).",
+          "tasks": [
+            { "id": "order", "title": { "ja": "飲み物を注文する", "en": "Order a drink" }, "hints": ["飲み物を注文しましょう", "Could I get a …?", "Could I get a hot coffee, please?"] },
+            { "id": "size", "title": { "ja": "サイズを伝える", "en": "Choose a size" }, "hints": ["サイズを伝えましょう", "Regular / Small / Large, please.", "Regular, please."] },
+            { "id": "wifi", "title": { "ja": "Wi-Fiについて聞く", "en": "Ask about Wi-Fi" }, "hints": ["Wi-Fiが使えるか聞きましょう", "Is there …?", "Is there Wi-Fi I can use?"] },
+            { "id": "pay", "title": { "ja": "支払い方法を伝える", "en": "Say how you'll pay" }, "hints": ["カードか現金か伝えましょう", "Card / Cash, please.", "Card, please."] }
+          ]
+        },
+        {
+          "tutor": "You are a friendly, chatty barista. Speak at natural speed, add a little small talk, and ask whether it's for here or to go.",
+          "tasks": [
+            { "id": "order", "title": { "ja": "飲み物をカスタマイズして注文する", "en": "Order a drink your way" }, "hints": ["ミルクの種類なども伝えて注文しましょう", "Could I get a … with …?", "Could I get a latte with oat milk, please?"] },
+            { "id": "here", "title": { "ja": "店内か持ち帰りか伝える", "en": "For here or to go" }, "hints": ["店内で飲むか持ち帰るか伝えましょう", "For here, … / To go, …", "For here, please."] },
+            { "id": "wifi", "title": { "ja": "Wi-Fiについて聞く", "en": "Ask about Wi-Fi" }, "hints": ["Wi-Fiについて聞きましょう", "Do you have …?", "Do you have Wi-Fi here?"] },
+            { "id": "pay", "title": { "ja": "支払い方法を伝える", "en": "Say how you'll pay" }, "hints": ["支払い方法を伝えましょう", "I'll pay by …", "I'll pay by phone."] }
+          ],
+          "twist": {
+            "after": "wifi",
+            "tutor": "Apologise: the card machine has just stopped working, so it's cash only for now. Let them work out a solution (there's an ATM next door, and phone payments still work).",
+            "task": { "id": "solve", "title": { "ja": "支払いのトラブルを解決する", "en": "Sort out the problem" }, "hints": ["困ったことを伝えて、解決策を聞きましょう", "I don't have … Is there …?", "I don't have much cash. Is there an ATM nearby?"] }
+          }
+        }
+      ]
+    },
+    {
+      "id": "b",
+      "name": { "ja": "店員", "en": "Barista" },
+      "persona": "The barista at the counter.",
+      "levels": [
+        {
+          "tutor": "You are a customer who isn't sure what to order. Speak slowly and simply, and wait for the barista to ask you things.",
+          "tasks": [
+            { "id": "greet", "title": { "ja": "注文を聞く", "en": "Take the order" }, "hints": ["注文を聞きましょう", "What would you …?", "Hi! What would you like?"] },
+            { "id": "size", "title": { "ja": "サイズを聞く", "en": "Ask the size" }, "hints": ["サイズを聞きましょう", "Small, regular or …?", "Small, regular or large?"] },
+            { "id": "price", "title": { "ja": "金額を伝える", "en": "Say the price" }, "hints": ["金額を伝えましょう", "That's … yen.", "That's 400 yen, please."] }
+          ]
+        },
+        {
+          "tutor": "You are a customer at natural pace. Order a latte, and ask about the Wi-Fi.",
+          "tasks": [
+            { "id": "greet", "title": { "ja": "注文を聞く", "en": "Take the order" }, "hints": ["注文を聞きましょう", "What can I get …?", "What can I get for you today?"] },
+            { "id": "size", "title": { "ja": "サイズを聞く", "en": "Ask the size" }, "hints": ["サイズを聞きましょう", "What size …?", "What size would you like?"] },
+            { "id": "wifi", "title": { "ja": "Wi-Fiについて答える", "en": "Answer about Wi-Fi" }, "hints": ["パスワードの場所を伝えましょう", "The password is …", "The password is on your receipt."] },
+            { "id": "pay", "title": { "ja": "支払い方法を聞く", "en": "Ask how they'll pay" }, "hints": ["支払い方法を聞きましょう", "Will that be …?", "Will that be card or cash?"] }
+          ]
+        },
+        {
+          "tutor": "You are a chatty customer who can't decide: ask for a recommendation and change your mind once.",
+          "tasks": [
+            { "id": "greet", "title": { "ja": "注文を聞く", "en": "Take the order" }, "hints": ["注文を聞きましょう", "What can I …?", "What can I get started for you?"] },
+            { "id": "recommend", "title": { "ja": "おすすめを伝える", "en": "Recommend something" }, "hints": ["おすすめを伝えましょう", "I'd recommend …", "I'd recommend the flat white."] },
+            { "id": "here", "title": { "ja": "店内か持ち帰りか聞く", "en": "Ask: for here or to go?" }, "hints": ["店内か持ち帰りか聞きましょう", "Is that for here or …?", "Is that for here or to go?"] },
+            { "id": "pay", "title": { "ja": "支払い方法を聞く", "en": "Ask how they'll pay" }, "hints": ["支払い方法を聞きましょう", "How would you like …?", "How would you like to pay?"] }
+          ]
+        }
+      ]
+    }
+  ],
+  "prop": {
+    "label": { "ja": "メニュー", "en": "Menu" },
+    "title": "CORNER CAFÉ",
+    "sections": [
+      { "heading": "COFFEE", "items": [
+        { "name": "Coffee (hot / iced)", "value": "¥400", "key": "coffee" },
+        { "name": "Latte · oat or soy milk +¥50", "value": "¥480", "key": "latte" },
+        { "name": "Cappuccino", "value": "¥480", "key": "cappuccino" },
+        { "name": "Flat white", "value": "¥500", "key": "flat white" }
+      ] },
+      { "heading": "TEA & OTHERS", "items": [
+        { "name": "English breakfast tea", "value": "¥400", "key": "tea" },
+        { "name": "Hot chocolate", "value": "¥450", "key": "hot chocolate" }
+      ] },
+      { "heading": "SIZES", "items": [
+        { "name": "Small", "value": "−¥50", "key": "small" },
+        { "name": "Regular", "key": "regular" },
+        { "name": "Large", "value": "+¥80", "key": "large" }
+      ] }
+    ],
+    "foot": "Free Wi-Fi · the password is on your receipt"
+  }
+}

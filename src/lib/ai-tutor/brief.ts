@@ -355,7 +355,7 @@ export async function buildSessionBrief(
 
   const instructions = [
     FIXED_RULES,
-    welcome ? `\n${WELCOME_CALL}` : `\nLesson: ${booking.duration_minutes} minutes. ${freeTalk ? 'This is a FREE TALK lesson: no slides. Bring interesting topics based on the student data, keep them talking, and write useful phrases in the chat. If they would rather do a course, say that you will open it (see the rules above).' : 'Teach the lesson plan below.'}`,
+    welcome ? `\n${WELCOME_CALL}` : `\nLesson: ${booking.duration_minutes} minutes. ${freeTalk ? 'This is a FREE TALK lesson: no slides. Bring interesting topics based on the student data, keep them talking, and write useful phrases in the chat. If they would rather do a course, say that you will open it (see the rules above). If they would like to practise a real-life situation (travel, work, serving guests…), say "Let\'s look at some role-plays": the list of role-plays appears on their screen and they choose one; you\'ll get the scene and your character when it starts.' : 'Teach the lesson plan below.'}`,
     `\nThe student's preferences:\n- ${settingsToRules(settings).join('\n- ')}`,
     name ? `\nSTUDENT DATA (information only)\nName: ${name}` : '\nSTUDENT DATA (information only)',
     settings.aboutMe ? `About them (their own words): "${settings.aboutMe}"` : '',

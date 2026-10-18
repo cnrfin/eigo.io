@@ -1,0 +1,104 @@
+{
+  "id": "izakaya-guests",
+  "category": "service",
+  "title": { "ja": "居酒屋で外国人のお客さんを接客", "en": "Serving foreign guests at an izakaya" },
+  "summary": { "ja": "人数を聞いて、注文を受け、おすすめやお会計を英語で伝える。", "en": "Seat the guests, take their order, recommend dishes and handle the bill." },
+  "setting": "A busy izakaya in Tokyo on a Friday evening. A tourist comes in; the staff speak English to them.",
+  "image": "/roleplay/izakaya-guests.jpg",
+  "studentRole": "a",
+  "roles": [
+    {
+      "id": "a",
+      "name": { "ja": "店員", "en": "Staff" },
+      "persona": "A member of staff at the izakaya.",
+      "levels": [
+        {
+          "tutor": "You are a tourist from abroad, visiting with one friend (two people). Speak slowly and simply, and let the staff lead. Order two beers.",
+          "tasks": [
+            { "id": "people", "title": { "ja": "人数を聞く", "en": "Ask how many people" }, "hints": ["何名様か聞きましょう", "How many …?", "Hello! How many people?"] },
+            { "id": "drinks", "title": { "ja": "飲み物の注文を聞く", "en": "Take the drink order" }, "hints": ["飲み物を聞きましょう", "What would you like to …?", "What would you like to drink?"] },
+            { "id": "confirm", "title": { "ja": "注文を確認する", "en": "Check the order" }, "hints": ["注文を確認しましょう", "Two …, right?", "Two beers, right?"] }
+          ]
+        },
+        {
+          "tutor": "You are a tourist from abroad with one friend. Speak at natural pace. Ask what all-you-can-drink is, ask for a recommendation, and want to know when the last order is.",
+          "tasks": [
+            { "id": "seat", "title": { "ja": "人数と席を聞く", "en": "Ask how many, and table or counter" }, "hints": ["人数とテーブルかカウンターか聞きましょう", "Would you like a table or …?", "Would you like a table or the counter?"] },
+            { "id": "nomihodai", "title": { "ja": "飲み放題を説明する", "en": "Explain all-you-can-drink" }, "hints": ["飲み放題の料金と時間を伝えましょう", "All-you-can-drink is … for …", "All-you-can-drink is 1,500 yen for 90 minutes."] },
+            { "id": "recommend", "title": { "ja": "おすすめ料理を説明する", "en": "Recommend a dish" }, "hints": ["おすすめ料理を説明しましょう", "This is …. It's …", "This is karaage. It's Japanese fried chicken."] },
+            { "id": "lastorder", "title": { "ja": "ラストオーダーを伝える", "en": "Say when last orders are" }, "hints": ["ラストオーダーの時間を伝えましょう", "Last order is at …", "Last order is at 10:30."] }
+          ]
+        },
+        {
+          "tutor": "You are a tourist from abroad with a friend, speaking at natural speed with some small talk. Order food and drinks, and at the end ask to pay separately.",
+          "tasks": [
+            { "id": "seat", "title": { "ja": "席に案内する", "en": "Seat the guests" }, "hints": ["人数を聞いて席に案内しましょう", "Right this way. Is … okay?", "Right this way. Is the counter okay?"] },
+            { "id": "recommend", "title": { "ja": "おすすめ料理を説明する", "en": "Recommend a dish" }, "hints": ["おすすめを説明しましょう", "I'd recommend …. It's …", "I'd recommend the yakitori. It's grilled chicken on skewers."] },
+            { "id": "order", "title": { "ja": "注文を受けて確認する", "en": "Take and check the order" }, "hints": ["注文を確認しましょう", "So that's …, right?", "So that's two highballs and the yakitori, right?"] },
+            { "id": "bill", "title": { "ja": "お会計の方法を聞く", "en": "Ask how they'd like to pay" }, "hints": ["別々か一緒か聞きましょう", "Would you like to pay … or …?", "Would you like to pay separately or together?"] }
+          ],
+          "twist": {
+            "after": "recommend",
+            "tutor": "Say you are allergic to shellfish, and ask whether the dish you're interested in is safe.",
+            "task": { "id": "allergy", "title": { "ja": "アレルギーに対応する", "en": "Handle the allergy question" }, "hints": ["確認すると伝えて、安心できる料理をすすめましょう", "Let me check with … This one …", "Let me check with the kitchen. This one has no shellfish."] }
+          }
+        }
+      ]
+    },
+    {
+      "id": "b",
+      "name": { "ja": "お客さん", "en": "Guest" },
+      "persona": "A tourist visiting the izakaya.",
+      "levels": [
+        {
+          "tutor": "You are the izakaya staff member. Speak slowly and simply. Ask how many people, take the drink order, and bring the bill when asked.",
+          "tasks": [
+            { "id": "people", "title": { "ja": "人数を伝える", "en": "Say how many people" }, "hints": ["人数を伝えましょう", "…, please.", "Two people, please."] },
+            { "id": "drinks", "title": { "ja": "飲み物を注文する", "en": "Order drinks" }, "hints": ["飲み物を注文しましょう", "Can we have …?", "Can we have two beers?"] },
+            { "id": "bill", "title": { "ja": "お会計をお願いする", "en": "Ask for the bill" }, "hints": ["お会計をお願いしましょう", "Can we have the …?", "Can we have the check, please?"] }
+          ]
+        },
+        {
+          "tutor": "You are the izakaya staff member, speaking at natural pace. Explain all-you-can-drink if asked, recommend karaage, and mention last orders.",
+          "tasks": [
+            { "id": "people", "title": { "ja": "人数を伝える", "en": "Say how many people" }, "hints": ["人数を伝えましょう", "A table for …, please.", "A table for two, please."] },
+            { "id": "nomihodai", "title": { "ja": "飲み放題について聞く", "en": "Ask about all-you-can-drink" }, "hints": ["飲み放題について聞きましょう", "How does … work?", "How does all-you-can-drink work?"] },
+            { "id": "recommend", "title": { "ja": "おすすめを聞く", "en": "Ask for a recommendation" }, "hints": ["おすすめを聞きましょう", "What do you …?", "What do you recommend?"] },
+            { "id": "order", "title": { "ja": "料理を注文する", "en": "Order food" }, "hints": ["料理を注文しましょう", "We'll have …", "We'll have the karaage and edamame, please."] }
+          ]
+        },
+        {
+          "tutor": "You are the izakaya staff member, speaking at natural speed. Be helpful about the menu; when asked about allergies, say you'll check with the kitchen.",
+          "tasks": [
+            { "id": "people", "title": { "ja": "人数と席の希望を伝える", "en": "Say how many, and where you'd like to sit" }, "hints": ["人数と席の希望を伝えましょう", "There are … of us. Could we …?", "There are two of us. Could we sit at the counter?"] },
+            { "id": "allergy", "title": { "ja": "アレルギーを伝える", "en": "Explain an allergy" }, "hints": ["アレルギーを伝えて確認しましょう", "I'm allergic to … Is this …?", "I'm allergic to shellfish. Is this okay for me?"] },
+            { "id": "order", "title": { "ja": "料理と飲み物を注文する", "en": "Order food and drinks" }, "hints": ["注文しましょう", "Could we get …?", "Could we get two highballs and the yakitori?"] },
+            { "id": "split", "title": { "ja": "別々に払いたいと伝える", "en": "Ask to pay separately" }, "hints": ["別々に払いたいと伝えましょう", "Could we pay …?", "Could we pay separately, please?"] }
+          ]
+        }
+      ]
+    }
+  ],
+  "prop": {
+    "label": { "ja": "メニュー", "en": "Menu" },
+    "title": "IZAKAYA MENU",
+    "sections": [
+      { "heading": "DRINKS", "items": [
+        { "name": "Draft beer", "value": "¥550", "key": "beer" },
+        { "name": "Highball", "value": "¥450", "key": "highball" },
+        { "name": "Sake (hot or cold)", "value": "¥600", "key": "sake" },
+        { "name": "Soft drinks", "value": "¥300", "key": "soft drink" }
+      ] },
+      { "heading": "FOOD", "items": [
+        { "name": "Karaage (fried chicken)", "value": "¥580", "key": "karaage" },
+        { "name": "Edamame", "value": "¥350", "key": "edamame" },
+        { "name": "Yakitori (5 skewers)", "value": "¥680", "key": "yakitori" },
+        { "name": "Sashimi platter (contains shellfish)", "value": "¥1,200", "key": "sashimi" }
+      ] },
+      { "heading": "ALL-YOU-CAN-DRINK", "items": [
+        { "name": "90 minutes", "value": "¥1,500", "key": "all-you-can-drink" }
+      ] }
+    ],
+    "foot": "Last order 22:30"
+  }
+}

@@ -1,4 +1,5 @@
 import { NextRequest } from 'next/server'
+import { roleplayInstruction, sceneById } from '@/lib/roleplay'
 import { getSupabaseAdmin } from '@/lib/supabase-admin'
 import { json, loadClassroom } from '@/lib/classroom/server'
 import { appendInstructions } from '@/lib/ai-tutor/openai'
@@ -31,6 +32,8 @@ type Action =
   | { kind: 'time' }
   | { kind: 'view'; what: 'closed' | 'board_on' | 'board_off' | 'open_failed' }
   | { kind: 'card'; what: 'saved' | 'chose'; text: string; style?: string }
+  | { kind: 'roleplay'; sceneId: string; role: 'a' | 'b'; level: 0 | 1 | 2 }
+  | { kind: 'panel'; what: 'picker' | 'closed' | 'course' }
 
 const q = (v: unknown, max: number) => (typeof v === 'string' ? v.replace(/\s+/g, ' ').replace(/"/g, "'").trim().slice(0, max) : '')
 
@@ -84,6 +87,15 @@ function instruction(a: Action, secondsLeft: number): string | null {
       const style = a.style === 'polite' ? 'more polite' : a.style === 'casual' ? 'more casual' : 'standard'
       return `On the card on their screen, the student chose the ${style} version: "${t}". Ask them to say it.`
     }
+    case 'roleplay': {
+      const scene = sceneById(a.sceneId)
+      if (!scene) return null
+      return roleplayInstruction(scene, a.role === 'b' ? 'b' : 'a', a.level === 1 || a.level === 2 ? a.level : 0)
+    }
+    case 'panel':
+      if (a.what === 'picker') return "The list of role-plays (and courses) is now on the student's screen. Briefly suggest one that fits their goals, or let them choose; they tap or say one. Don't start a role-play until it's on their screen."
+      if (a.what === 'closed') return "The student closed the role-play screen. Carry on with free talk."
+      return null
     case 'nudge':
       if (secondsLeft < 30) return null
       return 'Nobody has spoken for about 9 seconds. You lead the lesson: if the student is in the middle of a task, give a short, friendly prompt; if everything on this slide is done, say now that you’re moving on to the next slide (it appears by itself). In free talk, ask a new question or bring a new topic.'

@@ -1,0 +1,77 @@
+{
+  "id": "work-intro",
+  "category": "business",
+  "title": { "ja": "海外の同僚に自己紹介", "en": "Introducing yourself to an overseas colleague" },
+  "summary": { "ja": "名前と仕事を紹介して、相手のことも聞き、次の約束をする。", "en": "Introduce yourself and your job, ask about theirs, and make a plan to talk again." },
+  "setting": "The first day of a joint project. You meet a colleague from the London office at the start of an online meeting, a few minutes before it begins.",
+  "image": "/roleplay/work-intro.jpg",
+  "studentRole": "a",
+  "roles": [
+    {
+      "id": "a",
+      "name": { "ja": "あなた（東京）", "en": "You (Tokyo)" },
+      "persona": "A member of the Tokyo team meeting a colleague for the first time.",
+      "levels": [
+        {
+          "tutor": "You are Sam, a friendly colleague from the London office. Speak slowly and simply. Introduce yourself first, then ask the student's name and job.",
+          "tasks": [
+            { "id": "name", "title": { "ja": "名前を言う", "en": "Say your name" }, "hints": ["名前を伝えましょう", "I'm … Nice to …", "Hi, I'm Kenji. Nice to meet you."] },
+            { "id": "job", "title": { "ja": "仕事を伝える", "en": "Say what you do" }, "hints": ["自分の仕事を伝えましょう", "I work in …", "I work in sales."] },
+            { "id": "ask", "title": { "ja": "相手に1つ質問する", "en": "Ask them one question" }, "hints": ["相手のことを聞きましょう", "How long have you …?", "How long have you worked in London?"] }
+          ]
+        },
+        {
+          "tutor": "You are Sam from the London office, speaking at natural pace. Be friendly, talk a little about your role in the project, and react to what the student says.",
+          "tasks": [
+            { "id": "name", "title": { "ja": "名前と部署を伝える", "en": "Say your name and team" }, "hints": ["名前と部署を伝えましょう", "I'm … from the … team.", "I'm Kenji from the sales team in Tokyo."] },
+            { "id": "role", "title": { "ja": "担当している仕事を説明する", "en": "Explain your role" }, "hints": ["担当している仕事を説明しましょう", "I'm in charge of …", "I'm in charge of our clients in Asia."] },
+            { "id": "common", "title": { "ja": "相手について質問する", "en": "Ask about them" }, "hints": ["相手の仕事について聞きましょう", "What are you working on …?", "What are you working on at the moment?"] },
+            { "id": "next", "title": { "ja": "次の約束をする", "en": "Suggest talking again" }, "hints": ["また話そうと伝えましょう", "Let's … sometime.", "Let's have a call sometime next week."] }
+          ]
+        },
+        {
+          "tutor": "You are Sam from the London office, speaking at natural speed with small talk (the weather, the time difference). Mention you're under pressure with a deadline.",
+          "tasks": [
+            { "id": "intro", "title": { "ja": "自己紹介と役割を伝える", "en": "Introduce yourself and your role" }, "hints": ["名前と役割をまとめて伝えましょう", "I'm …, and I'll be …", "I'm Kenji, and I'll be handling the Asian market for this project."] },
+            { "id": "smalltalk", "title": { "ja": "雑談をする", "en": "Make small talk" }, "hints": ["時差や天気について話しましょう", "It must be … there now.", "It must be early morning there now."] },
+            { "id": "offer", "title": { "ja": "手伝いを申し出る", "en": "Offer to help" }, "hints": ["困ったら声をかけてと伝えましょう", "If you need …, just …", "If you need anything from Tokyo, just let me know."] },
+            { "id": "next", "title": { "ja": "具体的な次の予定を決める", "en": "Fix a time to talk again" }, "hints": ["次の打ち合わせの日時を提案しましょう", "How about … at …?", "How about Thursday at 5 p.m. your time?"] }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b",
+      "name": { "ja": "同僚（ロンドン）", "en": "Colleague (London)" },
+      "persona": "Sam, a colleague in the London office.",
+      "levels": [
+        {
+          "tutor": "You are Kenji from the Tokyo team, meeting Sam for the first time. Speak slowly and simply and let Sam lead.",
+          "tasks": [
+            { "id": "welcome", "title": { "ja": "あいさつして名前を言う", "en": "Greet them and say your name" }, "hints": ["あいさつして名前を言いましょう", "Hi, I'm … Nice to …", "Hi, I'm Sam. Nice to meet you."] },
+            { "id": "job", "title": { "ja": "仕事を聞く", "en": "Ask what they do" }, "hints": ["相手の仕事を聞きましょう", "What do you …?", "What do you do?"] },
+            { "id": "react", "title": { "ja": "相手の話に反応する", "en": "React to what they say" }, "hints": ["反応して、もう一言つなげましょう", "Oh, that's … I …", "Oh, that's interesting. I work in marketing."] }
+          ]
+        },
+        {
+          "tutor": "You are Kenji from the Tokyo team, speaking at natural pace.",
+          "tasks": [
+            { "id": "welcome", "title": { "ja": "チームに歓迎する", "en": "Welcome them to the project" }, "hints": ["歓迎の言葉を伝えましょう", "Welcome to …", "Welcome to the project! I'm Sam from London."] },
+            { "id": "role", "title": { "ja": "相手の役割を聞く", "en": "Ask about their role" }, "hints": ["相手の役割を聞きましょう", "What will you be …?", "What will you be working on?"] },
+            { "id": "time", "title": { "ja": "時差について話す", "en": "Talk about the time difference" }, "hints": ["時差について話しましょう", "What time is it …?", "What time is it in Tokyo now?"] },
+            { "id": "next", "title": { "ja": "次の予定を提案する", "en": "Suggest the next step" }, "hints": ["次の予定を提案しましょう", "Shall we …?", "Shall we set up a call for next week?"] }
+          ]
+        },
+        {
+          "tutor": "You are Kenji from the Tokyo team, speaking at natural speed. You're keen but a little worried about the deadline.",
+          "tasks": [
+            { "id": "welcome", "title": { "ja": "歓迎してプロジェクトを紹介する", "en": "Welcome them and introduce the project" }, "hints": ["歓迎してプロジェクトについて一言話しましょう", "Great to have you … We're …", "Great to have you on board. We're launching in March."] },
+            { "id": "role", "title": { "ja": "役割と経験を聞く", "en": "Ask about their role and experience" }, "hints": ["経験について聞きましょう", "Have you worked on … before?", "Have you worked on a launch like this before?"] },
+            { "id": "reassure", "title": { "ja": "相手を安心させる", "en": "Reassure them" }, "hints": ["心配しないでと伝えましょう", "Don't worry, we'll …", "Don't worry, we'll go through the plan together."] },
+            { "id": "next", "title": { "ja": "具体的な次の予定を決める", "en": "Fix a time to talk again" }, "hints": ["日時を決めましょう", "Does … work for you?", "Does Thursday at 9 a.m. Tokyo time work for you?"] }
+          ]
+        }
+      ]
+    }
+  ]
+}

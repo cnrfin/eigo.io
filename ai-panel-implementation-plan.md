@@ -128,7 +128,11 @@ No new tables. The About-you save updates `ai_tutor_profiles.settings.aboutMe` (
 |---|---|---|
 | 1 | Side panel: chat and word list, floating, in both classrooms; `tutor` word source; the save shrink and flash | Useful on its own (tutor classroom too). Migration item 1 |
 | 2 | Helper and cards: corrections and "How do I say…?" in all AI lessons; voice matching for cards; brief wording for corrections | **Built.** The helper is its own small route (`ai-assist`), asked only after turns that look like a correction or a translation (`mayHaveCard`), rather than part of `ai-turn` |
-| 3 | Panel host and layout; role-play; course picks; free-talk-only gating; welcome-call script, About-you card and save | The full welcome call works end to end after this |
+| 3a | Panel host and layout (square, flush left); free-talk-only gating; in-lesson picker (courses / role-plays, scene-card style); role-play format, first 3 scenes, progress table and API; role-play start instruction | **Built** (migration `add-roleplay.sql` written, apply with approval) |
+| 3b | Role-play mission: ticking tasks (helper), hints after silence above the timer, prop toggle, twist at 上級, mission complete with spoken feedback, swap roles, progress recorded | Designs: `mockups/ai-roleplay-mission.html` |
+| 3c | Role-plays in the dashboard picker (コース / ロールプレイ toggle, vertical list with 3 dots), the course block wording, booking and start-now with a role-play | Design: `mockups/roleplay-picker.html` |
+| 3d | Welcome call: new script on the agreed timeline, About-you card and save, role-play (初級, counts) and course picks | |
+| 3e | The rest of the scenes (list in section 8) | Written in batches, reviewed by Connor |
 | 4 | Exercises (gap, mistake, order, read aloud) with voice answers | Built from the lesson's own corrections and phrases |
 | 5 | End-of-call screen and stats | Migration item 2 |
 | Later | Daily AI review: the same exercise screens, fed by the student's review cards | Separate feature |
@@ -160,3 +164,41 @@ Each phase: type-check, lint, the classroom test harness (`run7`, extended), a t
 - **Open:**
   - Card position while the side panel is open: overlap is fine for now
   - Whether the tutor classroom's word list should also show the teacher's chat phrases as saveable: today only the student saves, and that stays
+
+## 8. Role-play scenes
+
+One JSON file per scene in `src/lib/roleplay/scenes/` (format: `src/lib/roleplay/types.ts`), picture in `public/roleplay/`. Every scene: two roles × three levels (初級 / 中級 / 上級), 3–5 tasks each with a three-step hint, how the AI tutor plays its character at that level, an optional prop, and at 上級 sometimes a twist. The student first plays the role in **bold**.
+
+Written (3a): 海外のカフェで注文 (**customer**), 居酒屋で外国人のお客さんを接客 (**staff**), 海外の同僚に自己紹介 (**you**).
+
+Proposed (for Connor to review; 3e):
+
+| Category | Scene | Student first plays | Prop |
+|---|---|---|---|
+| 海外旅行 | レストランで食事（タイ・ヨーロッパなど英語が共通語の国） | **customer** | menu |
+| 海外旅行 | ホテルにチェックイン | **guest** | booking confirmation |
+| 海外旅行 | 空港でチェックイン・搭乗口 | **passenger** | boarding pass |
+| 海外旅行 | タクシー・配車アプリで行き先を伝える | **passenger** | map |
+| 海外旅行 | お店で返品・交換 | **customer** | receipt |
+| 海外旅行 | 薬局で症状を伝える | **customer** | — |
+| 日本で助ける | 駅で道や乗り換えを聞かれる | **local** | route map |
+| 日本で助ける | 街で道をたずねられる | **local** | map |
+| 日本で助ける | 困っている観光客を助ける（落とし物・迷子など） | **local** | — |
+| 接客 | 居酒屋で接客 ✓ | **staff** | menu |
+| 接客 | アパレル・雑貨店で接客（サイズ・免税） | **staff** | price tags |
+| 接客 | ホテルのフロントで対応 | **front desk** | booking |
+| 接客 | スナック・バーで外国人客と会話 | **mama / bartender** | drinks list |
+| 接客 | マッサージ・美容室で接客（力加減・希望） | **staff** | treatment menu |
+| 接客 | 空港・駅の案内カウンター | **staff** | timetable |
+| 接客 | タクシー運転手として | **driver** | map |
+| 友だち | 語学交流会で友だちを作る | **you** | — |
+| 友だち | 週末の予定を立てる | **you** | event flyer |
+| 友だち | 日本のおすすめを紹介する（食べ物・場所） | **you** | — |
+| 友だち | 趣味の話で盛り上がる | **you** | — |
+| ビジネス | 海外の同僚に自己紹介 ✓ | **you** | — |
+| ビジネス | オンライン会議の前の雑談 | **you** | meeting agenda |
+| ビジネス | 出張先で取引先と会食 | **you** | menu |
+| ビジネス | プレゼンの質疑応答 | **presenter** | slide summary |
+| ビジネス | 価格・納期の交渉 | **you (seller)** | quote |
+| ビジネス | 電話・ビデオ通話で日程調整 | **you** | calendar |
+| ビジネス | 空港で取引先を出迎える | **host** | itinerary |

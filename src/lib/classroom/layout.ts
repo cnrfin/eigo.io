@@ -7,12 +7,14 @@
  *  - stacked: slide on top, the two videos side by side underneath (or
  *             stacked full width on tall phones, if that gives bigger videos)
  *  - videos:  free talk, no slide: the two videos as big as they fit
+ *  - panel:   the AI panel (role-plays, pickers): a square flush left, as tall as the room allows, and the
+ *             two videos stacked in whatever width is left (at least 160px)
  *
  * Pure function: the caller measures the area and places the elements.
  */
 
 export type Rect = { x: number; y: number; w: number; h: number }
-export type LayoutMode = 'side' | 'stacked' | 'videos'
+export type LayoutMode = 'side' | 'stacked' | 'videos' | 'panel'
 export type LayoutResult = {
   mode: LayoutMode
   slide: Rect | null
@@ -34,6 +36,8 @@ export function computeLayout(
     chatOpen?: boolean
     /** height / width of the slide area: 3/4 for slides, the shape of a shared screen while sharing */
     ratio?: number
+    /** the AI panel: a square main slot flush left (see 'panel' above) */
+    square?: boolean
   },
 ): LayoutResult | null {
   if (!W || !H) return null
@@ -51,6 +55,21 @@ export function computeLayout(
       r = { mode: 'videos', slide: null, other: { x: x0, y: y0, w: v, h: vh }, me: { x: x0, y: y0 + vh + G, w: v, h: vh } }
     }
     return { ...r, lift: 0 }
+  }
+
+  if (opts.square) {
+    const MIN_TILE = 160
+    const s = Math.max(0, Math.min(H, W - G - MIN_TILE))
+    const tw = W - s - G
+    const th = (s - G) / 2
+    const y0 = (H - s) / 2
+    r = {
+      mode: 'panel',
+      slide: { x: 0, y: y0, w: s, h: s },
+      other: { x: s + G, y: y0, w: tw, h: th },
+      me: { x: s + G, y: y0 + th + G, w: tw, h: th },
+    }
+    return { ...r, lift: Math.max(0, H - (y0 + s) - 28) }
   }
 
   const sA = Math.min(H / SR, (W - G + G / (2 * VR)) / (1 + SR / (2 * VR)))

@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useRef } from 'react'
 import type { Card } from '@/lib/ai-tutor/cards'
+import type { Scene } from '@/lib/roleplay/types'
+import type { SceneSummary } from '@/lib/roleplay/types'
 import type { RealtimeChannel } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
 import type { Course } from '@/lib/slides/types'
@@ -144,6 +146,56 @@ export async function aiAssist(
   }
 }
 
+/** AI panel: the role-play list with the student's progress (lib/roleplay/progress.ts). */
+export async function aiRoleplays(): Promise<SceneSummary[]> {
+  try {
+    const r = await call('/api/roleplay')
+    return r.ok ? (((await r.json()).scenes as SceneSummary[]) ?? []) : []
+  } catch {
+    return []
+  }
+}
+/** AI panel: one role-play in full, when it starts. */
+export async function aiRoleplayScene(id: string): Promise<Scene | null> {
+  try {
+    const r = await call(`/api/roleplay?scene=${encodeURIComponent(id)}`)
+    return r.ok ? (((await r.json()).scene as Scene) ?? null) : null
+  } catch {
+    return null
+  }
+}
+/** AI panel: a role-play mission completed (moves the level on). */
+export async function recordRoleplay(sceneId: string, role: 'a' | 'b', level: 0 | 1 | 2): Promise<number | null> {
+  try {
+    const r = await call('/api/roleplay', { method: 'POST', body: JSON.stringify({ sceneId, role, level }) })
+    return r.ok ? Number((await r.json()).cleared) : null
+  } catch {
+    return null
+  }
+}
+/** AI panel: the courses for the in-lesson picker (the same catalog as the dashboard picker). */
+export type PanelCourse = { id: string; title: string; titleJa: string; level: string; description: string; descriptionJa: string; image: string | null; lessonCount: number; doneCount: number }
+export async function aiCourses(): Promise<PanelCourse[]> {
+  try {
+    const r = await call('/api/slide-courses/catalog')
+    if (!r.ok) return []
+    const list = ((await r.json()).courses ?? []) as Record<string, unknown>[]
+    return list.map((c) => ({
+      id: String(c.id),
+      title: String(c.title ?? ''),
+      titleJa: String(c.titleJa ?? c.title ?? ''),
+      level: String(c.level ?? ''),
+      description: String(c.description ?? ''),
+      descriptionJa: String(c.descriptionJa ?? c.description ?? ''),
+      image: Array.isArray(c.scenes) && c.scenes.length ? String(c.scenes[0]) : null,
+      lessonCount: Number(c.lessonCount) || 0,
+      doneCount: Number(c.doneCount) || 0,
+    }))
+  } catch {
+    return []
+  }
+}
+
 export type StudentAction =
   | { kind: 'chat'; text: string }
   | { kind: 'lookup'; term: string; meaning: string }
@@ -160,6 +212,10 @@ export type StudentAction =
   | { kind: 'view'; what: 'closed' | 'board_on' | 'board_off' | 'open_failed' }
   /** a card on the student's screen: its phrase was saved to the word list, or they picked a version */
   | { kind: 'card'; what: 'saved' | 'chose'; text: string; style?: string }
+  /** a role-play starts on the AI panel (the server sends the AI tutor the scene, its character and the tasks) */
+  | { kind: 'roleplay'; sceneId: string; role: 'a' | 'b'; level: 0 | 1 | 2 }
+  /** the AI panel: the picker opened, or the student closed it */
+  | { kind: 'panel'; what: 'picker' | 'closed' | 'course' }
 
 /** AI lessons: tell the AI tutor about a student action. Our server turns it into a fixed-template
  *  instruction on the live session (the browser can't send instructions itself). */
