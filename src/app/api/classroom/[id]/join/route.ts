@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-admin'
 import { serializeWindow } from '@/lib/classroom/booking-window'
 import { findLesson, loadCourse } from '@/lib/classroom/courses'
+import { resolveOpen } from '@/lib/classroom/open-state'
 import { json, loadClassroom, personName, publicSession, uiLangFor, wherebyParts } from '@/lib/classroom/server'
 
 const ADMIN_EMAIL = 'cnrfin93@gmail.com'
@@ -53,22 +54,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
   // What's open: the live session wins (the teacher may have changed it); otherwise
   // what was booked, starting where the student left off in that lesson.
-  let open: { courseId: string; lessonId: string; slideId: string | null } | null = null
-  if (session?.course_id && session.lesson_id) {
-    open = { courseId: session.course_id, lessonId: session.lesson_id, slideId: session.state?.slideId ?? null }
-  } else if (!session?.started_at && booking.slide_course_id && booking.slide_lesson_id) {
-    const { data: prog } = await db
-      .from('slide_course_progress')
-      .select('lesson_id, slide_id, completed_lesson_ids')
-      .eq('user_id', booking.user_id)
-      .eq('course_id', booking.slide_course_id)
-      .maybeSingle()
-    const resume =
-      prog?.lesson_id === booking.slide_lesson_id && !(prog.completed_lesson_ids ?? []).includes(booking.slide_lesson_id)
-        ? prog.slide_id
-        : null
-    open = { courseId: booking.slide_course_id, lessonId: booking.slide_lesson_id, slideId: resume }
-  }
+  let open = await resolveOpen(db, booking, session)
 
   let lesson: { courseTitle: string; lessonTitle: string; number: number } | null = null
   if (open) {

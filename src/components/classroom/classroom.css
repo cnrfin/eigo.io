@@ -124,6 +124,7 @@
 .cr .snav button[disabled]{opacity:.3;pointer-events:none}
 .cr .snav #gridBtn{margin-left:2px;position:relative}
 .cr .snav #closeCourse{color:var(--text-muted)}.cr .snav #closeCourse:hover{color:var(--text)}
+.cr .snav .closeCourse{color:var(--text-muted)}.cr .snav .closeCourse:hover{color:var(--text)} /* AI classroom: the student's own close, shown on phones too */
 .cr .app.no-course .navwrap,.cr .app.no-course #notesBtn{display:none}
 .cr .app.no-course:not(.wb):not(.sharing) .slideBox{visibility:hidden;pointer-events:none}
 .cr .app.no-course:not(.wb) .handle,.cr .app.no-course:not(.wb) .toolbar{display:none}

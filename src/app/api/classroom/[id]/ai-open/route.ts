@@ -76,7 +76,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   const prev = (cur?.state as Record<string, unknown> | null) ?? {}
   await db
     .from('classroom_sessions')
-    .update({ course_id: courseId, lesson_id: found.lesson.id, used_course: true, state: { ...prev, slideId, whiteboard: false }, updated_at: new Date().toISOString() })
+    .update({ course_id: courseId, lesson_id: found.lesson.id, used_course: true, state: { ...prev, slideId, whiteboard: false, closed: false }, updated_at: new Date().toISOString() })
     .eq('booking_id', booking.id)
 
   const n = slides.findIndex((s) => s.id === slideId) + 1

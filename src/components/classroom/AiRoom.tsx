@@ -22,6 +22,7 @@ import Toolbar from './Toolbar'
 import { computeAiLayout, type Rect } from '@/lib/classroom/layout'
 import { orbColor } from '@/lib/ai-tutor/orb-colors'
 import { courseNamed, type CourseName } from '@/lib/ai-tutor/course-names'
+import { studentClosesCourse, tutorClosesCourse } from '@/lib/classroom/course-commands'
 import type { RoomProps } from './Room'
 
 /**
@@ -68,7 +69,6 @@ const RESTART_CUE = /\b(?:I'll|I will|let me|let's|let us|we'll)\s+(?:start|begi
 const OPEN_CUE = /\b(?:I'll|I will|let me|let's|let us|we'll)\s+(?:open|bring up|pull up|put up|start|jump (?:back )?into|go back to|get back to|continue(?: with)?)\s+(?:the|your|our|that|this)?\s*(?:course|lesson)\b/i
 const OPEN_VERB = /\b(?:I'll|I will|let me|let's|let us|we'll)\s+(?:open|bring up|pull up|put up|start)\b/i
 const LESSON_NO = /\blesson\s+(\d{1,2})\b/i
-const CLOSE_CUE = /\b(?:I'll|I will|let me|let's|let us|we'll)\s+(?:close|stop|put away)\s+(?:the|this|our)?\s*(?:course|lesson|slides)\b|\b(?:switch|move|go|change)\s+(?:over\s+)?to\s+free\s+talk\b|\blet's just (?:chat|talk)\b/i
 const BOARD_ON_CUE = /\b(?:I'll|I will|let me|let's|let us|we'll)\s+(?:open|bring up|pull up|put up|show|switch to|use)\s+(?:the|a|our)?\s*whiteboard\b/i
 const BOARD_OFF_CUE = /\b(?:I'll|I will|let me|let's|let us|we'll)\s+(?:close|hide|put away)\s+(?:the|our)?\s*whiteboard\b|\b(?:go|switch|head|get)\s+back\s+to\s+the\s+(?:slides?|lesson)\b/i
 
@@ -144,11 +144,18 @@ export default function AiRoom(props: Props) {
   /** called on every transcript fragment (set up below, where the slide controls live) */
   /** start a new transcript line (a new slide just appeared) */
   const breakLine = useRef(false)
+  /**
+   * Each side's current stretch of speech, joined by audio timing. The transcript starts a new line whenever the
+   * other side talks, so a student's "could we close this… course" over the tutor's "Sure! I'll close… the course
+   * now" came out as four broken lines and neither command was recognised. Commands are read from these instead.
+   */
+  const runs = useRef({ student: { text: '', n: 0 }, tutor: { text: '', n: 0 } })
   const speechHook = useRef<(from: Line['from'], line: Line) => void>(() => {})
   /** what's on screen follows what the AI tutor says (open/close the course, the whiteboard); set up further down */
   /** when a spoken cue last opened a course (older sessions may also call open_lesson for the same thing) */
   const cueOpened = useRef<{ at: number; courseId: string } | null>(null)
-  const viewCue = useRef<(line: Line) => void>(() => {})
+  /** the AI tutor's current stretch of speech; run = which stretch (the same sentence said again later counts again) */
+  const viewCue = useRef<(line: Line, run: number) => void>(() => {})
   const nudged = useRef(false)
 
   /* ---------- slides ---------- */
@@ -204,6 +211,15 @@ export default function AiRoom(props: Props) {
     if (last && last.from === from && startMs - lastEnd.current[from] < 2500 && !breakLine.current) last.text += delta
     else L.push({ from, text: delta.replace(/^\s+/, ''), t: startMs })
     breakLine.current = false
+    const run = runs.current[from]
+    // one stretch: the tutor's speech is continuous within a reply (a new reply starts after a pause), the student
+    // may pause mid-sentence ("could we close this… course")
+    if (run.text && startMs - lastEnd.current[from] < (from === 'tutor' ? 800 : 1500))
+      run.text += /[.!?。？！]$/.test(run.text) && !/^\s/.test(delta) ? ` ${delta}` : delta
+    else {
+      run.text = delta.replace(/^\s+/, '')
+      run.n++
+    }
     lastEnd.current[from] = endMs
     speechHook.current(from, L[L.length - 1])
     cardHook.current(from)
@@ -223,6 +239,9 @@ export default function AiRoom(props: Props) {
   const panelSaid = useRef<(who: 'student' | 'tutor', text: string) => PanelIntent | null>(() => null)
   const panelDo = useRef<(i: PanelIntent) => void>(() => {})
   const panelHeard = useRef('')
+  /** closing the course (free talk): by the student's words, the AI tutor's, or the ✕ button. False if none is open. */
+  const closeCourseNow = useRef<() => boolean>(() => false)
+  const heardClose = useRef('')
   const [undo, setUndo] = useState<{ id: number; itemId: string; term: string; already: boolean } | null>(null)
   const cardFrom = useRef(0)
   const cardSeq = useRef(0)
@@ -372,17 +391,21 @@ export default function AiRoom(props: Props) {
         assistTimer.current = setTimeout(() => void runAssist(), 1300)
       }
       if (from === 'student') {
-        // the student's own words act at once (each command once per line)
-        const L = lines.current
-        const line = L[L.length - 1]
-        const parts = line?.text.split(/(?<=[.!?。？！])\s*/).filter(Boolean) ?? []
+        // the student's own words act at once (each command once per sentence; the same command said again later,
+        // after a tap, still counts). Read from their whole stretch of speech, however the transcript split it.
+        const run = runs.current.student
+        const parts = run.text.split(/(?<=[.!?。？！])\s*/).filter(Boolean)
         const said = parts[parts.length - 1] ?? ''
-        const intent = panelSaid.current('student', said)
-        // once per sentence: the same command said again later (after a tap) still counts
-        const key = intent ? `${L.length}:${parts.length}:${JSON.stringify(intent)}` : ''
-        if (intent && key !== panelHeard.current) {
-          panelHeard.current = key
-          panelDo.current(intent)
+        const at = `${run.n}:${parts.length}`
+        if (studentClosesCourse(said)) {
+          if (heardClose.current !== at && closeCourseNow.current()) heardClose.current = at
+        } else {
+          const intent = panelSaid.current('student', said)
+          const key = intent ? `${at}:${JSON.stringify(intent)}` : ''
+          if (intent && key !== panelHeard.current) {
+            panelHeard.current = key
+            panelDo.current(intent)
+          }
         }
       }
       if (from === 'student' && shownRef.current) {
@@ -411,6 +434,19 @@ export default function AiRoom(props: Props) {
   // GPT-Live's tool calls were slow and unreliable for this, so the AI tutor just says it's moving on:
   // a clear spoken cue moves the slide at once, and after each turn a small model double-checks.
   const { onGo, sendTutorMessage, onOpenLesson, onCloseCourse } = props
+  /** the open course a close was already sent for (said and tapped, or said twice): don't close/tell twice */
+  const closedOpen = useRef<unknown>(null)
+  const shownOpen = props.open
+  useEffect(() => {
+    closeCourseNow.current = () => {
+      if (shownOpen && closedOpen.current === shownOpen) return true
+      if (!live.current.slides.length || closing.current) return false
+      closedOpen.current = shownOpen
+      onCloseCourse()
+      void act({ kind: 'view', what: 'closed' })
+      return true
+    }
+  })
   /** the furthest slide taught (0-based), and whether the student is looking back at an earlier one */
   const furthest = useRef(0)
   const review = useRef(false)
@@ -527,7 +563,7 @@ export default function AiRoom(props: Props) {
       }
       const ref = syncSlide()
       if (wrapUp.current) return
-      if (from === 'tutor') viewCue.current(line)
+      if (from === 'tutor') viewCue.current({ ...line, text: runs.current.tutor.text }, runs.current.tutor.n)
       if (from === 'tutor' && ref) {
         const sentence = line.text.split(/(?<=[.!?])\s+/).find((x) => PLAY_CUE.test(x))
         const armed = playTimer.current !== null
@@ -1210,7 +1246,7 @@ export default function AiRoom(props: Props) {
   const acted = useRef(new Set<string>())
   const cueTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   useEffect(() => {
-    viewCue.current = (line) => {
+    viewCue.current = (line, run) => {
       // the sentence being said now; act once it's finished (a short pause), and once per sentence
       const sentences = line.text.split(/(?<=[.!?])\s+/)
       const s = sentences[sentences.length - 1] ?? ''
@@ -1219,9 +1255,9 @@ export default function AiRoom(props: Props) {
       // opening or closing a course comes first: with the course list up, "I'll open Haruka in the UK now" opens it
       // (it isn't just picking it on the panel)
       const kind =
-        OPEN_CUE.test(s) || named ? 'open' : CLOSE_CUE.test(s) ? 'close' : panelSaid.current('tutor', s) ? 'panel' : BOARD_ON_CUE.test(s) ? 'board_on' : BOARD_OFF_CUE.test(s) ? 'board_off' : null
+        OPEN_CUE.test(s) || named ? 'open' : tutorClosesCourse(s) ? 'close' : panelSaid.current('tutor', s) ? 'panel' : BOARD_ON_CUE.test(s) ? 'board_on' : BOARD_OFF_CUE.test(s) ? 'board_off' : null
       if (!kind) return
-      const key = `${kind}:${line.text.slice(0, 60)}:${sentences.length}`
+      const key = `${kind}:${run}:${sentences.length}`
       if (acted.current.has(key)) return
       if (cueTimer.current) clearTimeout(cueTimer.current)
       cueTimer.current = setTimeout(() => {
@@ -1240,8 +1276,7 @@ export default function AiRoom(props: Props) {
           showBoard.current(false)
           void act({ kind: 'view', what: 'board_off' })
         } else if (kind === 'close' && slidesOpen) {
-          onCloseCourse()
-          void act({ kind: 'view', what: 'closed' })
+          closeCourseNow.current()
         } else if (kind === 'open' && (!slidesOpen || (named && named.id !== props.open?.courseId))) {
           const n = LESSON_NO.exec(s)?.[1]
           void aiOpenLesson(info.bookingId, named?.id ?? '', n ? `#${n}` : '').then((res) => {
@@ -1350,6 +1385,12 @@ export default function AiRoom(props: Props) {
             <button disabled={!slides.length || idx >= slides.length - 1} onClick={() => moveSlide('next')} aria-label="Next slide">
               <Ico name="right" />
             </button>
+            {!freeTalk && (
+              // the student can always close the course themselves (free talk), without asking the AI tutor
+              <button className="closeCourse" title={t('closeCourse')} aria-label={t('closeCourse')} onClick={() => closeCourseNow.current()}>
+                <Ico name="x" />
+              </button>
+            )}
           </div>
         </div>
         <button className={`sq tog${props.whiteboard ? ' on' : ''}`} title={t('whiteboardTitle')} aria-pressed={props.whiteboard} onClick={toggleWhiteboard}>

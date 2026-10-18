@@ -37,7 +37,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const prev = (cur?.state as Record<string, unknown> | null) ?? {}
     await db
       .from('classroom_sessions')
-      .update({ course_id: null, lesson_id: null, state: { ...prev, slideId: null }, updated_at: now })
+      .update({ course_id: null, lesson_id: null, state: { ...prev, slideId: null, closed: true }, updated_at: now })
       .eq('booking_id', ctx.booking.id)
     return json(200, { ok: true })
   }
@@ -56,7 +56,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       course_id: body.courseId,
       lesson_id: found.lesson.id,
       used_course: true,
-      state: { ...prev, slideId, whiteboard: false }, // a teacher moving slides closes the whiteboard
+      state: { ...prev, slideId, whiteboard: false, closed: false }, // a teacher moving slides closes the whiteboard
       updated_at: now,
     })
     .eq('booking_id', ctx.booking.id)

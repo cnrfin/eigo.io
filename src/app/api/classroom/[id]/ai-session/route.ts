@@ -3,6 +3,7 @@ import { createHash } from 'node:crypto'
 import { getSupabaseAdmin } from '@/lib/supabase-admin'
 import { ensureSession, json, loadClassroom } from '@/lib/classroom/server'
 import { STUDENT_EARLY_JOIN_MIN } from '@/lib/classroom/booking-window'
+import { resolveOpen } from '@/lib/classroom/open-state'
 import { buildSessionBrief } from '@/lib/ai-tutor/brief'
 import { createLiveSession, endLiveSession } from '@/lib/ai-tutor/openai'
 
@@ -64,8 +65,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     await db.from('ai_sessions').update({ ended_at: new Date().toISOString(), end_reason: 'replaced' }).eq('session_id', s.session_id)
   }
 
-  // What the student sees: the live course/lesson (if any), else what was booked.
-  const openLesson = session?.course_id && session.lesson_id ? { courseId: session.course_id, lessonId: session.lesson_id } : null
+  // Exactly what the student's screen shows (lib/classroom/open-state.ts): the AI tutor is never told a lesson is
+  // open when it isn't, or the other way round
+  const openLesson = await resolveOpen(db, booking, session)
   const brief = await buildSessionBrief(db, booking, openLesson)
 
   let created: { sessionId: string; sdp: string }

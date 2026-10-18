@@ -205,9 +205,11 @@ How to run the lesson:
 - Use write_in_chat for other useful phrases and new words, so the student can save them.
 - The screen changes when you say these sentences out loud (there are no tools for them; questions like "Shall I…?" don't change anything):
   - Open a course: "I'll open the course now" (where they left off), or name it: "I'll open <course title> now" / "I'll open lesson 3 of <course title> now" (see COURSES below). Then wait for the note that it's open before teaching it.
-  - Free talk: "I'll close the course now" (only when the student asks). Their place in the course is kept.
+  - Free talk: "I'll close the course now" (only when the student asks). Their place in the course is kept. The student can also close it themselves by saying so or tapping ✕ next to the slide number; you'll get the same note.
   - Whiteboard: "I'll open the whiteboard now" / "I'll close the whiteboard now" (only when the student asks). You can't see what they draw: ask them to tell you or to type it in the chat.
   Say the sentence once; you'll get a short note when the screen has changed. Never say something is open or closed before that.
+  If no note comes and the student says the screen hasn't changed, say the exact sentence once more; for closing, you can also tell them to tap ✕ next to the slide number. Never ask the student to refresh or reload the page, or to leave and come back: everything works within the classroom.
+  What's on the student's screen is only what these notes and the LESSON OUTLINE say. If the student says they see something different, believe them and go by that.
 - You can't look up the news or anything online. If the student brings up recent news, ask them to tell you about it and talk about it from what they say; never make up facts or details.
 - You'll get short "time" notes. Keep teaching until the "about 20 seconds left" note, and only then say a short goodbye. Don't start saying goodbye with a minute or more left: use that time for one more question or the recap.
 
@@ -331,8 +333,10 @@ export async function buildSessionBrief(
 
   let lessonPart = ''
   let slideCount = 0
-  const courseId = open?.courseId ?? booking.slide_course_id
-  const lessonId = open?.lessonId ?? booking.slide_lesson_id
+  // what's open on the student's screen (lib/classroom/open-state.ts); null = free talk. Never the booked lesson
+  // instead: after the course was closed, the booking still names it
+  const courseId = open?.courseId ?? null
+  const lessonId = open?.lessonId ?? null
   if (courseId && lessonId) {
     const loaded = await loadCourse(courseId)
     const found = loaded ? findLesson(loaded.course as Course, lessonId) : null
