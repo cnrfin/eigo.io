@@ -34,7 +34,7 @@ const md = { getUserMedia: async () => new globalThis.MediaStream() }
 Object.defineProperty(w.navigator, 'mediaDevices', { value: md, configurable: true })
 try { Object.defineProperty(globalThis.navigator, 'mediaDevices', { value: md, configurable: true }) } catch {}
 const g = globalThis
-g.COURSE = require(REPO + '/studio/data/courses/c_greatbritain/course.json')
+g.COURSE = require(REPO + '/tests/classroom/fixtures/course-c_greatbritain.json')
 const T = require('../.build/harness.cjs')
 const { act } = require('react')
 const iso = (msAgo) => new Date(Date.now() - msAgo).toISOString()

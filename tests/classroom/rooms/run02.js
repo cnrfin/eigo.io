@@ -14,7 +14,7 @@ const played = []
 w.HTMLMediaElement.prototype.play = function () { played.push('play:' + this.closest('[data-block-id]')?.dataset.blockId); return Promise.resolve() }
 w.HTMLMediaElement.prototype.pause = function () { played.push('pause') }
 const g = globalThis
-g.COURSE = require(REPO + '/studio/data/courses/c_greatbritain/course.json')
+g.COURSE = require(REPO + '/tests/classroom/fixtures/course-c_greatbritain.json')
 const T = require('../.build/harness.cjs')
 const { act } = require('react')
 const iso = (msAgo) => new Date(Date.now() - msAgo).toISOString()

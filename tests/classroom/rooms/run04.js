@@ -18,7 +18,7 @@ w.HTMLCanvasElement.prototype.getContext = function () {
 w.HTMLMediaElement.prototype.play = () => Promise.resolve()
 w.HTMLMediaElement.prototype.pause = () => {}
 const g = globalThis
-g.COURSE = require(REPO + '/studio/data/courses/c_greatbritain/course.json')
+g.COURSE = require(REPO + '/tests/classroom/fixtures/course-c_greatbritain.json')
 const T = require('../.build/harness.cjs')
 const { act } = require('react')
 const iso = (msAgo) => new Date(Date.now() - msAgo).toISOString()

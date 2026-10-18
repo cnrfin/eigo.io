@@ -19,6 +19,7 @@ It exits with 1 if anything fails, and lists the failing checks. Run it after an
 | `unit/*.test.ts` | Pure logic, bundled with esbuild and run in Node. Each prints `ok …` / `FAIL …` lines |
 | `rooms/run*.js` | A whole classroom in a simulated browser (jsdom): it renders `ClassroomApp`, joins, plays a lesson (spoken transcript, taps, timers) and checks what's on screen and what was sent |
 | `harness/` | What the classroom runs share: `test.tsx` (renders the app, mocks `fetch` for every API route, records requests in `g.log`) and the mocked modules (`mock-*.tsx`) |
+| `fixtures/` | A fixed copy of the "Haruka in the UK: Part 1" course the classroom runs teach from (`studio/data/` isn't in git). Editing the real course doesn't change the tests; to refresh the copy, copy `studio/data/courses/c_greatbritain/course.json` here and rerun the suite |
 | `run-all.mjs` | Bundles, runs, summarises |
 | `.build/` | Build output (ignored by git) |
 
