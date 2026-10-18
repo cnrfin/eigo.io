@@ -276,6 +276,8 @@ export default function AiRoom(props: Props) {
   const completeRp = useRef<() => void>(() => {})
   const hintAsk = useRef<() => void>(() => {})
   const rpPlaying = useRef(false)
+  /** when the mission-complete screen appeared (the student's answer has to come after it) */
+  const doneAt = useRef(0)
   /** when the screen last changed (course, panel, whiteboard), and the transcript line it changed at */
   const screenAt = useRef({ line: 0, t: 0 })
   const lastJudged = useRef(0)
@@ -1401,6 +1403,7 @@ export default function AiRoom(props: Props) {
     completeRp.current = () => {
       if (!playing) return
       const finishedAt = Date.now()
+      doneAt.current = finishedAt
       setPanel((p) => (p?.view === 'roleplay' && p.phase === 'play' ? { ...p, phase: 'done', finishedAt } : p))
       feedbackFrom.current = lines.current.length
       const tasks = tasksFor(roleOf(playing.scene, playing.role).levels[playing.level], mission.twisted)
@@ -1516,44 +1519,71 @@ export default function AiRoom(props: Props) {
     })
   }, [])
   const acted = useRef(new Set<string>())
+  const cuePending = useRef('')
+  const cueUpto = useRef({ run: -1, idx: 0 })
   const cueTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   useEffect(() => {
-    viewCue.current = (line, run) => {
-      // the sentence being said now; act once it's finished (a short pause), and once per sentence
-      const sentences = line.text.split(/(?<=[.!?])\s+/)
-      const s = sentences[sentences.length - 1] ?? ''
-      if (!s || s.trim().endsWith('?')) return
-      const named = OPEN_VERB.test(s) ? courseNamed(s, titles.current) : undefined
-      // opening or closing a course comes first: with the course list up, "I'll open Haruka in the UK now" opens it
-      // (it isn't just picking it on the panel)
-      const kind =
-        OPEN_CUE.test(s) || named ? 'open' : tutorClosesCourse(s) ? 'close' : panelSaid.current('tutor', s) ? 'panel' : BOARD_ON_CUE.test(s) ? 'board_on' : BOARD_OFF_CUE.test(s) ? 'board_off' : null
-      if (!kind) return
-      const key = `${kind}:${run}:${sentences.length}`
-      if (acted.current.has(key)) return
-      if (cueTimer.current) clearTimeout(cueTimer.current)
-      cueTimer.current = setTimeout(() => {
-        cueTimer.current = null
-        if (acted.current.has(key)) return
-        acted.current.add(key)
-        const slidesOpen = live.current.slides.length > 0
-        if (kind === 'panel') {
-          // free talk only (panelSaid checks): with a course open, "role-play" on a slide never opens anything
-          const i = panelSaid.current('tutor', s)
-          if (i) panelDo.current(i)
-        } else if (kind === 'board_on' && !whiteboardRef.current) {
-          showBoard.current(true)
-          void act({ kind: 'view', what: 'board_on' })
-        } else if (kind === 'board_off' && whiteboardRef.current) {
-          showBoard.current(false)
-          void act({ kind: 'view', what: 'board_off' })
-        } else if (kind === 'close' && slidesOpen) {
-          closeCourseNow.current()
-        } else if (kind === 'open' && (!slidesOpen || (named && named.id !== props.open?.courseId))) {
-          const n = LESSON_NO.exec(s)?.[1]
-          openCourseNow.current(named?.id ?? '', n ? `#${n}` : '')
+    // one sentence of the tutor's speech (idx = its number in this stretch; done = a later sentence has begun)
+    const cueOne = (s: string, run: number, idx: number, done: boolean) => {
+        // the transcript arrives word by word: "Would you like to swap roles" is a question once its "?" arrives.
+        // A sentence that turns out to be a question cancels what it had started.
+        if (s.trim().endsWith('?') && cuePending.current === `${run}:${idx}` && cueTimer.current) {
+          clearTimeout(cueTimer.current)
+          cueTimer.current = null
+          cuePending.current = ''
         }
-      }, kind === 'panel' && /[.!]\s*$/.test(s) ? 120 : 500) // a finished sentence about the panel acts at once
+        if (!s || s.trim().endsWith('?')) return
+        const named = OPEN_VERB.test(s) ? courseNamed(s, titles.current) : undefined
+        // opening or closing a course comes first: with the course list up, "I'll open Haruka in the UK now" opens it
+        // (it isn't just picking it on the panel)
+        const kind =
+          OPEN_CUE.test(s) || named ? 'open' : tutorClosesCourse(s) ? 'close' : panelSaid.current('tutor', s) ? 'panel' : BOARD_ON_CUE.test(s) ? 'board_on' : BOARD_OFF_CUE.test(s) ? 'board_off' : null
+        if (!kind) return
+        const key = `${kind}:${run}:${idx}`
+        if (acted.current.has(key)) return
+        if (cueTimer.current) clearTimeout(cueTimer.current)
+        const finished = done || /[.!。！]\s*$/.test(s)
+        cuePending.current = `${run}:${idx}`
+        cueTimer.current = setTimeout(() => {
+          cueTimer.current = null
+          cuePending.current = ''
+          if (acted.current.has(key)) return
+          // read the sentence again as it is now: never act on one that turned into a question
+          const cur = runs.current.tutor
+          if (cur.n === run) {
+            const now = cur.text.split(/(?<=[.!?])\s+/)[idx - 1] ?? s
+            if (now.trim().endsWith('?')) return
+          }
+          acted.current.add(key)
+          const slidesOpen = live.current.slides.length > 0
+          if (kind === 'panel') {
+            // free talk only (panelSaid checks): with a course open, "role-play" on a slide never opens anything
+            const i = panelSaid.current('tutor', s)
+            // mission complete: the tutor's "let's swap roles / try again / another scene" only counts once the student
+            // has answered its offer (or tapped); its own offer never moves on by itself
+            if (i && (i.kind === 'swap' || i.kind === 'again' || i.kind === 'next') && lastSaid.current.student <= doneAt.current) return
+            if (i) panelDo.current(i)
+          } else if (kind === 'board_on' && !whiteboardRef.current) {
+            showBoard.current(true)
+            void act({ kind: 'view', what: 'board_on' })
+          } else if (kind === 'board_off' && whiteboardRef.current) {
+            showBoard.current(false)
+            void act({ kind: 'view', what: 'board_off' })
+          } else if (kind === 'close' && slidesOpen) {
+            closeCourseNow.current()
+          } else if (kind === 'open' && (!slidesOpen || (named && named.id !== props.open?.courseId))) {
+            const n = LESSON_NO.exec(s)?.[1]
+            openCourseNow.current(named?.id ?? '', n ? `#${n}` : '')
+          }
+        }, kind === 'panel' ? (finished ? 120 : 1500) : 500) // the panel: at once on a finished sentence, else wait for its end
+    }
+    viewCue.current = (line, run) => {
+      // every sentence in this stretch that hasn't been read yet, and the one being said now (a chunk of transcript
+      // can hold two sentences: "Great, let's swap roles. I'll be the customer.")
+      const sentences = line.text.split(/(?<=[.!?])\s+/)
+      const from = cueUpto.current.run === run ? Math.min(cueUpto.current.idx, sentences.length - 1) : 0
+      for (let k = Math.max(0, from); k < sentences.length; k++) cueOne(sentences[k] ?? '', run, k + 1, k < sentences.length - 1)
+      cueUpto.current = { run, idx: sentences.length - 1 }
     }
   }, [act, onCloseCourse, onOpenLesson, info.bookingId, props.open?.courseId])
   useEffect(() => () => void (cueTimer.current && clearTimeout(cueTimer.current)), [])

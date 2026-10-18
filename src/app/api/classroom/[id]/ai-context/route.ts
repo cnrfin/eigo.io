@@ -112,7 +112,7 @@ function instruction(a: Action, secondsLeft: number): string | null {
       return `The role-play is over and the mission-complete screen is on the student's screen. Step out of character now and give short spoken feedback, in 3 short sentences (under 30 seconds in all), each one on its own:
 1. One specific thing they did well, quoting their own words.
 2. One thing to try next time: "A more natural way is: <a better version of one of their lines>".
-3. Ask if they'd like to ${offer}. Then wait for their answer.${missed.length ? `\nThey didn't get to: ${missed.join('; ')}. You can mention one of these as the thing to try.` : ''}
+3. Ask if they'd like to ${offer}. Then stop and wait for their answer: don't start anything yourself. Once they answer, say "Let's swap roles", "Let's try it again" or "Let's try another scene" to match what they chose (the screen changes then), or carry on with free talk if they'd rather chat.${missed.length ? `\nThey didn't get to: ${missed.join('; ')}. You can mention one of these as the thing to try.` : ''}
 What they said for each task:
 ${done || '(nothing recorded)'}`
     }
