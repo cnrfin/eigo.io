@@ -5,6 +5,7 @@ import { useMemo, useRef, useState } from 'react'
 import { LEVEL_NAMES, roleOf, otherRole, tasksFor, type LevelIndex, type RoleId, type Scene } from '@/lib/roleplay/types'
 import type { SceneSummary } from '@/lib/roleplay/types'
 import type { PanelCourse } from '@/lib/classroom/client'
+import { propHit } from '@/lib/roleplay/prop'
 import type { ClassroomT } from '@/lib/classroom/i18n'
 import { Ico } from './Icons'
 
@@ -209,10 +210,7 @@ export function RoleplayMission({
   // about 45 s a task: the bar fills as time goes, it never stops the scene
   const took = now - mission.startedAt
   const share = Math.min(1, took / (tasks.length * 45_000))
-  const hit = (name: string, key?: string) => {
-    const k = (key ?? name).toLowerCase().replace(/[^a-z0-9 ]+/g, ' ').trim().split(' ')[0]
-    return !!k && k.length > 2 && heard.includes(k)
-  }
+  const hit = (name: string, key?: string) => propHit(heard, { name, key })
   return (
     <div className="apn apn-mission">
       <div className="apn-mh">

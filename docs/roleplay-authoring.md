@@ -110,7 +110,12 @@ A short document from the scene that the student can open: a menu, a timetable, 
 }
 ```
 
-At most 4 sections, about 6 items each. `key` (optional) is the word that lights the item up when someone says it.
+At most 4 sections, about 6 items each.
+
+`key` is what lights the item up when someone says it in the scene. Give every item one:
+- a word or phrase that's actually said, matched whole: `"latte"`, `"10:15"`, `"check-in"`, `"Wi-Fi"`, `"side entrance"` (it won't light up on "Riverside")
+- spellings or names people might use, separated by `|`: `"colour|color"`, `"bill|check"`
+- no two items with the same key, or a key that's part of another item's key (both would light up). The checker flags these.
 
 ## Japan and the language
 

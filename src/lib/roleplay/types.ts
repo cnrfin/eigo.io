@@ -101,10 +101,15 @@ export const nextLevel = (cleared: number): LevelIndex => Math.max(0, Math.min(2
 /** Levels the student may pick: anything up to the next one. */
 export const canPlay = (cleared: number, level: LevelIndex) => level <= nextLevel(cleared)
 
-/** The tasks on screen; the twist's task appears (before the last task) once it has happened. */
+/**
+ * The tasks on screen; the twist's task appears once it has happened, right after the task that sets it off
+ * (`twist.after`), which is when the AI tutor brings it up. (Before, it always went in just before the last task,
+ * so a twist after an earlier task left the checklist and hints on the wrong task.)
+ */
 export function tasksFor(level: Level, twisted: boolean): Task[] {
   if (!level.twist || !twisted) return level.tasks
   const t = [...level.tasks]
-  t.splice(t.length - 1, 0, level.twist.task)
+  const i = t.findIndex((x) => x.id === level.twist!.after)
+  t.splice(i >= 0 ? i + 1 : t.length - 1, 0, level.twist.task)
   return t
 }

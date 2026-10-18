@@ -32,6 +32,11 @@ const cafe = sceneById('cafe-abroad')!
 ok('levels: 0 cleared → 初級, 1 → 中級, 2 → 上級, 3 → 上級', [0, 1, 2, 3].map(nextLevel).join() === '0,1,2,2')
 const L2 = roleOf(cafe, 'a').levels[2]
 ok('twist task goes in right after its trigger task (wifi)', tasksFor(L2, true).map((t) => t.id).join() === 'order,here,wifi,solve,pay', tasksFor(L2, true).map((t) => t.id))
+{
+  const iz = sceneById('izakaya-guests')!
+  const L = roleOf(iz, 'a').levels[2]
+  ok('a twist after an earlier task goes right after it (izakaya: after "recommend")', tasksFor(L, true).map((t) => t.id).join() === 'seat,recommend,allergy,order,bill', tasksFor(L, true).map((t) => t.id))
+}
 const ins = roleplayInstruction(cafe, 'a', 2)
 ok('instruction names both characters, the tasks, the twist and the menu', /You play: Barista/.test(ins) && /1\. Order a drink your way/.test(ins) && /Twist: after the student has done "Ask about Wi-Fi"/.test(ins) && /Flat white ¥500/.test(ins), ins)
 ok('instruction length is reasonable', ins.length < 2600, ins.length)

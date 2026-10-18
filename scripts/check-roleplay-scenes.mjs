@@ -19,6 +19,8 @@ const JA = /[぀-ヿ一-鿿]/
 const ID = /^[a-z0-9]+(-[a-z0-9]+)*$/
 const TASK_ID = /^[a-z][a-z0-9-]*$/
 const words = (s) => s.trim().split(/\s+/).filter(Boolean).length
+// the same normalising the classroom uses for prop keys (normText in src/lib/ai-tutor/actions.ts)
+const norm = (t) => t.toLowerCase().normalize('NFKC').replace(/[’'`"“”「」『』]/g, '').replace(/[^\p{L}\p{N}]+/gu, ' ').trim()
 const str = (v) => typeof v === 'string' && v.trim().length > 0
 
 let errors = 0
@@ -142,6 +144,27 @@ function checkScene(s, cat, file, where) {
       if (!str(sec?.heading)) report(where, 'every prop section needs a heading')
       if (!Array.isArray(sec?.items) || !sec.items.length || !sec.items.every((x) => str(x?.name))) report(where, `prop section "${sec?.heading}" needs items with a name`)
     }
+    // keys light the rows up when they're said (src/lib/roleplay/prop.ts): whole phrases, "|" between spellings
+    const keys = []
+    for (const it of (p?.sections ?? []).flatMap((sec) => sec?.items ?? [])) {
+      if (it?.key === undefined) {
+        warn(where, `prop item "${it?.name}" has no key: it lights up only on the first word of its name`)
+        continue
+      }
+      if (typeof it.key !== 'string' || !it.key.trim()) {
+        report(where, `prop item "${it?.name}": key must be a word or phrase`)
+        continue
+      }
+      for (const alt of it.key.split('|')) {
+        const k = norm(alt)
+        if (k.length < 2) report(where, `prop item "${it.name}": key "${alt}" is too short to match`)
+        else keys.push({ k, name: it.name })
+      }
+    }
+    for (const a of keys)
+      for (const b of keys)
+        if (a !== b && a.name !== b.name && (a.k === b.k || ` ${b.k} `.includes(` ${a.k} `)))
+          report(where, `prop items "${a.name}" and "${b.name}": key "${a.k}" also matches "${b.k}", so both would light up`)
   }
 }
 
