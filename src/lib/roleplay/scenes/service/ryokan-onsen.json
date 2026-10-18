@@ -1,0 +1,108 @@
+{
+  "id": "ryokan-onsen",
+  "category": "service",
+  "title": { "ja": "旅館で温泉のマナーを説明", "en": "Explaining onsen manners at a ryokan" },
+  "summary": { "ja": "部屋に案内して、浴衣や温泉の入り方、夕食の時間を英語で説明する。", "en": "Show a guest to their room and explain the yukata, the hot spring and dinner." },
+  "setting": "A traditional ryokan in a hot spring town, in the late afternoon. A guest from abroad has just checked in, and a member of staff shows them to their tatami room.",
+  "image": "",
+  "studentRole": "a",
+  "roles": [
+    {
+      "id": "a",
+      "name": { "ja": "旅館のスタッフ", "en": "Ryokan staff" },
+      "persona": "A member of staff at the ryokan.",
+      "levels": [
+        {
+          "tutor": "You are a guest staying at a ryokan for the first time. Open by following the staff into your room and saying how lovely it is; wait for the staff to explain things. Speak slowly and simply, in short sentences. Ask where the bath is. Choose dinner at 6.",
+          "tasks": [
+            { "id": "yukata", "title": { "ja": "浴衣を紹介する", "en": "Show them the yukata" }, "hints": ["浴衣を見せて、お風呂に着て行けると伝えましょう", "This is a … You can wear it …", "This is a yukata. You can wear it to the bath."] },
+            { "id": "bath", "title": { "ja": "お風呂の場所を伝える", "en": "Say where the bath is" }, "hints": ["お風呂の場所を伝えましょう", "The bath is on …", "The bath is on the first floor."] },
+            { "id": "wash", "title": { "ja": "先に体を洗うよう伝える", "en": "Tell them to wash first" }, "hints": ["入る前に体を洗うよう伝えましょう", "Please wash … before …", "Please wash your body before you get in."] },
+            { "id": "dinner", "title": { "ja": "夕食の時間を聞く", "en": "Ask what time for dinner" }, "hints": ["夕食を6時と7時のどちらにするか聞きましょう", "Would you like dinner at … or …?", "Would you like dinner at 6 or 7?"] }
+          ]
+        },
+        {
+          "tutor": "You are a guest from abroad, speaking at natural pace with a little small talk (you came from Tokyo by train). Open by following the staff into your room and saying how lovely it is; wait for the staff to explain things. You've never been to an onsen: ask what to take to the bath, and whether you can wear a swimsuit. Choose dinner at 7.",
+          "tasks": [
+            { "id": "bring", "title": { "ja": "持って行くものを説明する", "en": "Say what to take to the bath" }, "hints": ["小さいタオルを持って行くよう伝えましょう", "Take the … with you. The big one …", "Take the small towel with you. The big one is for drying off."] },
+            { "id": "wash", "title": { "ja": "理由をつけて、先に洗うよう伝える", "en": "Explain washing first, with a reason" }, "hints": ["お湯をきれいに保つために、先に体を洗うよう伝えましょう", "Please wash your body first, so …", "Please wash your body first, so the water stays clean."] },
+            { "id": "swimsuit", "title": { "ja": "水着は使えないと伝える", "en": "Say swimsuits aren't allowed" }, "hints": ["水着は着られないと伝えましょう", "Sorry, you can't wear …", "Sorry, you can't wear a swimsuit in the bath."] },
+            { "id": "dinner", "title": { "ja": "夕食の時間と場所を確認する", "en": "Check the dinner time and place" }, "hints": ["夕食の時間と場所を確認しましょう", "So dinner is at …, in …", "So dinner is at 7, in the dining room on the second floor."] }
+          ]
+        },
+        {
+          "tutor": "You are a curious, chatty guest from abroad, speaking at natural speed. Open by following the staff into your room and saying how lovely it is; wait for the staff to explain things. Ask the staff to explain how the onsen works, step by step. You saw the private bath in the facility guide: ask about it. Ask when the bath is least crowded, and how to wear the yukata.",
+          "tasks": [
+            { "id": "steps", "title": { "ja": "温泉の入り方を順に説明する", "en": "Explain the bath step by step" }, "hints": ["洗い場で体を洗ってから、ゆっくりお湯に入ると説明しましょう", "First, wash …, then …", "First, wash at the showers, then get in slowly and relax."] },
+            { "id": "private", "title": { "ja": "貸切風呂の予約方法を説明する", "en": "Explain how to book the private bath" }, "hints": ["料金と時間、予約の場所を伝えましょう", "It's … for 45 minutes. You can book …", "It's 2,000 yen for 45 minutes. You can book at the front desk."] },
+            { "id": "quiet", "title": { "ja": "すいている時間を伝える", "en": "Say when it's quiet" }, "hints": ["朝早くがすいていると伝えましょう", "It's usually quiet …", "It's usually quiet early in the morning, around 6."] },
+            { "id": "yukata", "title": { "ja": "浴衣の着方を説明する", "en": "Explain how to wear the yukata" }, "hints": ["左を上にして、帯を結ぶと説明しましょう", "Put the … side over …, and tie …", "Put the left side over the right, and tie the belt."] }
+          ],
+          "twist": {
+            "after": "steps",
+            "tutor": "Mention that you have a small tattoo on your arm, and ask whether you can still use the bath. Accept the staff's suggestion politely.",
+            "task": { "id": "tattoo", "title": { "ja": "タトゥーのルールをていねいに説明する", "en": "Explain the tattoo rule politely" }, "hints": ["大浴場には入れないとていねいに伝えて、貸切風呂を提案しましょう", "I'm sorry, tattoos aren't allowed in …, but …", "I'm sorry, tattoos aren't allowed in the large bath, but the private bath is fine."] }
+          }
+        }
+      ]
+    },
+    {
+      "id": "b",
+      "name": { "ja": "宿泊客", "en": "Guest" },
+      "persona": "A guest from abroad staying at a ryokan for the first time.",
+      "levels": [
+        {
+          "tutor": "You are the ryokan staff showing the guest to their room. Speak slowly and simply, in short sentences. Show them the yukata. When asked, say the bath is on the first floor and open until midnight, the towels are in the room, and dinner is at 6 or 7.",
+          "tasks": [
+            { "id": "bath", "title": { "ja": "お風呂の場所を聞く", "en": "Ask where the bath is" }, "hints": ["お風呂の場所を聞きましょう", "Where is …?", "Where is the bath?"] },
+            { "id": "time", "title": { "ja": "お風呂の時間を聞く", "en": "Ask when the bath closes" }, "hints": ["お風呂が何時までか聞きましょう", "What time does … close?", "What time does the bath close?"] },
+            { "id": "towel", "title": { "ja": "タオルについて聞く", "en": "Ask about towels" }, "hints": ["タオルを持って行く必要があるか聞きましょう", "Do I need to bring …?", "Do I need to bring a towel?"] },
+            { "id": "dinner", "title": { "ja": "夕食の時間を選ぶ", "en": "Choose a dinner time" }, "hints": ["夕食の時間を選びましょう", "Dinner at …, please.", "Dinner at seven, please."] }
+          ]
+        },
+        {
+          "tutor": "You are the ryokan staff, speaking at natural pace, kind and patient. When asked, explain the bath manners in the facility guide: wash first, no swimsuits, and keep the small towel out of the water. When asked, breakfast is 7:30 to 9:00 in the dining room on the second floor.",
+          "tasks": [
+            { "id": "first", "title": { "ja": "温泉は初めてだと伝える", "en": "Say it's your first onsen" }, "hints": ["温泉は初めてだと伝えて、どうすればいいか聞きましょう", "It's my first … What should I …?", "It's my first onsen. What should I do?"] },
+            { "id": "swimsuit", "title": { "ja": "水着について聞く", "en": "Ask about swimsuits" }, "hints": ["水着を着てもいいか聞きましょう", "Can I wear …?", "Can I wear a swimsuit in the bath?"] },
+            { "id": "towel", "title": { "ja": "タオルの使い方を聞く", "en": "Ask about the small towel" }, "hints": ["小さいタオルをどうするか聞きましょう", "What do I do with …?", "What do I do with the small towel?"] },
+            { "id": "breakfast", "title": { "ja": "朝食について聞く", "en": "Ask about breakfast" }, "hints": ["朝食の時間と場所を聞きましょう", "What time is …, and where …?", "What time is breakfast, and where is it?"] }
+          ]
+        },
+        {
+          "tutor": "You are the ryokan staff, speaking at natural speed, warm and polite. When asked about tattoos, explain politely that they aren't allowed in the large baths, and suggest the private bath (¥2,000 for 45 minutes, open 15:00 to 23:00, booked at the front desk). You can book it for them. When asked, say guests often wear their yukata to dinner.",
+          "tasks": [
+            { "id": "tattoo", "title": { "ja": "タトゥーがあると伝える", "en": "Mention your tattoo" }, "hints": ["小さなタトゥーがあると伝えて、大丈夫か聞きましょう", "I have a small … on my … Is that …?", "I have a small tattoo on my arm. Is that a problem?"] },
+            { "id": "private", "title": { "ja": "貸切風呂について聞く", "en": "Ask about the private bath" }, "hints": ["貸切風呂を使えるか、予約方法も聞きましょう", "Could I use the … instead? How do I …?", "Could I use the private bath instead? How do I book it?"] },
+            { "id": "book", "title": { "ja": "時間を決めて予約する", "en": "Book a time" }, "hints": ["今夜の時間を決めて予約しましょう", "Could I book it for … tonight?", "Could I book it for 9 o'clock tonight?"] },
+            { "id": "yukata", "title": { "ja": "浴衣で行っていいか聞く", "en": "Ask about wearing the yukata" }, "hints": ["浴衣で夕食に行ってもいいか聞きましょう", "Is it okay to wear … to …?", "Is it okay to wear the yukata to dinner?"] }
+          ]
+        }
+      ]
+    }
+  ],
+  "prop": {
+    "label": { "ja": "館内案内", "en": "Facility guide" },
+    "title": "RYOKAN · Guest guide",
+    "sections": [
+      { "heading": "BATHS", "items": [
+        { "name": "Large baths · 1st floor · 15:00–24:00 and 6:00–9:00 (quietest around 6:00)", "key": "large bath|large baths|onsen|hot spring" },
+        { "name": "Private bath · 45 min · 15:00–23:00 · book at the front desk", "value": "¥2,000", "key": "private bath|2,000|2000|45 minutes" },
+        { "name": "Towels are in your room: take the small one to the bath, and keep it out of the water", "key": "towel|towels" }
+      ] },
+      { "heading": "BATH MANNERS", "items": [
+        { "name": "Wash your body at the showers before you get in", "key": "wash|showers" },
+        { "name": "No swimsuits", "key": "swimsuit|swimsuits" },
+        { "name": "Tattoos: not allowed in the large baths · the private bath is fine", "key": "tattoo|tattoos" }
+      ] },
+      { "heading": "MEALS", "items": [
+        { "name": "Dinner · 18:00 or 19:00 · dining room, 2nd floor", "key": "dinner" },
+        { "name": "Breakfast · 7:30–9:00 · dining room, 2nd floor", "key": "breakfast" }
+      ] },
+      { "heading": "IN YOUR ROOM", "items": [
+        { "name": "Yukata · left side over right, then tie the belt · fine to wear anywhere in the ryokan, even to dinner", "key": "yukata" }
+      ] }
+    ],
+    "foot": "Front desk: dial 9 from your room"
+  }
+}

@@ -1,0 +1,98 @@
+{
+  "id": "snack-bar",
+  "category": "service",
+  "title": { "ja": "バーで外国人のお客さんと話す", "en": "Chatting with a guest at a bar" },
+  "summary": { "ja": "飲み物の注文を受けてチャージを説明し、おすすめや旅の話で会話を楽しむ。", "en": "Take drink orders, explain the table charge, recommend drinks and make conversation." },
+  "setting": "Hana, a small snack bar with a counter and a karaoke machine in a side street in Osaka, on a weeknight. A traveller from abroad comes in alone; the bartender speaks English with them.",
+  "image": "",
+  "studentRole": "a",
+  "roles": [
+    {
+      "id": "a",
+      "name": { "ja": "バーテンダー", "en": "Bartender" },
+      "persona": "The bartender who runs Hana, a small snack bar in Osaka.",
+      "levels": [
+        {
+          "tutor": "You are a traveller from abroad, visiting Osaka for a week. Open by coming in, sitting at the counter and saying hi; wait for the bartender to speak to you. Speak slowly and simply, in short sentences. Order a highball. Answer the bartender's questions briefly: you're from Canada.",
+          "tasks": [
+            { "id": "drink", "title": { "ja": "飲み物の注文を聞く", "en": "Ask what they'd like" }, "hints": ["あいさつして、飲み物を聞きましょう", "Hi, welcome! What would you …?", "Hi, welcome! What would you like to drink?"] },
+            { "id": "charge", "title": { "ja": "チャージを伝える", "en": "Say there's a table charge" }, "hints": ["チャージがあることを伝えましょう", "There's a … of …", "There's a table charge of 1,000 yen."] },
+            { "id": "serve", "title": { "ja": "飲み物を出す", "en": "Serve the drink" }, "hints": ["飲み物を出して、乾杯しましょう", "Here's your … Cheers!", "Here's your highball. Cheers!"] },
+            { "id": "from", "title": { "ja": "どこから来たか聞く", "en": "Ask where they're from" }, "hints": ["どこから来たか聞きましょう", "Where are you …?", "Where are you from?"] }
+          ]
+        },
+        {
+          "tutor": "You are a traveller from abroad, speaking at natural pace with a little small talk. Open by coming in, sitting at the counter and looking at the drinks list; wait for the bartender to speak to you. Ask what umeshu is, and order one. When asked about your day, say you went to Osaka Castle and ate takoyaki.",
+          "tasks": [
+            { "id": "drink", "title": { "ja": "飲み物の注文を聞く", "en": "Take the drink order" }, "hints": ["飲み物を聞きましょう", "What can I get …?", "What can I get you to drink?"] },
+            { "id": "umeshu", "title": { "ja": "飲み物を説明する", "en": "Explain a drink" }, "hints": ["梅酒がどんなお酒か説明しましょう", "Umeshu is … It's …", "Umeshu is plum wine. It's sweet and fruity."] },
+            { "id": "charge", "title": { "ja": "チャージの内容を説明する", "en": "Explain the table charge" }, "hints": ["チャージの金額と、おつまみ付きだと伝えましょう", "There's a … table charge. It includes …", "There's a 1,000 yen table charge. It includes some snacks."] },
+            { "id": "day", "title": { "ja": "今日のことを聞く", "en": "Ask about their day" }, "hints": ["今日どこへ行ったか聞きましょう", "What did you … today?", "What did you do today?"] }
+          ]
+        },
+        {
+          "tutor": "You are a chatty traveller from abroad, speaking at natural speed; this is your first time in a bar like this. Open by coming in, sitting at the counter and asking how this kind of bar works. You like whisky: ask for a recommendation for something Japanese. You're in Osaka for three days. Later, notice the karaoke machine and ask about it.",
+          "tasks": [
+            { "id": "system", "title": { "ja": "お店のしくみを説明する", "en": "Explain how the bar works" }, "hints": ["チャージとおつまみのことを説明しましょう", "There's a … table charge, and it comes with …", "There's a 1,000 yen table charge, and it comes with snacks."] },
+            { "id": "recommend", "title": { "ja": "理由をつけておすすめする", "en": "Recommend a drink, with a reason" }, "hints": ["好みに合わせて、理由も添えてすすめましょう", "If you like whisky, try … It's …", "If you like whisky, try a highball. It's light and refreshing."] },
+            { "id": "chat", "title": { "ja": "旅の話で会話を広げる", "en": "Keep the conversation going" }, "hints": ["滞在期間や行った場所を聞きましょう", "How long are you …? Have you been to …?", "How long are you in Osaka? Have you been to Dotonbori yet?"] },
+            { "id": "karaoke", "title": { "ja": "カラオケを説明して誘う", "en": "Explain the karaoke" }, "hints": ["料金を伝えて、歌うか聞きましょう", "It's … a song. Would you like to …?", "It's 200 yen a song. Would you like to sing one?"] }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b",
+      "name": { "ja": "お客さん", "en": "Customer" },
+      "persona": "A traveller from abroad having a drink at a small bar in Osaka.",
+      "levels": [
+        {
+          "tutor": "You are the bartender of a small bar. Speak slowly and simply, in short sentences. Welcome the customer and ask what they'd like to drink. When asked about the charge, say it's ¥1,000 with snacks. Make small talk with easy questions, like where they're from. When their glass is empty, ask if they'd like another.",
+          "tasks": [
+            { "id": "order", "title": { "ja": "飲み物を注文する", "en": "Order a drink" }, "hints": ["飲み物を注文しましょう", "Can I have a …, please?", "Can I have a beer, please?"] },
+            { "id": "charge", "title": { "ja": "チャージについて聞く", "en": "Ask about the table charge" }, "hints": ["チャージがあるか聞きましょう", "Is there a …?", "Is there a table charge?"] },
+            { "id": "from", "title": { "ja": "どこから来たか答える", "en": "Say where you're from" }, "hints": ["どこから来たか答えましょう", "I'm from … It's my first …", "I'm from Canada. It's my first time in Japan."] },
+            { "id": "another", "title": { "ja": "もう一杯頼む", "en": "Order another one" }, "hints": ["もう一杯頼みましょう", "Can I have another …, please?", "Can I have another one, please?"] }
+          ]
+        },
+        {
+          "tutor": "You are the friendly bartender, speaking at natural pace with a little small talk. When asked, recommend shochu, explain it's a Japanese spirit, and ask how they'd like it (with water, with soda or on the rocks). Ask what they did today. When asked about karaoke, say it's ¥200 a song.",
+          "tasks": [
+            { "id": "recommend", "title": { "ja": "おすすめを聞く", "en": "Ask for a recommendation" }, "hints": ["日本のお酒でおすすめを聞きましょう", "Which Japanese drink do you …?", "Which Japanese drink do you recommend?"] },
+            { "id": "how", "title": { "ja": "飲み方を伝える", "en": "Say how you'd like it" }, "hints": ["飲み方を伝えましょう", "Could I have it with …?", "Could I have it with soda, please?"] },
+            { "id": "day", "title": { "ja": "今日のことを話す", "en": "Talk about your day" }, "hints": ["今日どこへ行ったか話しましょう", "I went to … today. It was …", "I went to Osaka Castle today. It was beautiful."] },
+            { "id": "karaoke", "title": { "ja": "カラオケについて聞く", "en": "Ask about karaoke" }, "hints": ["カラオケが歌えるか、料金も聞きましょう", "Can I …? How much …?", "Can I sing karaoke? How much is it?"] }
+          ]
+        },
+        {
+          "tutor": "You are the bartender, speaking at natural speed, warm and chatty. Ask about their trip and share a little about the neighbourhood. When asked for a late-night food tip, suggest the small ramen shop across the street, open until 3 a.m. The customer has had two highballs: when asked for the bill, it's ¥2,200 (two highballs and the table charge), and card is fine.",
+          "tasks": [
+            { "id": "trip", "title": { "ja": "旅の目的を話す", "en": "Say why you're in Japan" }, "hints": ["どこから来て、なぜ日本に来たか話しましょう", "I'm from …, and I'm here for …", "I'm from Canada, and I'm here for a friend's wedding."] },
+            { "id": "tip", "title": { "ja": "地元のおすすめを聞く", "en": "Ask for a local tip" }, "hints": ["近くで夜遅く食べられる店を聞きましょう", "Is there a good place around here for …?", "Is there a good place around here for late-night ramen?"] },
+            { "id": "compliment", "title": { "ja": "お店をほめる", "en": "Say something nice about the bar" }, "hints": ["お店の雰囲気をほめましょう", "This place is really … I love …", "This place is really cosy. I love the atmosphere."] },
+            { "id": "bill", "title": { "ja": "お会計をお願いする", "en": "Ask for the bill" }, "hints": ["お会計をお願いして、カードで払えるか聞きましょう", "Could I have …? Can I pay …?", "Could I have the bill? Can I pay by card?"] }
+          ]
+        }
+      ]
+    }
+  ],
+  "prop": {
+    "label": { "ja": "ドリンクメニュー", "en": "Drinks list" },
+    "title": "BAR HANA · Drinks",
+    "sections": [
+      { "heading": "DRINKS", "items": [
+        { "name": "Bottled beer", "value": "¥700", "key": "beer" },
+        { "name": "Highball (whisky and soda)", "value": "¥600", "key": "highball|highballs" },
+        { "name": "Japanese whisky · one shot", "value": "¥900", "key": "Japanese whisky|on the rocks" },
+        { "name": "Shochu · with water or soda", "value": "¥600", "key": "shochu" },
+        { "name": "Umeshu (plum wine)", "value": "¥600", "key": "umeshu|plum wine" },
+        { "name": "Oolong tea · soft drinks", "value": "¥400", "key": "oolong|soft drink|soft drinks" }
+      ] },
+      { "heading": "CHARGES", "items": [
+        { "name": "Table charge (with snacks)", "value": "¥1,000", "key": "table charge|charge" },
+        { "name": "Karaoke", "value": "¥200 a song", "key": "karaoke" }
+      ] }
+    ],
+    "foot": "Open 19:00–1:00 · Card or cash"
+  }
+}

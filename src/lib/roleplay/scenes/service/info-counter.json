@@ -1,0 +1,108 @@
+{
+  "id": "info-counter",
+  "category": "service",
+  "title": { "ja": "空港の案内カウンターで対応", "en": "Helping at an airport information desk" },
+  "summary": { "ja": "到着した旅行者に、都心への行き方や時刻、料金、乗り場を案内する。", "en": "Tell arriving travellers how to get into the city: times, fares and where to go." },
+  "setting": "The information counter in the arrivals hall of an airport near Tokyo, in the evening. A traveller who has just landed comes to the counter; the staff speak English to them.",
+  "image": "",
+  "studentRole": "a",
+  "roles": [
+    {
+      "id": "a",
+      "name": { "ja": "案内係", "en": "Information staff" },
+      "persona": "A member of staff at the airport information counter.",
+      "levels": [
+        {
+          "tutor": "You are a traveller who has just landed; it's 9 p.m. Open by walking up to the counter and saying \"Excuse me\"; wait for the staff to ask how they can help. Speak slowly and simply, in short sentences. You want to go to Tokyo Station by train. Ask the next train, where to go and how much it is.",
+          "tasks": [
+            { "id": "help", "title": { "ja": "用件を聞く", "en": "Ask how you can help" }, "hints": ["あいさつして、用件を聞きましょう", "Hello. How can I …?", "Hello. How can I help you?"] },
+            { "id": "train", "title": { "ja": "次の電車の時間を伝える", "en": "Say when the next train is" }, "hints": ["時刻表を見て、次の電車の時間を伝えましょう", "The next train is at …", "The next train is at 9:10."] },
+            { "id": "platform", "title": { "ja": "乗り場を伝える", "en": "Say where the platform is" }, "hints": ["乗り場は地下1階だと伝えましょう", "It's downstairs, on …", "It's downstairs, on the B1 floor."] },
+            { "id": "fare", "title": { "ja": "料金を伝える", "en": "Say the fare" }, "hints": ["料金を伝えましょう", "The ticket is … yen.", "The ticket is 1,300 yen."] }
+          ]
+        },
+        {
+          "tutor": "You are a traveller who has just landed after a long flight; it's 9:20 p.m. Speak at natural pace, with a little small talk. Open by walking up to the counter and saying \"Excuse me\"; wait for the staff to ask how they can help. You're going to a hotel near Tokyo Station and you have a big suitcase. Ask the difference between the train and the bus, choose the bus, and ask where to buy a ticket.",
+          "tasks": [
+            { "id": "help", "title": { "ja": "用件を聞く", "en": "Offer help" }, "hints": ["あいさつして、用件を聞きましょう", "Good evening. What can I …?", "Good evening. What can I do for you?"] },
+            { "id": "options", "title": { "ja": "行き方を2つ伝える", "en": "Give two ways to get there" }, "hints": ["電車とバスがあると伝えましょう", "You can take … or …", "You can take the train or the airport bus."] },
+            { "id": "compare", "title": { "ja": "電車とバスを比べる", "en": "Compare the train and the bus" }, "hints": ["電車は速いけれど、荷物があるならバスが楽だと伝えましょう", "The train is faster, but the bus …", "The train is faster, but the bus is easier with luggage."] },
+            { "id": "bus", "title": { "ja": "次のバスと乗り場を伝える", "en": "Give the next bus and stop" }, "hints": ["次のバスの時間と乗り場を伝えましょう", "The next bus is at … from …", "The next bus is at 9:30 from bus stop 7."] },
+            { "id": "ticket", "title": { "ja": "切符の買い方を伝える", "en": "Say where to buy a ticket" }, "hints": ["バス乗り場の横のカウンターで買えると伝えましょう", "You can buy a ticket at …", "You can buy a ticket at the counter next to the bus stop."] }
+          ]
+        },
+        {
+          "tutor": "You are a traveller who has just landed after a 12-hour flight, speaking at natural speed with small talk; you're tired but friendly. Open by walking up to the counter and asking how to get into Tokyo. When asked, say your hotel is near Tokyo Station. Say you'll take the train. Later, ask whether you should get an IC card, and where you can change money.",
+          "tasks": [
+            { "id": "where", "title": { "ja": "行き先をくわしく聞く", "en": "Ask where exactly they're going" }, "hints": ["東京のどこに泊まるのか聞きましょう", "Where in Tokyo …?", "Where in Tokyo are you staying tonight?"] },
+            { "id": "options", "title": { "ja": "3つの行き方を説明する", "en": "Explain the ways to get there" }, "hints": ["電車、バス、タクシーの3つがあると伝えましょう", "There are three ways: …", "There are three ways: the train, the bus or a taxi."] },
+            { "id": "ic", "title": { "ja": "ICカードについて説明する", "en": "Explain IC cards" }, "hints": ["ICカードが何に使えるか説明しましょう", "Yes, an IC card is useful. You can use it on …", "Yes, an IC card is useful. You can use it on trains and buses."] },
+            { "id": "exchange", "title": { "ja": "両替所を案内する", "en": "Say where to change money" }, "hints": ["両替所の場所と、何時まで開いているか伝えましょう", "The currency exchange is … It's open until …", "The currency exchange is over there. It's open until 11."] }
+          ],
+          "twist": {
+            "after": "options",
+            "tutor": "Say you'll take the train, and check your watch: it's 10:25 p.m. now. The last train (22:15) has already gone. Let the staff tell you, look disappointed, and choose the airport bus at 22:30 when it's suggested (a taxi costs about ¥20,000).",
+            "task": { "id": "lasttrain", "title": { "ja": "終電が出たことを伝えて代わりを提案する", "en": "Say the last train has gone" }, "hints": ["終電はもう出たと伝えて、バスを提案しましょう", "I'm afraid the last train …, but there's …", "I'm afraid the last train has gone, but there's a bus at 10:30."] }
+          }
+        }
+      ]
+    },
+    {
+      "id": "b",
+      "name": { "ja": "旅行者", "en": "Traveller" },
+      "persona": "A traveller who has just landed at the airport.",
+      "levels": [
+        {
+          "tutor": "You are the information counter staff. Speak slowly and simply, in short sentences. It's 9 p.m. Ask how you can help. When asked, give the next train time, the platform (B1) and the fare from the timetable.",
+          "tasks": [
+            { "id": "way", "title": { "ja": "行き方を聞く", "en": "Ask how to get to Tokyo Station" }, "hints": ["東京駅への行き方を聞きましょう", "How do I get to …?", "How do I get to Tokyo Station?"] },
+            { "id": "time", "title": { "ja": "次の電車の時間を聞く", "en": "Ask the next train time" }, "hints": ["次の電車の時間を聞きましょう", "What time is …?", "What time is the next train?"] },
+            { "id": "fare", "title": { "ja": "料金を聞く", "en": "Ask the fare" }, "hints": ["料金を聞きましょう", "How much …?", "How much is the ticket?"] },
+            { "id": "thanks", "title": { "ja": "お礼を言う", "en": "Thank them" }, "hints": ["お礼を言いましょう", "Thank you …!", "Thank you very much!"] }
+          ]
+        },
+        {
+          "tutor": "You are the information counter staff, speaking at natural pace. It's 9:20 p.m. Ask how you can help. When asked, compare the train (faster, from B1) and the bus (easier with luggage, from bus stop 7, tickets at the counter next to it), using the timetable.",
+          "tasks": [
+            { "id": "situation", "title": { "ja": "状況を伝える", "en": "Explain where you're going" }, "hints": ["行き先と、大きい荷物があることを伝えましょう", "I'm going to …, and I have …", "I'm going to Tokyo Station, and I have a big suitcase."] },
+            { "id": "which", "title": { "ja": "どちらがいいか聞く", "en": "Ask which is better" }, "hints": ["電車とバスのどちらがいいか聞きましょう", "Is the train or the bus …?", "Is the train or the bus better with luggage?"] },
+            { "id": "ticket", "title": { "ja": "切符の買い場所を聞く", "en": "Ask where to buy a ticket" }, "hints": ["バスの切符をどこで買うか聞きましょう", "Where can I …?", "Where can I buy a bus ticket?"] },
+            { "id": "long", "title": { "ja": "かかる時間を聞く", "en": "Ask how long it takes" }, "hints": ["バスで何分かかるか聞きましょう", "How long does …?", "How long does the bus take?"] }
+          ]
+        },
+        {
+          "tutor": "You are the information counter staff, speaking at natural speed, kind and calm. It's 10:25 p.m. and the last train (22:15) has gone. When asked, explain the other options from the timetable: the airport bus at 22:30 or 23:20 from bus stop 7, or a taxi for about ¥20,000. When asked about changing money, the currency exchange in the arrivals hall is open until 11 p.m.",
+          "tasks": [
+            { "id": "train", "title": { "ja": "電車がまだあるか聞く", "en": "Ask if there's still a train" }, "hints": ["今夜まだ東京駅行きの電車があるか聞きましょう", "Is there still a … tonight?", "Is there still a train to Tokyo Station tonight?"] },
+            { "id": "options", "title": { "ja": "ほかの方法を聞く", "en": "Ask about other options" }, "hints": ["ほかに行く方法があるか聞きましょう", "Oh no. What are my …?", "Oh no. What are my other options?"] },
+            { "id": "choose", "title": { "ja": "理由をつけて決める", "en": "Choose, and say why" }, "hints": ["どうするか決めて、理由も伝えましょう", "I'll take … A taxi is …", "I'll take the bus. A taxi is too expensive for me."] },
+            { "id": "exchange", "title": { "ja": "両替について聞く", "en": "Ask about changing money" }, "hints": ["この時間でも両替できるか聞きましょう", "Is there anywhere I can … at this time?", "Is there anywhere I can change money at this time?"] }
+          ]
+        }
+      ]
+    }
+  ],
+  "prop": {
+    "label": { "ja": "時刻表", "en": "Timetable" },
+    "title": "AIRPORT ARRIVALS · To Tokyo Station",
+    "sections": [
+      { "heading": "AIRPORT EXPRESS (train) · 55 min · ¥1,300 · platform on B1", "items": [
+        { "name": "Departs 21:10", "key": "21:10|9:10" },
+        { "name": "Departs 21:40", "key": "21:40|9:40" },
+        { "name": "Departs 22:15 · last train", "key": "22:15|10:15|last train" }
+      ] },
+      { "heading": "AIRPORT BUS · 80 min · ¥1,500 · bus stop 7", "items": [
+        { "name": "Departs 21:30", "key": "21:30|9:30" },
+        { "name": "Departs 22:30", "key": "22:30|10:30" },
+        { "name": "Departs 23:20 · last bus", "key": "23:20|11:20|last bus" },
+        { "name": "Bus tickets: at the counter next to bus stop 7", "key": "bus stop|bus ticket|bus tickets|stop 7" }
+      ] },
+      { "heading": "OTHER", "items": [
+        { "name": "Taxi to Tokyo Station · about 60 min", "value": "about ¥20,000", "key": "taxi" },
+        { "name": "Currency exchange · arrivals hall · until 23:00", "key": "currency exchange|change money" },
+        { "name": "IC cards: use them on trains, buses and in shops", "key": "IC card|IC cards" }
+      ] }
+    ],
+    "foot": "Information counter open 7:00–23:00"
+  }
+}

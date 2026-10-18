@@ -1,0 +1,104 @@
+{
+  "id": "taxi-driver",
+  "category": "service",
+  "title": { "ja": "タクシー運転手として案内", "en": "Driving a taxi for tourists" },
+  "summary": { "ja": "行き先を確認して、時間や料金を伝え、降りる場所や支払いを案内する。", "en": "Check where to go, give the time and fare, and help with drop-off and payment." },
+  "setting": "A taxi leaving the taxi rank at Kyoto Station. A tourist gets into the back seat; the driver speaks English with them.",
+  "image": "",
+  "studentRole": "a",
+  "roles": [
+    {
+      "id": "a",
+      "name": { "ja": "運転手", "en": "Driver" },
+      "persona": "A taxi driver in Kyoto.",
+      "levels": [
+        {
+          "tutor": "You are a tourist getting into a taxi at Kyoto Station. Open by getting in and saying hello; wait for the driver to ask where you're going. Speak slowly and simply, in short sentences. You want to go to Kiyomizu-dera Temple. Put on your seat belt when asked, and pay by card.",
+          "tasks": [
+            { "id": "where", "title": { "ja": "行き先を聞く", "en": "Ask where they're going" }, "hints": ["あいさつして、行き先を聞きましょう", "Hello! Where would you …?", "Hello! Where would you like to go?"] },
+            { "id": "belt", "title": { "ja": "シートベルトをお願いする", "en": "Ask them to wear a seat belt" }, "hints": ["シートベルトをお願いしましょう", "Please wear …", "Please wear your seat belt."] },
+            { "id": "time", "title": { "ja": "かかる時間を伝える", "en": "Say how long it takes" }, "hints": ["地図を見て、何分かかるか伝えましょう", "It takes about …", "It takes about 15 minutes."] },
+            { "id": "arrive", "title": { "ja": "到着して料金を伝える", "en": "Say you've arrived and the fare" }, "hints": ["着いたことと料金を伝えましょう", "We're here. That's …", "We're here. That's 1,700 yen."] }
+          ]
+        },
+        {
+          "tutor": "You are a tourist on your first visit to Kyoto, speaking at natural pace with a little small talk. Open by getting in and saying you'd like to go to the Golden Pavilion. Ask roughly how long it takes and how much it is, and ask whether there's anything else to see nearby. Pay by card.",
+          "tasks": [
+            { "id": "check", "title": { "ja": "行き先を確認する", "en": "Check the destination" }, "hints": ["行き先を確認しましょう", "To …, the Golden Pavilion, right?", "To Kinkaku-ji, the Golden Pavilion, right?"] },
+            { "id": "time", "title": { "ja": "時間と料金の目安を伝える", "en": "Give the time and fare" }, "hints": ["地図を見て、時間と料金の目安を伝えましょう", "It takes about … and costs about …", "It takes about 30 minutes and costs about 3,200 yen."] },
+            { "id": "chat", "title": { "ja": "世間話をする", "en": "Make small talk" }, "hints": ["京都は初めてか聞きましょう", "Is this your first …?", "Is this your first time in Kyoto?"] },
+            { "id": "nearby", "title": { "ja": "近くの見どころをすすめる", "en": "Recommend a place nearby" }, "hints": ["近くの龍安寺をすすめましょう", "… is close by. It has …", "Ryoan-ji is close by. It has a famous rock garden."] },
+            { "id": "pay", "title": { "ja": "支払い方法を聞く", "en": "Ask how they'll pay" }, "hints": ["支払い方法を聞きましょう", "Will you pay by … or …?", "Will you pay by card or cash?"] }
+          ]
+        },
+        {
+          "tutor": "You are a chatty tourist, speaking at natural speed. It's 6:40 p.m. and the traffic is heavy. Open by getting in and saying good evening; wait for the driver to ask where you're going. Say Gion: you're meeting a friend there for dinner at 7. Ask whether you'll make it in time. At the end, pay the fare and take a receipt.",
+          "tasks": [
+            { "id": "where", "title": { "ja": "行き先を聞く", "en": "Ask where they're going" }, "hints": ["あいさつして、行き先を聞きましょう", "Good evening. Where can I …?", "Good evening. Where can I take you?"] },
+            { "id": "time", "title": { "ja": "理由をつけて時間を伝える", "en": "Answer about the time, with a reason" }, "hints": ["いつもの時間と、今は道が混んでいることを伝えましょう", "It usually takes …, but …", "It usually takes 15 minutes, but the traffic is heavy now."] },
+            { "id": "drop", "title": { "ja": "降りる場所を提案する", "en": "Suggest where to stop" }, "hints": ["ここで止めていいか聞きましょう", "Shall I stop …? It's …", "Shall I stop just here? It's a short walk."] },
+            { "id": "receipt", "title": { "ja": "料金を伝えて領収書をすすめる", "en": "Give the fare and offer a receipt" }, "hints": ["料金を伝えて、領収書がいるか聞きましょう", "That's … Would you like …?", "That's 1,800 yen. Would you like a receipt?"] }
+          ],
+          "twist": {
+            "after": "time",
+            "tutor": "Say you don't know the name or the address of the café where you're meeting your friend: you only have a photo of it on your phone. Show it and describe it: a small café by a canal, with a stone bridge and willow trees in front. (It's on the Shirakawa canal in Gion, on the map.) Let the driver work out where to go.",
+            "task": { "id": "photo", "title": { "ja": "写真から場所を見つける", "en": "Work out the place from a photo" }, "hints": ["写真を見せてもらって、どこか見当をつけましょう", "May I see …? This looks like …", "May I see the photo? This looks like the canal in Gion."] }
+          }
+        }
+      ]
+    },
+    {
+      "id": "b",
+      "name": { "ja": "乗客", "en": "Passenger" },
+      "persona": "A tourist taking a taxi from Kyoto Station.",
+      "levels": [
+        {
+          "tutor": "You are a taxi driver at Kyoto Station. Speak slowly and simply, in short sentences. Ask where they want to go and ask them to wear a seat belt. When asked, say it takes about 15 minutes. At the end, say the fare (¥1,700). Card is fine, and you give a receipt when asked.",
+          "tasks": [
+            { "id": "dest", "title": { "ja": "行き先を伝える", "en": "Say where you're going" }, "hints": ["行き先を伝えましょう", "To …, please.", "To Kiyomizu-dera Temple, please."] },
+            { "id": "time", "title": { "ja": "かかる時間を聞く", "en": "Ask how long it takes" }, "hints": ["何分かかるか聞きましょう", "How long …?", "How long does it take?"] },
+            { "id": "card", "title": { "ja": "カードで払えるか聞く", "en": "Ask to pay by card" }, "hints": ["カードで払えるか聞きましょう", "Can I pay …?", "Can I pay by card?"] },
+            { "id": "receipt", "title": { "ja": "領収書をもらう", "en": "Ask for a receipt" }, "hints": ["領収書をお願いしましょう", "Could I have …?", "Could I have a receipt, please?"] }
+          ]
+        },
+        {
+          "tutor": "You are a friendly taxi driver in Kyoto, speaking at natural pace with small talk about the city. When asked, give the time and fare to Kinkaku-ji from the map (about 30 minutes, about ¥3,200). When asked about other places to see, suggest Ryoan-ji, five minutes from Kinkaku-ji. Stop where they ask.",
+          "tasks": [
+            { "id": "dest", "title": { "ja": "行き先をお願いする", "en": "Ask to go somewhere" }, "hints": ["金閣寺まで行ってほしいと伝えましょう", "Could you take me to …?", "Could you take me to Kinkaku-ji, please?"] },
+            { "id": "fare", "title": { "ja": "料金の目安を聞く", "en": "Ask roughly how much" }, "hints": ["だいたいいくらかかるか聞きましょう", "About how much …?", "About how much will it cost?"] },
+            { "id": "nearby", "title": { "ja": "近くの見どころを聞く", "en": "Ask about places nearby" }, "hints": ["近くにほかの見どころがあるか聞きましょう", "Is there anything else to see …?", "Is there anything else to see near there?"] },
+            { "id": "stop", "title": { "ja": "止めてほしい場所を伝える", "en": "Ask them to stop" }, "hints": ["入口の前で止めてもらいましょう", "Could you stop …?", "Could you stop at the main gate, please?"] }
+          ]
+        },
+        {
+          "tutor": "You are a friendly taxi driver at Kyoto Station, speaking at natural speed with small talk. It's 6:40 p.m. and the traffic is heavy: Gion usually takes 15 minutes, about 20 tonight. When asked, take the quickest route along the river and stop where they ask. The fare is ¥1,800; card, IC card and QR payment are all fine, and you give a receipt.",
+          "tasks": [
+            { "id": "dest", "title": { "ja": "行き先と事情を伝える", "en": "Say where and when to arrive" }, "hints": ["行き先と、待ち合わせの時間を伝えましょう", "I'm meeting a friend in … at … Will we …?", "I'm meeting a friend in Gion at 7. Will we make it?"] },
+            { "id": "route", "title": { "ja": "急いでほしいとお願いする", "en": "Ask for the quickest route" }, "hints": ["いちばん早い道で行ってほしいと頼みましょう", "Could you take …, please?", "Could you take the quickest route, please?"] },
+            { "id": "stop", "title": { "ja": "降りる場所を伝える", "en": "Say where to drop you" }, "hints": ["白川の石橋の近くで降ろしてほしいと伝えましょう", "Could you drop me near …?", "Could you drop me near the stone bridge on the Shirakawa canal?"] },
+            { "id": "pay", "title": { "ja": "支払って領収書をもらう", "en": "Pay and ask for a receipt" }, "hints": ["カードで払えるか、領収書がもらえるか聞きましょう", "Can I pay by … and get …?", "Can I pay by card and get a receipt?"] }
+          ]
+        }
+      ]
+    }
+  ],
+  "prop": {
+    "label": { "ja": "地図", "en": "Map" },
+    "title": "KYOTO · From Kyoto Station by taxi",
+    "sections": [
+      { "heading": "PLACES (time and fare from Kyoto Station)", "items": [
+        { "name": "Kiyomizu-dera Temple · 15 min", "value": "about ¥1,700", "key": "Kiyomizu-dera|Kiyomizu" },
+        { "name": "Gion · Shirakawa canal (stone bridge, willow trees) · 15 min", "value": "about ¥1,800", "key": "Gion|Shirakawa|stone bridge" },
+        { "name": "Kinkaku-ji (Golden Pavilion) · 30 min", "value": "about ¥3,200", "key": "Kinkaku-ji|Golden Pavilion" },
+        { "name": "Ryoan-ji (rock garden) · 5 min from Kinkaku-ji", "key": "Ryoan-ji|rock garden" },
+        { "name": "Nishiki Market · 10 min", "value": "about ¥1,300", "key": "Nishiki" }
+      ] },
+      { "heading": "IN THE TAXI", "items": [
+        { "name": "Seat belts in the back seat too", "key": "seat belt|seatbelt" },
+        { "name": "Card, IC card and QR payment OK", "key": "card|QR" },
+        { "name": "Receipts", "key": "receipt" }
+      ] }
+    ],
+    "foot": "Starting fare ¥500 · Evening traffic can be heavy around Gion"
+  }
+}
