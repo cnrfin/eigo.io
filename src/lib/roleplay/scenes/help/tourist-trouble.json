@@ -1,0 +1,83 @@
+{
+  "id": "tourist-trouble",
+  "category": "help",
+  "title": { "ja": "困っている観光客を助ける", "en": "Helping a tourist in trouble" },
+  "summary": { "ja": "落とし物をした観光客に事情を聞いて、駅や交番に案内する。", "en": "A tourist has lost something: find out what happened and take them to the right place." },
+  "setting": "Outside the ticket gates of a busy station in Tokyo, in the early evening. A tourist is searching their pockets and looks worried. There is a police box (koban) just outside the station exit.",
+  "image": "",
+  "studentRole": "a",
+  "roles": [
+    {
+      "id": "a",
+      "name": { "ja": "地元の人", "en": "Local" },
+      "persona": "A Japanese person passing through the station on the way home.",
+      "levels": [
+        {
+          "tutor": "You are a tourist who has lost a small black bag. Speak slowly and simply, look worried, and answer the local's questions in short sentences. You think you left it on the train.",
+          "tasks": [
+            { "id": "okay", "title": { "ja": "大丈夫か声をかける", "en": "Ask if they're okay" }, "hints": ["大丈夫か声をかけましょう", "Are you …?", "Are you okay?"] },
+            { "id": "what", "title": { "ja": "何をなくしたか聞く", "en": "Ask what they lost" }, "hints": ["何をなくしたか聞きましょう", "What did you …?", "What did you lose?"] },
+            { "id": "office", "title": { "ja": "駅の窓口に案内する", "en": "Take them to the station office" }, "hints": ["駅員さんに聞きに行こうと伝えましょう", "Let's ask …", "Let's ask the station staff."] }
+          ]
+        },
+        {
+          "tutor": "You are a tourist who has lost a small black bag with a red keyring, speaking at natural pace. You were on the train from the airport about 30 minutes ago. Answer the local's questions and accept their help gratefully.",
+          "tasks": [
+            { "id": "okay", "title": { "ja": "声をかける", "en": "Offer to help" }, "hints": ["大丈夫か、手伝おうかと声をかけましょう", "Are you okay? Can I …?", "Are you okay? Can I help?"] },
+            { "id": "describe", "title": { "ja": "特徴を聞く", "en": "Ask what it looks like" }, "hints": ["どんなものか聞きましょう", "What does it …?", "What does it look like?"] },
+            { "id": "last", "title": { "ja": "最後に持っていた場所を聞く", "en": "Ask where they last had it" }, "hints": ["最後にどこで持っていたか聞きましょう", "Where did you last …?", "Where did you last have it?"] },
+            { "id": "office", "title": { "ja": "落とし物の窓口をすすめる", "en": "Suggest the lost and found" }, "hints": ["駅の忘れ物窓口に聞こうと提案しましょう", "Let's ask at the station's …", "Let's ask at the station's lost and found."] },
+            { "id": "translate", "title": { "ja": "通訳を申し出る", "en": "Offer to translate" }, "hints": ["一緒に行って通訳すると伝えましょう", "I can come with you and …", "I can come with you and help translate."] }
+          ]
+        },
+        {
+          "tutor": "You are a tourist who has lost a small black bag, speaking at natural speed and quite stressed. You were in the third car of the train from the airport about 30 minutes ago. Answer the local's questions in detail.",
+          "tasks": [
+            { "id": "okay", "title": { "ja": "様子を見てやさしく声をかける", "en": "Check on them kindly" }, "hints": ["心配そうなので、やさしく声をかけましょう", "You look … Is everything …?", "You look worried. Is everything all right?"] },
+            { "id": "details", "title": { "ja": "くわしい状況を聞く", "en": "Ask for the details" }, "hints": ["どの電車の何両目にいたか聞きましょう", "Which train were you on, and do you remember …?", "Which train were you on, and do you remember which car?"] },
+            { "id": "reassure", "title": { "ja": "安心させる", "en": "Reassure them" }, "hints": ["日本では落とし物が届くことが多いと伝えて、安心させましょう", "Don't worry. Lost things are often …", "Don't worry. Lost things are often handed in here in Japan."] },
+            { "id": "together", "title": { "ja": "一緒に行くと申し出る", "en": "Offer to go with them" }, "hints": ["一緒に行って、説明を手伝うと伝えましょう", "I'll come with you and … It's …", "I'll come with you and help explain. It's just over there."] }
+          ],
+          "twist": {
+            "after": "details",
+            "tutor": "Remember suddenly that your passport was in the bag too, and ask what you should do. Stay calm once the local explains (the police box just outside can take a report, and the station can check the train).",
+            "task": { "id": "passport", "title": { "ja": "パスポートの紛失に対応する", "en": "Help with the lost passport" }, "hints": ["交番で届けを出すことをすすめましょう", "Then we should also report it at … It's …", "Then we should also report it at the police box. It's just outside."] }
+          }
+        }
+      ]
+    },
+    {
+      "id": "b",
+      "name": { "ja": "観光客", "en": "Tourist" },
+      "persona": "A tourist who has just realised they've lost their bag.",
+      "levels": [
+        {
+          "tutor": "You are a kind local who notices the tourist looks worried. Speak slowly and simply. Ask what's wrong and what the bag looks like, then offer to take them to the station staff.",
+          "tasks": [
+            { "id": "lost", "title": { "ja": "なくしたものを伝える", "en": "Say what you lost" }, "hints": ["なくしたものを伝えましょう", "I lost my …", "I lost my bag."] },
+            { "id": "colour", "title": { "ja": "色を伝える", "en": "Say the colour" }, "hints": ["色を伝えましょう", "It's …", "It's a black bag."] },
+            { "id": "thanks", "title": { "ja": "お礼を言う", "en": "Say thank you" }, "hints": ["お礼を言いましょう", "Thank you …!", "Thank you so much!"] }
+          ]
+        },
+        {
+          "tutor": "You are a kind local, speaking at natural pace. Ask what the bag looks like and where they last had it, then suggest asking at the station's lost and found and offer to translate.",
+          "tasks": [
+            { "id": "lost", "title": { "ja": "状況を伝える", "en": "Explain what happened" }, "hints": ["電車にかばんを忘れたと伝えましょう", "I think I left my … on …", "I think I left my bag on the train."] },
+            { "id": "describe", "title": { "ja": "特徴を伝える", "en": "Describe it" }, "hints": ["かばんの特徴を伝えましょう", "It's a … bag with …", "It's a small black bag with a red keyring."] },
+            { "id": "when", "title": { "ja": "いつ、どこでか伝える", "en": "Say when and where" }, "hints": ["乗っていた電車と時間を伝えましょう", "I was on the train from …, about …", "I was on the train from the airport, about 30 minutes ago."] },
+            { "id": "thanks", "title": { "ja": "お礼を言う", "en": "Thank them" }, "hints": ["手伝ってもらうお礼を言いましょう", "Thank you, that would …", "Thank you, that would be a big help."] }
+          ]
+        },
+        {
+          "tutor": "You are a kind, calm local, speaking at natural speed. Ask for details, reassure the tourist, and explain that the police box just outside can take a report for the passport and the station staff can contact the train.",
+          "tasks": [
+            { "id": "lost", "title": { "ja": "状況をくわしく伝える", "en": "Explain what happened" }, "hints": ["どの電車で何両目にいたかも伝えましょう", "I left my bag on the train from … I was in …", "I left my bag on the train from the airport. I was in the third car."] },
+            { "id": "passport", "title": { "ja": "パスポートのことを相談する", "en": "Ask about your passport" }, "hints": ["パスポートも入っていると伝えて、どうすればいいか聞きましょう", "My passport is … too. What should I …?", "My passport is in it, too. What should I do?"] },
+            { "id": "report", "title": { "ja": "届けを出すか聞く", "en": "Ask about reporting it" }, "hints": ["警察に届けを出すべきか聞きましょう", "Do I need to report it …?", "Do I need to report it to the police?"] },
+            { "id": "thanks", "title": { "ja": "心をこめてお礼を言う", "en": "Thank them warmly" }, "hints": ["一緒にいてくれたことにお礼を言いましょう", "Thank you for … I feel …", "Thank you for staying with me. I feel much better now."] }
+          ]
+        }
+      ]
+    }
+  ]
+}

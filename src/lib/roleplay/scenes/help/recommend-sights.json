@@ -1,0 +1,105 @@
+{
+  "id": "recommend-sights",
+  "category": "help",
+  "title": { "ja": "観光地や行き方をすすめる", "en": "Recommending places to visit" },
+  "summary": { "ja": "観光客に好みを聞いて、おすすめの場所と行き方を紹介する。", "en": "Ask what a tourist likes, then recommend places and how to get there." },
+  "setting": "The tourist information board outside Kitamachi Station, a historic town an hour from Tokyo, at 10 a.m. A tourist with a day to spend is looking at the area map.",
+  "image": "",
+  "studentRole": "a",
+  "roles": [
+    {
+      "id": "a",
+      "name": { "ja": "地元の人", "en": "Local" },
+      "persona": "A Japanese person who grew up in Kitamachi.",
+      "levels": [
+        {
+          "tutor": "You are a tourist visiting Kitamachi for the day. Speak slowly and simply. Ask the local what to see, and ask how to get there. Use the area map (Old Town is a 10-minute walk).",
+          "tasks": [
+            { "id": "recommend", "title": { "ja": "おすすめの場所を伝える", "en": "Recommend a place" }, "hints": ["おすすめの場所を伝えましょう", "… is very nice.", "Old Town is very nice."] },
+            { "id": "how", "title": { "ja": "行き方を伝える", "en": "Say how to get there" }, "hints": ["歩いて何分か伝えましょう", "You can walk there in …", "You can walk there in ten minutes."] },
+            { "id": "enjoy", "title": { "ja": "見送る", "en": "Wish them a good day" }, "hints": ["楽しんでね、と伝えましょう", "Have a …!", "Have a nice day!"] }
+          ]
+        },
+        {
+          "tutor": "You are a tourist visiting Kitamachi for the day, speaking at natural pace. You like history and views. Ask how to get to the places the local suggests, and ask about local food. Use the area map.",
+          "tasks": [
+            { "id": "likes", "title": { "ja": "好みを聞く", "en": "Ask what they like" }, "hints": ["どんな場所が好きか聞きましょう", "What kind of places …?", "What kind of places do you like?"] },
+            { "id": "recommend", "title": { "ja": "理由をつけておすすめする", "en": "Recommend a place, with a reason" }, "hints": ["理由も添えて、おすすめしましょう", "The … is great. You can see …", "The castle is great. You can see the whole town from the top."] },
+            { "id": "bus", "title": { "ja": "行き方を説明する", "en": "Explain how to get there" }, "hints": ["バスの乗り方と料金を伝えましょう", "Take the … It's … yen.", "Take the loop bus. It's 230 yen."] },
+            { "id": "food", "title": { "ja": "地元の食べ物をすすめる", "en": "Recommend local food" }, "hints": ["古い町並みのだんごをすすめましょう", "Try the … in Old Town. They're …", "Try the dango in Old Town. They're really good."] }
+          ]
+        },
+        {
+          "tutor": "You are a tourist visiting Kitamachi for the day, speaking at natural speed with small talk. You have until 6 p.m. and love old buildings and good food. Ask the local to help you plan, and ask how the bus works. Use the area map.",
+          "tasks": [
+            { "id": "likes", "title": { "ja": "時間と好みを聞く", "en": "Ask about their time and interests" }, "hints": ["どのくらい時間があるか、何が好きか聞きましょう", "How much time do you have, and what …?", "How much time do you have, and what are you interested in?"] },
+            { "id": "plan", "title": { "ja": "1日のプランを提案する", "en": "Suggest a plan for the day" }, "hints": ["午前と午後で回る場所を提案しましょう", "I'd go to … in the morning and … in the afternoon.", "I'd go to the castle in the morning and Old Town in the afternoon."] },
+            { "id": "bus", "title": { "ja": "バスについて説明する", "en": "Explain the bus" }, "hints": ["バスの乗り場と本数を伝えましょう", "The loop bus stops … and it comes every …", "The loop bus stops right outside, and it comes every 15 minutes."] },
+            { "id": "extra", "title": { "ja": "最後にもうひとつすすめる", "en": "Add one more idea" }, "hints": ["時間があれば温泉もいいとすすめましょう", "If you have time, the … is a great way to …", "If you have time, the hot spring is a great way to end the day."] }
+          ],
+          "twist": {
+            "after": "plan",
+            "tutor": "It suddenly starts to rain hard, and the forecast says it will rain all afternoon. Ask what you could do indoors instead (the City Museum is indoors, a five-minute walk; the covered shopping arcade is next to the station).",
+            "task": { "id": "indoor", "title": { "ja": "雨の日のプランを提案する", "en": "Suggest something indoors" }, "hints": ["雨なので、屋内で楽しめる場所をすすめましょう", "Since it's raining, how about …? It's …", "Since it's raining, how about the City Museum? It's indoors and close by."] }
+          }
+        }
+      ]
+    },
+    {
+      "id": "b",
+      "name": { "ja": "観光客", "en": "Tourist" },
+      "persona": "A tourist spending a day in Kitamachi.",
+      "levels": [
+        {
+          "tutor": "You are a local who grew up in Kitamachi. Speak slowly and simply. Recommend Old Town and tell the tourist how to get there from the area map.",
+          "tasks": [
+            { "id": "ask", "title": { "ja": "おすすめを聞く", "en": "Ask what to see" }, "hints": ["どこを見るといいか聞きましょう", "What should I …?", "What should I see here?"] },
+            { "id": "how", "title": { "ja": "行き方を聞く", "en": "Ask how to get there" }, "hints": ["行き方を聞きましょう", "How do I …?", "How do I get there?"] },
+            { "id": "thanks", "title": { "ja": "お礼を言う", "en": "Say thank you" }, "hints": ["お礼を言いましょう", "Thank you …!", "Thank you very much!"] }
+          ]
+        },
+        {
+          "tutor": "You are a local who grew up in Kitamachi, speaking at natural pace. Recommend the castle and the loop bus, and suggest dango in Old Town if asked about food. Use the area map.",
+          "tasks": [
+            { "id": "ask", "title": { "ja": "好みを伝えておすすめを聞く", "en": "Say what you like, ask for ideas" }, "hints": ["歴史が好きと伝えて、おすすめを聞きましょう", "I like … What do you …?", "I like history. What do you recommend?"] },
+            { "id": "far", "title": { "ja": "距離を聞く", "en": "Ask how far it is" }, "hints": ["遠いか聞きましょう", "Is it far …?", "Is it far from the station?"] },
+            { "id": "food", "title": { "ja": "地元の食べ物を聞く", "en": "Ask about local food" }, "hints": ["地元の食べ物でおすすめがあるか聞きましょう", "Is there any local food …?", "Is there any local food I should try?"] },
+            { "id": "thanks", "title": { "ja": "お礼を言う", "en": "Thank them" }, "hints": ["しっかりお礼を言いましょう", "Thanks so much. I'll …", "Thanks so much. I'll try that."] }
+          ]
+        },
+        {
+          "tutor": "You are a friendly local who grew up in Kitamachi, speaking at natural speed. Help plan the tourist's day with the area map. Mention that rain is forecast for the afternoon, and suggest the City Museum if the weather turns.",
+          "tasks": [
+            { "id": "ask", "title": { "ja": "事情を伝えてアイデアを聞く", "en": "Explain and ask for ideas" }, "hints": ["1日しかなくて古い建物が好きだと伝えて、アイデアを聞きましょう", "I've got … here and I love … Any …?", "I've got one day here and I love old buildings. Any ideas?"] },
+            { "id": "weather", "title": { "ja": "天気について確認する", "en": "Ask about the weather" }, "hints": ["天気が悪くてもお城はいいか聞きましょう", "Is the castle worth it if …?", "Is the castle worth it if the weather's bad?"] },
+            { "id": "bus", "title": { "ja": "バスの本数を聞く", "en": "Ask how often the bus comes" }, "hints": ["バスがどのくらいの間隔で来るか聞きましょう", "How often does …?", "How often does the loop bus come?"] },
+            { "id": "thanks", "title": { "ja": "感想を添えてお礼を言う", "en": "Thank them with a comment" }, "hints": ["いいプランになったと伝えて、お礼を言いましょう", "That sounds like … Thank you so …", "That sounds like a perfect day. Thank you so much!"] }
+          ]
+        }
+      ]
+    }
+  ],
+  "prop": {
+    "label": { "ja": "周辺マップ", "en": "Area map" },
+    "title": "KITAMACHI · Area map",
+    "sections": [
+      { "heading": "SIGHTS", "items": [
+        { "name": "Old Town · old wooden houses, shops and snacks", "value": "10 min walk", "key": "Old Town" },
+        { "name": "Kitamachi Castle · views of the whole town", "value": "15 min by bus", "key": "castle" },
+        { "name": "Riverside Park", "value": "20 min walk", "key": "park" },
+        { "name": "Hot spring · day visits ¥800", "value": "30 min by train", "key": "hot spring|onsen" }
+      ] },
+      { "heading": "RAINY DAY", "items": [
+        { "name": "City Museum · indoors, local history", "value": "5 min walk", "key": "museum" },
+        { "name": "Covered shopping arcade", "value": "next to the station", "key": "arcade" }
+      ] },
+      { "heading": "GETTING AROUND", "items": [
+        { "name": "Loop bus · stops outside the station", "value": "¥230 · every 15 min", "key": "loop bus|bus" }
+      ] },
+      { "heading": "TRY", "items": [
+        { "name": "Dango (sweet rice dumplings) · Old Town", "key": "dango" }
+      ] }
+    ],
+    "foot": "Information desk inside the station · open 9:00–17:00"
+  }
+}

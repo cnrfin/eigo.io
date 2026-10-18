@@ -1,0 +1,107 @@
+{
+  "id": "restaurant-help",
+  "category": "help",
+  "title": { "ja": "食券機や注文を手伝う", "en": "Helping at a meal ticket machine" },
+  "summary": { "ja": "うどん屋の食券機の使い方を教えて、メニューの説明や注文を手伝う。", "en": "Show a tourist how the meal ticket machine works and help them choose." },
+  "setting": "A small udon shop near a station in Tokyo, at lunchtime. Customers buy a meal ticket from the machine by the door and hand it to the staff. A tourist is standing in front of the machine, unsure what to do.",
+  "image": "",
+  "studentRole": "a",
+  "roles": [
+    {
+      "id": "a",
+      "name": { "ja": "地元の人", "en": "Local" },
+      "persona": "A Japanese office worker who often eats at this udon shop.",
+      "levels": [
+        {
+          "tutor": "You are a tourist who wants lunch. Speak slowly and simply, and follow the local's instructions one step at a time. You have cash, and you choose kitsune udon (¥520) from the menu.",
+          "tasks": [
+            { "id": "money", "title": { "ja": "先にお金を入れると伝える", "en": "Tell them to pay first" }, "hints": ["先にお金を入れるよう伝えましょう", "Put your … in first.", "Put your money in first."] },
+            { "id": "button", "title": { "ja": "ボタンを押すよう伝える", "en": "Tell them which button" }, "hints": ["食べたいもののボタンを押すよう伝えましょう", "Press the button for …", "Press the button for kitsune udon."] },
+            { "id": "staff", "title": { "ja": "食券を渡すよう伝える", "en": "Tell them to hand in the ticket" }, "hints": ["食券をお店の人に渡すよう伝えましょう", "Give the ticket to …", "Give the ticket to the staff."] }
+          ]
+        },
+        {
+          "tutor": "You are a tourist who wants lunch, speaking at natural pace. You're quite hungry. Ask what kitsune udon is and whether there's a bigger size. Use the menu.",
+          "tasks": [
+            { "id": "system", "title": { "ja": "食券機のしくみを説明する", "en": "Explain the ticket machine" }, "hints": ["先にこの機械で食券を買うと説明しましょう", "You buy a … from this machine first.", "You buy a ticket from this machine first."] },
+            { "id": "explain", "title": { "ja": "料理を説明する", "en": "Explain a dish" }, "hints": ["きつねうどんがどんなものか説明しましょう", "Kitsune udon has … on top.", "Kitsune udon has sweet fried tofu on top."] },
+            { "id": "large", "title": { "ja": "大盛りについて答える", "en": "Answer about a large size" }, "hints": ["大盛りはいくら高いか伝えましょう", "A large is … more.", "A large is 100 yen more."] },
+            { "id": "seat", "title": { "ja": "食券を渡して座るよう伝える", "en": "Say hand it in, then sit" }, "hints": ["食券を渡して、席に座るよう伝えましょう", "Give the ticket to … and take …", "Give the ticket to the staff and take a seat."] }
+          ]
+        },
+        {
+          "tutor": "You are a tourist who wants lunch, speaking at natural speed with a little small talk. Ask the local what's good here and how things work. Use the menu.",
+          "tasks": [
+            { "id": "system", "title": { "ja": "お店のしくみを説明する", "en": "Explain how the shop works" }, "hints": ["食券を買って、お店の人に渡すしくみを説明しましょう", "In this shop, you buy … here and hand …", "In this shop, you buy a ticket here and hand it to the staff."] },
+            { "id": "recommend", "title": { "ja": "理由をつけておすすめする", "en": "Recommend a dish, with a reason" }, "hints": ["理由も添えて、おすすめを伝えましょう", "I'd recommend the … It's …", "I'd recommend the tempura udon. It's the most popular one here."] },
+            { "id": "order", "title": { "ja": "注文を確認する", "en": "Check what they'll get" }, "hints": ["何を何個買うか確認しましょう", "So that's …, right?", "So that's one vegetable tempura and two rice balls, right?"] },
+            { "id": "water", "title": { "ja": "水はセルフだと伝える", "en": "Say the water is self-service" }, "hints": ["水は無料で、自分で取ると伝えましょう", "Water is … It's over …", "Water is free. It's over there, self-service."] }
+          ],
+          "twist": {
+            "after": "recommend",
+            "tutor": "Say you're vegetarian and ask whether there's anything you can eat. The menu notes that the soups and the dipping sauce are made with fish stock; the vegetable tempura and the salt rice balls are fine. Choose one vegetable tempura and two rice balls.",
+            "task": { "id": "veggie", "title": { "ja": "ベジタリアン向けの料理を探す", "en": "Find something vegetarian" }, "hints": ["スープには魚のだしが入っていると伝えて、食べられるものをすすめましょう", "Most of the soups have … but the … are fine.", "Most of the soups have fish stock, but the vegetable tempura and rice balls are fine."] }
+          }
+        }
+      ]
+    },
+    {
+      "id": "b",
+      "name": { "ja": "観光客", "en": "Tourist" },
+      "persona": "A tourist trying a Japanese udon shop for the first time.",
+      "levels": [
+        {
+          "tutor": "You are a kind local who eats here often. Speak slowly and simply. Explain the machine one step at a time and help the tourist choose from the menu.",
+          "tasks": [
+            { "id": "how", "title": { "ja": "注文のしかたを聞く", "en": "Ask how to order" }, "hints": ["注文のしかたを聞きましょう", "Excuse me, how do I …?", "Excuse me, how do I order?"] },
+            { "id": "choose", "title": { "ja": "食べたいものを伝える", "en": "Say what you'd like" }, "hints": ["食べたいものを伝えましょう", "I'd like …", "I'd like kitsune udon."] },
+            { "id": "thanks", "title": { "ja": "お礼を言う", "en": "Say thank you" }, "hints": ["お礼を言いましょう", "Thank you …!", "Thank you so much!"] }
+          ]
+        },
+        {
+          "tutor": "You are a kind local, speaking at natural pace. Explain the ticket machine, describe dishes from the menu when asked, and mention that a large size is ¥100 more.",
+          "tasks": [
+            { "id": "how", "title": { "ja": "機械の使い方を聞く", "en": "Ask how the machine works" }, "hints": ["この機械の使い方を聞きましょう", "How does this … work?", "How does this machine work?"] },
+            { "id": "what", "title": { "ja": "料理について聞く", "en": "Ask about a dish" }, "hints": ["きつねうどんとは何か聞きましょう", "What's …?", "What's kitsune udon?"] },
+            { "id": "size", "title": { "ja": "大盛りがあるか聞く", "en": "Ask about a bigger size" }, "hints": ["大きいサイズがあるか聞きましょう", "Can I get a …?", "Can I get a large one?"] },
+            { "id": "thanks", "title": { "ja": "お礼を言う", "en": "Thank them" }, "hints": ["しっかりお礼を言いましょう", "Thanks so much for …", "Thanks so much for your help."] }
+          ]
+        },
+        {
+          "tutor": "You are a kind local, speaking at natural speed. When the tourist says they're vegetarian, explain honestly that the soups and dipping sauce use fish stock, and suggest the vegetable tempura and salt rice balls.",
+          "tasks": [
+            { "id": "diet", "title": { "ja": "ベジタリアンだと伝える", "en": "Say you're vegetarian" }, "hints": ["ベジタリアンだと伝えて、食べられるものがあるか聞きましょう", "I'm vegetarian. Is there anything …?", "I'm vegetarian. Is there anything here I can eat?"] },
+            { "id": "stock", "title": { "ja": "スープについて聞く", "en": "Ask about the soup" }, "hints": ["スープに肉や魚が入っているか聞きましょう", "Does the soup have …?", "Does the soup have meat or fish in it?"] },
+            { "id": "decide", "title": { "ja": "注文を決める", "en": "Decide what to get" }, "hints": ["何にするか決めて伝えましょう", "Then I'll get … and …", "Then I'll get the vegetable tempura and two rice balls."] },
+            { "id": "thanks", "title": { "ja": "心をこめてお礼を言う", "en": "Thank them warmly" }, "hints": ["ていねいに確認してくれたことにお礼を言いましょう", "Thank you for … That's …", "Thank you for checking. That's really kind of you."] }
+          ]
+        }
+      ]
+    }
+  ],
+  "prop": {
+    "label": { "ja": "メニュー", "en": "Menu" },
+    "title": "UDON SHOP · Ticket machine",
+    "sections": [
+      { "heading": "UDON (HOT)", "items": [
+        { "name": "Kake udon · plain soup", "value": "¥400", "key": "kake" },
+        { "name": "Kitsune udon · sweet fried tofu", "value": "¥520", "key": "kitsune" },
+        { "name": "Tempura udon · shrimp tempura", "value": "¥650", "key": "tempura udon" },
+        { "name": "Curry udon", "value": "¥600", "key": "curry" }
+      ] },
+      { "heading": "UDON (COLD)", "items": [
+        { "name": "Zaru udon · with dipping sauce", "value": "¥450", "key": "zaru|dipping sauce" }
+      ] },
+      { "heading": "SIDES", "items": [
+        { "name": "Vegetable tempura", "value": "¥200", "key": "vegetable tempura" },
+        { "name": "Rice ball (salt)", "value": "¥150", "key": "rice ball|rice balls|onigiri" },
+        { "name": "Large size", "value": "+¥100", "key": "large" }
+      ] },
+      { "heading": "GOOD TO KNOW", "items": [
+        { "name": "Soups and dipping sauce are made with fish stock (dashi)", "key": "fish stock|dashi" },
+        { "name": "Water is free · self-service", "key": "water" }
+      ] }
+    ],
+    "foot": "Buy a ticket, then hand it to the staff · Cash only"
+  }
+}

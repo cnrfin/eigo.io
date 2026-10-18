@@ -1,0 +1,78 @@
+{
+  "id": "shrine-manners",
+  "category": "help",
+  "title": { "ja": "神社のマナーを説明する", "en": "Explaining manners at a shrine" },
+  "summary": { "ja": "手水やお参りのしかた、写真やおみくじのマナーを観光客に説明する。", "en": "Show a tourist how to wash their hands, pray and draw a fortune at a shrine." },
+  "setting": "A Shinto shrine in Tokyo on a quiet weekday morning. A tourist is standing by the water basin (chozuya) near the entrance gate, watching what other people do.",
+  "image": "",
+  "studentRole": "a",
+  "roles": [
+    {
+      "id": "a",
+      "name": { "ja": "地元の人", "en": "Local" },
+      "persona": "A Japanese person who visits this shrine often.",
+      "levels": [
+        {
+          "tutor": "You are a tourist visiting a shrine for the first time. Speak slowly and simply, and copy what the local tells you, one step at a time. Ask what to do at the water basin and at the main hall.",
+          "tasks": [
+            { "id": "wash", "title": { "ja": "手を洗うよう伝える", "en": "Say wash your hands here" }, "hints": ["ここで手を洗うと伝えましょう", "Wash your … here.", "Wash your hands here."] },
+            { "id": "bow", "title": { "ja": "おじぎを教える", "en": "Say bow twice" }, "hints": ["2回おじぎすると伝えましょう", "Bow … times.", "Bow two times."] },
+            { "id": "clap", "title": { "ja": "拍手を教える", "en": "Say clap twice" }, "hints": ["2回手をたたくと伝えましょう", "Clap … times.", "Clap two times."] },
+            { "id": "last", "title": { "ja": "最後のおじぎを教える", "en": "Say bow once more" }, "hints": ["最後にもう1回おじぎすると伝えましょう", "Then bow …", "Then bow one more time."] }
+          ]
+        },
+        {
+          "tutor": "You are a tourist visiting a shrine for the first time, speaking at natural pace. Ask how to use the water basin, how much money to put in the offering box, and what the clapping is for. Walk down the middle of the path until the local tells you about it.",
+          "tasks": [
+            { "id": "path", "title": { "ja": "参道の歩き方を伝える", "en": "Explain about the path" }, "hints": ["真ん中は神様の通り道だと伝えましょう", "Try not to walk in … It's for …", "Try not to walk in the middle. It's for the gods."] },
+            { "id": "wash", "title": { "ja": "手水の順番を説明する", "en": "Explain the hand washing" }, "hints": ["左手、右手の順に洗うと説明しましょう", "First, wash your … hand, then …", "First, wash your left hand, then your right hand."] },
+            { "id": "coin", "title": { "ja": "お賽銭について説明する", "en": "Explain the offering" }, "hints": ["お賽銭はいくらでもいいと伝えましょう", "Put a coin in … Any …", "Put a coin in the box. Any coin is fine."] },
+            { "id": "pray", "title": { "ja": "お参りのしかたを説明する", "en": "Explain how to pray" }, "hints": ["二礼二拍手一礼を説明しましょう", "Bow twice, clap …, then …", "Bow twice, clap twice, then bow once more."] }
+          ]
+        },
+        {
+          "tutor": "You are a curious tourist, speaking at natural speed. Ask why people do things, not just how. Ask if you can drink the water, whether you can take photos, and what the paper fortunes (omikuji) are. You draw a bad fortune and ask what to do with it.",
+          "tasks": [
+            { "id": "why", "title": { "ja": "手水の意味を説明する", "en": "Explain why we wash" }, "hints": ["お参りの前に身を清めるためだと説明しましょう", "We wash our … to clean ourselves before …", "We wash our hands and mouth to clean ourselves before we pray."] },
+            { "id": "drink", "title": { "ja": "水を飲まないよう伝える", "en": "Say not to drink the water" }, "hints": ["水は飲まずに、口をすすぐだけと伝えましょう", "You don't drink it. Just …", "You don't drink it. Just rinse your mouth and spit it out quietly."] },
+            { "id": "photos", "title": { "ja": "写真のマナーを伝える", "en": "Explain about photos" }, "hints": ["外はいいけど本殿の中はだめだと伝えましょう", "You can take photos …, but not …", "You can take photos outside, but not inside the main hall."] },
+            { "id": "fortune", "title": { "ja": "おみくじについて説明する", "en": "Explain about bad fortunes" }, "hints": ["悪いおみくじは結んで置いていけると伝えましょう", "If you get a bad one, you can … and leave it …", "If you get a bad one, you can tie it here and leave it behind."] }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b",
+      "name": { "ja": "観光客", "en": "Tourist" },
+      "persona": "A tourist visiting a Japanese shrine for the first time.",
+      "levels": [
+        {
+          "tutor": "You are a kind local who visits this shrine often. Speak slowly and simply. Show the tourist what to do at the water basin and at the main hall, one step at a time. Any coin is fine for the offering.",
+          "tasks": [
+            { "id": "ask", "title": { "ja": "何をするか聞く", "en": "Ask what to do" }, "hints": ["ここで何をするか聞きましょう", "What do I …?", "What do I do here?"] },
+            { "id": "money", "title": { "ja": "お賽銭の金額を聞く", "en": "Ask how much to give" }, "hints": ["いくら入れればいいか聞きましょう", "How much …?", "How much money do I put in?"] },
+            { "id": "thanks", "title": { "ja": "お礼を言う", "en": "Say thank you" }, "hints": ["お礼を言いましょう", "Thank you …!", "Thank you very much!"] }
+          ]
+        },
+        {
+          "tutor": "You are a kind local who visits this shrine often, speaking at natural pace. Explain the water basin, the offering and the bow-clap-bow, and answer questions about photos (fine outside, not inside the main hall).",
+          "tasks": [
+            { "id": "water", "title": { "ja": "水の使い方を聞く", "en": "Ask what the water is for" }, "hints": ["この水は何のためか聞きましょう", "What's the water …?", "What's the water for?"] },
+            { "id": "clap", "title": { "ja": "拍手について聞く", "en": "Ask about the clapping" }, "hints": ["何回手をたたくのか聞きましょう", "How many times do I …?", "How many times do I clap?"] },
+            { "id": "photos", "title": { "ja": "写真について聞く", "en": "Ask about photos" }, "hints": ["写真を撮ってもいいか聞きましょう", "Is it okay to …?", "Is it okay to take photos here?"] },
+            { "id": "thanks", "title": { "ja": "お礼を言う", "en": "Thank them" }, "hints": ["しっかりお礼を言いましょう", "Thanks so much for …", "Thanks so much for showing me."] }
+          ]
+        },
+        {
+          "tutor": "You are a kind local who visits this shrine often, speaking at natural speed. Explain why people wash before praying, and explain that a bad omikuji can be tied to the rack and left behind.",
+          "tasks": [
+            { "id": "why", "title": { "ja": "理由を聞く", "en": "Ask why people wash" }, "hints": ["なぜ手と口を洗うのか聞きましょう", "Why do people …?", "Why do people wash their hands and mouth here?"] },
+            { "id": "check", "title": { "ja": "理解したか確認する", "en": "Check you've understood" }, "hints": ["水は飲まないんだよね、と確認しましょう", "So I don't …, right?", "So I don't drink the water, right?"] },
+            { "id": "omikuji", "title": { "ja": "おみくじについて聞く", "en": "Ask about your fortune" }, "hints": ["悪いおみくじが出たらどうするか聞きましょう", "I got a bad … What should I …?", "I got a bad fortune. What should I do with it?"] },
+            { "id": "thanks", "title": { "ja": "感想を添えてお礼を言う", "en": "Thank them with a comment" }, "hints": ["とても興味深かったと伝えて、お礼を言いましょう", "That's really … Thank you for …", "That's really interesting. Thank you for explaining."] }
+          ]
+        }
+      ]
+    }
+  ]
+}

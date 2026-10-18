@@ -1,0 +1,77 @@
+{
+  "id": "take-a-photo",
+  "category": "help",
+  "title": { "ja": "写真を撮ってと頼まれる", "en": "Taking a photo for tourists" },
+  "summary": { "ja": "観光客に写真を頼まれて、立ち位置を伝えたり撮り方を確認したりする。", "en": "Tourists ask you to take their photo: check the phone, tell them where to stand and take a few." },
+  "setting": "In front of a large temple gate in Kyoto, on a busy autumn afternoon. Two tourists, Emma and a friend, want a photo of themselves with the gate behind them.",
+  "image": "",
+  "studentRole": "a",
+  "roles": [
+    {
+      "id": "a",
+      "name": { "ja": "地元の人", "en": "Local" },
+      "persona": "A Japanese person visiting the temple on their day off.",
+      "levels": [
+        {
+          "tutor": "You are Emma, a tourist with a friend. Speak slowly and simply. Ask the local to take a photo of you two, hand over your phone, and say thank you at the end.",
+          "tasks": [
+            { "id": "sure", "title": { "ja": "引き受ける", "en": "Say yes" }, "hints": ["こころよく引き受けましょう", "Sure, no …", "Sure, no problem."] },
+            { "id": "button", "title": { "ja": "ボタンを確認する", "en": "Check the button" }, "hints": ["押すボタンを確認しましょう", "Is it this …?", "Is it this button?"] },
+            { "id": "count", "title": { "ja": "合図をして撮る", "en": "Count before the photo" }, "hints": ["カウントしてから撮りましょう", "Okay, smile! One, two, …!", "Okay, smile! One, two, three!"] }
+          ]
+        },
+        {
+          "tutor": "You are Emma, a tourist with a friend, speaking at natural pace. Ask for a photo with the gate behind you. Stand a little far apart until the local asks you to move, and be happy to take another if they offer.",
+          "tasks": [
+            { "id": "sure", "title": { "ja": "引き受ける", "en": "Say yes" }, "hints": ["こころよく引き受けましょう", "Sure. Is it …?", "Sure. Is it this white button?"] },
+            { "id": "shape", "title": { "ja": "縦か横か聞く", "en": "Ask vertical or horizontal" }, "hints": ["縦で撮るか横で撮るか聞きましょう", "Do you want it … or …?", "Do you want it vertical or horizontal?"] },
+            { "id": "closer", "title": { "ja": "立ち位置をお願いする", "en": "Ask them to move closer" }, "hints": ["もう少し近づくようお願いしましょう", "Could you move a bit …?", "Could you move a bit closer together?"] },
+            { "id": "check", "title": { "ja": "写真を確認してもらう", "en": "Ask if the photo's okay" }, "hints": ["スマホを返して、これでいいか聞きましょう", "Here you go. Is …?", "Here you go. Is this okay?"] }
+          ]
+        },
+        {
+          "tutor": "You are Emma, a friendly tourist with a friend, speaking at natural speed with a little small talk. You'd like the whole gate in the photo. Follow the local's suggestions about where to stand, and look through the photos happily at the end.",
+          "tasks": [
+            { "id": "spot", "title": { "ja": "いい場所を提案する", "en": "Suggest a better spot" }, "hints": ["門が全部入る場所を提案しましょう", "Sure. If you stand …, you'll get …", "Sure. If you stand over there, you'll get the whole gate in."] },
+            { "id": "move", "title": { "ja": "立ち位置をていねいに直す", "en": "Ask them to move, politely" }, "hints": ["後ろに人がいるので、少し動いてもらいましょう", "Could you move a little to the …? There's …", "Could you move a little to the right? There's someone behind you."] },
+            { "id": "style", "title": { "ja": "撮り方の希望を聞く", "en": "Ask how they'd like it" }, "hints": ["人を大きく撮るか、門を大きく撮るか聞きましょう", "Do you want … or more of …?", "Do you want a close-up, or more of the gate?"] },
+            { "id": "few", "title": { "ja": "何枚か撮ったと伝える", "en": "Say you took a few" }, "hints": ["何枚か撮ったので選んでと伝えましょう", "I took a few, so you can …", "I took a few, so you can choose the best one."] }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b",
+      "name": { "ja": "観光客", "en": "Tourist" },
+      "persona": "Emma, a tourist visiting the temple with a friend.",
+      "levels": [
+        {
+          "tutor": "You are a kind local visiting the temple. Speak slowly and simply. Say yes when asked for a photo, check which button to press, and count before you take it.",
+          "tasks": [
+            { "id": "ask", "title": { "ja": "写真をお願いする", "en": "Ask for a photo" }, "hints": ["写真を撮ってもらえるか聞きましょう", "Excuse me, could you take …?", "Excuse me, could you take a photo?"] },
+            { "id": "button", "title": { "ja": "押すボタンを教える", "en": "Show the button" }, "hints": ["押すボタンを教えましょう", "Press …", "Press this button."] },
+            { "id": "thanks", "title": { "ja": "お礼を言う", "en": "Say thank you" }, "hints": ["お礼を言いましょう", "Thank you …!", "Thank you so much!"] }
+          ]
+        },
+        {
+          "tutor": "You are a kind local visiting the temple, speaking at natural pace. Take the photo, ask whether they want it vertical or horizontal, and hand the phone back.",
+          "tasks": [
+            { "id": "ask", "title": { "ja": "撮りたい写真を伝えてお願いする", "en": "Ask for the photo you want" }, "hints": ["門が後ろに入るように撮ってほしいと伝えましょう", "Could you take a photo of us with …?", "Could you take a photo of us with the gate behind us?"] },
+            { "id": "phone", "title": { "ja": "スマホの使い方を伝える", "en": "Explain the phone" }, "hints": ["白い丸をタップするだけと伝えましょう", "Just tap …", "Just tap the white circle."] },
+            { "id": "shape", "title": { "ja": "縦か横か答える", "en": "Answer vertical or horizontal" }, "hints": ["縦がいいか横がいいか答えましょう", "Vertical / Horizontal, please.", "Vertical, please."] },
+            { "id": "another", "title": { "ja": "もう1枚お願いする", "en": "Ask for one more" }, "hints": ["もう1枚お願いしましょう", "Could you take …?", "Could you take one more, please?"] }
+          ]
+        },
+        {
+          "tutor": "You are a kind local visiting the temple, speaking at natural speed with a little small talk. Take the photos carefully. When they offer to take one of you, accept happily.",
+          "tasks": [
+            { "id": "ask", "title": { "ja": "ていねいにお願いする", "en": "Ask politely" }, "hints": ["ていねいに写真をお願いしましょう", "Sorry to bother you. Would you mind …?", "Sorry to bother you. Would you mind taking a picture of us?"] },
+            { "id": "frame", "title": { "ja": "撮り方の希望を伝える", "en": "Say how you'd like it" }, "hints": ["門全体を入れてほしいと伝えましょう", "Could you get … in?", "Could you get the whole gate in?"] },
+            { "id": "vertical", "title": { "ja": "もう1枚お願いする", "en": "Ask for one more" }, "hints": ["縦でもう1枚お願いしましょう", "Could you take … as well?", "Could you take a vertical one as well?"] },
+            { "id": "return", "title": { "ja": "お返しを申し出る", "en": "Offer to take theirs" }, "hints": ["お礼に、相手の写真も撮ろうかと聞きましょう", "Would you like me to …?", "Would you like me to take one of you too?"] }
+          ]
+        }
+      ]
+    }
+  ]
+}
