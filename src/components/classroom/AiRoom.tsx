@@ -22,7 +22,7 @@ import Toolbar from './Toolbar'
 import { computeAiLayout, type Rect } from '@/lib/classroom/layout'
 import { orbColor } from '@/lib/ai-tutor/orb-colors'
 import { courseNamed, type CourseName } from '@/lib/ai-tutor/course-names'
-import { studentClosesCourse, tutorClosesCourse } from '@/lib/classroom/course-commands'
+import { studentClosesCourse, studentOpensCourse, tutorClosesCourse } from '@/lib/classroom/course-commands'
 import type { RoomProps } from './Room'
 
 /**
@@ -91,6 +91,10 @@ export default function AiRoom(props: Props) {
   const { info, t, setSession, clockOffset, onLeave } = props
   const [status, setStatus] = useState<Status>('connecting')
   const [speaking, setSpeaking] = useState(false)
+  const speakingRef = useRef(false)
+  useEffect(() => {
+    speakingRef.current = speaking
+  }, [speaking])
   const [micOn, setMicOn] = useState(true)
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null)
   const [micStream, setMicStream] = useState<MediaStream | null>(null)
@@ -144,6 +148,8 @@ export default function AiRoom(props: Props) {
   /** called on every transcript fragment (set up below, where the slide controls live) */
   /** start a new transcript line (a new slide just appeared) */
   const breakLine = useRef(false)
+  /** when each side last said something (wall clock) */
+  const lastSaid = useRef({ student: 0, tutor: 0 })
   /**
    * Each side's current stretch of speech, joined by audio timing. The transcript starts a new line whenever the
    * other side talks, so a student's "could we close this… course" over the tutor's "Sure! I'll close… the course
@@ -193,10 +199,11 @@ export default function AiRoom(props: Props) {
   const act = useCallback(
     async (a: StudentAction) => {
       const sid = sessionId.current
-      if (!sid || closing.current) return
+      if (!sid || closing.current) return false
       const ok = await sendAiAction(info.bookingId, sid, a)
       // fallback: at least let the AI tutor know quietly
       if (!ok && a.kind === 'chat') context(`The student wrote in the chat: "${a.text.slice(0, 400)}"`)
+      return ok
     },
     [info.bookingId, context],
   )
@@ -205,6 +212,7 @@ export default function AiRoom(props: Props) {
   const addText = useCallback((from: Line['from'], delta: string, startMs: number, endMs: number) => {
     if (!delta) return
     lastSpeech.current = Date.now()
+    lastSaid.current[from] = Date.now()
     nudged.current = false
     const L = lines.current
     const last = L[L.length - 1]
@@ -241,6 +249,11 @@ export default function AiRoom(props: Props) {
   const panelHeard = useRef('')
   /** closing the course (free talk): by the student's words, the AI tutor's, or the ✕ button. False if none is open. */
   const closeCourseNow = useRef<() => boolean>(() => false)
+  const openCourseNow = useRef<(courseId: string, lesson: string) => void>(() => {})
+  const opening = useRef(false)
+  /** course titles, to recognise "I'll open Haruka in the UK now" (loaded below) */
+  const titles = useRef<CourseName[]>([])
+  const heardOpen = useRef('')
   const heardClose = useRef('')
   const [undo, setUndo] = useState<{ id: number; itemId: string; term: string; already: boolean } | null>(null)
   const cardFrom = useRef(0)
@@ -397,9 +410,16 @@ export default function AiRoom(props: Props) {
         const parts = run.text.split(/(?<=[.!?。？！])\s*/).filter(Boolean)
         const said = parts[parts.length - 1] ?? ''
         const at = `${run.n}:${parts.length}`
-        if (studentClosesCourse(said)) {
+        const freeNow = !live.current.slides.length
+        if (studentClosesCourse(said) && !freeNow) {
           if (heardClose.current !== at && closeCourseNow.current()) heardClose.current = at
+        } else if (freeNow && studentOpensCourse(said) && heardOpen.current !== at) {
+          // free talk: "could we open the course again?" opens it at once (by name if they say one)
+          heardOpen.current = at
+          const n = LESSON_NO.exec(said)?.[1]
+          openCourseNow.current(courseNamed(said, titles.current)?.id ?? '', n ? `#${n}` : '')
         } else {
+          // the panel (role-plays): also "let's do free talk", which closes it when no course is open
           const intent = panelSaid.current('student', said)
           const key = intent ? `${at}:${JSON.stringify(intent)}` : ''
           if (intent && key !== panelHeard.current) {
@@ -875,8 +895,31 @@ export default function AiRoom(props: Props) {
     lastSent.current = slide.id
     const ref = slideRef()
     const looking = review.current && idx < furthest.current
-    if (ref) void lessonNote.current.then(() => act({ kind: 'slide', ...ref, slideId: slide.id, ...(looking ? { review: { returnTo: furthest.current + 1 } } : {}) }))
-  }, [status, slide, idx, slideRef, act])
+    if (!ref) return
+    const id = slide.id
+    void lessonNote.current
+      .then(() => act({ kind: 'slide', ...ref, slideId: id, ...(looking ? { review: { returnTo: furthest.current + 1 } } : {}) }))
+      .then((ok) => {
+        if (!ok) return
+        // GPT-Live sometimes just waits after "let's move on to the next slide" (the note itself doesn't make it
+        // speak). If it hasn't started on the new slide shortly after the note, ask it to: never over the student
+        // or while it's talking, at most twice per slide.
+        const noteAt = Date.now()
+        let tries = 0
+        const kick = () => {
+          if (closing.current || wrapUp.current || statusRef.current !== 'live' || lastSent.current !== id) return
+          // it's teaching the new slide, or the student has spoken (the tutor answers them as usual)
+          if (lastSaid.current.tutor > noteAt || lastSaid.current.student > noteAt) return
+          if (speakingRef.current) {
+            if (++tries <= 4) setTimeout(kick, 1200) // its voice is still playing: look again shortly
+            return
+          }
+          sendEvent({ type: 'response.create' })
+          if (++tries <= 1) setTimeout(kick, 4000) // once more if it still says nothing
+        }
+        setTimeout(kick, 1500)
+      })
+  }, [status, slide, idx, slideRef, act, sendEvent])
 
   /* ---------- the student's chat messages → context (the tutor can't see the chat) ---------- */
   const seenMsgs = useRef(props.messages.length)
@@ -1237,7 +1280,6 @@ export default function AiRoom(props: Props) {
   }, [whiteboard, setBoard])
 
   // course titles, to recognise "I'll open Haruka in the UK now"
-  const titles = useRef<CourseName[]>([])
   useEffect(() => {
     void aiCourseTitles().then((list) => {
       titles.current = list.map((c) => ({ id: c.id, names: [c.title, c.titleJa].filter(Boolean) }))
@@ -1279,20 +1321,35 @@ export default function AiRoom(props: Props) {
           closeCourseNow.current()
         } else if (kind === 'open' && (!slidesOpen || (named && named.id !== props.open?.courseId))) {
           const n = LESSON_NO.exec(s)?.[1]
-          void aiOpenLesson(info.bookingId, named?.id ?? '', n ? `#${n}` : '').then((res) => {
-            if ('error' in res) {
-              void act({ kind: 'view', what: 'open_failed' })
-              return
-            }
-            cueOpened.current = { at: Date.now(), courseId: res.open.courseId }
-            lessonNote.current = act({ kind: 'lesson', courseId: res.open.courseId, lessonId: res.open.lessonId })
-            onOpenLesson(res.open)
-          })
+          openCourseNow.current(named?.id ?? '', n ? `#${n}` : '')
         }
       }, kind === 'panel' && /[.!]\s*$/.test(s) ? 120 : 500) // a finished sentence about the panel acts at once
     }
   }, [act, onCloseCourse, onOpenLesson, info.bookingId, props.open?.courseId])
   useEffect(() => () => void (cueTimer.current && clearTimeout(cueTimer.current)), [])
+  // opening a course: by the student's words or the AI tutor's. One at a time: the tutor's "I'll open the course
+  // now" right after the student asked doesn't open it again
+  useEffect(() => {
+    openCourseNow.current = (courseId, lesson) => {
+      if (opening.current || closing.current) return
+      opening.current = true
+      void aiOpenLesson(info.bookingId, courseId, lesson)
+        .then((res) => {
+          if ('error' in res) {
+            opening.current = false
+            void act({ kind: 'view', what: 'open_failed' })
+            return
+          }
+          cueOpened.current = { at: Date.now(), courseId: res.open.courseId }
+          lessonNote.current = act({ kind: 'lesson', courseId: res.open.courseId, lessonId: res.open.lessonId })
+          onOpenLesson(res.open) // the guard is released once it's on screen (below)
+        })
+        .catch(() => (opening.current = false))
+    }
+  })
+  useEffect(() => {
+    opening.current = false
+  }, [props.open?.courseId, props.open?.lessonId])
 
   /* ---------- report a problem (flag button): one tap sends ---------- */
   const [reportOpen, setReportOpen] = useState(false)

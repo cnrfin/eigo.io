@@ -16,6 +16,7 @@ const STUDENT_CLOSE = [
   /\b(?:stop|leave|quit)\b(?:\s+\w+){0,2}?\s+(?:the\s+|this\s+|that\s+)?(?:course|slides?)\b/i,
   /\b(?:switch|go|change|move)\s+(?:back\s+)?to\s+free\s*talk\b/i,
   /\bfree\s*talk\s+(?:please|instead|now)\b/i,
+  /\b(?:let'?s|can we|could we|shall we|i'?d like to|i want to|i wanna)\s+(?:do\s+|have\s+|go\s+(?:back\s+)?to\s+)?(?:some\s+)?free\s*talk\b/i,
   /\b(?:can|could|shall)\s+we\s+just\s+(?:chat|talk)\b|\blet'?s\s+just\s+(?:chat|talk)\b/i,
   /(?:コース|スライド).{0,5}(?:閉じ|とじ|消し|けし|終わり|おわり|やめ|止め)/,
   /フリートーク(?:に|で|が|へ)/,
@@ -38,4 +39,18 @@ export function tutorClosesCourse(sentence: string): boolean {
   const s = sentence.trim()
   if (!s || /\?\s*$/.test(s) || NEG.test(s)) return false
   return TUTOR_CLOSE.some((re) => re.test(s))
+}
+
+/**
+ * The student asks for a course to open (only used in free talk): "could we open the course again?", "let's do the
+ * course", "can we go back to the lesson?", "コースを開いて". Role-plays and "close" never count.
+ */
+const STUDENT_OPEN = [
+  /\b(?:open|do|start|continue|resume|show|bring back|pick up|go back to|get back to|back to|return to)\b(?:\s+\w+){0,2}?\s+(?:the\s+|my\s+|our\s+|this\s+|that\s+|a\s+)?(?:course|lesson|slides)\b/i,
+  /(?:コース|レッスン|スライド).{0,5}(?:開|ひら|やり|始め|はじめ|戻|もど|続け|つづけ|見せ|みせ)/,
+]
+export function studentOpensCourse(text: string): boolean {
+  const s = text.trim()
+  if (!s || NEG.test(s) || /\brole[- ]?plays?\b|ロールプレイ/i.test(s) || studentClosesCourse(s)) return false
+  return STUDENT_OPEN.some((re) => re.test(s))
 }

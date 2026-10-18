@@ -21,6 +21,14 @@ const OPEN_VERB = /\b(?:open|show|see|look at|check out|bring up|pull up|choose|
 const OPEN_JA = /ロールプレイ.{0,6}(?:見|開|やり|したい|して|選)|コース.{0,6}(?:見|開|選)/
 const CLOSE_STUDENT = /\b(?:close|hide|put away|stop|end|exit|finish|quit)\b(?:\s+\w+){0,3}?\s*(?:the\s+)?(?:role[- ]?plays?|panel|list|this|it|that)\b|閉じ|やめ(?:る|ます|たい)|終わり|終了/i
 const CLOSE_TUTOR = /\b(?:I'll|I will|let me|let's|let us)\s+(?:close|put away|hide)\b[^.?!]*\b(?:role[- ]?plays?|panel|list)\b/i
+/** going back to free talk: with the panel up, this closes it (never "let's do" + the highlighted role-play) */
+const FREE_TALK = /\bfree\s*talk\b|\bjust\s+(?:chat|talk)\b|\bchat\s+instead\b|フリートーク|雑談/i
+/** a start with nothing named: "let's start", "let's do it", "OK, this one", "はじめましょう" (not "let's do free talk") */
+const FILLER = /\b(?:ok(?:ay)?|alright|all right|yes|yeah|yep|sure|great|good|cool|um+|uh+|hmm+|so|then|right|well|let'?s|let us|i'?d|i would|i want to|i wanna|like to|can we|could we|shall we|do|start|begin|go|try|play|with|it|this|that|one|now|please|the|selected|chosen|ready|i'?m|i am|we|a|to)\b/gi
+function bareStart(s: string): boolean {
+  if (/[\u3040-\u30ff\u4e00-\u9fff]/.test(s)) return s.replace(/[\s、。！？!?.,]/g, '').length <= 12
+  return s.replace(FILLER, ' ').replace(/[^a-z]+/gi, '').length === 0
+}
 const LESSONISH = /\b(?:courses?|lessons?|slides?)\b|コース|レッスン|スライド/i
 const START = /\b(?:let'?s (?:do|try|start|go with|go for|play)|(?:I'd|I would|I want to|I wanna) (?:like to )?(?:do|try|play)|can we (?:do|try)|start|go with|go for)\b|はじめ|始め|(?:に|で)します|やりたい|やります/i
 const ORDINALS: [RegExp, number][] = [
@@ -71,6 +79,7 @@ export function panelIntent(
 
   if (panel) {
     if (who === 'student' ? CLOSE_STUDENT.test(s) : CLOSE_TUTOR.test(s)) return { kind: 'close' }
+    if (FREE_TALK.test(s)) return { kind: 'close' }
   }
   if (panel === 'roleplay') return null
 
@@ -86,8 +95,9 @@ export function panelIntent(
     if (mode === 'course' && RP.test(s) && !COURSE.test(s)) return { kind: 'mode', mode: 'rp' }
     if (mode === 'rp' && COURSE.test(s) && !RP.test(s)) return { kind: 'mode', mode: 'course' }
     if (named) return { kind: 'pick', id: named.id }
-    // "let's start" / "はじめましょう" with nothing named: the one that's selected
-    if (START.test(s)) return { kind: 'start', id: null }
+    // "let's start" / "はじめましょう" with nothing named: the one that's selected. Only a bare start: "let's do
+    // free talk" or "let's do something else" must never start the highlighted role-play
+    if (START.test(s) && bareStart(s)) return { kind: 'start', id: null }
     return null
   }
 
