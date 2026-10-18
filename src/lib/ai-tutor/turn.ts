@@ -38,7 +38,7 @@ Return JSON: {"move": "stay" | "next" | "back" | "return", "slide": number | nul
 - "next": the tutor says they're moving on to the next slide or part; OR the student says they're done with this slide, asks to move on, or says they can't see the next slide (the tutor already moved on in words).${o.slideNo >= o.total ? ' This is the last slide: never "next".' : ''}
 - "back": the student asked to see an earlier slide again (for example "the vocabulary") and the tutor agreed; "slide" = its number from the outline, 1 to ${o.furthest}.
 - "return": ${o.reviewing ? 'they are looking back at an earlier slide and the tutor or student wants to carry on with the lesson.' : 'never (not looking back now).'}
-- "stay": otherwise, including when the tutor is still working through this slide.`
+- "stay": otherwise, including when the tutor is still working through this slide, and always when either of them is saying goodbye or ending the lesson ("see you next time", "thanks for today"): "next time" is not "the next slide".`
   const user = `Slide on screen: ${o.slideNo} of ${o.total}${o.reviewing ? ` (looking back; the lesson was on slide ${o.furthest})` : ''}.
 Outline:
 ${o.outline}

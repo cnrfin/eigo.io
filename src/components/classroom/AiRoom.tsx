@@ -47,6 +47,11 @@ function findLesson(p: Props): Lesson | null {
 // a clear spoken cue changes the slide at once ("…let's move on to the next slide")
 const NEXT_CUE = /\bnext (slide|page)\b/i
 const NOT_YET = /\bbefore (we|you) (move|go)\b/i
+/** saying goodbye: from then on the slide on screen stays put ("see you next time" mustn't move it on) */
+const GOODBYE =
+  /\b(?:good ?bye|bye(?: for now)?|see you(?:\s+(?:next time|next week|soon|later|again|tomorrow|then)\b|\s*[.!]|\s*$)|take care|until next time|have a (?:good|great|nice|lovely) (?:day|evening|night|week|weekend)|that'?s (?:all|it) for today|thanks?(?: you)? (?:so much )?for (?:today|the lesson|your time))|またね|さようなら|ありがとうございました|お疲れ様でした|おつかれさまでした/i
+/** a goodbye this close to the end means the lesson is wrapping up */
+const GOODBYE_WINDOW_S = 300
 // "…I'll press play now" (not a question): the classroom plays the slide's clip once the AI tutor stops talking
 const PLAY_CUE = /\b(press(ing)? play|play (it|the clip|the video|the audio|this clip|this video)|playing (it|the clip|the video) now)\b/i
 const RETURN_CUE = /\b(carry on|continue|get back|go back) (with|to) (the|our) lesson\b/i
@@ -302,7 +307,7 @@ export default function AiRoom(props: Props) {
   const furthest = useRef(0)
   const review = useRef(false)
   const lastMove = useRef(0)
-  /** the last ~30 s: no more automatic slide changes (the AI tutor is saying goodbye) */
+  /** wrapping up (a goodbye in the last few minutes, or the last ~30 s): no more automatic slide changes */
   const wrapUp = useRef(false)
   // Per slide: where its conversation starts (the turn check only reads this slide's conversation)
   const slideStart = useRef(0)
@@ -380,7 +385,7 @@ export default function AiRoom(props: Props) {
   const checkTurn = useCallback(async () => {
     const sid = sessionId.current
     const ref = syncSlide()
-    if (!sid || !ref || closing.current || checking.current) return
+    if (!sid || !ref || closing.current || checking.current || wrapUp.current) return
     const slideLines = lines.current.slice(slideStart.current)
     if (!slideLines.length || Date.now() - lastMove.current < 2500) return
     const sig = `${slideLines.length}:${slideLines[slideLines.length - 1].text.length}:${ref.slideId}`
@@ -404,6 +409,11 @@ export default function AiRoom(props: Props) {
   }, [info.bookingId, slideRef, syncSlide, moveSlide])
   useEffect(() => {
     speechHook.current = (from, line) => {
+      // once either side says goodbye near the end, the slide on screen stays as it is
+      if (!wrapUp.current && GOODBYE.test(line.text) && endsAt.current - (Date.now() + clockOffset) <= GOODBYE_WINDOW_S * 1000) {
+        wrapUp.current = true
+        if (turnTimer.current) clearTimeout(turnTimer.current)
+      }
       const ref = syncSlide()
       if (wrapUp.current) return
       if (from === 'tutor') viewCue.current(line)
@@ -451,7 +461,7 @@ export default function AiRoom(props: Props) {
     return () => {
       if (turnTimer.current) clearTimeout(turnTimer.current)
     }
-  }, [moveSlide, checkTurn, syncSlide, act, playClip])
+  }, [moveSlide, checkTurn, syncSlide, act, playClip, clockOffset])
 
   /* ---------- tool calls from the AI tutor (opening/closing a lesson, the whiteboard, writing in the chat) ---------- */
   // the whiteboard toggle is defined further down; the tool runner reaches it through these refs
