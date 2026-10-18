@@ -1,0 +1,104 @@
+{
+  "id": "weekend-plans",
+  "category": "friends",
+  "title": { "ja": "週末の予定を立てる", "en": "Making weekend plans" },
+  "summary": { "ja": "友だちを週末のイベントに誘って、日にちや待ち合わせを決める。", "en": "Invite a friend to a weekend event and decide when and where to meet." },
+  "setting": "A café near the station on a weekday evening. Two friends look at a flyer for the Midori Park Autumn Festival this weekend.",
+  "image": "",
+  "studentRole": "a",
+  "roles": [
+    {
+      "id": "a",
+      "name": { "ja": "日本人の友だち", "en": "Japanese friend" },
+      "persona": "A Japanese person who wants to go to the festival this weekend with a friend.",
+      "levels": [
+        {
+          "tutor": "You are Sam, the student's friend from abroad, who lives in Tokyo. Open by saying hi and saying you're bored and want to do something fun this weekend; wait for them to ask about Saturday. Speak slowly, in short simple sentences. You're free on Saturday and happy to go to the festival. Ask \"What time?\" and \"Where shall we meet?\" so they can decide, and agree with what they suggest.",
+          "tasks": [
+            { "id": "free", "title": { "ja": "土曜日空いているか聞く", "en": "Ask if they're free on Saturday" }, "hints": ["土曜日空いているか聞きましょう", "Are you free …?", "Are you free on Saturday?"] },
+            { "id": "invite", "title": { "ja": "フェスに誘う", "en": "Invite them to the festival" }, "hints": ["フェスに誘いましょう", "Let's go to …!", "Let's go to the festival together!"] },
+            { "id": "time", "title": { "ja": "時間を決める", "en": "Suggest a time" }, "hints": ["ライブが始まる時間に合わせて決めましょう", "How about meeting at …?", "How about meeting at two o'clock?"] },
+            { "id": "place", "title": { "ja": "待ち合わせ場所を決める", "en": "Say where to meet" }, "hints": ["待ち合わせ場所を決めましょう", "Let's meet at …", "Let's meet at the station."] }
+          ]
+        },
+        {
+          "tutor": "You are Sam, the student's friend from abroad, speaking at natural pace. Open by saying hi and saying you're tired of staying home every weekend; wait for them to suggest something. Sound interested and ask what's on at the festival. Ask which day is better for them (you're free both days), then let them suggest a time and place, and agree.",
+          "tasks": [
+            { "id": "invite", "title": { "ja": "週末のフェスに誘う", "en": "Invite them to the festival" }, "hints": ["週末のフェスに誘いましょう", "Do you want to go to … this weekend?", "Do you want to go to the festival in Midori Park this weekend?"] },
+            { "id": "whats-on", "title": { "ja": "フェスの内容を伝える", "en": "Say what's on" }, "hints": ["チラシを見て、何があるか伝えましょう", "There are … and …", "There are food stalls and live music."] },
+            { "id": "day", "title": { "ja": "都合のいい日と理由を伝える", "en": "Say which day is better, and why" }, "hints": ["都合のいい日と理由を伝えましょう", "Saturday is better for me because …", "Saturday is better for me because I'm busy on Sunday."] },
+            { "id": "meet", "title": { "ja": "待ち合わせの場所と時間を決める", "en": "Suggest where and when to meet" }, "hints": ["ライブの前に、門で待ち合わせしようと提案しましょう", "Shall we meet at … at …?", "Shall we meet at the main gate at 1:30?"] }
+          ]
+        },
+        {
+          "tutor": "You are Sam, the student's friend from abroad, chatty and speaking at natural speed. You love music. Open by saying hi and asking how their week has been; wait for them to bring up the weekend. When they mention the jazz concert, sound excited and ask how much the tickets are. Later, if they ask about bringing a friend, say yes.",
+          "tasks": [
+            { "id": "invite", "title": { "ja": "夜のコンサートに誘う", "en": "Suggest the evening concert" }, "hints": ["土曜日の夜のジャズコンサートに誘いましょう", "There's a … on Saturday evening. Would you like to …?", "There's a jazz concert on Saturday evening. Would you like to go?"] },
+            { "id": "tickets", "title": { "ja": "チケットについて説明する", "en": "Explain about the tickets" }, "hints": ["チケットの値段と買い方を伝えましょう", "Tickets are … and you can …", "Tickets are 3,000 yen, and you can buy them online."] },
+            { "id": "meet", "title": { "ja": "待ち合わせを決める", "en": "Decide where and when to meet" }, "hints": ["待ち合わせの場所と時間を決めましょう", "Let's meet at … at …", "Let's meet at the main gate at 1:30."] },
+            { "id": "friend", "title": { "ja": "友だちを誘っていいか聞く", "en": "Ask if you can bring a friend" }, "hints": ["友だちのアヤも誘っていいか聞きましょう", "Do you mind if I …?", "Do you mind if I bring my friend Aya?"] }
+          ],
+          "twist": {
+            "after": "tickets",
+            "tutor": "Say \"Let me check\" and look at the website on your phone: the jazz concert has just sold out. Sound disappointed, and let the student suggest another plan (the free live music in the afternoon, 14:00–16:00, and the food stalls are still on). Agree to their idea.",
+            "task": { "id": "plan-b", "title": { "ja": "別の案を出す", "en": "Suggest another plan" }, "hints": ["残念だと言って、午後の無料ライブに行こうと提案しましょう", "That's too bad. Why don't we … instead?", "That's too bad. Why don't we go to the free live music instead?"] }
+          }
+        }
+      ]
+    },
+    {
+      "id": "b",
+      "name": { "ja": "海外出身の友だち", "en": "Friend from abroad" },
+      "persona": "Sam, a friend from abroad who lives in Tokyo and loves music.",
+      "levels": [
+        {
+          "tutor": "You are Ren, the student's Japanese friend. Speak slowly, in short simple sentences. Open by saying hi and asking if they're free on Saturday. Then invite them to the Midori Park Autumn Festival and suggest 2 p.m. When asked where to meet, say Midori Station.",
+          "tasks": [
+            { "id": "free", "title": { "ja": "空いていると答える", "en": "Say you're free" }, "hints": ["土曜日は空いていると答えましょう", "Yes, I'm free …", "Yes, I'm free on Saturday."] },
+            { "id": "yes", "title": { "ja": "誘いにOKする", "en": "Say yes to the invitation" }, "hints": ["うれしそうにOKしましょう", "Sounds …! I'd love to …", "Sounds great! I'd love to go."] },
+            { "id": "where", "title": { "ja": "待ち合わせ場所を聞く", "en": "Ask where to meet" }, "hints": ["待ち合わせ場所を聞きましょう", "Where should we …?", "Where should we meet?"] }
+          ]
+        },
+        {
+          "tutor": "You are Ren, the student's Japanese friend, speaking at natural pace. Open by saying hi and saying you found a flyer for something fun; invite them to the Midori Park Autumn Festival this weekend. When asked, explain there are food stalls, live music and a craft market. Only when asked about the cost, say entry is free. Ask which day is better for them, and what they'd most like to see.",
+          "tasks": [
+            { "id": "whats-on", "title": { "ja": "何があるか聞く", "en": "Ask what's on" }, "hints": ["フェスで何があるか聞きましょう", "What's on at …?", "What's on at the festival?"] },
+            { "id": "cost", "title": { "ja": "入場料がかかるか聞く", "en": "Ask if it costs money" }, "hints": ["入場料がかかるか聞きましょう", "Do we need to …?", "Do we need to pay to get in?"] },
+            { "id": "day", "title": { "ja": "都合のいい日を伝える", "en": "Say which day is better" }, "hints": ["都合のいい日を理由と一緒に伝えましょう", "I'm busy on …, so … is better.", "I'm busy on Sunday, so Saturday is better."] },
+            { "id": "want", "title": { "ja": "見たいものを伝える", "en": "Say what you'd like to see" }, "hints": ["一番見たいものを伝えましょう", "I'd really like to see …", "I'd really like to see the live music."] }
+          ]
+        },
+        {
+          "tutor": "You are Ren, the student's Japanese friend, speaking at natural speed. Open by saying hi and suggesting the jazz concert at the festival on Saturday evening. When asked, say tickets are ¥3,000, online only. If they say it's too expensive, happily agree to go in the afternoon instead, when the live music and food stalls are free. Agree with their plan, and if they ask about bringing someone, say yes.",
+          "tasks": [
+            { "id": "tickets", "title": { "ja": "興味を示してチケットについて聞く", "en": "Show interest and ask about tickets" }, "hints": ["楽しそうだと言って、チケットの値段を聞きましょう", "That sounds …! How much are …?", "That sounds amazing! How much are the tickets?"] },
+            { "id": "budget", "title": { "ja": "予算のことをやんわり伝える", "en": "Say gently it's over your budget" }, "hints": ["今月は少し高いと伝えて、午後に行こうと提案しましょう", "It's a bit … for me this month. Could we …?", "It's a bit expensive for me this month. Could we go in the afternoon instead?"] },
+            { "id": "plan", "title": { "ja": "フェスでやりたいことを提案する", "en": "Suggest what to do there" }, "hints": ["屋台とライブを楽しもうと提案しましょう", "We could … and then …", "We could try the food stalls and then watch the live music."] },
+            { "id": "bring", "title": { "ja": "人を連れて行っていいか聞く", "en": "Ask if you can bring someone" }, "hints": ["ルームメイトを連れて行っていいか聞きましょう", "Is it okay if I bring …?", "Is it okay if I bring my housemate?"] }
+          ]
+        }
+      ]
+    }
+  ],
+  "prop": {
+    "label": { "ja": "イベントのチラシ", "en": "Event flyer" },
+    "title": "MIDORI PARK AUTUMN FESTIVAL · This weekend",
+    "sections": [
+      { "heading": "WHEN", "items": [
+        { "name": "Saturday 10:00–20:00", "key": "Saturday" },
+        { "name": "Sunday 10:00–17:00", "key": "Sunday" }
+      ] },
+      { "heading": "WHAT'S ON", "items": [
+        { "name": "Food stalls from all over Japan", "value": "Free entry", "key": "food stalls|free entry" },
+        { "name": "Live music · main stage, 14:00–16:00", "value": "Free", "key": "live music|two o'clock|2 p.m.|2 pm|14:00" },
+        { "name": "Craft market", "value": "Free", "key": "craft market|craft" },
+        { "name": "Evening jazz concert · Sat 18:00 · tickets online only", "value": "¥3,000", "key": "jazz|concert|3,000|3000" }
+      ] },
+      { "heading": "GETTING THERE", "items": [
+        { "name": "Midori Station", "value": "5 min walk", "key": "station" },
+        { "name": "Main gate (meeting point)", "key": "main gate|gate" }
+      ] }
+    ],
+    "foot": "Rain or shine · Entry is free (except the jazz concert)"
+  }
+}

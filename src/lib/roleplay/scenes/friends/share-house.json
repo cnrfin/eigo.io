@@ -1,0 +1,107 @@
+{
+  "id": "share-house",
+  "category": "friends",
+  "title": { "ja": "シェアハウスでルールを決める", "en": "Agreeing on share house rules" },
+  "summary": { "ja": "新しいハウスメイトにハウスルールを説明して、掃除の当番などを一緒に決める。", "en": "Explain the house rules to a new housemate and agree on things like cleaning." },
+  "setting": "The shared kitchen of Sakura Share House in Tokyo on a Sunday afternoon. A housemate from abroad moved in this week, and the two of them go through the house rules together.",
+  "image": "",
+  "studentRole": "a",
+  "roles": [
+    {
+      "id": "a",
+      "name": { "ja": "前から住んでいる人", "en": "Long-time housemate" },
+      "persona": "A Japanese person who has lived in the share house for a year.",
+      "levels": [
+        {
+          "tutor": "You are Noah, who moved into the share house from abroad this week. Open by coming into the kitchen and saying hi; wait for them to welcome you. Speak slowly, in short simple sentences. Ask about the rules: what time to be quiet, what to do with dishes, and when garbage day is. Use the house rules.",
+          "tasks": [
+            { "id": "welcome", "title": { "ja": "歓迎して名乗る", "en": "Welcome them and say your name" }, "hints": ["歓迎して、名前を伝えましょう", "Welcome to …! I'm …", "Welcome to the house! I'm Yuki."] },
+            { "id": "quiet", "title": { "ja": "静かにする時間を伝える", "en": "Say when to be quiet" }, "hints": ["夜11時以降は静かにと伝えましょう", "Please be quiet after …", "Please be quiet after 11 p.m."] },
+            { "id": "dishes", "title": { "ja": "お皿のルールを伝える", "en": "Explain the dishes rule" }, "hints": ["お皿はその日のうちに洗うと伝えましょう", "Please wash …", "Please wash your dishes the same day."] },
+            { "id": "garbage", "title": { "ja": "燃えるゴミの日を伝える", "en": "Say when burnable garbage goes out" }, "hints": ["燃えるゴミの曜日を伝えましょう", "Burnable garbage is on …", "Burnable garbage is on Monday and Thursday."] }
+          ]
+        },
+        {
+          "tutor": "You are Noah, who moved in this week, speaking at natural pace. Open by coming into the kitchen, saying hi and asking if they have a minute to go through the house rules. Ask whether you can have friends over, and say you'll need a shower around 7:30 in the morning. Ask how cleaning works and where to keep your food. Use the house rules.",
+          "tasks": [
+            { "id": "guests", "title": { "ja": "友だちを呼ぶときのルールを説明する", "en": "Explain the guest rule" }, "hints": ["来客のときはみんなに伝えるよう説明しましょう", "If you have guests, please …", "If you have guests, please tell everyone first."] },
+            { "id": "shower", "title": { "ja": "朝のシャワーのルールを説明する", "en": "Explain the morning shower rule" }, "hints": ["朝は混むので15分までと説明しましょう", "Mornings are busy, so please keep it to …", "Mornings are busy, so please keep it to 15 minutes."] },
+            { "id": "rota", "title": { "ja": "掃除の当番を説明する", "en": "Explain the cleaning rota" }, "hints": ["交代で掃除することと、今週の担当を伝えましょう", "We take turns cleaning. This week, could you do …?", "We take turns cleaning. This week, could you do the kitchen?"] },
+            { "id": "fridge", "title": { "ja": "冷蔵庫のルールを説明する", "en": "Explain the fridge rule" }, "hints": ["食べ物に名前を書くよう説明しましょう", "Please put … on your food in the fridge.", "Please put your name on your food in the fridge."] }
+          ]
+        },
+        {
+          "tutor": "You are Noah, who moved in this week, speaking at natural speed with a little small talk. Open by coming into the kitchen, saying hi and saying you'd like to go through the house rules; wait for them to welcome you. Ask about quiet hours. Last night you left your dishes in the sink because you forgot the rule; when they mention it, apologise and say you'll wash them now. Agree to a fair cleaning plan. Use the house rules.",
+          "tasks": [
+            { "id": "welcome", "title": { "ja": "歓迎して声をかける", "en": "Welcome them and offer help" }, "hints": ["歓迎して、何でも聞いてねと伝えましょう", "Welcome! If you have any questions …, just …", "Welcome! If you have any questions about the house, just ask me."] },
+            { "id": "quiet", "title": { "ja": "静かにする時間と理由を伝える", "en": "Explain quiet hours and why" }, "hints": ["静かにする時間と、壁がうすいことを伝えましょう", "Quiet hours are … The walls are …", "Quiet hours are 11 p.m. to 7 a.m. The walls are quite thin."] },
+            { "id": "dishes", "title": { "ja": "問題をやんわり伝える", "en": "Raise a problem politely" }, "hints": ["昨日のお皿を洗ってほしいと、やんわり伝えましょう", "Sorry to bring this up, but could you …?", "Sorry to bring this up, but could you wash your dishes from last night?"] },
+            { "id": "rota", "title": { "ja": "掃除の分担を決める", "en": "Agree on the cleaning" }, "hints": ["今週の掃除の分担を提案しましょう", "How about you take … this week, and I'll …?", "How about you take the kitchen this week, and I'll do the bathroom?"] }
+          ],
+          "twist": {
+            "after": "quiet",
+            "tutor": "Say you've just started working night shifts at a hotel, four nights a week, so on those days you sleep from about 8 a.m. to 2 p.m. Ask, a little nervously, if the house could be quieter in the mornings. Accept a fair compromise.",
+            "task": { "id": "compromise", "title": { "ja": "折り合いをつける", "en": "Find a compromise" }, "hints": ["理解を示して、朝はみんなで静かにしようと提案しましょう", "That's fair. Let's ask everyone to …", "That's fair. Let's ask everyone to keep it down in the mornings."] }
+          }
+        }
+      ]
+    },
+    {
+      "id": "b",
+      "name": { "ja": "新しいハウスメイト", "en": "New housemate" },
+      "persona": "Noah, who moved into the share house from abroad this week.",
+      "levels": [
+        {
+          "tutor": "You are Kana, who has lived in the share house for a year. Speak slowly, in short simple sentences. Open by coming into the kitchen and saying hi to the new housemate; wait for them to introduce themselves. When asked, explain the garbage days and quiet hours, using the house rules.",
+          "tasks": [
+            { "id": "hello", "title": { "ja": "あいさつして名乗る", "en": "Say hello and your name" }, "hints": ["名前と、引っ越してきたことを伝えましょう", "Hi, I'm … I just …", "Hi, I'm Noah. I just moved in."] },
+            { "id": "garbage", "title": { "ja": "ゴミの日を聞く", "en": "Ask when garbage day is" }, "hints": ["ゴミの日はいつか聞きましょう", "When is …?", "When is garbage day?"] },
+            { "id": "quiet", "title": { "ja": "静かにする時間を聞く", "en": "Ask when to be quiet" }, "hints": ["何時から静かにすればいいか聞きましょう", "What time do I …?", "What time do I need to be quiet?"] }
+          ]
+        },
+        {
+          "tutor": "You are Kana, who has lived in the share house for a year, speaking at natural pace. Open by saying hi and asking how they're settling in. When asked, explain the guest rule, the 15-minute shower rule in the morning, the cleaning rota and the fridge rule, using the house rules.",
+          "tasks": [
+            { "id": "guests", "title": { "ja": "友だちを呼んでいいか聞く", "en": "Ask about having friends over" }, "hints": ["友だちを呼んでもいいか聞きましょう", "Is it okay to have …?", "Is it okay to have friends over?"] },
+            { "id": "shower", "title": { "ja": "シャワーを使う時間を伝える", "en": "Say when you need a shower" }, "hints": ["朝シャワーを使う時間を伝えて、大丈夫か聞きましょう", "I usually need a shower around … Is that …?", "I usually need a shower around 7:30. Is that okay?"] },
+            { "id": "rota", "title": { "ja": "掃除について聞く", "en": "Ask about cleaning" }, "hints": ["掃除当番のしくみを聞きましょう", "How does … work?", "How does the cleaning rota work?"] },
+            { "id": "food", "title": { "ja": "食べ物の置き場所を聞く", "en": "Ask where to keep food" }, "hints": ["食べ物をどこに置けばいいか聞きましょう", "Where can I …?", "Where can I put my food?"] }
+          ]
+        },
+        {
+          "tutor": "You are Kana, who has lived in the share house for a year, speaking at natural speed. Open by saying hi and asking how their first week has been. When they ask for a favour, agree and suggest asking everyone to keep the noise down in the mornings. Then gently mention that they left their dishes in the sink last night. Suggest sharing the cleaning this week.",
+          "tasks": [
+            { "id": "shifts", "title": { "ja": "仕事の時間帯を説明する", "en": "Explain your work schedule" }, "hints": ["夜勤があって、朝に寝ていることを説明しましょう", "I work night shifts at …, so I sleep …", "I work night shifts at a hotel, so I sleep in the mornings."] },
+            { "id": "favour", "title": { "ja": "ていねいにお願いする", "en": "Ask for a favour politely" }, "hints": ["朝は静かにしてもらえるか、ていねいに聞きましょう", "Would it be possible for everyone to …?", "Would it be possible for everyone to keep it down in the mornings?"] },
+            { "id": "sorry", "title": { "ja": "うっかりを謝る", "en": "Apologise for a mistake" }, "hints": ["忘れていたと謝って、すぐ洗うと伝えましょう", "Sorry about that, I completely …", "Sorry about that, I completely forgot. I'll do them now."] },
+            { "id": "rota", "title": { "ja": "掃除を引き受ける", "en": "Offer to take a cleaning job" }, "hints": ["今週の掃除を引き受けると申し出ましょう", "I can take … this week if you …", "I can take the bathroom this week if you like."] }
+          ]
+        }
+      ]
+    }
+  ],
+  "prop": {
+    "label": { "ja": "ハウスルール", "en": "House rules" },
+    "title": "SAKURA SHARE HOUSE · House rules",
+    "sections": [
+      { "heading": "QUIET & GUESTS", "items": [
+        { "name": "Quiet hours", "value": "23:00–7:00", "key": "quiet hours|11 p.m.|11 pm|23:00" },
+        { "name": "Guests: tell everyone first · overnight 2 nights max", "key": "guest|guests|friends over|overnight" }
+      ] },
+      { "heading": "KITCHEN", "items": [
+        { "name": "Wash your dishes the same day", "key": "dishes" },
+        { "name": "Put your name on your food in the fridge", "key": "fridge|your name on" }
+      ] },
+      { "heading": "BATHROOM & CLEANING", "items": [
+        { "name": "Morning showers: 15 minutes each (busy 7:00–8:30)", "key": "shower|showers|15 minutes" },
+        { "name": "Cleaning rota: kitchen · bathroom · living room, swap every Monday", "key": "rota|cleaning" }
+      ] },
+      { "heading": "GARBAGE", "items": [
+        { "name": "Burnable", "value": "Mon · Thu", "key": "burnable|garbage day" },
+        { "name": "Plastic packaging", "value": "Wed", "key": "plastic" },
+        { "name": "Cans and glass", "value": "Fri", "key": "cans|glass" }
+      ] }
+    ],
+    "foot": "House meeting: first Sunday of the month"
+  }
+}

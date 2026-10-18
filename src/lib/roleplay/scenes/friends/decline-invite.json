@@ -1,0 +1,83 @@
+{
+  "id": "decline-invite",
+  "category": "friends",
+  "title": { "ja": "誘いを上手に断る・予定を変える", "en": "Saying no and changing plans" },
+  "summary": { "ja": "友だちの誘いを感じよく断って、理由を伝え、別の日を提案する。", "en": "Turn down a friend's invitation kindly, give a reason and suggest another time." },
+  "setting": "A phone call on a Thursday evening. Emma, a friend from abroad, calls a Japanese friend to invite them to a barbecue by the river on Saturday at 12.",
+  "image": "",
+  "studentRole": "a",
+  "roles": [
+    {
+      "id": "a",
+      "name": { "ja": "日本人の友だち", "en": "Japanese friend" },
+      "persona": "A Japanese person who can't go to a friend's barbecue on Saturday.",
+      "levels": [
+        {
+          "tutor": "You are Emma, the student's friend from abroad. Speak slowly, in short simple sentences. Open by saying hi and inviting them to a barbecue by the river on Saturday at 12. When they say no, say \"Oh, that's okay!\" and ask why, kindly.",
+          "tasks": [
+            { "id": "thanks", "title": { "ja": "誘ってくれたお礼を言う", "en": "Thank them for asking" }, "hints": ["誘ってくれたお礼を言いましょう", "Thanks for …!", "Thanks for asking me!"] },
+            { "id": "no", "title": { "ja": "行けないと伝える", "en": "Say you can't go" }, "hints": ["土曜日は行けないと伝えましょう", "Sorry, I can't …", "Sorry, I can't go on Saturday."] },
+            { "id": "reason", "title": { "ja": "理由を伝える", "en": "Give a reason" }, "hints": ["行けない理由を伝えましょう", "I have to …", "I have to work on Saturday."] },
+            { "id": "next", "title": { "ja": "また今度と伝える", "en": "Say maybe next time" }, "hints": ["また今度ねと伝えましょう", "Maybe next …! Have …!", "Maybe next time! Have fun!"] }
+          ]
+        },
+        {
+          "tutor": "You are Emma, the student's friend from abroad, speaking at natural pace. Open by saying hi and inviting them to a barbecue by the river on Saturday afternoon. When they say no, sound a little disappointed but understanding, and ask why. If they suggest another day, say yes happily. Say you'll miss them on Saturday.",
+          "tasks": [
+            { "id": "decline", "title": { "ja": "ていねいに断る", "en": "Say no politely" }, "hints": ["行きたい気持ちを伝えてから断りましょう", "I'd love to, but …", "I'd love to, but I already have plans on Saturday."] },
+            { "id": "reason", "title": { "ja": "理由を説明する", "en": "Explain why" }, "hints": ["両親が東京に来ると説明しましょう", "My … are coming to Tokyo, so …", "My parents are coming to Tokyo, so I'll be with them."] },
+            { "id": "other", "title": { "ja": "別の日を提案する", "en": "Suggest another day" }, "hints": ["別の日に会おうと提案しましょう", "Are you free … instead?", "Are you free next Sunday instead?"] },
+            { "id": "fun", "title": { "ja": "楽しんでねと伝える", "en": "Say have fun" }, "hints": ["楽しんでねと言って、写真をお願いしましょう", "Have fun! Send me …", "Have fun! Send me some photos."] }
+          ]
+        },
+        {
+          "tutor": "You are Emma, the student's friend from abroad, speaking at natural speed. Open by saying hi and inviting them to a barbecue by the river on Saturday at 12; you've already bought lots of food. When they say no, ask what's up, kindly. React warmly to whatever they offer instead. If they ask what to bring, say drinks would be great.",
+          "tasks": [
+            { "id": "decline", "title": { "ja": "気持ちに配慮して断る", "en": "Decline kindly" }, "hints": ["行きたかった気持ちを伝えてから断りましょう", "That sounds great, and I really wish I could, but …", "That sounds great, and I really wish I could, but I'm busy that day."] },
+            { "id": "reason", "title": { "ja": "理由を正直に伝える", "en": "Explain the reason honestly" }, "hints": ["友だちの引っ越しを手伝う約束があると伝えましょう", "I promised to help … that day.", "I promised to help a friend move house that day."] },
+            { "id": "offer", "title": { "ja": "代わりの案を出す", "en": "Offer something instead" }, "hints": ["来週ごはんに行こうと、代わりに提案しましょう", "Why don't we … next week instead? My …", "Why don't we have dinner next week instead? My treat."] },
+            { "id": "bring", "title": { "ja": "持っていくものを聞く", "en": "Ask what to bring" }, "hints": ["何か持っていくものがあるか聞きましょう", "Can I bring …?", "Can I bring anything, like drinks or snacks?"] }
+          ],
+          "twist": {
+            "after": "offer",
+            "tutor": "Say yes to their offer, then check your messages: it's going to rain on Saturday, so the barbecue has moved to Sunday, same place, still at 12. Ask if they can come on Sunday instead.",
+            "task": { "id": "sunday", "title": { "ja": "変わった予定に答える", "en": "Respond to the new plan" }, "hints": ["日曜日なら行けると、うれしそうに伝えましょう", "Oh, Sunday works for me! I'd love …", "Oh, Sunday works for me! I'd love to come."] }
+          }
+        }
+      ]
+    },
+    {
+      "id": "b",
+      "name": { "ja": "海外出身の友だち", "en": "Friend from abroad" },
+      "persona": "Emma, a friend from abroad who is organising a barbecue by the river on Saturday at 12.",
+      "levels": [
+        {
+          "tutor": "You are Haruto, the student's Japanese friend. Speak slowly, in short simple sentences. Open by answering the phone and saying hi; wait for them to invite you. You have to work on Saturday, so say no politely when invited, and say sorry.",
+          "tasks": [
+            { "id": "invite", "title": { "ja": "バーベキューに誘う", "en": "Invite them to a barbecue" }, "hints": ["土曜日のバーベキューに誘いましょう", "Do you want to come to …?", "Do you want to come to a barbecue on Saturday?"] },
+            { "id": "okay", "title": { "ja": "大丈夫だよと伝える", "en": "Say it's okay" }, "hints": ["気にしないでと伝えましょう", "That's okay! Don't …", "That's okay! Don't worry about it."] },
+            { "id": "next", "title": { "ja": "また今度ねと伝える", "en": "Say maybe next time" }, "hints": ["今度一緒に行こうと伝えましょう", "Let's … next time!", "Let's go together next time!"] }
+          ]
+        },
+        {
+          "tutor": "You are Haruto, the student's Japanese friend, speaking at natural pace. Open by answering the phone and saying hi; wait for them to invite you. Say you'd love to, but your parents are visiting Tokyo on Saturday. Suggest meeting next Sunday instead.",
+          "tasks": [
+            { "id": "invite", "title": { "ja": "くわしく誘う", "en": "Invite them, with details" }, "hints": ["場所と日にちを伝えて誘いましょう", "We're having a barbecue … Can you come?", "We're having a barbecue by the river on Saturday. Can you come?"] },
+            { "id": "sorry", "title": { "ja": "残念だけど理解を示す", "en": "Say you understand" }, "hints": ["残念だけど、わかったよと伝えましょう", "Oh, that's too bad. I …", "Oh, that's too bad. I understand."] },
+            { "id": "other", "title": { "ja": "別の日にOKする", "en": "Agree to another day" }, "hints": ["別の日の提案にOKしましょう", "Next Sunday sounds …", "Next Sunday sounds good to me."] },
+            { "id": "photos", "title": { "ja": "写真を送ると約束する", "en": "Promise to send photos" }, "hints": ["写真を送るねと伝えましょう", "I'll send you …", "I'll send you some photos!"] }
+          ]
+        },
+        {
+          "tutor": "You are Haruto, the student's Japanese friend, speaking at natural speed. Open by answering the phone and asking how their week is going; wait for them to invite you. Decline kindly: you promised to help a friend move house that day. Offer to have dinner next week instead, your treat. When told the barbecue might move to Sunday, say you're free on Sunday and you'd love to come.",
+          "tasks": [
+            { "id": "invite", "title": { "ja": "楽しそうに誘う", "en": "Invite them warmly" }, "hints": ["来てくれたらうれしいと、楽しそうに誘いましょう", "I'm having a barbecue on Saturday. It'd be great if …", "I'm having a barbecue on Saturday. It'd be great if you could come."] },
+            { "id": "understand", "title": { "ja": "気持ちよく受け止める", "en": "Respond kindly" }, "hints": ["気にしないでと、やさしく伝えましょう", "No worries, I totally …", "No worries, I totally understand."] },
+            { "id": "accept", "title": { "ja": "相手の提案にOKする", "en": "Accept their offer" }, "hints": ["提案にOKして、曜日を提案しましょう", "That sounds great. How about …?", "That sounds great. How about Wednesday?"] },
+            { "id": "change", "title": { "ja": "予定の変更を伝える", "en": "Tell them the plan might change" }, "hints": ["雨なら日曜日にすると伝えて、空いているか聞きましょう", "Actually, it might rain, so we may move it to … Are you …?", "Actually, it might rain, so we may move it to Sunday. Are you free?"] }
+          ]
+        }
+      ]
+    }
+  ]
+}

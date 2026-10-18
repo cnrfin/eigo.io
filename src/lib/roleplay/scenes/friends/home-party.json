@@ -1,0 +1,83 @@
+{
+  "id": "home-party",
+  "category": "friends",
+  "title": { "ja": "友だちを家に招待する", "en": "Having a friend over for dinner" },
+  "summary": { "ja": "家に来た友だちを迎えて、靴や飲み物のことを伝え、一緒に餃子を作る。", "en": "Welcome a friend into your home, offer a drink and make gyoza together." },
+  "setting": "The host's small apartment in Tokyo on a Saturday evening. They have invited a friend from abroad over for dinner, and the plan is to make gyoza together.",
+  "image": "",
+  "studentRole": "a",
+  "roles": [
+    {
+      "id": "a",
+      "name": { "ja": "招待する人", "en": "Host" },
+      "persona": "A Japanese person who has invited a friend home for dinner.",
+      "levels": [
+        {
+          "tutor": "You are Max, the host's friend from abroad, visiting their home for the first time. Open by ringing the doorbell and saying hi when the door opens; wait for them to invite you in. Speak slowly, in short simple sentences. When asked to take off your shoes, say \"Oh, okay!\" and do it. When offered a drink, ask for tea. Ask what's for dinner.",
+          "tasks": [
+            { "id": "welcome", "title": { "ja": "家に迎え入れる", "en": "Welcome them in" }, "hints": ["あいさつして、中に入ってもらいましょう", "Hi, welcome! Please …", "Hi, welcome! Please come in."] },
+            { "id": "shoes", "title": { "ja": "靴を脱いでもらう", "en": "Ask them to take off their shoes" }, "hints": ["靴を脱いでもらい、スリッパを出しましょう", "Could you take off …? Here are …", "Could you take off your shoes? Here are some slippers."] },
+            { "id": "drink", "title": { "ja": "飲み物をすすめる", "en": "Offer a drink" }, "hints": ["飲み物をすすめましょう", "Would you like something …?", "Would you like something to drink?"] },
+            { "id": "dinner", "title": { "ja": "今夜のメニューを伝える", "en": "Say what's for dinner" }, "hints": ["今夜は一緒に餃子を作ると伝えましょう", "Tonight we're making …", "Tonight we're making gyoza together!"] }
+          ]
+        },
+        {
+          "tutor": "You are Max, the host's friend from abroad, speaking at natural pace. Open by ringing the doorbell, saying hi and handing over a box of cookies as a small gift; wait for them to welcome you. Ask if you should take your shoes off. You've never made gyoza before, so ask how to make them.",
+          "tasks": [
+            { "id": "welcome", "title": { "ja": "迎えておみやげのお礼を言う", "en": "Welcome them and thank them" }, "hints": ["迎えて、おみやげのお礼を言いましょう", "Welcome! Thanks so much for …!", "Welcome! Thanks so much for the cookies!"] },
+            { "id": "shoes", "title": { "ja": "靴とスリッパのことを説明する", "en": "Explain about shoes and slippers" }, "hints": ["家では靴を脱ぐことと、スリッパのことを説明しましょう", "In Japan, we take off … Please use …", "In Japan, we take off our shoes inside. Please use these slippers."] },
+            { "id": "relax", "title": { "ja": "くつろいでもらい、飲み物をすすめる", "en": "Make them feel at home" }, "hints": ["くつろいでと言って、飲み物をすすめましょう", "Make yourself at home. Can I get you …?", "Make yourself at home. Can I get you a drink?"] },
+            { "id": "how", "title": { "ja": "餃子の包み方を説明する", "en": "Explain how to make gyoza" }, "hints": ["餃子の包み方を説明しましょう", "Put a little … in the middle, then …", "Put a little filling in the middle, then fold it like this."] }
+          ]
+        },
+        {
+          "tutor": "You are Max, the host's friend from abroad, chatty and speaking at natural speed. Open by ringing the doorbell, saying hi and apologising for being ten minutes late; wait for them to welcome you. Ask what the plan is for dinner. When they show you how to wrap gyoza, try it and say it's your first time making gyoza.",
+          "tasks": [
+            { "id": "welcome", "title": { "ja": "気にしないでと迎える", "en": "Welcome them warmly" }, "hints": ["遅れたことは気にしないでと伝えて、迎えましょう", "Don't worry about it! Come in and …", "Don't worry about it! Come in and make yourself at home."] },
+            { "id": "menu", "title": { "ja": "今夜の予定を説明する", "en": "Explain the plan for dinner" }, "hints": ["一緒に餃子を作ることと、具の中身を説明しましょう", "I thought we could … together. The filling is …", "I thought we could make gyoza together. The filling is pork and cabbage."] },
+            { "id": "teach", "title": { "ja": "包み方を教える", "en": "Show them how to wrap gyoza" }, "hints": ["包み方を説明しましょう", "Just put a spoonful in the middle, then …", "Just put a spoonful in the middle, then fold and press the edges."] },
+            { "id": "praise", "title": { "ja": "相手の餃子をほめる", "en": "Praise their gyoza" }, "hints": ["上手にできたとほめましょう", "Wow, yours look …! Are you sure …?", "Wow, yours look great! Are you sure it's your first time?"] }
+          ],
+          "twist": {
+            "after": "menu",
+            "tutor": "Look a little embarrassed and say politely that you don't eat pork; you're sorry you didn't mention it earlier. Accept any sensible solution warmly.",
+            "task": { "id": "no-pork", "title": { "ja": "食べられないものに対応する", "en": "Offer another option" }, "hints": ["気にしないでと伝えて、野菜だけの餃子を提案しましょう", "No problem. I'll make yours with … and …", "No problem. I'll make yours with vegetables and cook them first."] }
+          }
+        }
+      ]
+    },
+    {
+      "id": "b",
+      "name": { "ja": "招待された人", "en": "Guest" },
+      "persona": "Max, a friend from abroad visiting the host's home for the first time.",
+      "levels": [
+        {
+          "tutor": "You are Mai, who has invited the student home for dinner. Speak slowly, in short simple sentences. Open by opening the door and saying \"Hi, welcome!\" Ask them to take off their shoes, and offer them tea or juice.",
+          "tasks": [
+            { "id": "thanks", "title": { "ja": "招待のお礼を言う", "en": "Thank them for inviting you" }, "hints": ["招待してくれたお礼を言いましょう", "Thank you for …!", "Thank you for inviting me!"] },
+            { "id": "gift", "title": { "ja": "おみやげを渡す", "en": "Give a small gift" }, "hints": ["おみやげを渡しましょう", "This is for you. It's …", "This is for you. It's some cookies."] },
+            { "id": "drink", "title": { "ja": "飲み物をお願いする", "en": "Ask for a drink" }, "hints": ["飲みたいものを伝えましょう", "Could I have …, please?", "Could I have some tea, please?"] }
+          ]
+        },
+        {
+          "tutor": "You are Mai, who has invited the student home for dinner, speaking at natural pace. Open by opening the door and welcoming them in. When asked about shoes, say yes and give them slippers. Tonight you're making gyoza together; when asked, show them how to fold them.",
+          "tasks": [
+            { "id": "gift", "title": { "ja": "一言そえておみやげを渡す", "en": "Give your gift with a few words" }, "hints": ["一言そえて、おみやげを渡しましょう", "I brought you … I hope you …", "I brought you some cookies. I hope you like them."] },
+            { "id": "shoes", "title": { "ja": "靴を脱ぐか確認する", "en": "Check about shoes" }, "hints": ["ここで靴を脱ぐか聞きましょう", "Should I take off …?", "Should I take off my shoes here?"] },
+            { "id": "help", "title": { "ja": "手伝いを申し出る", "en": "Offer to help" }, "hints": ["何か手伝えるか聞きましょう", "Can I help …?", "Can I help with anything?"] },
+            { "id": "how", "title": { "ja": "包み方を聞く", "en": "Ask how to make gyoza" }, "hints": ["餃子の包み方を聞きましょう", "How do you …?", "How do you fold the gyoza?"] }
+          ]
+        },
+        {
+          "tutor": "You are Mai, who has invited the student home for dinner, speaking at natural speed. Open by opening the door and saying hi; they are ten minutes late, and when they apologise, tell them not to worry. Tonight you're making gyoza with a pork and cabbage filling; tell them the plan once they're inside. You also have plenty of vegetables, so if they say they don't eat pork, happily offer to make theirs with vegetables only and cook them first.",
+          "tasks": [
+            { "id": "late", "title": { "ja": "遅れたことを謝る", "en": "Apologise for being late" }, "hints": ["遅れたことを、理由をそえて謝りましょう", "Sorry I'm … The train …", "Sorry I'm late. The train was delayed."] },
+            { "id": "diet", "title": { "ja": "食べられないものを伝える", "en": "Explain what you don't eat" }, "hints": ["豚肉を食べないことを、ていねいに伝えましょう", "I'm sorry, I should have told you earlier, but I don't …", "I'm sorry, I should have told you earlier, but I don't eat pork."] },
+            { "id": "thank", "title": { "ja": "対応にお礼を言う", "en": "Thank them for changing the dish" }, "hints": ["気づかいにお礼を言いましょう", "Thank you so much. That's really …", "Thank you so much. That's really kind of you."] },
+            { "id": "praise", "title": { "ja": "料理をほめる", "en": "Compliment the food" }, "hints": ["餃子をほめましょう", "These are …! You should …", "These are delicious! You should open a restaurant."] }
+          ]
+        }
+      ]
+    }
+  ]
+}

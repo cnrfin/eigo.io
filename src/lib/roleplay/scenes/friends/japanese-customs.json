@@ -1,0 +1,78 @@
+{
+  "id": "japanese-customs",
+  "category": "friends",
+  "title": { "ja": "日本の習慣を説明する", "en": "Explaining Japanese customs" },
+  "summary": { "ja": "日本に来たばかりの友だちに、チップやおみやげなどの習慣をわかりやすく説明する。", "en": "Explain Japanese customs, like tipping and souvenirs, to a friend who is new to Japan." },
+  "setting": "A small restaurant in Tokyo at lunchtime. A friend from abroad who moved to Japan a month ago has questions about Japanese customs.",
+  "image": "",
+  "studentRole": "a",
+  "roles": [
+    {
+      "id": "a",
+      "name": { "ja": "日本人の友だち", "en": "Japanese friend" },
+      "persona": "A Japanese person having lunch with a friend who is new to Japan.",
+      "levels": [
+        {
+          "tutor": "You are Leo, the student's friend from abroad, who moved to Japan a month ago. Speak slowly, in short simple sentences. Open by saying hi and saying you left a tip at a restaurant yesterday but the staff gave it back; ask if you should tip in Japan. Then ask what people say before eating, and whether you should take off your shoes at a friend's house.",
+          "tasks": [
+            { "id": "tip", "title": { "ja": "チップについて説明する", "en": "Explain about tipping" }, "hints": ["日本ではチップはいらないと伝えましょう", "In Japan, you don't …", "In Japan, you don't need to tip."] },
+            { "id": "itadakimasu", "title": { "ja": "食事の前のあいさつを教える", "en": "Say what we say before eating" }, "hints": ["「いただきます」を教えましょう", "Before eating, we say …", "Before eating, we say \"itadakimasu\"."] },
+            { "id": "shoes", "title": { "ja": "靴を脱ぐことを伝える", "en": "Explain about shoes" }, "hints": ["玄関で靴を脱ぐと伝えましょう", "Yes, you take off …", "Yes, you take off your shoes at the door."] }
+          ]
+        },
+        {
+          "tutor": "You are Leo, the student's friend from abroad, speaking at natural pace. Open by saying hi and saying you've noticed people bow a lot; ask what it means. Then say a coworker came back from a trip and gave everyone sweets, and ask why. Ask what you should do. Later, ask if there are any rules about chopsticks.",
+          "tasks": [
+            { "id": "bow", "title": { "ja": "おじぎの意味を説明する", "en": "Explain bowing" }, "hints": ["おじぎをする場面を説明しましょう", "People bow to say …, … or …", "People bow to say hello, thank you or sorry."] },
+            { "id": "omiyage", "title": { "ja": "おみやげの習慣を説明する", "en": "Explain about souvenirs" }, "hints": ["旅行のあと職場にお菓子を配る習慣を説明しましょう", "When people go on a trip, they …", "When people go on a trip, they bring back sweets for coworkers."] },
+            { "id": "advice", "title": { "ja": "アドバイスをする", "en": "Give advice" }, "hints": ["次の旅行のときにおみやげを買うようすすめましょう", "You should bring back …, too.", "You should bring back something small, too."] },
+            { "id": "chopsticks", "title": { "ja": "はしのマナーを説明する", "en": "Explain a chopsticks rule" }, "hints": ["ごはんにはしを立てないと説明しましょう", "Don't stick … in your rice.", "Don't stick your chopsticks straight up in your rice."] }
+          ]
+        },
+        {
+          "tutor": "You are Leo, the student's friend from abroad, curious and speaking at natural speed. Open by saying hi and saying that everyone at work keeps saying \"otsukaresama\" and you don't know what it means. Ask when to use it. Then ask why trains are so quiet. Say you're worried about doing something rude by mistake. When asked about customs in your country, share one.",
+          "tasks": [
+            { "id": "meaning", "title": { "ja": "訳しにくい言葉を説明する", "en": "Explain a tricky phrase" }, "hints": ["「お疲れさま」の意味を説明しましょう", "It's hard to translate, but it means …", "It's hard to translate, but it means \"thanks for your hard work\"."] },
+            { "id": "when", "title": { "ja": "使う場面を説明する", "en": "Explain when to use it" }, "hints": ["どんなときに使うか説明しましょう", "You can say it when …", "You can say it when someone finishes work or leaves the office."] },
+            { "id": "trains", "title": { "ja": "習慣の理由を説明する", "en": "Explain the reason for a custom" }, "hints": ["電車で電話をしない理由を説明しましょう", "Most people don't … on trains. It's seen as …", "Most people don't talk on the phone on trains. It's seen as rude."] },
+            { "id": "reassure", "title": { "ja": "相手を安心させる", "en": "Reassure them" }, "hints": ["気にしすぎなくて大丈夫だと伝えましょう", "Don't worry too much. People know …", "Don't worry too much. People know you're still learning."] },
+            { "id": "compare", "title": { "ja": "相手の国の習慣を聞く", "en": "Ask about customs in their country" }, "hints": ["相手の国にも似た習慣があるか聞きましょう", "Is there anything like that …?", "Is there anything like that in your country?"] }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b",
+      "name": { "ja": "海外出身の友だち", "en": "Friend from abroad" },
+      "persona": "Leo, a friend from abroad who moved to Japan a month ago.",
+      "levels": [
+        {
+          "tutor": "You are Nana, the student's Japanese friend. Speak slowly, in short simple sentences. Open by saying hi and asking how life in Japan is going. When asked, explain simply that you don't need to tip in Japan, and that people say \"itadakimasu\" before eating.",
+          "tasks": [
+            { "id": "tip", "title": { "ja": "チップについて聞く", "en": "Ask about tipping" }, "hints": ["日本でチップが必要か聞きましょう", "Do I need to … in Japan?", "Do I need to tip in Japan?"] },
+            { "id": "eat", "title": { "ja": "食事の前に言うことを聞く", "en": "Ask what to say before eating" }, "hints": ["食べる前に何と言うか聞きましょう", "What do you say …?", "What do you say before eating?"] },
+            { "id": "thanks", "title": { "ja": "お礼を言う", "en": "Say thank you" }, "hints": ["役に立ったとお礼を言いましょう", "Thanks! That's really …", "Thanks! That's really useful."] }
+          ]
+        },
+        {
+          "tutor": "You are Nana, the student's Japanese friend, speaking at natural pace. Open by saying hi and asking how work is going. When asked, explain that bowing can mean hello, thank you or sorry, and that people bring back sweets for coworkers after a trip (omiyage). When asked, explain the chopsticks rules simply.",
+          "tasks": [
+            { "id": "notice", "title": { "ja": "気づいたことを話す", "en": "Say what you've noticed" }, "hints": ["おじぎが多いことに気づいたと話しましょう", "I've noticed people … a lot.", "I've noticed people bow a lot."] },
+            { "id": "gift", "title": { "ja": "同僚のおみやげについて聞く", "en": "Ask about a coworker's gift" }, "hints": ["同僚がお菓子を配った理由を聞きましょう", "My coworker gave everyone … Why …?", "My coworker gave everyone sweets. Why was that?"] },
+            { "id": "should", "title": { "ja": "自分もするべきか聞く", "en": "Ask what you should do" }, "hints": ["自分も何か買ってくるべきか聞きましょう", "Should I … too?", "Should I bring something back too?"] },
+            { "id": "chopsticks", "title": { "ja": "食事のマナーを聞く", "en": "Ask about table manners" }, "hints": ["はしの使い方にルールがあるか聞きましょう", "Are there any rules about …?", "Are there any rules about using chopsticks?"] }
+          ]
+        },
+        {
+          "tutor": "You are Nana, the student's Japanese friend, speaking at natural speed. Open by saying hi and asking how their first month at work has been. When asked, explain that \"otsukaresama\" is a way of thanking people for their hard work, and that most people don't talk on the phone on trains because it's seen as rude. Reassure them when they're worried. Then ask about customs in their country.",
+          "tasks": [
+            { "id": "confused", "title": { "ja": "わからなかったことを話す", "en": "Say what confused you" }, "hints": ["職場で聞く「お疲れさま」の意味を聞きましょう", "Everyone at work keeps saying … What does it …?", "Everyone at work keeps saying \"otsukaresama\". What does it mean?"] },
+            { "id": "trains", "title": { "ja": "電車のマナーを聞く", "en": "Ask about manners on trains" }, "hints": ["電車が静かな理由を聞きましょう", "Why is it so … on trains? Is it …?", "Why is it so quiet on trains? Is it a rule?"] },
+            { "id": "worry", "title": { "ja": "心配を伝える", "en": "Share a worry" }, "hints": ["失礼なことをしないか心配だと伝えましょう", "I'm worried I'll …", "I'm worried I'll do something rude by mistake."] },
+            { "id": "home", "title": { "ja": "自分の国の習慣を話す", "en": "Talk about a custom from home" }, "hints": ["自分の国の習慣を一つ紹介しましょう", "Where I'm from, people usually …", "Where I'm from, people usually hug when they meet."] }
+          ]
+        }
+      ]
+    }
+  ]
+}

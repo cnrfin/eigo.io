@@ -1,0 +1,80 @@
+{
+  "id": "hobbies",
+  "category": "friends",
+  "title": { "ja": "趣味の話で盛り上がる", "en": "Talking about hobbies" },
+  "summary": { "ja": "自分の趣味を話して、相手の趣味も聞き、一緒にやろうと誘う。", "en": "Talk about your hobbies, ask about theirs and invite them to try yours." },
+  "setting": "A café on a Sunday afternoon. Two friends are having coffee and chatting about what they do in their free time.",
+  "image": "",
+  "studentRole": "a",
+  "roles": [
+    {
+      "id": "a",
+      "name": { "ja": "日本人の友だち", "en": "Japanese friend" },
+      "persona": "A Japanese person chatting with a friend about hobbies.",
+      "levels": [
+        {
+          "tutor": "You are Jamie, the student's friend from abroad, who works in Tokyo. Speak slowly, in short simple sentences. Open by saying hi and asking what they like doing in their free time. Ask how often they do it. When asked about yours, say you love hiking.",
+          "tasks": [
+            { "id": "hobby", "title": { "ja": "趣味を伝える", "en": "Say your hobby" }, "hints": ["趣味を伝えましょう", "I like …", "I like playing tennis."] },
+            { "id": "often", "title": { "ja": "どれくらいやるか伝える", "en": "Say how often" }, "hints": ["週に何回やるか伝えましょう", "I play … a week.", "I play twice a week."] },
+            { "id": "ask", "title": { "ja": "相手の趣味を聞く", "en": "Ask about their hobby" }, "hints": ["相手の趣味を聞きましょう", "And you? What do you …?", "And you? What do you like doing?"] },
+            { "id": "react", "title": { "ja": "反応する", "en": "React to what they say" }, "hints": ["楽しそうだと反応しましょう", "That sounds …!", "That sounds really fun!"] }
+          ]
+        },
+        {
+          "tutor": "You are Jamie, the student's friend from abroad, speaking at natural pace. Open by saying hi and asking what they've been doing lately in their free time. Ask why they like it. Then say you've just started baking bread at home, and be happy to talk about it. If they invite you to try their hobby, say yes.",
+          "tasks": [
+            { "id": "hobby", "title": { "ja": "最近していることを話す", "en": "Talk about what you do lately" }, "hints": ["最近よくしている趣味を話しましょう", "I've been … lately. I go every …", "I've been playing tennis lately. I go every Saturday."] },
+            { "id": "why", "title": { "ja": "好きな理由を伝える", "en": "Say why you like it" }, "hints": ["好きな理由を伝えましょう", "I like it because …", "I like it because it's good exercise and really fun."] },
+            { "id": "start", "title": { "ja": "始めたきっかけを聞く", "en": "Ask how they got into it" }, "hints": ["パン作りを始めたきっかけを聞きましょう", "How did you get into …?", "How did you get into baking bread?"] },
+            { "id": "invite", "title": { "ja": "一緒にやろうと誘う", "en": "Invite them to try your hobby" }, "hints": ["今度一緒にやろうと誘いましょう", "Would you like to … with me sometime?", "Would you like to play tennis with me sometime?"] }
+          ]
+        },
+        {
+          "tutor": "You are Jamie, the student's friend from abroad, chatty and speaking at natural speed. Open by saying hi and saying you need a new hobby because you've been working too much. When they recommend something, ask if it's difficult because you've never done it. If they invite you, say yes. When asked about hobbies you used to have, say you used to play guitar in a band but stopped when you moved to Japan, and you miss it.",
+          "tasks": [
+            { "id": "recommend", "title": { "ja": "理由をつけて趣味をすすめる", "en": "Recommend your hobby, with a reason" }, "hints": ["自分の趣味をすすめて、理由を伝えましょう", "You should try … It really helps me …", "You should try bouldering. It really helps me forget about work."] },
+            { "id": "easy", "title": { "ja": "始めやすいと安心させる", "en": "Say it's easy to start" }, "hints": ["初心者でも大丈夫だと伝えましょう", "Don't worry, it's easy to start. Beginners can …", "Don't worry, it's easy to start. Beginners can rent shoes at the gym."] },
+            { "id": "invite", "title": { "ja": "一緒に行こうと誘う", "en": "Invite them along" }, "hints": ["土曜日に一緒に行こうと誘いましょう", "Do you want to come … with me on …?", "Do you want to come bouldering with me on Saturday?"] },
+            { "id": "past", "title": { "ja": "昔の趣味を聞く", "en": "Ask about their old hobbies" }, "hints": ["昔どんな趣味があったか聞きましょう", "What did you use to …?", "What did you use to do for fun?"] },
+            { "id": "encourage", "title": { "ja": "また始めるよう励ます", "en": "Encourage them to start again" }, "hints": ["また始めようと励まして、場所も教えましょう", "Why don't you start playing again? There's …", "Why don't you start playing again? There's a music studio near here."] }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b",
+      "name": { "ja": "海外出身の友だち", "en": "Friend from abroad" },
+      "persona": "Jamie, a friend from abroad who works in Tokyo.",
+      "levels": [
+        {
+          "tutor": "You are Sota, the student's Japanese friend. Speak slowly, in short simple sentences. Open by saying hi and asking what they like doing in their free time. When asked about yours, say you like playing tennis, and when asked, say you play once a week.",
+          "tasks": [
+            { "id": "hobby", "title": { "ja": "趣味を伝える", "en": "Say your hobby" }, "hints": ["趣味を伝えましょう", "I like …", "I like hiking in the mountains."] },
+            { "id": "ask", "title": { "ja": "相手の趣味を聞く", "en": "Ask about their hobby" }, "hints": ["相手の趣味を聞きましょう", "What about you? What do you …?", "What about you? What do you like doing?"] },
+            { "id": "often", "title": { "ja": "どれくらいやるか聞く", "en": "Ask how often" }, "hints": ["どれくらいやるか聞きましょう", "How often do you …?", "How often do you play tennis?"] },
+            { "id": "react", "title": { "ja": "興味を示す", "en": "Show interest" }, "hints": ["やってみたいと伝えましょう", "Oh, nice! I'd love to …", "Oh, nice! I'd love to try it."] }
+          ]
+        },
+        {
+          "tutor": "You are Sota, the student's Japanese friend, speaking at natural pace. Open by saying hi and asking what they've been doing lately in their free time. Ask how they got into it. When asked about yours, say you play tennis because it's good exercise, and invite them to play sometime. Only when asked when, say every Saturday morning.",
+          "tasks": [
+            { "id": "lately", "title": { "ja": "最近始めたことを話す", "en": "Talk about something new you do" }, "hints": ["最近始めた趣味を話しましょう", "I've just started … It's …", "I've just started baking bread. It's really fun."] },
+            { "id": "why", "title": { "ja": "始めたきっかけを話す", "en": "Say why you started" }, "hints": ["始めたきっかけを話しましょう", "I started because …", "I started because I missed the bread from home."] },
+            { "id": "ask", "title": { "ja": "相手の趣味を聞く", "en": "Ask about their free time" }, "hints": ["週末に何をしているか聞きましょう", "What do you do …?", "What do you do on weekends?"] },
+            { "id": "accept", "title": { "ja": "誘いを受ける", "en": "Accept the invitation" }, "hints": ["誘いを受けて、いつやるか聞きましょう", "I'd love to! When …?", "I'd love to! When do you usually play?"] }
+          ]
+        },
+        {
+          "tutor": "You are Sota, the student's Japanese friend, speaking at natural speed. Open by saying hi and asking how work has been. When they say they need a hobby, recommend bouldering; when asked, explain beginners can rent shoes at the gym, and invite them to come on Saturday. After they agree, ask if they had any hobbies before, and encourage them to start again.",
+          "tasks": [
+            { "id": "need", "title": { "ja": "新しい趣味がほしいと伝える", "en": "Say you need a new hobby" }, "hints": ["仕事ばかりで、新しい趣味がほしいと伝えましょう", "I've been working too much. I really need …", "I've been working too much. I really need a new hobby."] },
+            { "id": "worry", "title": { "ja": "難しくないか心配を伝える", "en": "Say you're worried it's hard" }, "hints": ["初心者でもできるか聞きましょう", "It sounds fun, but isn't it …?", "It sounds fun, but isn't it hard for beginners?"] },
+            { "id": "agree", "title": { "ja": "誘いを受けて時間を聞く", "en": "Say yes and ask the time" }, "hints": ["やってみると言って、何時に会うか聞きましょう", "Okay, I'll give it a try. What time …?", "Okay, I'll give it a try. What time shall we meet?"] },
+            { "id": "past", "title": { "ja": "やめてしまった趣味を話す", "en": "Talk about a hobby you gave up" }, "hints": ["昔やっていた趣味と、やめた理由を話しましょう", "I used to …, but I stopped when …", "I used to play guitar in a band, but I stopped when I moved here."] }
+          ]
+        }
+      ]
+    }
+  ]
+}

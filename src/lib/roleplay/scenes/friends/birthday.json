@@ -1,0 +1,82 @@
+{
+  "id": "birthday",
+  "category": "friends",
+  "title": { "ja": "誕生日をお祝いする", "en": "Celebrating a friend's birthday" },
+  "summary": { "ja": "友だちの誕生日をお祝いして、プレゼントを渡し、近況を話す。", "en": "Wish a friend happy birthday, give them a present and catch up." },
+  "setting": "A café in Tokyo on a weekday afternoon. It's the birthday of Olivia, a friend from abroad, and their Japanese friend has brought a present to give them.",
+  "image": "",
+  "studentRole": "a",
+  "roles": [
+    {
+      "id": "a",
+      "name": { "ja": "日本人の友だち", "en": "Japanese friend" },
+      "persona": "A Japanese person meeting a friend on their birthday.",
+      "levels": [
+        {
+          "tutor": "You are Olivia, the student's friend from abroad, and it's your birthday today. Speak slowly, in short simple sentences. Open by arriving at the café, saying hi and sitting down; wait for them to wish you happy birthday. When given a present, open it and say you love it. When asked, say you're having dinner with friends tonight.",
+          "tasks": [
+            { "id": "wish", "title": { "ja": "誕生日おめでとうと言う", "en": "Say happy birthday" }, "hints": ["誕生日おめでとうと言いましょう", "Happy birthday, …! I hope …", "Happy birthday, Olivia! I hope you have a great day."] },
+            { "id": "gift", "title": { "ja": "プレゼントを渡す", "en": "Give a present" }, "hints": ["プレゼントを渡しましょう", "This is for you. I hope …", "This is for you. I hope you like it."] },
+            { "id": "plans", "title": { "ja": "今日の予定を聞く", "en": "Ask about their plans" }, "hints": ["誕生日に何をするか聞きましょう", "What are you doing …?", "What are you doing for your birthday?"] }
+          ]
+        },
+        {
+          "tutor": "You are Olivia, the student's friend from abroad, and it's your birthday today. Speak at natural pace. Open by arriving at the café, saying hi and sitting down; wait for them to wish you happy birthday. Open the present happily and ask why they chose it. When asked about your plans for the year, say you want to run a half marathon.",
+          "tasks": [
+            { "id": "wish", "title": { "ja": "お祝いしてプレゼントを渡す", "en": "Say happy birthday and give the present" }, "hints": ["お祝いを言って、プレゼントを渡しましょう", "Happy birthday! I got you …", "Happy birthday! I got you a little something."] },
+            { "id": "why", "title": { "ja": "選んだ理由を伝える", "en": "Explain why you chose it" }, "hints": ["そのプレゼントを選んだ理由を伝えましょう", "I chose it because you …", "I chose it because you said you love tea."] },
+            { "id": "cake", "title": { "ja": "ケーキをごちそうする", "en": "Offer to buy cake" }, "hints": ["今日はおごるよと言って、ケーキをすすめましょう", "This is my treat. Let's get …!", "This is my treat. Let's get some cake!"] },
+            { "id": "year", "title": { "ja": "今年の目標を聞く", "en": "Ask about their plans for the year" }, "hints": ["今年やりたいことを聞きましょう", "Do you have any … for this year?", "Do you have any big plans for this year?"] }
+          ]
+        },
+        {
+          "tutor": "You are Olivia, the student's friend from abroad, and it's your birthday today. Speak at natural speed, warm and chatty. Open by arriving at the café, saying hi and sitting down; wait for them to wish you happy birthday. Open the present and thank them. Later, accept their offer of help happily, and when they promise to visit, say you'd love that.",
+          "tasks": [
+            { "id": "wish", "title": { "ja": "心をこめてお祝いする", "en": "Wish them happy birthday warmly" }, "hints": ["自分の言葉でお祝いを伝えましょう", "Happy birthday! I hope this year is …", "Happy birthday! I hope this year is your best one yet."] },
+            { "id": "gift", "title": { "ja": "一言そえてプレゼントを渡す", "en": "Give your present with a few words" }, "hints": ["相手のことを考えて選んだと伝えて渡しましょう", "I saw this and thought of you. I know you …", "I saw this and thought of you. I know you love cooking."] },
+            { "id": "help", "title": { "ja": "手伝いを申し出る", "en": "Offer to help" }, "hints": ["引っ越しの準備を手伝うと申し出ましょう", "If you need help with …, just …", "If you need help with anything before you move, just ask."] },
+            { "id": "visit", "title": { "ja": "会いに行くと約束する", "en": "Promise to visit" }, "hints": ["向こうに会いに行くと伝えましょう", "I'll definitely come and …!", "I'll definitely come and visit you there!"] }
+          ],
+          "twist": {
+            "after": "gift",
+            "tutor": "After thanking them for the present, say you have some big news: you've been offered a job in Singapore, and you'll move there in two months. Say you're excited but a little nervous, and that you'll miss everyone.",
+            "task": { "id": "news", "title": { "ja": "大きな知らせに反応する", "en": "React to their big news" }, "hints": ["おめでとうと伝えて、さみしくなると言いましょう", "That's amazing news! Congratulations! I'll really miss …", "That's amazing news! Congratulations! I'll really miss you, though."] }
+          }
+        }
+      ]
+    },
+    {
+      "id": "b",
+      "name": { "ja": "誕生日の友だち", "en": "Birthday friend" },
+      "persona": "Olivia, a friend from abroad who lives in Tokyo, celebrating their birthday.",
+      "levels": [
+        {
+          "tutor": "You are Yuta, the student's Japanese friend. Speak slowly, in short simple sentences. Open by sitting down, saying \"Happy birthday!\" and giving them a small present (a mug). Then ask what they're doing for their birthday.",
+          "tasks": [
+            { "id": "thanks", "title": { "ja": "お礼を言う", "en": "Say thank you" }, "hints": ["うれしい気持ちでお礼を言いましょう", "Thank you so …!", "Thank you so much, Yuta!"] },
+            { "id": "like", "title": { "ja": "プレゼントが気に入ったと伝える", "en": "Say you like the present" }, "hints": ["プレゼントが気に入ったと伝えましょう", "I love …! It's …", "I love it! It's so cute."] },
+            { "id": "plans", "title": { "ja": "今日の予定を話す", "en": "Say your birthday plans" }, "hints": ["今日の予定を話しましょう", "I'm having … with …", "I'm having dinner with friends tonight."] }
+          ]
+        },
+        {
+          "tutor": "You are Yuta, the student's Japanese friend, speaking at natural pace. Open by sitting down, saying happy birthday and giving them a small present (a tea set). When asked, say you chose it because they once said they love tea. Offer to buy them a piece of cake. Ask about their plans for the year.",
+          "tasks": [
+            { "id": "open", "title": { "ja": "開けていいか聞く", "en": "Ask if you can open it" }, "hints": ["今開けてもいいか聞きましょう", "Can I …?", "Can I open it now?"] },
+            { "id": "why", "title": { "ja": "どうして選んだか聞く", "en": "Ask how they chose it" }, "hints": ["どうして好きなものがわかったのか聞きましょう", "How did you know …?", "How did you know I love tea?"] },
+            { "id": "cake", "title": { "ja": "ケーキのお誘いを受ける", "en": "Accept the offer of cake" }, "hints": ["お礼を言って、食べたいケーキを伝えましょう", "Really? That's so … I'll have …", "Really? That's so kind. I'll have the chocolate cake."] },
+            { "id": "year", "title": { "ja": "今年の目標を話す", "en": "Talk about your plans for the year" }, "hints": ["今年やってみたいことを話しましょう", "This year I want to …", "This year I want to try something new, like surfing."] }
+          ]
+        },
+        {
+          "tutor": "You are Yuta, the student's Japanese friend, speaking at natural speed. Open by sitting down, saying happy birthday and giving them a present (a cookbook, because they love cooking). When they share their news, be surprised and happy for them, say you'll miss them, and offer to help with the move. Ask how they feel about moving.",
+          "tasks": [
+            { "id": "thank", "title": { "ja": "心をこめてお礼を言う", "en": "Thank them warmly" }, "hints": ["気をつかってくれたことにお礼を言いましょう", "You didn't have to … This is so …", "You didn't have to get me anything. This is so thoughtful."] },
+            { "id": "news", "title": { "ja": "大きな知らせを伝える", "en": "Share your big news" }, "hints": ["シンガポールで仕事が決まったと伝えましょう", "I have some news. I've been offered … in …", "I have some news. I've been offered a job in Singapore."] },
+            { "id": "feel", "title": { "ja": "今の気持ちを話す", "en": "Say how you feel about it" }, "hints": ["楽しみな気持ちと不安な気持ちを話しましょう", "I'm excited, but also a bit …", "I'm excited, but also a bit nervous about moving."] },
+            { "id": "visit", "title": { "ja": "遊びに来てと誘う", "en": "Invite them to visit" }, "hints": ["落ち着いたら遊びに来てと誘いましょう", "You have to come and … once I'm …", "You have to come and visit once I'm settled in."] }
+          ]
+        }
+      ]
+    }
+  ]
+}
