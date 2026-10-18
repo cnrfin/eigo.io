@@ -10,7 +10,8 @@ import { INTRO_FAIL_MS, INTRO_REVEAL_MS, introFailed, introLive, newIntro, pickI
 import ChatPanel from './ChatPanel'
 import WordList, { WordsButton } from './WordList'
 import AiCards, { type HearFn, type ShownCard } from './AiCards'
-import { PanelPicker, RoleplayMission, type PanelHear, type PanelState } from './AiPanel'
+import { PanelPicker, RoleplayMission, type PanelState } from './AiPanel'
+import { panelIntent, type PanelIntent } from '@/lib/roleplay/intent'
 import type { SceneSummary } from '@/lib/roleplay/types'
 import { shrinkInto } from './save-fly'
 import { cueCard, fitDraft, lastExchange, mayHaveCard, mergeCard, tutorItemId, type Card, type SayStyle } from '@/lib/ai-tutor/cards'
@@ -64,8 +65,6 @@ const RESTART_CUE = /\b(?:I'll|I will|let me|let's|let us|we'll)\s+(?:start|begi
 // without calling a tool, so tools alone made students ask twice). Statements only, never questions.
 const OPEN_CUE = /\b(?:I'll|I will|let me|let's|let us|we'll)\s+(?:open|bring up|pull up|put up|start|jump (?:back )?into|go back to|get back to|continue(?: with)?)\s+(?:the|your|our|that|this)?\s*(?:course|lesson)\b/i
 const OPEN_VERB = /\b(?:I'll|I will|let me|let's|let us|we'll)\s+(?:open|bring up|pull up|put up|start)\b/i
-/** opens the role-play list on the AI panel (free talk only): "Let's look at some role-plays" */
-const ROLEPLAY_CUE = /\b(?:let'?s|let us|we can|you can|here are|have a look at|take a look at)\b[^.?!]*\brole[- ]?plays?\b/i
 const LESSON_NO = /\blesson\s+(\d{1,2})\b/i
 const CLOSE_CUE = /\b(?:I'll|I will|let me|let's|let us|we'll)\s+(?:close|stop|put away)\s+(?:the|this|our)?\s*(?:course|lesson|slides)\b|\b(?:switch|move|go|change)\s+(?:over\s+)?to\s+free\s+talk\b|\blet's just (?:chat|talk)\b/i
 const BOARD_ON_CUE = /\b(?:I'll|I will|let me|let's|let us|we'll)\s+(?:open|bring up|pull up|put up|show|switch to|use)\s+(?:the|a|our)?\s*whiteboard\b/i
@@ -218,8 +217,10 @@ export default function AiRoom(props: Props) {
   const [shown, setShown] = useState<ShownCard | null>(null)
   /** the card listens to what the student says from when it appears ("save it", the phrase…) */
   const cardHear = useRef<HearFn | null>(null)
-  /** the AI panel's picker listens too ("the café one", "let's start") */
-  const panelHear = useRef<PanelHear | null>(null)
+  /** the AI panel listens too: "show me the role-plays", "let's do the café one", "close it" (lib/roleplay/intent.ts) */
+  const panelSaid = useRef<(who: 'student' | 'tutor', text: string) => PanelIntent | null>(() => null)
+  const panelDo = useRef<(i: PanelIntent) => void>(() => {})
+  const panelHeard = useRef('')
   const [undo, setUndo] = useState<{ id: number; itemId: string; term: string; already: boolean } | null>(null)
   const cardFrom = useRef(0)
   const cardSeq = useRef(0)
@@ -368,7 +369,20 @@ export default function AiRoom(props: Props) {
         if (assistTimer.current) clearTimeout(assistTimer.current)
         assistTimer.current = setTimeout(() => void runAssist(), 1300)
       }
-      if (from === 'student' && panelHear.current) panelHear.current(lines.current[lines.current.length - 1]?.text ?? '')
+      if (from === 'student') {
+        // the student's own words act at once (each command once per line)
+        const L = lines.current
+        const line = L[L.length - 1]
+        const parts = line?.text.split(/(?<=[.!?。？！])\s*/).filter(Boolean) ?? []
+        const said = parts[parts.length - 1] ?? ''
+        const intent = panelSaid.current('student', said)
+        // once per sentence: the same command said again later (after a tap) still counts
+        const key = intent ? `${L.length}:${parts.length}:${JSON.stringify(intent)}` : ''
+        if (intent && key !== panelHeard.current) {
+          panelHeard.current = key
+          panelDo.current(intent)
+        }
+      }
       if (from === 'student' && shownRef.current) {
         cardHear.current?.(
           lines.current
@@ -1039,7 +1053,7 @@ export default function AiRoom(props: Props) {
   const openPicker = useCallback(
     (mode: 'rp' | 'course' = 'rp') => {
       if (whiteboardRef.current) showBoard.current(false)
-      setPanel({ view: 'picker', mode })
+      setPanel({ view: 'picker', mode, rpSel: null, courseSel: null })
       void aiRoleplays().then(setRpList)
       void aiCourses().then(setCourseList)
       void act({ kind: 'panel', what: 'picker' })
@@ -1073,11 +1087,37 @@ export default function AiRoom(props: Props) {
     },
     [act, info.bookingId, onOpenLesson],
   )
-  const openPickerRef = useRef(openPicker)
-  const panelRef = useRef(panel)
+  // the role-play list is needed for voice ("let's do the café one") even before the panel opens
   useEffect(() => {
-    openPickerRef.current = openPicker
-    panelRef.current = panel
+    if (freeTalk && rpList === null) void aiRoleplays().then(setRpList)
+  }, [freeTalk, rpList])
+  // what's said → what the panel does (free talk only, while the AI tutor is connected)
+  useEffect(() => {
+    panelSaid.current = (who, text) => {
+      if (!freeTalk || status !== 'live') return null
+      const mode = panel?.view === 'picker' ? panel.mode : 'rp'
+      const items = {
+        rp: (rpList ?? []).map((x) => ({ id: x.id, en: x.title.en, ja: x.title.ja })),
+        course: (courseList ?? []).map((c) => ({ id: c.id, en: c.title, ja: c.titleJa })),
+      }
+      return panelIntent(text, who, panel ? panel.view : null, items, mode)
+    }
+    panelDo.current = (i) => {
+      if (i.kind === 'open') return openPicker(i.mode)
+      if (i.kind === 'close') return closePanel()
+      if (i.kind === 'mode') return setPanel((p) => (p?.view === 'picker' ? { ...p, mode: i.mode } : p))
+      if (i.kind === 'pick')
+        return setPanel((p) => (p?.view === 'picker' ? (p.mode === 'course' ? { ...p, courseSel: i.id } : { ...p, rpSel: i.id }) : p))
+      // start: a course (course mode), or a role-play by name or the one that's chosen
+      if (panel?.view === 'picker' && panel.mode === 'course') {
+        const c = courseList?.find((x) => x.id === (i.id ?? panel.courseSel)) ?? courseList?.[0]
+        if (c) void openCourseFromPanel(c)
+        return
+      }
+      const id = i.id ?? (panel?.view === 'picker' ? panel.rpSel : null)
+      const sc = rpList?.find((x) => x.id === id) ?? (i.id ? null : rpList?.[0])
+      if (sc) void startRoleplay(sc)
+    }
   })
 
   /* ---------- layout: the same slide + tiles layout as a lesson with Connor ---------- */
@@ -1169,7 +1209,7 @@ export default function AiRoom(props: Props) {
       const s = sentences[sentences.length - 1] ?? ''
       if (!s || s.trim().endsWith('?')) return
       const named = OPEN_VERB.test(s) ? titles.current.find((c) => c.names.some((n) => n.length > 3 && s.toLowerCase().includes(n))) : undefined
-      const kind = ROLEPLAY_CUE.test(s) ? 'roleplays' : BOARD_ON_CUE.test(s) ? 'board_on' : BOARD_OFF_CUE.test(s) ? 'board_off' : CLOSE_CUE.test(s) ? 'close' : OPEN_CUE.test(s) || named ? 'open' : null
+      const kind = panelSaid.current('tutor', s) ? 'panel' : BOARD_ON_CUE.test(s) ? 'board_on' : BOARD_OFF_CUE.test(s) ? 'board_off' : CLOSE_CUE.test(s) ? 'close' : OPEN_CUE.test(s) || named ? 'open' : null
       if (!kind) return
       const key = `${kind}:${line.text.slice(0, 60)}:${sentences.length}`
       if (acted.current.has(key)) return
@@ -1179,9 +1219,10 @@ export default function AiRoom(props: Props) {
         if (acted.current.has(key)) return
         acted.current.add(key)
         const slidesOpen = live.current.slides.length > 0
-        if (kind === 'roleplays') {
-          // free talk only: with a course open, "role-play" on a slide never opens anything
-          if (!slidesOpen && panelRef.current?.view !== 'roleplay') openPickerRef.current('rp')
+        if (kind === 'panel') {
+          // free talk only (panelSaid checks): with a course open, "role-play" on a slide never opens anything
+          const i = panelSaid.current('tutor', s)
+          if (i) panelDo.current(i)
         } else if (kind === 'board_on' && !whiteboardRef.current) {
           showBoard.current(true)
           void act({ kind: 'view', what: 'board_on' })
@@ -1203,7 +1244,7 @@ export default function AiRoom(props: Props) {
             onOpenLesson(res.open)
           })
         }
-      }, 500)
+      }, kind === 'panel' && /[.!]\s*$/.test(s) ? 120 : 500) // a finished sentence about the panel acts at once
     }
   }, [act, onCloseCourse, onOpenLesson, info.bookingId, props.open?.courseId])
   useEffect(() => () => void (cueTimer.current && clearTimeout(cueTimer.current)), [])
@@ -1400,10 +1441,12 @@ export default function AiRoom(props: Props) {
                   t={t}
                   lang={info.uiLang === 'en' ? 'en' : 'ja'}
                   mode={panel.mode}
-                  setMode={(mode) => setPanel({ view: 'picker', mode })}
+                  setMode={(mode) => setPanel({ ...panel, mode })}
                   scenes={rpList}
                   courses={courseList}
-                  hearRef={panelHear}
+                  rpSel={panel.rpSel}
+                  courseSel={panel.courseSel}
+                  onPick={(id) => setPanel(panel.mode === 'course' ? { ...panel, courseSel: id } : { ...panel, rpSel: id })}
                   onStartRoleplay={(sc) => void startRoleplay(sc)}
                   onOpenCourse={(c) => void openCourseFromPanel(c)}
                 />

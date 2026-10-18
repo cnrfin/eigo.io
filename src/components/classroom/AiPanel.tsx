@@ -1,7 +1,7 @@
 'use client'
 /* eslint-disable @next/next/no-img-element -- scene and course pictures, as in the course picker */
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useMemo, useRef } from 'react'
 import { LEVEL_NAMES, roleOf, otherRole, tasksFor, type LevelIndex, type RoleId, type Scene } from '@/lib/roleplay/types'
 import type { SceneSummary } from '@/lib/roleplay/types'
 import type { PanelCourse } from '@/lib/classroom/client'
@@ -18,10 +18,10 @@ import { Ico } from './Icons'
  */
 
 export type PanelState =
-  | { view: 'picker'; mode: 'rp' | 'course' }
+  /** the picker; rpSel / courseSel = what's chosen (null = the first one) */
+  | { view: 'picker'; mode: 'rp' | 'course'; rpSel: string | null; courseSel: string | null }
   | { view: 'roleplay'; scene: Scene; role: RoleId; level: LevelIndex }
 
-export type PanelHear = (said: string) => void
 type Lang = 'ja' | 'en'
 
 const dots = (cleared: number) => (
@@ -34,18 +34,6 @@ const dots = (cleared: number) => (
 
 /* ---------------- the picker ---------------- */
 
-const START = /\b(?:start|let'?s (?:do|try|go)|that one|this one|go for)\b|はじめ|始め|これ(?:に|で)|やります|やりたい/i
-const COURSE_WORDS = /\bcourses?\b|コース/i
-const RP_WORDS = /\brole[- ]?plays?\b|ロールプレイ/i
-const ORDINALS: [RegExp, number][] = [
-  [/\b(?:first|1st)\b|1つ目|一つ目|ひとつめ/i, 0],
-  [/\b(?:second|2nd)\b|2つ目|二つ目|ふたつめ/i, 1],
-  [/\b(?:third|3rd)\b|3つ目|三つ目|みっつめ/i, 2],
-]
-const fold = (s: string) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
-const STOP = new Set(['ordering', 'with', 'your', 'yourself', 'from', 'about', 'that', 'this', 'at', 'the', 'an', 'and'])
-const keyWords = (en: string) => fold(en).split(/[^a-z]+/).filter((w) => w.length >= 4 && !STOP.has(w))
-
 export function PanelPicker({
   t,
   lang,
@@ -53,7 +41,9 @@ export function PanelPicker({
   setMode,
   scenes,
   courses,
-  hearRef,
+  rpSel,
+  courseSel,
+  onPick,
   onStartRoleplay,
   onOpenCourse,
 }: {
@@ -63,12 +53,13 @@ export function PanelPicker({
   setMode: (m: 'rp' | 'course') => void
   scenes: SceneSummary[] | null
   courses: PanelCourse[] | null
-  hearRef: { current: PanelHear | null }
+  /** what's chosen (null = the first one); the classroom keeps it, so voice can choose too */
+  rpSel: string | null
+  courseSel: string | null
+  onPick: (id: string) => void
   onStartRoleplay: (s: SceneSummary) => void
   onOpenCourse: (c: PanelCourse) => void
 }) {
-  const [rpSel, setRpSel] = useState<string | null>(null)
-  const [courseSel, setCourseSel] = useState<string | null>(null)
   const rp = scenes?.find((s) => s.id === rpSel) ?? scenes?.[0] ?? null
   const course = courses?.find((c) => c.id === courseSel) ?? courses?.[0] ?? null
   const list = useRef<HTMLDivElement | null>(null)
@@ -76,40 +67,6 @@ export function PanelPicker({
   const start = () => {
     if (mode === 'rp' && rp) onStartRoleplay(rp)
     if (mode === 'course' && course) onOpenCourse(course)
-  }
-  const startRef = useRef(start)
-  useEffect(() => {
-    startRef.current = start
-  })
-
-  // voice: "role-plays" / "courses" switches; a title, a word from it, or "the first one" picks; "let's start" starts
-  const state = useRef({ mode, scenes, courses })
-  useEffect(() => {
-    state.current = { mode, scenes, courses }
-  })
-  useEffect(() => {
-    hearRef.current = (said: string) => {
-      const { mode: m, scenes: S, courses: C } = state.current
-      const tail = said.slice(-160)
-      if (m === 'course' && RP_WORDS.test(tail)) return setMode('rp')
-      if (m === 'rp' && COURSE_WORDS.test(tail) && !RP_WORDS.test(tail)) return setMode('course')
-      const f = fold(tail)
-      const items: { id: string; en: string; ja: string }[] =
-        m === 'rp' ? (S ?? []).map((s) => ({ id: s.id, en: s.title.en, ja: s.title.ja })) : (C ?? []).map((c) => ({ id: c.id, en: c.title, ja: c.titleJa }))
-      let hit = items.find((x) => tail.includes(x.ja.slice(0, 4)) || keyWords(x.en).some((w) => f.includes(w)))
-      if (!hit) for (const [re, i] of ORDINALS) if (re.test(tail) && items[i]) hit = items[i]
-      if (hit) (m === 'rp' ? setRpSel : setCourseSel)(hit.id)
-      if (START.test(tail)) window.setTimeout(() => startRef.current(), hit ? 250 : 0)
-    }
-    return () => {
-      hearRef.current = null
-    }
-  }, [hearRef, setMode])
-
-  const pick = (id: string) => {
-    const y = list.current?.scrollTop ?? 0
-    ;(mode === 'rp' ? setRpSel : setCourseSel)(id)
-    requestAnimationFrame(() => list.current && (list.current.scrollTop = y))
   }
 
   const lv = (n: LevelIndex) => LEVEL_NAMES[n][lang]
@@ -165,10 +122,8 @@ export function PanelPicker({
       <div className="apn-list" ref={list}>
         {loading && <div className="apn-load" />}
         {mode === 'rp'
-          ? (scenes ?? [])
-              .filter((s) => s.id !== rp?.id)
-              .map((s) => (
-                <button key={s.id} className="apn-row" onClick={() => pick(s.id)}>
+          ? (scenes ?? []).map((s) => (
+                <button key={s.id} className={`apn-row${s.id === rp?.id ? ' on' : ''}`} aria-pressed={s.id === rp?.id} onClick={() => onPick(s.id)}>
                   <img src={s.image} alt="" />
                   <span className="apn-rt">
                     <b>{s.title[lang]}</b>
@@ -177,10 +132,8 @@ export function PanelPicker({
                   {dots(s.cleared)}
                 </button>
               ))
-          : (courses ?? [])
-              .filter((c) => c.id !== course?.id)
-              .map((c) => (
-                <button key={c.id} className="apn-row" onClick={() => pick(c.id)}>
+          : (courses ?? []).map((c) => (
+                <button key={c.id} className={`apn-row${c.id === course?.id ? ' on' : ''}`} aria-pressed={c.id === course?.id} onClick={() => onPick(c.id)}>
                   {c.image ? <img src={c.image} alt="" /> : <span className="apn-ph" />}
                   <span className="apn-rt">
                     <b>{lang === 'ja' ? c.titleJa : c.title}</b>
