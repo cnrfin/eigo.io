@@ -1,0 +1,80 @@
+{
+  "id": "recommend-japan",
+  "category": "friends",
+  "title": { "ja": "日本のおすすめを紹介する", "en": "Recommending things to do in Japan" },
+  "summary": { "ja": "日本に遊びに来た友だちに、おすすめの食べ物や場所、行き方を教える。", "en": "Tell a visiting friend what to eat, where to go and how to get there." },
+  "setting": "A café in Tokyo on a Sunday morning. A friend from abroad has just arrived for a one-week holiday, their first time in Japan, and wants ideas for the week.",
+  "image": "",
+  "studentRole": "a",
+  "roles": [
+    {
+      "id": "a",
+      "name": { "ja": "あなた", "en": "You" },
+      "persona": "A Japanese person who lives in Tokyo and is meeting a friend visiting Japan.",
+      "levels": [
+        {
+          "tutor": "You are Chris, the student's friend from abroad, in Japan for one week for the first time. Speak slowly, in short simple sentences, and sound excited. Open by saying hi and asking what food you should try. Then ask where you should go in Tokyo, and how to get there. At the end, thank them.",
+          "tasks": [
+            { "id": "food", "title": { "ja": "おすすめの食べ物を伝える", "en": "Recommend a food" }, "hints": ["おすすめの食べ物を伝えましょう", "You should try … It's …!", "You should try ramen. It's delicious!"] },
+            { "id": "place", "title": { "ja": "おすすめの場所を伝える", "en": "Recommend a place" }, "hints": ["おすすめの場所を伝えましょう", "You should go to … It's …", "You should go to Asakusa. It's beautiful."] },
+            { "id": "how", "title": { "ja": "行き方を伝える", "en": "Say how to get there" }, "hints": ["行き方を伝えましょう", "You can go by …", "You can go by train."] },
+            { "id": "enjoy", "title": { "ja": "楽しんでねと伝える", "en": "Wish them a good trip" }, "hints": ["旅行を楽しんでねと伝えましょう", "Have a … time in …!", "Have a great time in Japan!"] }
+          ]
+        },
+        {
+          "tutor": "You are Chris, the student's friend from abroad, in Japan for one week, speaking at natural pace. Open by saying hi and saying you want to try real Japanese food this week. When asked what you like, say you love noodles but you're not sure about raw fish. Then ask about a good day trip from Tokyo, and how to get around by train.",
+          "tasks": [
+            { "id": "like", "title": { "ja": "好きな食べ物を聞く", "en": "Ask what food they like" }, "hints": ["どんな食べ物が好きか聞きましょう", "What kind of food …?", "What kind of food do you like?"] },
+            { "id": "food", "title": { "ja": "好みに合う料理をすすめる", "en": "Recommend a dish they'll like" }, "hints": ["好みに合わせて料理をすすめましょう", "Then you should try … It's …", "Then you should try udon. It's thick and really tasty."] },
+            { "id": "trip", "title": { "ja": "日帰り旅行先をすすめる", "en": "Recommend a day trip" }, "hints": ["日帰りで行ける場所をすすめましょう", "If you have time, you should visit … It's only …", "If you have time, you should visit Kamakura. It's only an hour away."] },
+            { "id": "ic", "title": { "ja": "ICカードをすすめる", "en": "Recommend an IC card" }, "hints": ["交通系ICカードを使うようすすめましょう", "I recommend getting … It makes …", "I recommend getting an IC card. It makes trains easy."] }
+          ]
+        },
+        {
+          "tutor": "You are Chris, the student's friend from abroad, chatty and speaking at natural speed. You have a week and want to see the \"real Japan\", not only the famous sights. Open by saying hi and saying that. When asked, say you love nature and want to relax. When they recommend a place, ask when is a good time to go. Then ask where locals eat around here.",
+          "tasks": [
+            { "id": "ask", "title": { "ja": "相手の興味を聞く", "en": "Ask what they're interested in" }, "hints": ["何に興味があるか、例をあげて聞きましょう", "What are you interested in: …?", "What are you interested in: food, nature or history?"] },
+            { "id": "suggest", "title": { "ja": "理由をつけて行き先をすすめる", "en": "Suggest a place, with a reason" }, "hints": ["箱根をすすめて、理由も伝えましょう", "Have you thought about …? It has …", "Have you thought about Hakone? It has hot springs and great views."] },
+            { "id": "timing", "title": { "ja": "行く時のアドバイスをする", "en": "Give advice on when to go" }, "hints": ["平日に行くようアドバイスしましょう", "Try to go on … It gets …", "Try to go on a weekday. It gets really crowded at weekends."] },
+            { "id": "local", "title": { "ja": "地元のお店をすすめる", "en": "Recommend somewhere local to eat" }, "hints": ["地元の人が行く居酒屋をすすめましょう", "If you want somewhere local, there's … near …", "If you want somewhere local, there's a great izakaya near my place."] },
+            { "id": "offer", "title": { "ja": "案内しようと申し出る", "en": "Offer to show them around" }, "hints": ["週末に案内しようかと申し出ましょう", "If you like, I could …", "If you like, I could show you around on Saturday."] }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b",
+      "name": { "ja": "遊びに来た友だち", "en": "Visiting friend" },
+      "persona": "Chris, a friend from abroad visiting Japan for the first time, for one week.",
+      "levels": [
+        {
+          "tutor": "You are Aya, the student's Japanese friend who lives in Tokyo. Speak slowly, in short simple sentences. Open by welcoming them to Japan and asking how they are. When asked, recommend ramen and Asakusa, and say it's easy to go by train.",
+          "tasks": [
+            { "id": "food", "title": { "ja": "おすすめの食べ物を聞く", "en": "Ask what food to try" }, "hints": ["おすすめの食べ物を聞きましょう", "What food should I …?", "What food should I try?"] },
+            { "id": "place", "title": { "ja": "おすすめの場所を聞く", "en": "Ask where to go" }, "hints": ["東京でどこへ行けばいいか聞きましょう", "Where should I …?", "Where should I go in Tokyo?"] },
+            { "id": "thanks", "title": { "ja": "お礼を言う", "en": "Say thank you" }, "hints": ["お礼を言いましょう", "Thanks! That sounds …", "Thanks! That sounds great."] }
+          ]
+        },
+        {
+          "tutor": "You are Aya, the student's Japanese friend, speaking at natural pace. Open by welcoming them to Japan and asking how long they're staying. When asked, recommend udon, and Kamakura for a day trip. When asked how to get there, say it's about an hour by train from Tokyo Station.",
+          "tasks": [
+            { "id": "stay", "title": { "ja": "滞在期間を伝える", "en": "Say how long you're staying" }, "hints": ["どれくらい滞在するか伝えましょう", "I'm here for …", "I'm here for a week."] },
+            { "id": "food", "title": { "ja": "好みを伝えておすすめを聞く", "en": "Ask for a food recommendation" }, "hints": ["好きな食べ物を伝えて、おすすめを聞きましょう", "I love … What do you …?", "I love noodles. What do you recommend?"] },
+            { "id": "trip", "title": { "ja": "日帰り旅行について聞く", "en": "Ask about a day trip" }, "hints": ["日帰りで行ける場所を聞きましょう", "Is there a good place for …?", "Is there a good place for a day trip?"] },
+            { "id": "how", "title": { "ja": "行き方を聞く", "en": "Ask how to get there" }, "hints": ["東京からの行き方を聞きましょう", "How do I get … from …?", "How do I get there from Tokyo?"] }
+          ]
+        },
+        {
+          "tutor": "You are Aya, the student's Japanese friend, speaking at natural speed. Open by welcoming them and asking what they've done so far. When asked, recommend Hakone (hot springs and views of Mount Fuji), suggest going on a weekday because weekends are crowded, and recommend a small izakaya near your place.",
+          "tasks": [
+            { "id": "sofar", "title": { "ja": "これまでのことを話す", "en": "Say what you've done so far" }, "hints": ["行った場所と、次にしたいことを話しましょう", "So far I've been to …, but I'd like to …", "So far I've been to Asakusa, but I'd like to see somewhere quieter."] },
+            { "id": "nature", "title": { "ja": "自然を楽しめる場所を聞く", "en": "Ask for somewhere with nature" }, "hints": ["東京の外でのんびりできる場所を聞きましょう", "Do you know anywhere … where I can …?", "Do you know anywhere outside Tokyo where I can relax?"] },
+            { "id": "when", "title": { "ja": "いつ行くといいか聞く", "en": "Ask when to go" }, "hints": ["平日と週末どちらがいいか聞きましょう", "Is it better to go on … or …?", "Is it better to go on a weekday or at the weekend?"] },
+            { "id": "eat", "title": { "ja": "地元の人が行く店を聞く", "en": "Ask where locals eat" }, "hints": ["地元の人が行くお店を聞きましょう", "Where do locals …?", "Where do locals like to eat around here?"] },
+            { "id": "return", "title": { "ja": "お礼に自分の国に誘う", "en": "Thank them and invite them back" }, "hints": ["今度は自分の国を案内すると伝えましょう", "If you ever visit …, I'll …", "If you ever visit my country, I'll show you around."] }
+          ]
+        }
+      ]
+    }
+  ]
+}

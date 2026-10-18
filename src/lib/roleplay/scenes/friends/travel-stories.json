@@ -1,0 +1,79 @@
+{
+  "id": "travel-stories",
+  "category": "friends",
+  "title": { "ja": "旅行の思い出を話す", "en": "Sharing travel stories" },
+  "summary": { "ja": "旅行で行った場所やよかったこと、ハプニングを話して、相手の旅の話も聞く。", "en": "Talk about where you went, the best part and what went wrong, and hear their stories too." },
+  "setting": "A café on a weekday evening. The student has just come back from a four-day trip to Okinawa and is catching up with a friend.",
+  "image": "",
+  "studentRole": "a",
+  "roles": [
+    {
+      "id": "a",
+      "name": { "ja": "あなた", "en": "You" },
+      "persona": "A Japanese person who has just come back from a four-day trip to Okinawa.",
+      "levels": [
+        {
+          "tutor": "You are Ben, the student's friend from abroad. Speak slowly, in short simple sentences. Open by saying hi and asking how their holiday was. Ask where they went and what was good, and ask to see a photo. When asked about your week, say it was busy with work.",
+          "tasks": [
+            { "id": "where", "title": { "ja": "行った場所を伝える", "en": "Say where you went" }, "hints": ["どこに何日行ったか伝えましょう", "I went to … for …", "I went to Okinawa for four days."] },
+            { "id": "good", "title": { "ja": "よかったことを伝える", "en": "Say what was good" }, "hints": ["よかったことを伝えましょう", "The … was amazing!", "The food was amazing!"] },
+            { "id": "photo", "title": { "ja": "写真を見せる", "en": "Show a photo" }, "hints": ["写真を見せて説明しましょう", "Look, this is …", "Look, this is the beach in Okinawa."] },
+            { "id": "ask", "title": { "ja": "相手のことを聞く", "en": "Ask about their week" }, "hints": ["相手の一週間について聞きましょう", "How was your …?", "How was your week, Ben?"] }
+          ]
+        },
+        {
+          "tutor": "You are Ben, the student's friend from abroad, speaking at natural pace. Open by saying hi and saying you saw their holiday photos and want to hear all about it. Ask who they went with, what the best part was, and whether anything went wrong. When asked about your plans, say you're thinking about going to Kyoto in December.",
+          "tasks": [
+            { "id": "where", "title": { "ja": "行き先と一緒に行った人を伝える", "en": "Say where and who with" }, "hints": ["どこに誰と行ったか伝えましょう", "I went to … with …", "I went to Okinawa with my sister for four days."] },
+            { "id": "best", "title": { "ja": "一番よかったことを話す", "en": "Describe the best part" }, "hints": ["一番よかったことを話しましょう", "The best part was … It was …", "The best part was snorkelling. It was so beautiful."] },
+            { "id": "bad", "title": { "ja": "残念だったことを話す", "en": "Mention something that went wrong" }, "hints": ["ひとつ残念だったことを話しましょう", "The only bad thing was …", "The only bad thing was the rain on the last day."] },
+            { "id": "plans", "title": { "ja": "相手の旅行の予定を聞く", "en": "Ask about their travel plans" }, "hints": ["この冬どこかに行くか聞きましょう", "Are you going anywhere …?", "Are you going anywhere this winter?"] }
+          ]
+        },
+        {
+          "tutor": "You are Ben, the student's friend from abroad, chatty and speaking at natural speed. Open by saying hi and saying you heard something went wrong on their trip; wait for them to tell the story. Ask how they felt, and ask for a tip in case you go to Okinawa. When asked about your best trip, tell a short story about a road trip in New Zealand with friends, camping by a lake.",
+          "tasks": [
+            { "id": "story", "title": { "ja": "旅行中のハプニングを話す", "en": "Tell the story of what happened" }, "hints": ["台風で飛行機が欠航したことを話しましょう", "On the last day, … so …", "On the last day, a typhoon was coming, so our flight was cancelled."] },
+            { "id": "feel", "title": { "ja": "気持ちと結末を話す", "en": "Say how you felt about it" }, "hints": ["どう感じて、結局どうなったか話しましょう", "I was really … at first, but in the end …", "I was really stressed at first, but in the end it was fun."] },
+            { "id": "tip", "title": { "ja": "旅のアドバイスをする", "en": "Give a travel tip" }, "hints": ["沖縄では車を借りるといいとすすめましょう", "If you go, I'd recommend … It's …", "If you go, I'd recommend renting a car. It's the easiest way to get around."] },
+            { "id": "ask", "title": { "ja": "相手の一番の旅を聞く", "en": "Ask about their best trip" }, "hints": ["今までで一番よかった旅行を聞きましょう", "What's the best trip …?", "What's the best trip you've ever been on?"] },
+            { "id": "react", "title": { "ja": "反応して質問を続ける", "en": "React and ask a follow-up" }, "hints": ["反応して、もう一つ質問しましょう", "That sounds …! How long …?", "That sounds amazing! How long were you there?"] }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b",
+      "name": { "ja": "友だち", "en": "Friend" },
+      "persona": "Ben, a friend from abroad who lives in Japan.",
+      "levels": [
+        {
+          "tutor": "You are Miki, the student's Japanese friend, who has just come back from four days in Okinawa. Speak slowly, in short simple sentences. Open by saying hi and saying you just got back from a trip; wait for them to ask about it. Answer simply: Okinawa, the beach, the food. Show them a photo of the beach.",
+          "tasks": [
+            { "id": "how", "title": { "ja": "旅行はどうだったか聞く", "en": "Ask how the trip was" }, "hints": ["旅行はどうだったか聞きましょう", "How was …?", "How was your trip?"] },
+            { "id": "where", "title": { "ja": "どこに行ったか聞く", "en": "Ask where they went" }, "hints": ["どこに行ったか聞きましょう", "Where did you …?", "Where did you go?"] },
+            { "id": "react", "title": { "ja": "写真に反応する", "en": "React to the photo" }, "hints": ["写真を見て反応しましょう", "Wow, that's …!", "Wow, that's so beautiful!"] }
+          ]
+        },
+        {
+          "tutor": "You are Miki, the student's Japanese friend, speaking at natural pace. Open by saying hi and saying you just got back from Okinawa. When asked, say you went with your sister, the best part was snorkelling, and it rained on the last day. Then ask about their travel plans.",
+          "tasks": [
+            { "id": "who", "title": { "ja": "誰と行ったか聞く", "en": "Ask who they went with" }, "hints": ["誰と行ったか聞きましょう", "Who did you … with?", "Who did you go with?"] },
+            { "id": "best", "title": { "ja": "一番よかったことを聞く", "en": "Ask about the best part" }, "hints": ["一番よかったことを聞きましょう", "What was the best …?", "What was the best part?"] },
+            { "id": "weather", "title": { "ja": "天気について聞く", "en": "Ask about the weather" }, "hints": ["天気はどうだったか聞きましょう", "How was the …?", "How was the weather there?"] },
+            { "id": "plans", "title": { "ja": "自分の旅行の予定を話す", "en": "Talk about your travel plans" }, "hints": ["行ってみたい場所と時期を話しましょう", "I'm thinking of going to … in …", "I'm thinking of going to Kyoto in December."] }
+          ]
+        },
+        {
+          "tutor": "You are Miki, the student's Japanese friend, speaking at natural speed. Open by saying hi and saying your trip to Okinawa didn't go quite as planned; wait for them to ask. When asked, tell the story: a typhoon was coming on the last day, your flight home was cancelled and you stayed an extra night, which was stressful but turned out fun. Then ask about their best trip, and what the highlight was.",
+          "tasks": [
+            { "id": "what", "title": { "ja": "何があったか聞く", "en": "Ask what happened" }, "hints": ["何があったか聞きましょう", "Oh no, what …?", "Oh no, what happened?"] },
+            { "id": "sympathy", "title": { "ja": "気持ちに寄りそう", "en": "Show sympathy" }, "hints": ["大変だったねと気持ちに寄りそいましょう", "That must have been …", "That must have been really stressful."] },
+            { "id": "story", "title": { "ja": "自分の一番の旅を話す", "en": "Tell them about your best trip" }, "hints": ["今までで一番よかった旅行を話しましょう", "My best trip was … with …", "My best trip was a road trip in New Zealand with friends."] },
+            { "id": "highlight", "title": { "ja": "一番の思い出を話す", "en": "Describe the highlight" }, "hints": ["一番の思い出を話しましょう", "The highlight was …", "The highlight was camping by a lake under the stars."] }
+          ]
+        }
+      ]
+    }
+  ]
+}
