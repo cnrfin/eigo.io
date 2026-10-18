@@ -17,7 +17,7 @@
           "tasks": [
             { "id": "tip", "title": { "ja": "チップについて説明する", "en": "Explain about tipping" }, "hints": ["日本ではチップはいらないと伝えましょう", "In Japan, you don't …", "In Japan, you don't need to tip."] },
             { "id": "itadakimasu", "title": { "ja": "食事の前のあいさつを教える", "en": "Say what we say before eating" }, "hints": ["「いただきます」を教えましょう", "Before eating, we say …", "Before eating, we say \"itadakimasu\"."] },
-            { "id": "shoes", "title": { "ja": "靴を脱ぐことを伝える", "en": "Explain about shoes" }, "hints": ["玄関で靴を脱ぐと伝えましょう", "Please take off …", "Please take off your shoes at the door."] }
+            { "id": "shoes", "title": { "ja": "靴を脱ぐことを伝える", "en": "Explain about shoes" }, "hints": ["玄関で靴を脱ぐと伝えましょう", "Yes, you take off …", "Yes, you take off your shoes at the door."] }
           ]
         },
         {
