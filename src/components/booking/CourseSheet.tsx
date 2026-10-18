@@ -1,8 +1,9 @@
 'use client'
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import './course-sheet.css'
+import ProgressiveBlur from '@/components/ui/ProgressiveBlur'
 import { CATEGORY_NAMES, LEVEL_NAMES, nextLevel, type Category, type LevelIndex, type SceneSummary } from '@/lib/roleplay/types'
 
 /**
@@ -227,21 +228,24 @@ export default function CourseSheet({
       </button>
     </div>
   )
-  if (rpOn && mode === 'rp')
-    return createPortal(
-      <RoleplayPicker tx={tx} lang={lang} scenes={roleplays!} initial={initialRoleplay ?? null} toggle={toggle} onChoose={onChooseRoleplay!} onClose={onClose} />,
-      document.body,
-    )
-  if (!c) return null
-  const chips = lang === 'ja' ? c.chips.ja : c.chips.en
-  const desc = (lang === 'ja' ? c.descriptionJa : c.description) || c.description
+  // one sheet for courses and role-plays: switching swaps only what's inside (it used to reopen the whole sheet)
+  const showRp = rpOn && mode === 'rp'
+  if (!showRp && !c) return null
+  const chips = c ? (lang === 'ja' ? c.chips.ja : c.chips.en) : []
+  const desc = c ? (lang === 'ja' ? c.descriptionJa : c.description) || c.description : ''
 
   return createPortal(
     <div className="cs-scrim" onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div className="cs-sheet" role="dialog" aria-modal="true" aria-label={lang === 'ja' ? 'コースを選ぶ' : 'Choose a course'}>
+      <div className="cs-sheet" role="dialog" aria-modal="true" aria-label={showRp ? tx.roleplays : lang === 'ja' ? 'コースを選ぶ' : 'Choose a course'}>
+        {/* the dashboard's top edge: content blurs as it scrolls under the toggle and close button */}
+        <ProgressiveBlur edge="top" height={76} tint={0.55} steps={3} className="cs-edge" />
         {toggle}
         <CloseBtn label={tx.close} onClose={onClose} />
-        <div className="cs-body" ref={body}>
+        {showRp ? (
+          <RoleplayPicker tx={tx} lang={lang} scenes={roleplays!} initial={initialRoleplay ?? null} onChoose={onChooseRoleplay!} />
+        ) : c ? (
+          <>
+        <div className="cs-body cs-swap" key="course" ref={body}>
           <div className="cs-hero">
             <Reel key={c.id} scenes={c.scenes} playing video={c.reel} />
             <div className="cs-info" key={`i${c.id}`}>
@@ -286,6 +290,8 @@ export default function CourseSheet({
             {tx.choose}
           </button>
         </div>
+          </>
+        ) : null}
       </div>
     </div>,
     document.body,
@@ -331,17 +337,13 @@ function RoleplayPicker({
   lang,
   scenes,
   initial,
-  toggle,
   onChoose,
-  onClose,
 }: {
   tx: (typeof TX)[Lang]
   lang: Lang
   scenes: SceneSummary[]
   initial: RoleplayChoice | null
-  toggle: React.ReactNode
   onChoose: (c: RoleplayChoice) => void
-  onClose: () => void
 }) {
   const [shown, setShown] = useState(() => (initial && scenes.find((x) => x.id === initial.sceneId)?.id) || scenes[0]?.id)
   const [level, setLevel] = useState<LevelIndex | null>(() => (initial ? initial.level : null))
@@ -362,18 +364,16 @@ function RoleplayPicker({
     return [...m.entries()]
   }, [q, scenes])
 
-  const pick = (id: string) => {
+  // stable, so the rows (memoised) don't all redraw when one is picked
+  const pick = useCallback((id: string) => {
     setShown(id)
     setLevel(null)
     body.current?.scrollTo({ top: 0, behavior: 'smooth' })
-  }
+  }, [])
   if (!sc) return null
   return (
-    <div className="cs-scrim" onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div className="cs-sheet" role="dialog" aria-modal="true" aria-label={tx.roleplays}>
-        {toggle}
-        <CloseBtn label={tx.close} onClose={onClose} />
-        <div className="cs-body" ref={body}>
+    <>
+        <div className="cs-body cs-swap" key="rp" ref={body}>
           <div className="cs-hero">
             <div className="cs-reel" key={sc.id}>
               {sc.image ? <img className="cs-in" src={sc.image} alt="" /> : <span className="cs-rph" />}
@@ -420,23 +420,13 @@ function RoleplayPicker({
 
           {groups.length ? (
             groups.map(([cat, list]) => (
-              <section key={cat} className="cs-sec">
+              <section key={cat} className="cs-sec cs-rsec">
                 <div className="cs-sech">
                   <h3>{CATEGORY_NAMES[cat][lang]}</h3>
                 </div>
                 <div className="cs-rlist">
                   {list.map((x) => (
-                    <button key={x.id} type="button" className={`cs-rrow${x.id === sc.id ? ' cs-on' : ''}`} aria-pressed={x.id === sc.id} onClick={() => pick(x.id)}>
-                      {x.image ? <img src={x.image} alt="" /> : <span className="cs-rph" />}
-                      <span className="cs-rt">
-                        <b>{x.title[lang]}</b>
-                        <span>{x.summary[lang]}</span>
-                      </span>
-                      <span className={`cs-rl${x.cleared === 0 ? ' new' : ''}`}>
-                        <Dots cleared={x.cleared} />
-                        <span>{line(x)}</span>
-                      </span>
-                    </button>
+                    <RpRow key={x.id} x={x} lang={lang} on={x.id === sc.id} label={line(x)} onPick={pick} />
                   ))}
                 </div>
               </section>
@@ -450,7 +440,23 @@ function RoleplayPicker({
             {tx.chooseRp}
           </button>
         </div>
-      </div>
-    </div>
+    </>
   )
 }
+
+/** One row of the role-play list. Memoised: picking a scene redraws only the old and the new selection. */
+const RpRow = memo(function RpRow({ x, lang, on, label, onPick }: { x: SceneSummary; lang: Lang; on: boolean; label: string; onPick: (id: string) => void }) {
+  return (
+    <button type="button" className={`cs-rrow${on ? ' cs-on' : ''}`} aria-pressed={on} onClick={() => onPick(x.id)}>
+      {x.image ? <img src={x.image} alt="" loading="lazy" decoding="async" /> : <span className="cs-rph" />}
+      <span className="cs-rt">
+        <b>{x.title[lang]}</b>
+        <span>{x.summary[lang]}</span>
+      </span>
+      <span className={`cs-rl${x.cleared === 0 ? ' new' : ''}`}>
+        <Dots cleared={x.cleared} />
+        <span>{label}</span>
+      </span>
+    </button>
+  )
+})
