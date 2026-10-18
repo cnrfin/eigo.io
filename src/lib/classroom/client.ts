@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef } from 'react'
 import type { Card } from '@/lib/ai-tutor/cards'
+import type { ScreenAction } from '@/lib/ai-tutor/actions'
 import type { Scene } from '@/lib/roleplay/types'
 import type { SceneSummary } from '@/lib/roleplay/types'
 import type { RealtimeChannel } from '@supabase/supabase-js'
@@ -252,22 +253,34 @@ export async function aiOpenLesson(bookingId: string, courseId: string, lessonId
   }
 }
 
-export type AiTurn = { move: 'stay' | 'next' | 'back' | 'return'; slide: number | null }
+export type AiTurn = {
+  move: 'stay' | 'next' | 'back' | 'return'
+  slide: number | null
+  /** the action judge (lib/ai-tutor/actions.ts): a screen change, already checked on the server */
+  action?: ScreenAction
+  quote?: string
+}
 
 /** AI lessons: should the slide change after this turn? (a small fast model on our server decides) */
 export async function aiTurn(
   bookingId: string,
   body: {
     sessionId: string
-    courseId: string
-    lessonId: string
-    slideId: string
-    furthest: number
-    reviewing: boolean
-    lines: { from: 'student' | 'tutor'; text: string }[]
+    /** the slide check (with a course open) */
+    courseId?: string
+    lessonId?: string
+    slideId?: string
+    furthest?: number
+    reviewing?: boolean
+    lines?: { from: 'student' | 'tutor'; text: string }[]
+    /** the action judge */
+    screen?: { view: 'free' | 'course' | 'picker' | 'roleplay'; board: boolean; pickerMode?: 'rp' | 'course'; roleplay?: string; wrappingUp?: boolean }
+    courses?: { id: string; title: string }[]
+    scenes?: { id: string; title: string }[]
+    recent?: { from: 'student' | 'tutor'; text: string }[]
   },
 ): Promise<AiTurn> {
-  const none: AiTurn = { move: 'stay', slide: null }
+  const none: AiTurn = { move: 'stay', slide: null, action: { kind: 'none' }, quote: '' }
   try {
     const r = await call(`/api/classroom/${bookingId}/ai-turn`, { method: 'POST', body: JSON.stringify(body) })
     if (!r.ok) return none

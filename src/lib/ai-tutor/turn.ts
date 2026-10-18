@@ -1,4 +1,5 @@
 import OpenAI from 'openai'
+import { actionPrompt, validateDecision, type Decision, type Named, type Screen } from './actions'
 
 /**
  * Slide control for AI lessons, owned by our app rather than the voice model.
@@ -77,5 +78,43 @@ ${convo}`
   } catch (e) {
     console.error('ai-turn failed', e instanceof Error ? e.message : e)
     return stay
+  }
+}
+
+/**
+ * The action judge (lib/ai-tutor/actions.ts): should the screen change (course, role-plays, whiteboard)?
+ * Returns a validated decision; anything unsure, invalid or failed is "none".
+ */
+export async function decideScreenAction(
+  screen: Screen,
+  lists: { courses: Named[]; scenes: Named[] },
+  lines: { from: 'student' | 'tutor'; text: string }[],
+): Promise<Decision> {
+  const none: Decision = { action: { kind: 'none' }, quote: '' }
+  if (!lines.length || screen.wrappingUp) return none
+  const { system, user } = actionPrompt(screen, lists, lines)
+  try {
+    const base = {
+      model: MODEL,
+      messages: [
+        { role: 'system' as const, content: system },
+        { role: 'user' as const, content: user },
+      ],
+      response_format: { type: 'json_object' as const },
+      max_completion_tokens: 1200,
+    }
+    let c
+    try {
+      c = await openai().chat.completions.create({ ...base, reasoning_effort: 'low' } as never, { timeout: 7000, maxRetries: 0 })
+    } catch (e) {
+      if (!/reasoning|effort/i.test(e instanceof Error ? e.message : String(e))) throw e
+      c = await openai().chat.completions.create(base, { timeout: 7000, maxRetries: 0 })
+    }
+    const raw = c.choices[0]?.message?.content ?? ''
+    if (!raw.trim()) return none
+    return validateDecision(JSON.parse(raw), screen, lists, lines)
+  } catch (e) {
+    console.error('ai-action failed', e instanceof Error ? e.message : e)
+    return none
   }
 }

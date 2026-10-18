@@ -23,6 +23,7 @@ import { computeAiLayout, type Rect } from '@/lib/classroom/layout'
 import { orbColor } from '@/lib/ai-tutor/orb-colors'
 import { courseNamed, type CourseName } from '@/lib/ai-tutor/course-names'
 import { studentClosesCourse, studentOpensCourse, tutorClosesCourse } from '@/lib/classroom/course-commands'
+import type { ScreenAction } from '@/lib/ai-tutor/actions'
 import type { RoomProps } from './Room'
 
 /**
@@ -249,6 +250,16 @@ export default function AiRoom(props: Props) {
   const panelHeard = useRef('')
   /** closing the course (free talk): by the student's words, the AI tutor's, or the ✕ button. False if none is open. */
   const closeCourseNow = useRef<() => boolean>(() => false)
+  /** the action judge: what the screen is now (for the request) and how to apply an action (set further down) */
+  const screenNow = useRef<() => { screen: NonNullable<Parameters<typeof aiTurn>[1]['screen']>; courses: { id: string; title: string }[]; scenes: { id: string; title: string }[] }>(() => ({
+    screen: { view: 'free', board: false },
+    courses: [],
+    scenes: [],
+  }))
+  const judgeDo = useRef<(a: ScreenAction, quote: string, asked: number) => void>(() => {})
+  /** when the screen last changed (course, panel, whiteboard), and the transcript line it changed at */
+  const screenAt = useRef({ line: 0, t: 0 })
+  const lastJudged = useRef(0)
   const openCourseNow = useRef<(courseId: string, lesson: string) => void>(() => {})
   const opening = useRef(false)
   /** course titles, to recognise "I'll open Haruka in the UK now" (loaded below) */
@@ -546,27 +557,44 @@ export default function AiRoom(props: Props) {
     }
     return ref
   }, [slideRef])
+  /**
+   * After each pause: the slide check (with a course open) and the action judge (lib/ai-tutor/actions.ts: course,
+   * role-plays, whiteboard), in one request. Both are safety nets behind the instant spoken commands.
+   */
   const checkTurn = useCallback(async () => {
     const sid = sessionId.current
+    if (!sid || closing.current || checking.current || wrapUp.current) return
     const ref = syncSlide()
-    if (!sid || !ref || closing.current || checking.current || wrapUp.current) return
-    const slideLines = lines.current.slice(slideStart.current)
-    if (!slideLines.length || Date.now() - lastMove.current < 2500) return
-    const sig = `${slideLines.length}:${slideLines[slideLines.length - 1].text.length}:${ref.slideId}`
+    const L = lines.current
+    const slideLines = ref ? L.slice(slideStart.current) : []
+    // the judge only sees what was said since the screen last changed (never an old, already-handled request)
+    const recent = L.slice(Math.max(screenAt.current.line, L.length - 10))
+    if (!slideLines.length && !recent.length) return
+    if (Date.now() - lastMove.current < 2500 || Date.now() - screenAt.current.t < 2500) return
+    const shot = screenNow.current()
+    const sig = `${L.length}:${L[L.length - 1]?.text.length ?? 0}:${ref?.slideId ?? '-'}:${shot.screen.view}:${shot.screen.board}`
     if (sig === checkedSig.current) return
     checkedSig.current = sig
     checking.current = true
     const asked = Date.now()
+    const plain = (x: Line[]) => x.map((l) => ({ from: l.from, text: l.text }))
     const r = await aiTurn(info.bookingId, {
       sessionId: sid,
-      ...ref,
-      furthest: furthest.current + 1,
-      reviewing: review.current,
-      lines: slideLines.slice(-16).map((l) => ({ from: l.from, text: l.text })),
+      ...(ref ? { ...ref, furthest: furthest.current + 1, reviewing: review.current, lines: plain(slideLines.slice(-16)) } : {}),
+      screen: shot.screen,
+      courses: shot.courses,
+      scenes: shot.scenes,
+      recent: plain(recent),
     })
     checking.current = false
+    if (wrapUp.current || closing.current) return
+    // the judge: a screen change (already checked on the server; checked again when applied)
+    if (r.action && r.action.kind !== 'none') {
+      judgeDo.current(r.action, r.quote ?? '', asked)
+      return
+    }
     // the slide moved some other way meanwhile: don't move it again
-    if (lastMove.current > asked || slideRef()?.slideId !== ref.slideId || wrapUp.current) return
+    if (!ref || lastMove.current > asked || slideRef()?.slideId !== ref.slideId) return
     if (r.move === 'next') {
       // same rule as the spoken cue: a stray "let's move on" right after a new slide appears mustn't skip it
       const studentSpoke = lines.current.slice(slideStart.current).some((l) => l.from === 'student')
@@ -1278,6 +1306,57 @@ export default function AiRoom(props: Props) {
     whiteboardRef.current = whiteboard
     showBoard.current = setBoard
   }, [whiteboard, setBoard])
+
+  /* ---------- the action judge (lib/ai-tutor/actions.ts): the catch-all behind the spoken commands ---------- */
+  // the screen changed (course opened/closed, panel, whiteboard): the judge starts reading from here
+  const screenKey = `${props.open?.courseId ?? ''}:${props.open?.lessonId ?? ''}:${panel?.view ?? ''}:${props.whiteboard}`
+  useEffect(() => {
+    screenAt.current = { line: lines.current.length, t: Date.now() }
+  }, [screenKey])
+  useEffect(() => {
+    screenNow.current = () => ({
+      screen: {
+        view: panel ? (panel.view === 'picker' ? 'picker' : 'roleplay') : live.current.slides.length ? 'course' : 'free',
+        board: whiteboardRef.current,
+        pickerMode: panel?.view === 'picker' ? panel.mode : undefined,
+        roleplay: panel?.view === 'roleplay' ? panel.scene.title.en : undefined,
+        wrappingUp: wrapUp.current,
+      },
+      courses: titles.current.map((c) => ({ id: c.id, title: c.names[0] ?? c.id })),
+      scenes: (rpList ?? []).map((x) => ({ id: x.id, title: x.title.en })),
+    })
+    judgeDo.current = (a, quote, asked) => {
+      // guardrails on arrival: the screen changed meanwhile (a command or a tap got there first), the lesson is
+      // wrapping up, or the judge acted a moment ago → nothing
+      if (screenAt.current.t > asked || wrapUp.current || closing.current || Date.now() - lastJudged.current < 4000) return
+      lastJudged.current = Date.now()
+      console.info('[eigo] AI action', a.kind, JSON.stringify(quote))
+      switch (a.kind) {
+        case 'open_course':
+          return openCourseNow.current(a.courseId ?? '', a.lesson ? `#${a.lesson}` : '')
+        case 'close_course':
+          return void closeCourseNow.current()
+        case 'open_roleplays':
+          return panelDo.current({ kind: 'open', mode: 'rp' })
+        case 'start_roleplay':
+          return panelDo.current({ kind: 'start', id: a.sceneId })
+        case 'close_panel':
+          return panelDo.current({ kind: 'close' })
+        case 'board_on':
+          if (!whiteboardRef.current) {
+            showBoard.current(true)
+            void act({ kind: 'view', what: 'board_on' })
+          }
+          return
+        case 'board_off':
+          if (whiteboardRef.current) {
+            showBoard.current(false)
+            void act({ kind: 'view', what: 'board_off' })
+          }
+          return
+      }
+    }
+  })
 
   // course titles, to recognise "I'll open Haruka in the UK now"
   useEffect(() => {
