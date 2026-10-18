@@ -21,6 +21,7 @@ const OPEN_VERB = /\b(?:open|show|see|look at|check out|bring up|pull up|choose|
 const OPEN_JA = /ロールプレイ.{0,6}(?:見|開|やり|したい|して|選)|コース.{0,6}(?:見|開|選)/
 const CLOSE_STUDENT = /\b(?:close|hide|put away|stop|end|exit|finish|quit)\b(?:\s+\w+){0,3}?\s*(?:the\s+)?(?:role[- ]?plays?|panel|list|this|it|that)\b|閉じ|やめ(?:る|ます|たい)|終わり|終了/i
 const CLOSE_TUTOR = /\b(?:I'll|I will|let me|let's|let us)\s+(?:close|put away|hide)\b[^.?!]*\b(?:role[- ]?plays?|panel|list)\b/i
+const LESSONISH = /\b(?:courses?|lessons?|slides?)\b|コース|レッスン|スライド/i
 const START = /\b(?:let'?s (?:do|try|start|go with|go for|play)|(?:I'd|I would|I want to|I wanna) (?:like to )?(?:do|try|play)|can we (?:do|try)|start|go with|go for)\b|はじめ|始め|(?:に|で)します|やりたい|やります/i
 const ORDINALS: [RegExp, number][] = [
   [/\b(?:first|1st)\b|1つ目|一つ目|ひとつめ/i, 0],
@@ -35,7 +36,7 @@ const keyWords = (en: string) => fold(en).split(/[^a-z]+/).filter((w) => w.lengt
 const jaWords = (ja: string) => ja.match(/[\u4e00-\u9fff\u30a0-\u30ff]{2,}/g) ?? []
 
 /** The item a sentence names (the best match): words from its English or Japanese title, or "the second one". */
-export function findItem(text: string, items: PanelItem[]): PanelItem | null {
+export function findItem(text: string, items: PanelItem[], ordinals = true): PanelItem | null {
   const f = fold(text)
   let best: PanelItem | null = null
   let score = 0
@@ -47,7 +48,7 @@ export function findItem(text: string, items: PanelItem[]): PanelItem | null {
     }
   }
   if (best) return best
-  for (const [re, i] of ORDINALS) if (re.test(text) && items[i]) return items[i]
+  if (ordinals) for (const [re, i] of ORDINALS) if (re.test(text) && items[i]) return items[i]
   return null
 }
 
@@ -73,8 +74,12 @@ export function panelIntent(
   }
   if (panel === 'roleplay') return null
 
+  // with nothing on screen, talk about a course or a lesson ("let's start from the first lesson") is never a role-play
+  if (panel !== 'picker' && LESSONISH.test(s) && !RP.test(s)) return null
+
   const list = mode === 'course' && panel === 'picker' ? items.course : items.rp
-  const named = RP.test(s) || panel === 'picker' || who === 'student' ? findItem(s, list) : null
+  // "the second one" only means something while the list is on screen
+  const named = RP.test(s) || panel === 'picker' || who === 'student' ? findItem(s, list, panel === 'picker') : null
   if (named && START.test(s)) return { kind: 'start', id: named.id }
 
   if (panel === 'picker') {

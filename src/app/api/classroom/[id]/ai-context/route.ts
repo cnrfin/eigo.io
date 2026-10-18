@@ -29,7 +29,7 @@ type Action =
   | { kind: 'lesson'; courseId: string; lessonId: string }
   | { kind: 'not_yet'; missing: string[] }
   | { kind: 'nudge' }
-  | { kind: 'time' }
+  | { kind: 'time'; left?: number }
   | { kind: 'view'; what: 'closed' | 'board_on' | 'board_off' | 'open_failed' }
   | { kind: 'card'; what: 'saved' | 'chose'; text: string; style?: string }
   | { kind: 'roleplay'; sceneId: string; role: 'a' | 'b'; level: 0 | 1 | 2 }
@@ -99,12 +99,16 @@ function instruction(a: Action, secondsLeft: number): string | null {
     case 'nudge':
       if (secondsLeft < 30) return null
       return 'Nobody has spoken for about 9 seconds. You lead the lesson: if the student is in the middle of a task, give a short, friendly prompt; if everything on this slide is done, say now that you’re moving on to the next slide (it appears by itself). In free talk, ask a new question or bring a new topic.'
-    case 'time':
+    case 'time': {
+      // the classroom clock starts when the AI tutor first speaks, so it can end ~20 s before the server's end:
+      // go by whichever is sooner, or the goodbye note never comes
+      if (typeof a.left === 'number' && Number.isFinite(a.left) && a.left >= 0) secondsLeft = Math.min(secondsLeft, a.left)
       if (secondsLeft > 330) return null
       if (secondsLeft > 125) return 'Time note: about 5 minutes left.'
       if (secondsLeft > 65) return 'Time note: about 2 minutes left. Finish the current activity (and the recap, if this lesson has one). Do not say goodbye yet.'
       if (secondsLeft > 28) return 'Time note: about 1 minute left. Keep going with a last question or two. Do not say goodbye yet.'
       return 'Time note: about 20 seconds left. Say a short, warm goodbye now.'
+    }
   }
   return null
 }

@@ -21,6 +21,7 @@ import SlideStage from './SlideStage'
 import Toolbar from './Toolbar'
 import { computeAiLayout, type Rect } from '@/lib/classroom/layout'
 import { orbColor } from '@/lib/ai-tutor/orb-colors'
+import { courseNamed, type CourseName } from '@/lib/ai-tutor/course-names'
 import type { RoomProps } from './Room'
 
 /**
@@ -510,8 +511,11 @@ export default function AiRoom(props: Props) {
     checking.current = false
     // the slide moved some other way meanwhile: don't move it again
     if (lastMove.current > asked || slideRef()?.slideId !== ref.slideId || wrapUp.current) return
-    if (r.move === 'next') moveSlide('next')
-    else if (r.move === 'return') moveSlide('return')
+    if (r.move === 'next') {
+      // same rule as the spoken cue: a stray "let's move on" right after a new slide appears mustn't skip it
+      const studentSpoke = lines.current.slice(slideStart.current).some((l) => l.from === 'student')
+      if (studentSpoke || Date.now() - slideShownAt.current > 20_000) moveSlide('next')
+    } else if (r.move === 'return') moveSlide('return')
     else if (r.move === 'back' && r.slide) moveSlide('back', r.slide)
   }, [info.bookingId, slideRef, syncSlide, moveSlide])
   useEffect(() => {
@@ -926,7 +930,7 @@ export default function AiRoom(props: Props) {
     const note = (k: string) => {
       if (noted.current.has(k)) return
       noted.current.add(k)
-      void act({ kind: 'time' })
+      void act({ kind: 'time', left: Math.round(left) })
     }
     if (left <= 300 && left > 120) note('5')
     if (left <= 120 && left > 60) note('2')
@@ -1197,10 +1201,10 @@ export default function AiRoom(props: Props) {
   }, [whiteboard, setBoard])
 
   // course titles, to recognise "I'll open Haruka in the UK now"
-  const titles = useRef<{ id: string; names: string[] }[]>([])
+  const titles = useRef<CourseName[]>([])
   useEffect(() => {
     void aiCourseTitles().then((list) => {
-      titles.current = list.map((c) => ({ id: c.id, names: [c.title, c.titleJa].filter(Boolean).map((n) => n.toLowerCase()) }))
+      titles.current = list.map((c) => ({ id: c.id, names: [c.title, c.titleJa].filter(Boolean) }))
     })
   }, [])
   const acted = useRef(new Set<string>())
@@ -1211,8 +1215,11 @@ export default function AiRoom(props: Props) {
       const sentences = line.text.split(/(?<=[.!?])\s+/)
       const s = sentences[sentences.length - 1] ?? ''
       if (!s || s.trim().endsWith('?')) return
-      const named = OPEN_VERB.test(s) ? titles.current.find((c) => c.names.some((n) => n.length > 3 && s.toLowerCase().includes(n))) : undefined
-      const kind = panelSaid.current('tutor', s) ? 'panel' : BOARD_ON_CUE.test(s) ? 'board_on' : BOARD_OFF_CUE.test(s) ? 'board_off' : CLOSE_CUE.test(s) ? 'close' : OPEN_CUE.test(s) || named ? 'open' : null
+      const named = OPEN_VERB.test(s) ? courseNamed(s, titles.current) : undefined
+      // opening or closing a course comes first: with the course list up, "I'll open Haruka in the UK now" opens it
+      // (it isn't just picking it on the panel)
+      const kind =
+        OPEN_CUE.test(s) || named ? 'open' : CLOSE_CUE.test(s) ? 'close' : panelSaid.current('tutor', s) ? 'panel' : BOARD_ON_CUE.test(s) ? 'board_on' : BOARD_OFF_CUE.test(s) ? 'board_off' : null
       if (!kind) return
       const key = `${kind}:${line.text.slice(0, 60)}:${sentences.length}`
       if (acted.current.has(key)) return

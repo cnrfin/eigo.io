@@ -208,7 +208,8 @@ export type StudentAction =
   | { kind: 'lesson'; courseId: string; lessonId: string }
   | { kind: 'not_yet'; missing: string[] }
   | { kind: 'nudge' }
-  | { kind: 'time' }
+  /** left: seconds on the classroom clock (it can end a little before the server's end) */
+  | { kind: 'time'; left?: number }
   | { kind: 'view'; what: 'closed' | 'board_on' | 'board_off' | 'open_failed' }
   /** a card on the student's screen: its phrase was saved to the word list, or they picked a version */
   | { kind: 'card'; what: 'saved' | 'chose'; text: string; style?: string }
