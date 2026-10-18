@@ -1,0 +1,107 @@
+{
+  "id": "presentation-qa",
+  "category": "business",
+  "title": { "ja": "プレゼンの質疑応答", "en": "Questions after a presentation" },
+  "summary": { "ja": "発表のあとで質問を受け、数字や理由を説明し、質疑応答を締める。", "en": "Take questions after your presentation, explain the numbers and close the Q&A." },
+  "setting": "An online meeting with the overseas offices. A member of the Tokyo team has just presented the plan for a new online shop for overseas customers, and it's time for questions.",
+  "image": "",
+  "studentRole": "a",
+  "roles": [
+    {
+      "id": "a",
+      "name": { "ja": "発表者", "en": "Presenter" },
+      "persona": "A member of the Tokyo team who has just presented the plan for the overseas online shop.",
+      "levels": [
+        {
+          "tutor": "You are Chris Taylor from the London office, in the audience. Speak slowly and simply. Open by saying 'Thank you, that was very interesting'; wait for the presenter to invite questions. Ask one simple question: when is the launch? When the presenter checks, say yes, that's clear.",
+          "tasks": [
+            { "id": "invite", "title": { "ja": "質問を受け付ける", "en": "Invite questions" }, "hints": ["質問がないか聞きましょう", "Thank you. Are there any …?", "Thank you. Are there any questions?"] },
+            { "id": "thanks", "title": { "ja": "質問にお礼を言う", "en": "Thank them for the question" }, "hints": ["質問してくれたお礼を言いましょう", "Thanks for …", "Thanks for your question."] },
+            { "id": "launch", "title": { "ja": "開始時期を答える", "en": "Say when the launch is" }, "hints": ["開始時期を答えましょう", "We plan to launch in …", "We plan to launch in April next year."] },
+            { "id": "check", "title": { "ja": "答えになったか確認する", "en": "Check your answer was clear" }, "hints": ["答えになったか確認しましょう", "Does that … your question?", "Does that answer your question?"] }
+          ]
+        },
+        {
+          "tutor": "You are Chris Taylor from the London office, in the audience, speaking at natural pace. Open by thanking the presenter; wait for them to invite questions. Ask about the budget for the first year, then how long delivery will take. React briefly to each answer. When the presenter checks, say that's clear and you have no more questions.",
+          "tasks": [
+            { "id": "invite", "title": { "ja": "質問を受け付ける", "en": "Invite questions" }, "hints": ["質問を受け付けると伝えましょう", "I'd be happy to take …", "I'd be happy to take any questions now."] },
+            { "id": "budget", "title": { "ja": "予算について答える", "en": "Answer about the budget" }, "hints": ["初年度の予算を答えましょう", "The budget for the first year is …", "The budget for the first year is 30 million yen."] },
+            { "id": "delivery", "title": { "ja": "配送日数を答える", "en": "Answer about delivery" }, "hints": ["配送にかかる日数を答えましょう", "Delivery takes about … by …", "Delivery takes about five to seven days by air."] },
+            { "id": "check", "title": { "ja": "答えになったか確認する", "en": "Check your answer was clear" }, "hints": ["答えになったか確認しましょう", "Does that …?", "Does that answer your question?"] },
+            { "id": "close", "title": { "ja": "質疑応答を締める", "en": "Close the Q&A" }, "hints": ["お礼を言って、質疑応答を締めましょう", "If there are no more questions, …", "If there are no more questions, thank you all for listening."] }
+          ]
+        },
+        {
+          "tutor": "You are Chris Taylor, a manager in the London office, in the audience, speaking at natural speed. Open by thanking the presenter for a clear presentation; wait for them to invite questions. Ask how the team came up with the sales target. Later, say you're a little worried that April is too soon to launch in three markets at once. Accept a reasonable answer and say that's all from you.",
+          "tasks": [
+            { "id": "invite", "title": { "ja": "時間を伝えて質問を受け付ける", "en": "Invite questions and give the time" }, "hints": ["残り時間を伝えて、質問を受け付けましょう", "We have about … left, so …", "We have about ten minutes left, so I'm happy to take questions."] },
+            { "id": "target", "title": { "ja": "売上目標の根拠を説明する", "en": "Explain the sales target" }, "hints": ["売上目標の根拠を説明しましょう", "We're aiming for …, based on …", "We're aiming for 120 million yen, based on this year's overseas orders."] },
+            { "id": "concern", "title": { "ja": "懸念に丁寧に答える", "en": "Respond to a concern" }, "hints": ["懸念を受け止めて、3月のテストについて説明しましょう", "I understand your concern. That's why …", "I understand your concern. That's why we're testing with 100 customers in March."] },
+            { "id": "close", "title": { "ja": "質疑応答を締める", "en": "Close the Q&A" }, "hints": ["お礼を言って、あとからでも質問してほしいと伝えましょう", "Thanks, everyone. Feel free to …", "Thanks, everyone. Feel free to email me if you have any other questions."] }
+          ],
+          "twist": {
+            "after": "target",
+            "tutor": "Ask how much delivery will cost customers. It isn't decided yet (the delivery partner will be chosen in December), so accept an honest answer and a promise to follow up.",
+            "task": { "id": "unknown", "title": { "ja": "まだ答えられない質問に対応する", "en": "Handle a question you can't answer yet" }, "hints": ["まだ決まっていないと正直に伝えて、いつ答えられるか言いましょう", "We haven't … yet. I'll get back to you …", "We haven't decided that yet. I'll get back to you in December."] }
+          }
+        }
+      ]
+    },
+    {
+      "id": "b",
+      "name": { "ja": "参加者", "en": "Audience member" },
+      "persona": "Chris Taylor, a manager in the London office watching the presentation.",
+      "levels": [
+        {
+          "tutor": "You are Yuki from the Tokyo team, who has just finished presenting the plan for the overseas online shop. Speak slowly and simply. Open by saying 'That's the end of my presentation' and inviting questions. When asked, answer from the slide summary: the launch is in April 2027, and the first markets are the US, the UK and Australia.",
+          "tasks": [
+            { "id": "thank", "title": { "ja": "発表のお礼を言う", "en": "Thank the presenter" }, "hints": ["発表のお礼を言いましょう", "Thank you. That was …", "Thank you. That was very interesting."] },
+            { "id": "launch", "title": { "ja": "開始時期を聞く", "en": "Ask when the launch is" }, "hints": ["いつ始まるのか聞きましょう", "When is …?", "When is the launch?"] },
+            { "id": "markets", "title": { "ja": "どの国から始めるか聞く", "en": "Ask which countries are first" }, "hints": ["最初にどの国で始めるか聞きましょう", "Which countries will you …?", "Which countries will you start with?"] },
+            { "id": "thanks", "title": { "ja": "答えにお礼を言う", "en": "Thank them for the answer" }, "hints": ["答えてくれたお礼を言いましょう", "Thank you, that's …", "Thank you, that's very clear."] }
+          ]
+        },
+        {
+          "tutor": "You are Yuki from the Tokyo team, who has just finished presenting the plan for the overseas online shop, speaking at natural pace. Open by finishing your presentation and inviting questions. When asked, answer from the slide summary: the first-year budget is 30 million yen, and delivery takes five to seven days by air. When asked who pays for delivery, say honestly that it isn't decided yet.",
+          "tasks": [
+            { "id": "budget", "title": { "ja": "予算を聞く", "en": "Ask about the budget" }, "hints": ["初年度の予算を聞きましょう", "What's the budget for …?", "What's the budget for the first year?"] },
+            { "id": "delivery", "title": { "ja": "配送日数を聞く", "en": "Ask about delivery time" }, "hints": ["配送にどのくらいかかるか聞きましょう", "How long will … take?", "How long will delivery take?"] },
+            { "id": "cost", "title": { "ja": "送料について聞く", "en": "Ask who pays for delivery" }, "hints": ["送料はお客さんが払うのか聞きましょう", "Will customers have to …?", "Will customers have to pay for delivery?"] },
+            { "id": "thanks", "title": { "ja": "お礼を言う", "en": "Thank them" }, "hints": ["お礼を言いましょう", "Thanks, that's …", "Thanks, that's really helpful."] }
+          ]
+        },
+        {
+          "tutor": "You are Yuki from the Tokyo team, who has just finished presenting the plan for the overseas online shop, speaking at natural speed. Open by thanking everyone and inviting questions. When asked, explain that the sales target is based on this year's overseas orders, and that a test with 100 customers in March will show any problems before the April launch. Take suggestions politely and say you'll think about them.",
+          "tasks": [
+            { "id": "target", "title": { "ja": "目標の根拠を聞く", "en": "Ask about the sales target" }, "hints": ["お礼を言ってから、売上目標の根拠を聞きましょう", "Thanks, that was very clear. How did you …?", "Thanks, that was very clear. How did you come up with the sales target?"] },
+            { "id": "concern", "title": { "ja": "懸念をやんわり伝える", "en": "Raise a concern politely" }, "hints": ["4月の開始は早すぎないか、やんわり伝えましょう", "My only concern is … Is … realistic?", "My only concern is the timing. Is April realistic for three markets?"] },
+            { "id": "suggest", "title": { "ja": "提案する", "en": "Make a suggestion" }, "hints": ["まず1つの国から始めてはどうか提案しましょう", "Have you thought about …?", "Have you thought about starting with just one market?"] },
+            { "id": "offer", "title": { "ja": "協力を申し出る", "en": "Offer to help" }, "hints": ["イギリス市場のことなら協力できると伝えましょう", "If it helps, I'd be happy to …", "If it helps, I'd be happy to share what we know about the UK market."] }
+          ]
+        }
+      ]
+    }
+  ],
+  "prop": {
+    "label": { "ja": "スライドの要点", "en": "Slide summary" },
+    "title": "Overseas online shop · Plan for 2027",
+    "sections": [
+      { "heading": "THE PLAN", "items": [
+        { "name": "Launch", "value": "April 2027", "key": "April" },
+        { "name": "First markets", "value": "the US, the UK and Australia", "key": "three markets|countries|UK|Australia" },
+        { "name": "Budget (first year)", "value": "¥30 million", "key": "30 million|budget" },
+        { "name": "Sales target (first year)", "value": "¥120 million · based on this year's overseas orders", "key": "120 million|sales target|target" }
+      ] },
+      { "heading": "DELIVERY", "items": [
+        { "name": "Delivery time", "value": "5–7 days by air", "key": "5 to 7 days|5-7 days|five to seven days|delivery time" },
+        { "name": "Delivery partner", "value": "to be chosen in December", "key": "delivery partner|December" },
+        { "name": "Delivery cost for customers", "value": "not decided yet", "key": "delivery cost|pay for delivery|cost customers" }
+      ] },
+      { "heading": "NEXT STEPS", "items": [
+        { "name": "Build the website", "value": "January–March", "key": "website|January" },
+        { "name": "Test with 100 customers", "value": "March", "key": "100 customers|test" }
+      ] }
+    ],
+    "foot": "Questions after the presentation · about 10 minutes"
+  }
+}

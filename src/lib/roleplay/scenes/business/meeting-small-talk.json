@@ -1,0 +1,108 @@
+{
+  "id": "meeting-small-talk",
+  "category": "business",
+  "title": { "ja": "オンライン会議の前の雑談", "en": "Small talk before an online meeting" },
+  "summary": { "ja": "会議が始まる前に雑談をして、議題を確認し、会議を始める。", "en": "Chat before the call starts, check the agenda and open the meeting." },
+  "setting": "The weekly video call between the Tokyo and Singapore offices about the website renewal project. The Tokyo team member hosts the call; Emma from Singapore joins a couple of minutes early.",
+  "image": "",
+  "studentRole": "a",
+  "roles": [
+    {
+      "id": "a",
+      "name": { "ja": "あなた（東京）", "en": "You (Tokyo)" },
+      "persona": "A member of the Tokyo team who hosts the weekly project call with the Singapore office.",
+      "levels": [
+        {
+          "tutor": "You are Emma Lee from the Singapore office. Speak slowly and simply, in short sentences. Open by joining the call and saying a quick hello; wait for the student to greet you. When asked about your weekend, say you went to the beach with your family. Then ask what the weather is like in Tokyo today.",
+          "tasks": [
+            { "id": "greet", "title": { "ja": "あいさつする", "en": "Say hello" }, "hints": ["あいさつして、元気か聞きましょう", "Hi …! How are …?", "Hi Emma! How are you?"] },
+            { "id": "weekend", "title": { "ja": "週末について聞く", "en": "Ask about their weekend" }, "hints": ["週末どうだったか聞きましょう", "How was …?", "How was your weekend?"] },
+            { "id": "weather", "title": { "ja": "東京の天気を話す", "en": "Talk about the weather" }, "hints": ["東京の天気を伝えましょう", "It's … in Tokyo today.", "It's raining in Tokyo today."] },
+            { "id": "start", "title": { "ja": "会議を始める", "en": "Start the meeting" }, "hints": ["会議を始めようと伝えましょう", "Okay, shall we …?", "Okay, shall we get started?"] }
+          ]
+        },
+        {
+          "tutor": "You are Emma Lee from the Singapore office, speaking at natural pace. Open by joining the call and saying a quick hello; wait for the student to check the sound and start the small talk. When asked about your weekend, say you went to the beach with your family and it was very hot, then ask about theirs. After the small talk, mention that Daniel is running a few minutes late. When the student suggests waiting, agree; a moment later, say Daniel has just messaged to say please start without him.",
+          "tasks": [
+            { "id": "sound", "title": { "ja": "音声を確認する", "en": "Check they can hear you" }, "hints": ["声が聞こえているか確認しましょう", "Hi Emma! Can you …?", "Hi Emma! Can you hear me okay?"] },
+            { "id": "weekend", "title": { "ja": "週末について聞く", "en": "Ask about their weekend" }, "hints": ["週末どうだったか聞きましょう", "How was …? Did you …?", "How was your weekend? Did you do anything fun?"] },
+            { "id": "share", "title": { "ja": "自分の週末を話す", "en": "Talk about your weekend" }, "hints": ["自分の週末について、ひとこと詳しく話しましょう", "I went … with … on Saturday.", "I went hiking with some friends on Saturday."] },
+            { "id": "wait", "title": { "ja": "ダニエルさんを少し待とうと提案する", "en": "Suggest waiting for Daniel" }, "hints": ["ダニエルさんを少し待とうと提案しましょう", "Let's wait … for Daniel.", "Let's wait a couple of minutes for Daniel."] },
+            { "id": "start", "title": { "ja": "最初の議題から始める", "en": "Start with the first item" }, "hints": ["会議を始めて、最初の議題を伝えましょう", "Okay, let's start with …", "Okay, let's start with updates from each office."] }
+          ]
+        },
+        {
+          "tutor": "You are Emma Lee from the Singapore office, speaking at natural speed with relaxed small talk. Open by joining the call and saying a quick hello; wait for the student to start the small talk. When asked how your week is going, say it's been busy because you've just moved to a new apartment, and answer follow-up questions about it. When asked about the agenda, say it looks fine to you.",
+          "tasks": [
+            { "id": "week", "title": { "ja": "今週の様子を聞く", "en": "Ask how their week is going" }, "hints": ["あいさつして、今週の様子を聞きましょう", "Hi Emma! How's … going?", "Hi Emma! How's your week going so far?"] },
+            { "id": "followup", "title": { "ja": "話を広げる質問をする", "en": "Ask a follow-up question" }, "hints": ["引っ越しの話について、もう一つ質問しましょう", "Oh, really? How's …?", "Oh, really? How's the new place?"] },
+            { "id": "agenda", "title": { "ja": "議題に追加がないか確認する", "en": "Check the agenda" }, "hints": ["始める前に、議題に追加したいことがないか聞きましょう", "Before we start, is there anything …?", "Before we start, is there anything you'd like to add to the agenda?"] },
+            { "id": "start", "title": { "ja": "会議を始める", "en": "Open the meeting" }, "hints": ["会議を始めて、最初の議題を伝えましょう", "Let's get started. First, …", "Let's get started. First, let's hear updates from each office."] }
+          ],
+          "twist": {
+            "after": "agenda",
+            "tutor": "Say Daniel has just joined, but nobody can hear him: he's typed in the chat that his microphone isn't working. Let the student tell him what to try. When they do, say Daniel has rejoined and you can hear him now.",
+            "task": { "id": "audio", "title": { "ja": "音声トラブルに対応する", "en": "Help with Daniel's audio" }, "hints": ["ダニエルさんに、声が聞こえないので入り直してもらうよう頼みましょう", "Daniel, we can't hear you. Could you try …?", "Daniel, we can't hear you. Could you try rejoining the call?"] }
+          }
+        }
+      ]
+    },
+    {
+      "id": "b",
+      "name": { "ja": "同僚（シンガポール）", "en": "Colleague (Singapore)" },
+      "persona": "Emma Lee, a colleague in the Singapore office who joins the weekly project call.",
+      "levels": [
+        {
+          "tutor": "You are Yuki from the Tokyo office, who hosts the call. Speak slowly and simply. Open by greeting Emma as the call starts and asking how Emma is. Then ask about Emma's weekend. When asked about the weather, say it's raining in Tokyo today. When asked about Daniel, say he'll join in a minute.",
+          "tasks": [
+            { "id": "fine", "title": { "ja": "元気だと答える", "en": "Say how you are" }, "hints": ["元気だと答えて、相手にも聞きましょう", "I'm …, thanks. How …?", "I'm good, thanks. How about you?"] },
+            { "id": "weekend", "title": { "ja": "週末のことを話す", "en": "Talk about your weekend" }, "hints": ["週末にしたことを伝えましょう", "I went to … with …", "I went to the beach with my family."] },
+            { "id": "weather", "title": { "ja": "東京の天気を聞く", "en": "Ask about the weather in Tokyo" }, "hints": ["東京の天気を聞きましょう", "What's the weather …?", "What's the weather like in Tokyo?"] },
+            { "id": "daniel", "title": { "ja": "ダニエルさんが来るか聞く", "en": "Ask if Daniel is coming" }, "hints": ["ダニエルさんも参加するか聞きましょう", "Is Daniel …?", "Is Daniel joining us today?"] }
+          ]
+        },
+        {
+          "tutor": "You are Yuki from the Tokyo office, who hosts the call, speaking at natural pace. Open by greeting Emma as the call starts and asking whether Emma can hear you okay. Ask about Emma's weekend and react with interest. When asked about your weekend, say you went hiking with friends. Then ask whether Daniel is joining today.",
+          "tasks": [
+            { "id": "sound", "title": { "ja": "聞こえていると答える", "en": "Answer the sound check" }, "hints": ["聞こえていると答えて、こちらの声も確認しましょう", "Yes, I can hear you … Can you …?", "Yes, I can hear you fine. Can you hear me?"] },
+            { "id": "weekend", "title": { "ja": "週末のことを詳しく話す", "en": "Talk about your weekend" }, "hints": ["週末にしたことを、ひとこと詳しく話しましょう", "I went to … with … It was …", "I went to the beach with my family. It was really hot."] },
+            { "id": "askback", "title": { "ja": "相手の週末を聞く", "en": "Ask about their weekend" }, "hints": ["相手の週末についても聞きましょう", "How about you? Did you …?", "How about you? Did you do anything fun?"] },
+            { "id": "daniel", "title": { "ja": "ダニエルさんが遅れると伝える", "en": "Say Daniel is running late" }, "hints": ["ダニエルさんは別の会議で少し遅れると伝えましょう", "Daniel's running … He's …", "Daniel's running a few minutes late. He's in another meeting."] },
+            { "id": "start", "title": { "ja": "先に始めようと提案する", "en": "Suggest starting without him" }, "hints": ["先に始めようと提案しましょう", "Why don't we …? He can …", "Why don't we start? He can catch up later."] }
+          ]
+        },
+        {
+          "tutor": "You are Yuki from the Tokyo office, who hosts the call, speaking at natural speed with relaxed small talk. Open by greeting Emma as the call starts and asking how the week is going. React to Emma's news with interest. When asked about your week, say it's busy in Tokyo with the website launch coming up. Before you start, ask whether the agenda is okay; if Emma asks to change the order, agree and move the budget to the top.",
+          "tasks": [
+            { "id": "news", "title": { "ja": "近況を話す", "en": "Share your news" }, "hints": ["今週の様子と、ひとつニュースを伝えましょう", "Busy, but good. I've just …", "Busy, but good. I've just moved to a new apartment."] },
+            { "id": "askback", "title": { "ja": "相手の近況を聞く", "en": "Ask about their week" }, "hints": ["相手の今週の様子も聞きましょう", "How about you? Are things …?", "How about you? Are things busy in Tokyo?"] },
+            { "id": "order", "title": { "ja": "予算の話を先にしてほしいと頼む", "en": "Ask to do the budget first" }, "hints": ["9時半に抜けるので、予算の話を先にしてほしいと頼みましょう", "Could we do … first? I have to leave at …", "Could we do the budget first? I have to leave at 9:30 my time."] },
+            { "id": "thanks", "title": { "ja": "順番を変えてくれたお礼を言う", "en": "Thank them for being flexible" }, "hints": ["順番を変えてくれたお礼を言いましょう", "Thanks for … I really …", "Thanks for being flexible. I really appreciate it."] }
+          ]
+        }
+      ]
+    }
+  ],
+  "prop": {
+    "label": { "ja": "会議の議題", "en": "Agenda" },
+    "title": "Weekly project call · Website renewal",
+    "sections": [
+      { "heading": "TIME", "items": [
+        { "name": "Tokyo time", "value": "10:00–10:40", "key": "10:00|10 a.m." },
+        { "name": "Singapore time (1 hour behind)", "value": "9:00–9:40", "key": "9:00|9 a.m." }
+      ] },
+      { "heading": "ATTENDEES", "items": [
+        { "name": "Emma Lee", "value": "Singapore office", "key": "Emma" },
+        { "name": "Daniel Ross", "value": "Singapore office", "key": "Daniel" },
+        { "name": "Host", "value": "Tokyo office", "key": "host" }
+      ] },
+      { "heading": "AGENDA (Tokyo time)", "items": [
+        { "name": "1. Updates from each office", "value": "10:00–10:10", "key": "update|updates" },
+        { "name": "2. Launch date", "value": "10:10–10:25", "key": "launch date|launch" },
+        { "name": "3. Budget", "value": "10:25–10:35", "key": "budget" },
+        { "name": "4. Next steps", "value": "10:35–10:40", "key": "next steps" }
+      ] }
+    ],
+    "foot": "Video call · the link is in the calendar invite"
+  }
+}
