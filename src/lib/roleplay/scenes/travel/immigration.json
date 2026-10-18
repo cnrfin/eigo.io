@@ -1,0 +1,83 @@
+{
+  "id": "immigration",
+  "category": "travel",
+  "title": { "ja": "入国審査で質問に答える", "en": "Answering questions at immigration" },
+  "summary": { "ja": "旅行の目的や滞在期間、泊まる場所を聞かれて答える。", "en": "Answer questions about why you're visiting, how long you'll stay and where." },
+  "setting": "The immigration desk at an international airport abroad, after a long flight from Tokyo. An officer checks each traveller's passport and asks a few questions.",
+  "image": "",
+  "studentRole": "a",
+  "roles": [
+    {
+      "id": "a",
+      "name": { "ja": "旅行者", "en": "Traveller" },
+      "persona": "A Japanese traveller arriving in the country.",
+      "levels": [
+        {
+          "tutor": "You are the immigration officer. Be calm and polite. Speak slowly, in short simple questions, one at a time: the purpose of the visit, how long they're staying, and where they're staying. Accept short answers and finish with \"Enjoy your stay.\"",
+          "tasks": [
+            { "id": "purpose", "title": { "ja": "旅行の目的を答える", "en": "Say why you're visiting" }, "hints": ["旅行の目的を答えましょう", "I'm here for …", "I'm here for sightseeing."] },
+            { "id": "length", "title": { "ja": "滞在期間を答える", "en": "Say how long you'll stay" }, "hints": ["何日いるか答えましょう", "For …", "For one week."] },
+            { "id": "stay", "title": { "ja": "泊まる場所を答える", "en": "Say where you're staying" }, "hints": ["泊まる場所を答えましょう", "At a … in …", "At a hotel in the city."] }
+          ]
+        },
+        {
+          "tutor": "You are the immigration officer, polite but businesslike, speaking at natural pace. Ask the purpose of the visit, how long they're staying, the name of their hotel, and what they do for work in Japan.",
+          "tasks": [
+            { "id": "purpose", "title": { "ja": "旅行の目的を答える", "en": "Say why you're visiting" }, "hints": ["旅行の目的を文で答えましょう", "I'm here on … to …", "I'm here on holiday to see the sights."] },
+            { "id": "length", "title": { "ja": "滞在期間と帰国日を答える", "en": "Say how long, and when you leave" }, "hints": ["滞在期間と帰る日を答えましょう", "I'm staying for …, and I fly home on …", "I'm staying for ten days, and I fly home on the 20th."] },
+            { "id": "stay", "title": { "ja": "ホテルの名前を答える", "en": "Name your hotel" }, "hints": ["ホテルの名前と場所を答えましょう", "I'm staying at … in …", "I'm staying at the Park Hotel in the city centre."] },
+            { "id": "job", "title": { "ja": "仕事を答える", "en": "Say what you do" }, "hints": ["日本での仕事を答えましょう", "I work for … in …", "I work for a travel company in Tokyo."] }
+          ]
+        },
+        {
+          "tutor": "You are a careful immigration officer, speaking at natural speed. Ask about the purpose of the visit and follow up with a detail question, ask where they're staying, how they'll pay for the trip, and when they're going back.",
+          "tasks": [
+            { "id": "purpose", "title": { "ja": "目的を詳しく説明する", "en": "Explain why you're visiting" }, "hints": ["目的と、その内容を説明しましょう", "I'm here for a … It's a …", "I'm here for a conference. It's a three-day event for IT companies."] },
+            { "id": "stay", "title": { "ja": "泊まる場所を答える", "en": "Say where you're staying" }, "hints": ["ホテルの名前と場所を答えましょう", "I'm staying at …, near …", "I'm staying at the Bayside Hotel, near the conference centre."] },
+            { "id": "money", "title": { "ja": "滞在費について答える", "en": "Say how you'll pay for the trip" }, "hints": ["会社が払うなど、費用について答えましょう", "My company is paying for … and I have …", "My company is paying for the hotel, and I have a credit card."] },
+            { "id": "return", "title": { "ja": "帰国の予定を答える", "en": "Say when you're going back" }, "hints": ["帰りの便と日にちを答えましょう", "I fly back to … on …", "I fly back to Tokyo on Friday evening."] }
+          ],
+          "twist": {
+            "after": "money",
+            "tutor": "Ask for the exact address of the hotel, as if you need it for the form. They may not have it written down: stay calm and let them explain how they could find it (the booking email on their phone is fine to show).",
+            "task": { "id": "address", "title": { "ja": "住所がわからないことを説明する", "en": "Explain you don't have the address" }, "hints": ["住所は手元にないけど、確認できると伝えましょう", "I don't have … with me, but it's in …", "I don't have the address with me, but it's in my booking email."] }
+          }
+        }
+      ]
+    },
+    {
+      "id": "b",
+      "name": { "ja": "入国審査官", "en": "Immigration officer" },
+      "persona": "An immigration officer checking passports at the airport.",
+      "levels": [
+        {
+          "tutor": "You are a traveller from Japan on a one-week sightseeing trip. Speak slowly and simply, give short answers, and wait for the officer to ask you things.",
+          "tasks": [
+            { "id": "passport", "title": { "ja": "パスポートをお願いする", "en": "Ask for their passport" }, "hints": ["パスポートを見せてもらいましょう", "…, please.", "Passport, please."] },
+            { "id": "purpose", "title": { "ja": "旅行の目的を聞く", "en": "Ask why they're visiting" }, "hints": ["旅行の目的を聞きましょう", "What's the purpose of …?", "What's the purpose of your visit?"] },
+            { "id": "length", "title": { "ja": "滞在期間を聞く", "en": "Ask how long they'll stay" }, "hints": ["何日いるか聞きましょう", "How long are you …?", "How long are you staying?"] },
+            { "id": "finish", "title": { "ja": "パスポートを返す", "en": "Give the passport back" }, "hints": ["パスポートを返して、ひとこと添えましょう", "Here's your … Enjoy …", "Here's your passport. Enjoy your stay."] }
+          ]
+        },
+        {
+          "tutor": "You are a traveller from Japan on a ten-day holiday, speaking at natural pace. You're staying at the Park Hotel and you have a return ticket on your phone.",
+          "tasks": [
+            { "id": "purpose", "title": { "ja": "旅行の目的を聞く", "en": "Ask why they're visiting" }, "hints": ["旅行の目的を聞きましょう", "Are you here for … or …?", "Are you here for business or pleasure?"] },
+            { "id": "stay", "title": { "ja": "泊まる場所を聞く", "en": "Ask where they're staying" }, "hints": ["泊まる場所を聞きましょう", "Where are you …?", "Where are you staying?"] },
+            { "id": "ticket", "title": { "ja": "帰りの航空券を確認する", "en": "Ask about a return ticket" }, "hints": ["帰りの航空券があるか聞きましょう", "Do you have a …?", "Do you have a return ticket?"] },
+            { "id": "job", "title": { "ja": "仕事を聞く", "en": "Ask what they do" }, "hints": ["日本での仕事を聞きましょう", "What do you do …?", "What do you do in Japan?"] }
+          ]
+        },
+        {
+          "tutor": "You are a traveller from Japan, here for a three-day IT conference, a little nervous and speaking at natural speed. You're staying at the Bayside Hotel but you don't know its address by heart; it's in the booking email on your phone.",
+          "tasks": [
+            { "id": "purpose", "title": { "ja": "目的を詳しく聞く", "en": "Ask about the purpose in detail" }, "hints": ["会議の内容を詳しく聞きましょう", "What kind of … is it?", "What kind of conference is it?"] },
+            { "id": "address", "title": { "ja": "ホテルの住所を聞く", "en": "Ask for the hotel's address" }, "hints": ["ていねいにホテルの住所を聞きましょう", "Could you tell me …?", "Could you tell me the address of your hotel?"] },
+            { "id": "reassure", "title": { "ja": "安心させて予約を見せてもらう", "en": "Calm them and ask to see it" }, "hints": ["大丈夫と伝えて、予約を見せてもらいましょう", "That's fine. Could you show me …?", "That's fine. Could you show me the booking on your phone?"] },
+            { "id": "finish", "title": { "ja": "審査を終える", "en": "Finish and welcome them" }, "hints": ["パスポートを返して、歓迎しましょう", "Thank you. Here's … Enjoy …", "Thank you. Here's your passport. Enjoy the conference."] }
+          ]
+        }
+      ]
+    }
+  ]
+}

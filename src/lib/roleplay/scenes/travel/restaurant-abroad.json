@@ -1,0 +1,110 @@
+{
+  "id": "restaurant-abroad",
+  "category": "travel",
+  "title": { "ja": "海外のレストランで食事", "en": "Eating at a restaurant abroad" },
+  "summary": { "ja": "席をお願いして、料理と飲み物を注文し、お会計をする。", "en": "Get a table, order food and drinks, and pay the bill." },
+  "setting": "A casual restaurant in Toronto, Canada, on a weekday evening. It's fairly busy; a server looks after the tables. Tax and tip are not included in menu prices.",
+  "image": "",
+  "studentRole": "a",
+  "roles": [
+    {
+      "id": "a",
+      "name": { "ja": "お客さん", "en": "Diner" },
+      "persona": "A Japanese traveller having dinner with a friend (two people).",
+      "levels": [
+        {
+          "tutor": "You are the server. Speak slowly, in short simple sentences, and ask one thing at a time. Ask how many people, then what they'd like to eat, then what they'd like to drink. Bring the check when they ask for it.",
+          "tasks": [
+            { "id": "people", "title": { "ja": "人数を伝える", "en": "Say how many people" }, "hints": ["人数を伝えましょう", "A table for …, please.", "A table for two, please."] },
+            { "id": "order", "title": { "ja": "料理を注文する", "en": "Order a dish" }, "hints": ["食べたい料理を伝えましょう", "The …, please.", "The burger, please."] },
+            { "id": "drink", "title": { "ja": "飲み物を注文する", "en": "Order a drink" }, "hints": ["飲み物を注文しましょう", "…, please.", "Sparkling water, please."] },
+            { "id": "check", "title": { "ja": "お会計をお願いする", "en": "Ask for the check" }, "hints": ["お会計をお願いしましょう", "Can I have the …?", "Can I have the check, please?"] }
+          ]
+        },
+        {
+          "tutor": "You are the server, speaking at a natural but clear pace with a little small talk. Seat them, take the order, and answer questions about the dishes using the menu (the Caesar salad comes with chicken; the burger comes with fries). Ask how the meal is once during the scene.",
+          "tasks": [
+            { "id": "people", "title": { "ja": "人数を伝える", "en": "Say how many people" }, "hints": ["人数を伝えましょう", "Hi, a table for …, please.", "Hi, a table for two, please."] },
+            { "id": "ask", "title": { "ja": "料理について質問する", "en": "Ask about a dish" }, "hints": ["料理に何が付いてくるか聞きましょう", "What does the … come with?", "What does the steak come with?"] },
+            { "id": "order", "title": { "ja": "料理と飲み物を注文する", "en": "Order food and a drink" }, "hints": ["料理と飲み物を注文しましょう", "Could I have the … and a …?", "Could I have the roast chicken and a soft drink?"] },
+            { "id": "meal", "title": { "ja": "料理の感想を伝える", "en": "Say how the food is" }, "hints": ["料理の感想を伝えましょう", "It's …, thank you.", "It's really good, thank you."] },
+            { "id": "check", "title": { "ja": "お会計をお願いする", "en": "Ask for the check" }, "hints": ["お会計をお願いしましょう", "Could we have …?", "Could we have the check, please?"] }
+          ]
+        },
+        {
+          "tutor": "You are a friendly, chatty server, speaking at natural speed. Mention tonight's special (the fish of the day), give honest recommendations with reasons, and handle special requests. When they ask about the tip, explain it isn't included and most people leave 15 to 20 percent.",
+          "tasks": [
+            { "id": "table", "title": { "ja": "席の希望を伝える", "en": "Ask for the table you'd like" }, "hints": ["人数と、窓際など席の希望を伝えましょう", "There are … of us. Could we sit …?", "There are two of us. Could we sit by the window?"] },
+            { "id": "recommend", "title": { "ja": "おすすめを聞く", "en": "Ask for a recommendation" }, "hints": ["好みを伝えておすすめを聞きましょう", "What would you recommend? I'd like …", "What would you recommend? I'd like something local."] },
+            { "id": "order", "title": { "ja": "リクエストをつけて注文する", "en": "Order with a special request" }, "hints": ["ソースを別にするなど、希望をつけて注文しましょう", "I'll have the …, but could I get …?", "I'll have the salmon, but could I get the sauce on the side?"] },
+            { "id": "check", "title": { "ja": "お会計とチップについて聞く", "en": "Get the check; ask about the tip" }, "hints": ["お会計を頼んで、チップが含まれているか聞きましょう", "Could we have the check? Is the tip …?", "Could we have the check, please? Is the tip included?"] }
+          ],
+          "twist": {
+            "after": "order",
+            "tutor": "Come back a minute after taking the order and apologise: the dish they ordered has just sold out tonight. Suggest one or two other dishes from the menu.",
+            "task": { "id": "replace", "title": { "ja": "ほかの料理に変える", "en": "Choose another dish" }, "hints": ["残念と伝えて、ほかの料理を選びましょう", "That's a shame. I'll have the … instead.", "That's a shame. I'll have the roast chicken instead."] }
+          }
+        }
+      ]
+    },
+    {
+      "id": "b",
+      "name": { "ja": "店員", "en": "Server" },
+      "persona": "The server looking after the tables at the restaurant.",
+      "levels": [
+        {
+          "tutor": "You are a diner who has come in with one friend (two people). Speak slowly and simply, and wait for the server to ask you things. Order the burger and a sparkling water, and ask for the check at the end.",
+          "tasks": [
+            { "id": "people", "title": { "ja": "人数を聞く", "en": "Ask how many people" }, "hints": ["何名様か聞きましょう", "Hi! How many …?", "Hi! How many people?"] },
+            { "id": "order", "title": { "ja": "料理の注文を聞く", "en": "Take the food order" }, "hints": ["何を食べるか聞きましょう", "What would you …?", "What would you like to eat?"] },
+            { "id": "drink", "title": { "ja": "飲み物を聞く", "en": "Ask about drinks" }, "hints": ["飲み物を聞きましょう", "Anything to …?", "Anything to drink?"] },
+            { "id": "check", "title": { "ja": "伝票を渡す", "en": "Bring the check" }, "hints": ["伝票を渡しましょう", "Here's …", "Here's your check."] }
+          ]
+        },
+        {
+          "tutor": "You are a diner with one friend, speaking at natural pace. Ask what the steak comes with before you order, then order the steak and a local beer. When the server asks how the meal is, say it's delicious.",
+          "tasks": [
+            { "id": "seat", "title": { "ja": "席に案内する", "en": "Show them to a table" }, "hints": ["席に案内して、メニューを渡しましょう", "Right this way. Here's …", "Right this way. Here's the menu."] },
+            { "id": "explain", "title": { "ja": "料理について説明する", "en": "Explain a dish" }, "hints": ["ステーキに何が付いてくるか説明しましょう", "It comes with …", "It comes with fries and a small salad."] },
+            { "id": "order", "title": { "ja": "注文を聞いて確認する", "en": "Take and check the order" }, "hints": ["注文を確認しましょう", "So that's the … and a …, right?", "So that's the steak and a local beer, right?"] },
+            { "id": "meal", "title": { "ja": "料理の様子を聞く", "en": "Check on the meal" }, "hints": ["料理はいかがか聞きましょう", "How is …?", "How is everything?"] }
+          ]
+        },
+        {
+          "tutor": "You are a chatty diner with one friend, speaking at natural speed. Ask for a recommendation, then order the salmon with the sauce on the side. At the end, ask whether the tip is included, because tipping is new to you.",
+          "tasks": [
+            { "id": "special", "title": { "ja": "本日のおすすめを紹介する", "en": "Tell them about the special" }, "hints": ["本日のおすすめを紹介しましょう", "Tonight's special is …", "Tonight's special is the fish of the day. It's very fresh."] },
+            { "id": "recommend", "title": { "ja": "理由をつけておすすめする", "en": "Recommend a dish, with a reason" }, "hints": ["理由も添えておすすめしましょう", "I'd recommend the … It's …", "I'd recommend the salmon. It's one of our most popular dishes."] },
+            { "id": "request", "title": { "ja": "リクエストに応える", "en": "Say yes to a request" }, "hints": ["リクエストに応えましょう", "Sure, I can …", "Sure, I can ask the kitchen to put it on the side."] },
+            { "id": "tip", "title": { "ja": "チップについて説明する", "en": "Explain about the tip" }, "hints": ["チップは含まれていないと説明しましょう", "The tip isn't … Most people leave …", "The tip isn't included. Most people leave about 15 to 20 percent."] }
+          ]
+        }
+      ]
+    }
+  ],
+  "prop": {
+    "label": { "ja": "メニュー", "en": "Menu" },
+    "title": "HARBOUR KITCHEN",
+    "sections": [
+      { "heading": "STARTERS", "items": [
+        { "name": "Soup of the day", "value": "$9", "key": "soup" },
+        { "name": "Caesar salad with chicken", "value": "$14", "key": "salad" }
+      ] },
+      { "heading": "MAINS", "items": [
+        { "name": "Fish of the day (tonight's special)", "value": "$28", "key": "fish" },
+        { "name": "Grilled salmon, lemon butter sauce", "value": "$26", "key": "salmon" },
+        { "name": "Steak with fries and a small salad", "value": "$32", "key": "steak" },
+        { "name": "Roast chicken with vegetables", "value": "$22", "key": "chicken" },
+        { "name": "Burger with fries", "value": "$19", "key": "burger" },
+        { "name": "Mushroom pasta (vegetarian)", "value": "$20", "key": "pasta" }
+      ] },
+      { "heading": "DRINKS", "items": [
+        { "name": "Sparkling water", "value": "$4", "key": "water" },
+        { "name": "Soft drinks", "value": "$4", "key": "soft drink" },
+        { "name": "Local beer", "value": "$8", "key": "beer" },
+        { "name": "Glass of wine", "value": "$11", "key": "wine" }
+      ] }
+    ],
+    "foot": "Prices don't include tax or tip"
+  }
+}

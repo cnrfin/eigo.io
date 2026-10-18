@@ -1,0 +1,103 @@
+{
+  "id": "hotel-check-in",
+  "category": "travel",
+  "title": { "ja": "ホテルにチェックイン", "en": "Checking in at a hotel" },
+  "summary": { "ja": "予約を伝えてチェックインし、朝食や部屋のことを聞く。", "en": "Check in with your booking and ask about breakfast and your room." },
+  "setting": "The front desk of the Harbour View Hotel in Sydney, Australia. A guest arrives with a suitcase to check in; the booking is on the confirmation.",
+  "image": "",
+  "studentRole": "a",
+  "roles": [
+    {
+      "id": "a",
+      "name": { "ja": "宿泊客", "en": "Guest" },
+      "persona": "A Japanese traveller checking in for a three-night stay.",
+      "levels": [
+        {
+          "tutor": "You are the front desk clerk. Speak slowly, in short simple sentences, one thing at a time. Find the booking under whatever name they give, ask for their passport, and give them the key to room 805. Answer simply when they ask about breakfast (6:30 to 10, on the ground floor).",
+          "tasks": [
+            { "id": "booking", "title": { "ja": "予約があると伝える", "en": "Say you have a booking" }, "hints": ["名前と予約があることを伝えましょう", "I have a … My name is …", "I have a reservation. My name is Tanaka."] },
+            { "id": "passport", "title": { "ja": "パスポートを渡す", "en": "Hand over your passport" }, "hints": ["パスポートを渡しましょう", "Here's my …", "Here's my passport."] },
+            { "id": "breakfast", "title": { "ja": "朝食の時間を聞く", "en": "Ask what time breakfast is" }, "hints": ["朝食の時間を聞きましょう", "What time is …?", "What time is breakfast?"] }
+          ]
+        },
+        {
+          "tutor": "You are the front desk clerk, speaking at a natural but clear pace with a little small talk (how was the flight?). Check the booking details with them. Rooms on high floors are available if they ask. Breakfast is 6:30 to 10 on the ground floor; check-out is by 11 a.m.",
+          "tasks": [
+            { "id": "booking", "title": { "ja": "予約の名前と泊数を伝える", "en": "Say your name and how long" }, "hints": ["予約の名前と泊数を伝えましょう", "I have a reservation under … for …", "I have a reservation under Tanaka for three nights."] },
+            { "id": "room", "title": { "ja": "高い階の部屋をお願いする", "en": "Ask for a high floor" }, "hints": ["高い階など部屋の希望を伝えましょう", "Could I have a room on …?", "Could I have a room on a high floor, please?"] },
+            { "id": "breakfast", "title": { "ja": "朝食の場所を聞く", "en": "Ask where breakfast is" }, "hints": ["朝食の場所と時間を聞きましょう", "Where is …? And what time …?", "Where is breakfast served? And what time does it start?"] },
+            { "id": "checkout", "title": { "ja": "チェックアウトの時間を聞く", "en": "Ask the check-out time" }, "hints": ["チェックアウトの時間を聞きましょう", "What time is …?", "What time is check-out?"] }
+          ]
+        },
+        {
+          "tutor": "You are a friendly front desk clerk, speaking at natural speed with small talk. It's 1 p.m. and check-in is from 3 p.m. Rooms away from the lift are available. Late check-out until 1 p.m. costs $30, and you can do it for them.",
+          "tasks": [
+            { "id": "booking", "title": { "ja": "予約内容を伝える", "en": "Give your booking details" }, "hints": ["名前と予約内容をまとめて伝えましょう", "Hi, I'm checking in. The booking is under …", "Hi, I'm checking in. The booking is under Tanaka, for three nights."] },
+            { "id": "room", "title": { "ja": "静かな部屋をお願いする", "en": "Ask for a quiet room" }, "hints": ["理由を言って、静かな部屋をお願いしましょう", "I'm a light sleeper. Would it be possible to …?", "I'm a light sleeper. Would it be possible to have a room away from the lift?"] },
+            { "id": "breakfast", "title": { "ja": "朝食について聞く", "en": "Ask about breakfast" }, "hints": ["朝食が含まれているか、どこで食べるか聞きましょう", "Is breakfast …, and where is it …?", "Is breakfast included, and where is it served?"] },
+            { "id": "late", "title": { "ja": "レイトチェックアウトを頼む", "en": "Ask for a late check-out" }, "hints": ["最終日に遅くチェックアウトできるか聞きましょう", "On the last day, could I …?", "On the last day, could I check out a bit later?"] }
+          ],
+          "twist": {
+            "after": "breakfast",
+            "tutor": "Apologise: their room isn't ready yet, because check-in is from 3 p.m. and it's only 1 p.m. Let them work out what to do (you can keep their bags, and the café in the lobby is open).",
+            "task": { "id": "bags", "title": { "ja": "荷物を預かってもらう", "en": "Ask to leave your bags" }, "hints": ["荷物を預けられるか聞きましょう", "No problem. Could I leave … and come back …?", "No problem. Could I leave my bags here and come back later?"] }
+          }
+        }
+      ]
+    },
+    {
+      "id": "b",
+      "name": { "ja": "フロント係", "en": "Front desk" },
+      "persona": "A clerk at the front desk of the Harbour View Hotel.",
+      "levels": [
+        {
+          "tutor": "You are a guest checking in, with a booking under the name Tanaka. Speak slowly and simply, and wait for the clerk to ask you things. Hand over your passport when asked.",
+          "tasks": [
+            { "id": "welcome", "title": { "ja": "チェックインか聞く", "en": "Ask if they're checking in" }, "hints": ["あいさつして、チェックインか聞きましょう", "Hello! Are you …?", "Hello! Are you checking in?"] },
+            { "id": "passport", "title": { "ja": "パスポートをお願いする", "en": "Ask for their passport" }, "hints": ["パスポートを見せてもらいましょう", "Can I see …?", "Can I see your passport, please?"] },
+            { "id": "key", "title": { "ja": "部屋番号を伝えて鍵を渡す", "en": "Give the room number and key" }, "hints": ["部屋番号を伝えて鍵を渡しましょう", "You're in room … Here's …", "You're in room 805. Here's your key."] }
+          ]
+        },
+        {
+          "tutor": "You are a guest checking in, speaking at natural pace. Your booking is under Tanaka. Ask what time breakfast is and whether the Wi-Fi is free.",
+          "tasks": [
+            { "id": "name", "title": { "ja": "名前を聞く", "en": "Ask for their name" }, "hints": ["予約の名前を聞きましょう", "Could I have …?", "Could I have your name, please?"] },
+            { "id": "confirm", "title": { "ja": "予約内容を確認する", "en": "Check the booking" }, "hints": ["泊数と部屋を確認しましょう", "That's a … for …, right?", "That's a double room for three nights, right?"] },
+            { "id": "breakfast", "title": { "ja": "朝食について答える", "en": "Answer about breakfast" }, "hints": ["朝食の時間と場所を伝えましょう", "Breakfast is from … on …", "Breakfast is from 6:30 to 10 on the ground floor."] },
+            { "id": "wifi", "title": { "ja": "Wi-Fiについて答える", "en": "Answer about Wi-Fi" }, "hints": ["Wi-Fiは無料と伝えましょう", "Yes, the Wi-Fi is … The password is …", "Yes, the Wi-Fi is free. The password is on your key card."] }
+          ]
+        },
+        {
+          "tutor": "You are a guest who has arrived early, at 1 p.m., speaking at natural speed. Your booking is under Tanaka. You're tired and hope to go straight to your room. Later, ask whether you can check out late on your last day.",
+          "tasks": [
+            { "id": "welcome", "title": { "ja": "歓迎して予約を確認する", "en": "Welcome them and find the booking" }, "hints": ["あいさつして、予約を確認しましょう", "Welcome to … I've found …", "Welcome to the Harbour View. I've found your booking for three nights."] },
+            { "id": "notready", "title": { "ja": "部屋がまだ準備できていないと伝える", "en": "Say the room isn't ready" }, "hints": ["ていねいに謝って、チェックインの時間を伝えましょう", "I'm sorry, your room isn't … Check-in is from …", "I'm sorry, your room isn't ready yet. Check-in is from 3 p.m."] },
+            { "id": "bags", "title": { "ja": "荷物を預かると申し出る", "en": "Offer to keep their bags" }, "hints": ["荷物を預かれると伝えましょう", "We can keep … until …", "We can keep your bags until your room is ready."] },
+            { "id": "late", "title": { "ja": "レイトチェックアウトについて答える", "en": "Answer about late check-out" }, "hints": ["料金を添えて答えましょう", "You can check out at … for …", "You can check out at 1 p.m. for an extra 30 dollars."] }
+          ]
+        }
+      ]
+    }
+  ],
+  "prop": {
+    "label": { "ja": "予約確認書", "en": "Booking" },
+    "title": "HARBOUR VIEW HOTEL · Booking confirmation",
+    "sections": [
+      { "heading": "YOUR BOOKING", "items": [
+        { "name": "Booking number", "value": "HV-4821", "key": "booking number" },
+        { "name": "Guest name", "value": "Tanaka", "key": "Tanaka" },
+        { "name": "Room", "value": "Double room, non-smoking", "key": "double" },
+        { "name": "Stay", "value": "3 nights", "key": "three nights" },
+        { "name": "Breakfast", "value": "Included", "key": "included" }
+      ] },
+      { "heading": "HOTEL INFORMATION", "items": [
+        { "name": "Check-in", "value": "from 3:00 p.m.", "key": "check-in" },
+        { "name": "Check-out", "value": "by 11:00 a.m.", "key": "check-out" },
+        { "name": "Late check-out until 1:00 p.m.", "value": "$30", "key": "late" },
+        { "name": "Breakfast", "value": "6:30–10:00 · ground floor", "key": "breakfast" },
+        { "name": "Wi-Fi", "value": "Free · password on your key card", "key": "Wi-Fi" }
+      ] }
+    ],
+    "foot": "Paid in full online · Please show your passport at check-in"
+  }
+}

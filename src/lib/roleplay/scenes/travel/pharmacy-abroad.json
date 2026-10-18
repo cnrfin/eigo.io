@@ -1,0 +1,77 @@
+{
+  "id": "pharmacy-abroad",
+  "category": "travel",
+  "title": { "ja": "薬局で症状を伝える", "en": "Explaining symptoms at a pharmacy" },
+  "summary": { "ja": "風邪の症状を伝えて、薬の飲み方や注意することを聞く。", "en": "Describe your cold symptoms and ask how to take the medicine." },
+  "setting": "A pharmacy in a city abroad, in the afternoon. A traveller has caught a cold (sore throat, cough, a slight fever) and comes to the counter. The pharmacist suggests over-the-counter cold medicine and simple advice; nothing serious.",
+  "image": "",
+  "studentRole": "a",
+  "roles": [
+    {
+      "id": "a",
+      "name": { "ja": "お客さん", "en": "Customer" },
+      "persona": "A Japanese traveller who has caught a cold on holiday.",
+      "levels": [
+        {
+          "tutor": "You are the pharmacist. Speak slowly, in short simple sentences, one question at a time. Ask what's wrong and how long they've felt ill, then give them cold tablets: two tablets, three times a day, after meals.",
+          "tasks": [
+            { "id": "symptom", "title": { "ja": "症状を伝える", "en": "Say what's wrong" }, "hints": ["症状を伝えましょう", "I have a …", "I have a sore throat."] },
+            { "id": "since", "title": { "ja": "いつからか伝える", "en": "Say when it started" }, "hints": ["いつから具合が悪いか伝えましょう", "Since …", "Since yesterday."] },
+            { "id": "how", "title": { "ja": "薬の飲み方を聞く", "en": "Ask how to take it" }, "hints": ["薬の飲み方を聞きましょう", "How many … do I take?", "How many tablets do I take?"] }
+          ]
+        },
+        {
+          "tutor": "You are the pharmacist, speaking at a natural but clear pace, kind and calm. Ask about their symptoms, how long they've had them, and whether they have any allergies. Recommend a cold medicine: one tablet three times a day after meals; it may make them a little sleepy.",
+          "tasks": [
+            { "id": "symptom", "title": { "ja": "症状を詳しく伝える", "en": "Describe your symptoms" }, "hints": ["のどの痛みや熱など、症状を伝えましょう", "I have a … and a slight …", "I have a sore throat and a slight fever."] },
+            { "id": "since", "title": { "ja": "いつからか伝える", "en": "Say when it started" }, "hints": ["いつから始まったか伝えましょう", "It started …", "It started two days ago."] },
+            { "id": "allergy", "title": { "ja": "アレルギーについて答える", "en": "Answer about allergies" }, "hints": ["アレルギーがあるかどうか答えましょう", "No, I don't have …", "No, I don't have any allergies."] },
+            { "id": "how", "title": { "ja": "飲む回数を聞く", "en": "Ask how often to take it" }, "hints": ["一日に何回飲むか聞きましょう", "How often should I …?", "How often should I take this?"] }
+          ]
+        },
+        {
+          "tutor": "You are a kind, careful pharmacist, speaking at natural speed. Ask follow-up questions about their symptoms. You have a non-drowsy cold medicine. If they mention medicine from home, ask to see the box and say they shouldn't take both together. Advise them to see a doctor if it isn't better in three days, or if they get a high fever.",
+          "tasks": [
+            { "id": "symptom", "title": { "ja": "症状を詳しく説明する", "en": "Explain your symptoms in detail" }, "hints": ["いつからか、いつひどくなるかも伝えましょう", "I've had a … for … and it's worse …", "I've had a bad cough for three days, and it's worse at night."] },
+            { "id": "drowsy", "title": { "ja": "眠くならない薬を頼む", "en": "Ask for a non-drowsy medicine" }, "hints": ["運転する予定を伝えて、眠くならない薬を聞きましょう", "I need to drive tomorrow. Is there anything that …?", "I need to drive tomorrow. Is there anything that won't make me sleepy?"] },
+            { "id": "own", "title": { "ja": "持っている薬について相談する", "en": "Ask about your own medicine" }, "hints": ["日本の薬を持っていると伝えて、一緒に飲めるか聞きましょう", "I brought some … from Japan. Can I …?", "I brought some cold medicine from Japan. Can I take it with this?"] },
+            { "id": "doctor", "title": { "ja": "病院に行くべきか聞く", "en": "Ask when to see a doctor" }, "hints": ["どうなったら病院に行くべきか聞きましょう", "When should I …?", "When should I see a doctor?"] }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b",
+      "name": { "ja": "薬剤師", "en": "Pharmacist" },
+      "persona": "A kind pharmacist at the counter.",
+      "levels": [
+        {
+          "tutor": "You are a traveller with a sore throat and a slight fever since yesterday. Speak slowly and simply, and wait for the pharmacist to ask you things.",
+          "tasks": [
+            { "id": "help", "title": { "ja": "どうしたか聞く", "en": "Ask what's wrong" }, "hints": ["どうしたか聞きましょう", "Hello. What …?", "Hello. What seems to be the problem?"] },
+            { "id": "fever", "title": { "ja": "熱があるか聞く", "en": "Ask about a fever" }, "hints": ["熱があるか聞きましょう", "Do you have …?", "Do you have a fever?"] },
+            { "id": "how", "title": { "ja": "薬の飲み方を伝える", "en": "Say how to take it" }, "hints": ["何錠を何回飲むか伝えましょう", "Take … tablets … times a day.", "Take two tablets three times a day."] }
+          ]
+        },
+        {
+          "tutor": "You are a traveller with a sore throat and a slight fever that started two days ago, speaking at natural pace. You have no allergies. Ask how often to take the medicine.",
+          "tasks": [
+            { "id": "symptoms", "title": { "ja": "症状を聞く", "en": "Ask about their symptoms" }, "hints": ["どんな症状か聞きましょう", "What are your …?", "What are your symptoms?"] },
+            { "id": "since", "title": { "ja": "いつからか聞く", "en": "Ask how long they've had it" }, "hints": ["いつからか聞きましょう", "How long have you …?", "How long have you had it?"] },
+            { "id": "allergy", "title": { "ja": "アレルギーを聞く", "en": "Ask about allergies" }, "hints": ["アレルギーがあるか聞きましょう", "Do you have any …?", "Do you have any allergies?"] },
+            { "id": "how", "title": { "ja": "飲み方を説明する", "en": "Explain how to take it" }, "hints": ["飲む回数とタイミングを伝えましょう", "Take one tablet … times a day, after …", "Take one tablet three times a day, after meals."] }
+          ]
+        },
+        {
+          "tutor": "You are a worried traveller with a bad cough for three days, worse at night, speaking at natural speed. You need to drive tomorrow. You have cold medicine from Japan with you, and you want to know when you should see a doctor.",
+          "tasks": [
+            { "id": "other", "title": { "ja": "ほかの薬を飲んでいるか聞く", "en": "Ask about other medicine" }, "hints": ["今ほかに飲んでいる薬があるか聞きましょう", "Are you taking any … at the moment?", "Are you taking any other medicine at the moment?"] },
+            { "id": "nondrowsy", "title": { "ja": "眠くならない薬をすすめる", "en": "Recommend a non-drowsy medicine" }, "hints": ["眠くならないので運転できると伝えましょう", "This one is …, so you can …", "This one is non-drowsy, so you can still drive."] },
+            { "id": "both", "title": { "ja": "一緒に飲まないよう伝える", "en": "Say not to take both" }, "hints": ["日本の薬と一緒に飲まないよう伝えましょう", "Please don't take it with …", "Please don't take it with your medicine from Japan."] },
+            { "id": "doctor", "title": { "ja": "病院に行く目安を伝える", "en": "Say when to see a doctor" }, "hints": ["何日続いたら病院に行くべきか伝えましょう", "If it's not better in …, please …", "If it's not better in three days, please see a doctor."] }
+          ]
+        }
+      ]
+    }
+  ]
+}
