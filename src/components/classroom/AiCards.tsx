@@ -82,11 +82,11 @@ function OneCard({
     saveRef.current = save
   })
 
-  // saves on its own after a while
+  // saves on its own after a while; switching version (tap or voice) starts the wait again, so there's time to read it
   useEffect(() => {
     const id = window.setTimeout(() => saveRef.current(), AUTO_SAVE_MS)
     return () => window.clearTimeout(id)
-  }, [])
+  }, [pick])
 
   // voice: "save it", "the polite one", or saying the phrase (ticked, then saved)
   const state = useRef({ pick, said, term })
