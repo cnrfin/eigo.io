@@ -23,6 +23,9 @@ const words = (s) => s.trim().split(/\s+/).filter(Boolean).length
 const norm = (t) => t.toLowerCase().normalize('NFKC').replace(/[’'`"“”「」『』]/g, '').replace(/[^\p{L}\p{N}]+/gu, ' ').trim()
 const str = (v) => typeof v === 'string' && v.trim().length > 0
 
+// prop keys that light rows up on unrelated sentences ("video call", "check in", "by card")
+const COMMON = new Set(['the', 'a', 'an', 'and', 'or', 'it', 'this', 'that', 'here', 'there', 'you', 'we', 'i', 'yes', 'no', 'ok', 'okay', 'time', 'day', 'today', 'now', 'call', 'video', 'check', 'change', 'more', 'one', 'two', 'three', 'first', 'next', 'last', 'new', 'good', 'great', 'nice', 'please', 'thanks', 'thank you', 'hello', 'hi', 'sorry'])
+
 let errors = 0
 let warnings = 0
 const ids = new Map()
@@ -102,6 +105,8 @@ function checkScene(s, cat, file, where) {
   ja(s.summary, where, 'summary')
   if (s.summary?.ja && s.summary.ja.length > 60) warn(where, 'summary.ja is long (over 60 characters): it is one line in the picker')
   if (!str(s.setting) || JA.test(s.setting)) report(where, 'setting must be English text (for the AI tutor)')
+  // the setting goes to the AI tutor whichever role the student plays, so it can't say what "the student" does or is
+  else if (/\b(the )?student'?s?\b/i.test(s.setting)) report(where, 'setting mentions "the student": it is used in both roles, so name the characters instead ("Emma calls a Japanese friend…")')
   if (typeof s.image !== 'string') report(where, 'image must be a string ("" until the picture is added)')
   else if (s.image) {
     if (!/^\/roleplay\/[a-z0-9-]+\.(jpg|jpeg|png|webp)$/.test(s.image)) report(where, `image "${s.image}" should be like "/roleplay/${id}.jpg"`)
@@ -114,6 +119,8 @@ function checkScene(s, cat, file, where) {
   for (const r of s.roles) {
     const rw = `${where} role ${r?.id}`
     ja(r?.name, rw, 'name')
+    // after a swap the AI tutor plays this role ("You play: <name>"), so a role can't be called "You"
+    if (/^\s*you\b/i.test(r?.name?.en ?? '') || /^\s*あなた/.test(r?.name?.ja ?? '')) report(rw, `name "${r?.name?.ja} / ${r?.name?.en}" reads wrong when the AI plays this role after a swap: describe the character ("日本人の友だち / Japanese friend")`)
     if (!str(r?.persona) || JA.test(r.persona)) report(rw, 'persona must be English text (for the AI tutor)')
     if (!Array.isArray(r?.levels) || r.levels.length !== 3) {
       report(rw, 'levels must have exactly 3 levels (初級, 中級, 上級)')
@@ -158,6 +165,8 @@ function checkScene(s, cat, file, where) {
       for (const alt of it.key.split('|')) {
         const k = norm(alt)
         if (k.length < 2) report(where, `prop item "${it.name}": key "${alt}" is too short to match`)
+        else if (/^\d{1,2}$/.test(k)) warn(where, `prop item "${it.name}": key "${alt}" is just "${k}", which lights up on any ${k} ("${k} minutes", "the ${k}th"): use the phrase people say ("${k} dollars", "${k} percent")`)
+        else if (COMMON.has(k)) warn(where, `prop item "${it.name}": key "${alt}" is a common word that comes up in other sentences: use a phrase that's only said about this item`)
         else keys.push({ k, name: it.name })
       }
     }

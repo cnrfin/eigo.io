@@ -9,7 +9,7 @@
   "roles": [
     {
       "id": "a",
-      "name": { "ja": "あなた（カスタマー担当）", "en": "You (customer service)" },
+      "name": { "ja": "カスタマー担当", "en": "Customer service" },
       "persona": "A member of the customer service team at Kaze Tableware, answering the phone in English.",
       "levels": [
         {

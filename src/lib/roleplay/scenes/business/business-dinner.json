@@ -9,7 +9,7 @@
   "roles": [
     {
       "id": "a",
-      "name": { "ja": "あなた（出張中）", "en": "You (visiting)" },
+      "name": { "ja": "出張中の社員", "en": "Visitor from Tokyo" },
       "persona": "A member of the Tokyo office on a business trip to London, having dinner with a client.",
       "levels": [
         {

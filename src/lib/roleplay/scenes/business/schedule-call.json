@@ -9,7 +9,7 @@
   "roles": [
     {
       "id": "a",
-      "name": { "ja": "あなた（東京）", "en": "You (Tokyo)" },
+      "name": { "ja": "東京の担当者", "en": "Account manager (Tokyo)" },
       "persona": "A member of the Tokyo office calling a client to arrange a meeting about renewing their contract.",
       "levels": [
         {

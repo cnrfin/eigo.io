@@ -9,7 +9,7 @@
   "roles": [
     {
       "id": "a",
-      "name": { "ja": "あなた（担当者）", "en": "You (project manager)" },
+      "name": { "ja": "プロジェクト担当者", "en": "Project manager" },
       "persona": "A project manager at a Tokyo web company that is building a client's online shop.",
       "levels": [
         {

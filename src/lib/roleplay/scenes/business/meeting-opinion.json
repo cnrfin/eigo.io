@@ -9,7 +9,7 @@
   "roles": [
     {
       "id": "a",
-      "name": { "ja": "あなた", "en": "You" },
+      "name": { "ja": "マーケティング担当", "en": "Marketing team member" },
       "persona": "A member of the marketing team who thinks in-store events matter too.",
       "levels": [
         {
