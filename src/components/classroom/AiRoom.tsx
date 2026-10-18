@@ -11,7 +11,8 @@ import ChatPanel from './ChatPanel'
 import WordList, { WordsButton } from './WordList'
 import AiCards, { type HearFn, type ShownCard } from './AiCards'
 import { shrinkInto } from './save-fly'
-import { lastExchange, mayHaveCard, tutorItemId, type SayStyle } from '@/lib/ai-tutor/cards'
+import { cueCard, fitDraft, lastExchange, mayHaveCard, mergeCard, tutorItemId, type Card, type SayStyle } from '@/lib/ai-tutor/cards'
+import { hasJapanese, words as wordsOf } from '@/lib/ai-tutor/voice-match'
 import { Ico } from './Icons'
 import SlideStage from './SlideStage'
 import Toolbar from './Toolbar'
@@ -69,6 +70,16 @@ const BOARD_OFF_CUE = /\b(?:I'll|I will|let me|let's|let us|we'll)\s+(?:close|hi
 const mmss = (s: number) => {
   s = Math.max(0, Math.floor(s))
   return String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0')
+}
+
+/** The first of these that gives a card, or null when none does (or after ms). */
+function firstCard(ps: Promise<Card | null>[], ms: number): Promise<Card | null> {
+  return new Promise((resolve) => {
+    let left = ps.length
+    const none = () => --left === 0 && resolve(null)
+    for (const p of ps) p.then((c) => (c ? resolve(c) : none()), none)
+    setTimeout(() => resolve(null), Math.max(0, ms))
+  })
 }
 
 export default function AiRoom(props: Props) {
@@ -221,11 +232,11 @@ export default function AiRoom(props: Props) {
     (term: string, ja: string) => {
       const itemId = tutorItemId(term)
       const already = savedRef.current.has(itemId)
+      // (the AI tutor isn't told: it should react to how the student said it, not to the saving)
       if (!already) onSaveWord({ source: 'tutor', itemId, term, ja }, { quiet: true })
-      void act({ kind: 'card', what: 'saved', text: term })
       return { itemId, already }
     },
-    [onSaveWord, act],
+    [onSaveWord],
   )
   /** the card shrinks into the word-bank button (or, with the word list open, into its new top row), then it's saved */
   const saveFromCard = useCallback(
@@ -248,21 +259,84 @@ export default function AiRoom(props: Props) {
     },
     [saveTerm],
   )
+  /** the tutor line an instant card came from (so the end-of-turn check doesn't make a second one) */
+  const cardFor = useRef<Line | null>(null)
   const showCard = useCallback(
-    (c: ShownCard['card']) => {
+    (c: ShownCard['card'], from?: number) => {
       // a card that was still up gets saved as it goes (it was going to be saved anyway)
       const prev = shownRef.current?.card
       if (prev) saveTerm(prev.kind === 'correction' ? prev.now : prev.options[0].text, prev.kind === 'correction' ? prev.ja : prev.heard)
-      cardFrom.current = lines.current.length
+      cardFrom.current = from ?? lines.current.length
       setUndo(null)
-      setShown({ id: ++cardSeq.current, card: c })
+      const id = ++cardSeq.current
+      setShown({ id, card: c })
+      return id
     },
     [saveTerm],
+  )
+  /** prepared after each student turn: the card the AI tutor may need next (so it can appear complete at once) */
+  const prep = useRef<{ line: Line; text: string; card: Promise<Card | null> } | null>(null)
+  const prepTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const prepare = useCallback(() => {
+    if (prepTimer.current) clearTimeout(prepTimer.current)
+    prepTimer.current = null
+    const sid = sessionId.current
+    const L = lines.current
+    // the student's turn that just ended (the AI tutor may already have started its reply)
+    let k = L.length - 1
+    while (k >= 0 && L[k].from === 'tutor') k--
+    const line = L[k]
+    if (!sid || closing.current || !line) return
+    const text = line.text.trim()
+    if (!(hasJapanese(text) || wordsOf(text).length >= 3)) return
+    if (prep.current?.line === line && prep.current.text === text) return
+    const recent = L.slice(Math.max(0, k - 3), k + 1).map((l) => ({ from: l.from, text: l.text }))
+    prep.current = { line, text, card: aiAssist(info.bookingId, { sessionId: sid, lines: recent, mode: 'prepare' }) }
+  }, [info.bookingId])
+  /**
+   * The AI tutor has just said the corrected / English sentence. Show the card complete: at once when the
+   * prepared card is about that sentence; otherwise as soon as the helper has the details (it's asked now),
+   * and after 3 s at the latest (then without the reason line, which is added if it comes later).
+   */
+  const cueNow = useCallback(
+    (line: Line) => {
+      const sid = sessionId.current
+      if (!sid || closing.current || cardFor.current === line) return
+      const L = lines.current
+      const i = L.lastIndexOf(line)
+      const recent = L.slice(Math.max(0, i - 5), i + 1).map((l) => ({ from: l.from, text: l.text }))
+      const ex = lastExchange(recent)
+      const local = cueCard(ex.student, ex.tutor)
+      if (!local) return
+      cardFor.current = line
+      const from = L.length // the student's attempt starts after this
+      const studentLine = i > 0 && L[i - 1].from === 'student' ? L[i - 1] : null
+      const prepared = prep.current && prep.current.line === studentLine ? prep.current.card : Promise.resolve(null)
+      const fromPrep = prepared.then((c) => fitDraft(local, c))
+      let late: Promise<Card | null> | null = null
+      const helper = () => (late ??= aiAssist(info.bookingId, { sessionId: sid, lines: recent }))
+      const show = (c: Card, complete: boolean) => {
+        if (closing.current || cardFor.current !== line) return
+        const id = showCard(c, from)
+        if (!complete) void helper().then((h) => h && setShown((cur) => (cur?.id === id ? { id, card: mergeCard(cur.card, h) } : cur)))
+      }
+      const started = Date.now()
+      void (async () => {
+        // the prepared card is usually ready already
+        const quick = await Promise.race([fromPrep, new Promise<undefined>((r) => setTimeout(() => r(undefined), 150))])
+        if (quick) return show(quick, true)
+        const full = await firstCard([fromPrep, helper().then((h) => fitDraft(local, h))], 3000 - (Date.now() - started))
+        show(full ?? local, !!full)
+      })()
+    },
+    [info.bookingId, showCard],
   )
   /** after the AI tutor's turn: ask the helper only when the turn looks like a correction or "How do I say…?" */
   const runAssist = useCallback(async () => {
     const sid = sessionId.current
     if (!sid || closing.current) return
+    const last = lines.current[lines.current.length - 1]
+    if (last && last === cardFor.current) return // this turn already has its card
     const recent = lines.current.slice(-6).map((l) => ({ from: l.from, text: l.text }))
     const ex = lastExchange(recent)
     if (!mayHaveCard(ex.student, ex.tutor)) return
@@ -275,7 +349,16 @@ export default function AiRoom(props: Props) {
   const cardHook = useRef<(from: Line['from']) => void>(() => {})
   useEffect(() => {
     cardHook.current = (from) => {
+      if (from === 'student') {
+        // prepare a moment after the student stops (and at once if the AI tutor starts first)
+        if (prepTimer.current) clearTimeout(prepTimer.current)
+        prepTimer.current = setTimeout(prepare, 700)
+      }
       if (from === 'tutor') {
+        if (prepTimer.current) prepare()
+        // the card appears as soon as the AI tutor has said the sentence; otherwise the helper looks after the turn
+        const last = lines.current[lines.current.length - 1]
+        if (last?.from === 'tutor') cueNow(last)
         if (assistTimer.current) clearTimeout(assistTimer.current)
         assistTimer.current = setTimeout(() => void runAssist(), 1300)
       } else if (shownRef.current) {
@@ -290,8 +373,9 @@ export default function AiRoom(props: Props) {
     }
     return () => {
       if (assistTimer.current) clearTimeout(assistTimer.current)
+      if (prepTimer.current) clearTimeout(prepTimer.current)
     }
-  }, [runAssist])
+  }, [runAssist, cueNow, prepare])
   useEffect(() => {
     if (!undo) return
     const id = setTimeout(() => setUndo((u) => (u?.id === undo.id ? null : u)), 4000)

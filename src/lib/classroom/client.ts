@@ -131,8 +131,11 @@ export async function saveAiTranscript(bookingId: string, sessionId: string, lin
 export type SlideRef = { courseId: string; lessonId: string; slideId: string }
 
 /** Something the student did in an AI lesson that the AI tutor should react to. */
-/** AI lessons: a correction or "How do I say…?" card for the AI tutor's last turn (null = none). */
-export async function aiAssist(bookingId: string, body: { sessionId: string; lines: { from: 'student' | 'tutor'; text: string }[] }): Promise<Card | null> {
+/** AI lessons: a correction or "How do I say…?" card for the AI tutor's last turn, or (mode 'prepare') prepared after a student turn (null = none). */
+export async function aiAssist(
+  bookingId: string,
+  body: { sessionId: string; lines: { from: 'student' | 'tutor'; text: string }[]; mode?: 'prepare' },
+): Promise<Card | null> {
   try {
     const r = await call(`/api/classroom/${bookingId}/ai-assist`, { method: 'POST', body: JSON.stringify(body) })
     return r.ok ? (((await r.json()).card as Card | null) ?? null) : null

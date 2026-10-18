@@ -89,3 +89,95 @@ export function tutorItemId(term: string): string {
   for (const c of words(term).join(' ')) h = ((h << 5) + h + c.charCodeAt(0)) >>> 0
   return `tutor:${h.toString(36)}`
 }
+
+// ---------- instant cards, straight from the AI tutor's words ----------
+// The brief asks for "A more natural way is: <sentence>" and "In English you can say: <sentence>". As soon as
+// that sentence is complete in the transcript, the card can appear (while the AI tutor is still saying it);
+// the helper then fills in the reason, the Japanese and other versions a moment later (mergeCard).
+const CUE =
+  /(?:\b(a\s+)?(?:more\s+)?natural\s+way(?:\s+to\s+say\s+(?:it|that|this))?\s+(?:is|would\s+be)(?:\s+to\s+say)?|\b(in\s+english,?\s+(?:you|we)\s+(?:can|could)\s+say)|\b(?:you\s+could\s+say|you\s+can\s+say|we\s+(?:usually\s+)?say|try\s+saying))\s*[:,]?\s*/i
+
+/** The sentence after the cue, once it's complete (ends in . ! ?); null while it's still being said. */
+export function cueSentence(tutor: string): { sentence: string; say: boolean } | null {
+  const m = CUE.exec(tutor)
+  if (!m) return null
+  const rest = tutor.slice(m.index + m[0].length).replace(/^["“'「]+/, '')
+  const end = rest.search(/[.!?](?=\s|["”'」]|$)/)
+  if (end < 0) return null
+  const sentence = rest.slice(0, end + 1).replace(/["”'」]+$/, '').trim()
+  const n = words(sentence).length
+  if (n < 2 || n > 22) return null
+  return { sentence, say: !!m[2] }
+}
+
+/** The last sentence (or the whole thing, if short) of what the student said, for the struck-through line. */
+const lastSentence = (s: string) => {
+  const parts = s.trim().split(/(?<=[.!?。？！])\s+/).filter(Boolean)
+  return (parts.length > 1 && words(s).length > 14 ? parts[parts.length - 1] : s).trim().slice(0, 160)
+}
+
+/** A card made in the browser from the AI tutor's words alone (no reason or Japanese yet). */
+export function cueCard(student: string, tutor: string): Card | null {
+  const c = cueSentence(tutor)
+  if (!c || !student) return null
+  const ja = hasJapanese(student)
+  if (c.say || ja) return { kind: 'say', heard: ja ? lastSentence(student).slice(0, 120) : '', options: [{ style: 'normal', text: c.sentence }] }
+  if (sameWords(c.sentence, student) || share(student, c.sentence) === 1) return null
+  return { kind: 'correction', was: lastSentence(student), now: c.sentence, ja: '', why: '' }
+}
+
+// ---------- prepared cards ----------
+// After each student turn the helper prepares the card the AI tutor may need next (lib/ai-tutor/assist.ts
+// prepareCard): the natural version of a mistake, or the English for something said in Japanese. When the AI
+// tutor then says that sentence, the complete card can appear at once (fitDraft).
+
+/** Accept a prepared card only if it fits what the student said. */
+export function validateDraft(raw: unknown, student: string): Card | null {
+  if (!raw || typeof raw !== 'object' || !student) return null
+  const r = raw as Record<string, unknown>
+  if (r.kind === 'correction') {
+    const now = clip(r.now, 200)
+    const was = clip(r.was, 200)
+    if (!okLength(now) || !was || sameWords(now, was) || share(student, was) < 0.5) return null
+    return { kind: 'correction', was, now, ja: clip(r.ja, 120), why: clip(r.why, 80) }
+  }
+  if (r.kind === 'say') {
+    if (!(hasJapanese(student) || ASK_HINT.test(student))) return null
+    const options = (['normal', 'polite', 'casual'] as const).map((style) => ({ style, text: clip(r[style], 200) })).filter((o) => okLength(o.text))
+    const uniq = options.filter((o, i) => !options.slice(0, i).some((p) => sameWords(p.text, o.text)))
+    if (!uniq.length) return null
+    return { kind: 'say', heard: clip(r.heard, 120) || (hasJapanese(student) ? clip(student, 120) : ''), options: uniq }
+  }
+  return null
+}
+
+const alike = (a: string, b: string) => share(a, b) >= 0.8 && share(b, a) >= 0.8
+
+/**
+ * The complete card, if the prepared (or helper's) card is about the sentence the AI tutor actually said;
+ * otherwise null. The English always stays exactly as the AI tutor said it.
+ */
+export function fitDraft(local: Card, draft: Card | null): Card | null {
+  if (!draft || draft.kind !== local.kind) return null
+  if (local.kind === 'correction' && draft.kind === 'correction') {
+    if (!alike(local.now, draft.now)) return null
+    return { kind: 'correction', was: draft.was || local.was, now: local.now, ja: draft.ja, why: draft.why }
+  }
+  if (local.kind === 'say' && draft.kind === 'say') {
+    const spoken = local.options[0].text
+    const match = draft.options.find((o) => alike(o.text, spoken))
+    if (!match) return null
+    return { kind: 'say', heard: local.heard || draft.heard, options: [{ style: match.style, text: spoken }, ...draft.options.filter((o) => o !== match)] }
+  }
+  return null
+}
+
+/** The card on screen, with details that arrived late added (only when they're about the same sentence). */
+export function mergeCard(local: Card, helper: Card | null): Card {
+  const fit = fitDraft(local, helper)
+  if (!fit) return local
+  // keep what the student is already looking at; only add what was missing
+  if (local.kind === 'correction' && fit.kind === 'correction') return { ...local, ja: local.ja || fit.ja, why: local.why || fit.why }
+  if (local.kind === 'say' && fit.kind === 'say') return { ...local, heard: local.heard || fit.heard, options: [local.options[0], ...fit.options.slice(1)] }
+  return local
+}
