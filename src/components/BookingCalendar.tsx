@@ -8,7 +8,9 @@ import { useAuth } from '@/context/AuthContext'
 import AiAvatar from '@/components/ai/AiAvatar'
 import { Squircle } from '@squircle-js/react'
 import SquircleBox from '@/components/ui/SquircleBox'
-import CourseSheet, { type CatalogEntry } from '@/components/booking/CourseSheet'
+import CourseSheet, { type CatalogEntry, type RoleplayChoice } from '@/components/booking/CourseSheet'
+import { aiRoleplays } from '@/lib/classroom/client'
+import { LEVEL_NAMES, type SceneSummary } from '@/lib/roleplay/types'
 import { AI_LENGTHS, aiMinutesFor } from '@/lib/ai-tutor/settings'
 import { aiLengthsFor, priceAiLessons, type MinuteSnapshot } from '@/lib/minutes-core'
 import { AiStartCard, useAiStartState } from '@/components/ai/AiStart'
@@ -92,9 +94,20 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
       .catch(() => {})
     return () => { alive = false }
   }, [classroomEnabled, accessToken, catalogTick])
+  // Role-plays (AI lessons only, phase 3c): chosen instead of a course; the lesson opens straight into it
+  const [rpList, setRpList] = useState<SceneSummary[] | null>(null)
+  const [rpPick, setRpPick] = useState<RoleplayChoice | null>(null)
+  useEffect(() => {
+    if (!aiEnabled || !accessToken) return
+    let alive = true
+    void aiRoleplays().then((l) => { if (alive) setRpList(l) })
+    return () => { alive = false }
+  }, [aiEnabled, accessToken, catalogTick])
   const closeSheet = useCallback(() => setSheetOpen(false), [])
+  const rpOn = isAi && !!rpList?.length
+  const roleplay = rpOn && rpPick ? (rpList ?? []).find((x) => x.id === rpPick.sceneId) ?? null : null
   const coursesOn = COURSE_BOOKING_ENABLED && classroomEnabled && catalog.length > 0 && !rescheduleLesson
-  const course = coursesOn && courseId ? catalog.find((c) => c.id === courseId) ?? null : null
+  const course = coursesOn && courseId && !roleplay ? catalog.find((c) => c.id === courseId) ?? null : null
 
   // Teacher profile
   const [teacherName, setTeacherName] = useState('')
@@ -320,6 +333,7 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
               skipAdminEmail: isMultiBooking,
               ...(course ? { slideCourseId: course.id } : {}),
               ...(isAi ? { lessonKind: 'ai' } : {}),
+              ...(isAi && roleplay && rpPick ? { roleplay: rpPick } : {}),
             }),
           })
           if (res.ok) {
@@ -374,6 +388,7 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
 
     setSelectedBookings([])
     if (course) { setCourseId(null); setCatalogTick((x) => x + 1) } // the student's lesson queue has moved on
+    if (roleplay) setRpPick(null)
     if (selectedDay) fetchSlots(selectedDay)
     onBookingComplete?.(result)
     setBooking(false)
@@ -695,11 +710,24 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
           </div>
           ) : <div className="hidden md:block" />}
 
-          {/* Course (classroom pilot): optional, free talk when none is chosen */}
-          {coursesOn && (
+          {/* Course (classroom pilot) or, for AI lessons, a role-play: optional, free talk when none is chosen */}
+          {(coursesOn || rpOn) && (
             <div>
-              <h3 className="text-sm mb-2" style={{ color: 'var(--text-secondary)' }}>{locale === 'ja' ? 'コース' : 'Course'}</h3>
-              {course ? (
+              <h3 className="text-sm mb-2" style={{ color: 'var(--text-secondary)' }}>
+                {rpOn ? (locale === 'ja' ? 'コース・ロールプレイ' : 'Course or role-play') : locale === 'ja' ? 'コース' : 'Course'}
+              </h3>
+              {roleplay && rpPick ? (
+                <div className="cs-picked">
+                  <button type="button" className="cs-pmain" onClick={() => setSheetOpen(true)} aria-label={locale === 'ja' ? 'ロールプレイを変更' : 'Change role-play'}>
+                    {roleplay.image ? <img src={roleplay.image} alt="" /> : <span className="cs-ph" />}
+                    <span style={{ minWidth: 0 }}>
+                      <b style={{ color: 'var(--text)' }}>{locale === 'ja' ? roleplay.title.ja : roleplay.title.en}</b>
+                      <span><span className="cs-rpk">{locale === 'ja' ? 'ロールプレイ' : 'Role-play'}</span>{LEVEL_NAMES[rpPick.level][locale === 'ja' ? 'ja' : 'en']}</span>
+                    </span>
+                  </button>
+                  <button type="button" className="cs-x" onClick={() => setRpPick(null)} aria-label={locale === 'ja' ? 'ロールプレイを外す' : 'Remove role-play'}>✕</button>
+                </div>
+              ) : course ? (
                 <div className="cs-picked">
                   <button type="button" className="cs-pmain" onClick={() => setSheetOpen(true)} aria-label={locale === 'ja' ? 'コースを変更' : 'Change course'}>
                     {course.scenes[0] ? <img src={course.scenes[0]} alt="" /> : <span className="cs-ph" />}
@@ -713,12 +741,18 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
               ) : (
                 <button type="button" className="cs-add" onClick={() => setSheetOpen(true)}>
                   <span className="cs-plus">＋</span>
-                  <span>
-                    <b className="block font-semibold" style={{ color: 'var(--text)' }}>{locale === 'ja' ? 'コースを追加' : 'Add a course'}</b>
-                    <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                      {locale === 'ja' ? '選ばない場合は、フリートークなどのレッスンになります' : 'Without a course, the lesson is free talk or similar'}
+                  {rpOn ? (
+                    <span style={{ color: 'var(--text)' }}>
+                      {locale === 'ja' ? 'コース・ロールプレイを選ぶか、空欄でフリートーク' : 'Choose a course or role-play, or leave blank for free talk'}
                     </span>
-                  </span>
+                  ) : (
+                    <span>
+                      <b className="block font-semibold" style={{ color: 'var(--text)' }}>{locale === 'ja' ? 'コースを追加' : 'Add a course'}</b>
+                      <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                        {locale === 'ja' ? '選ばない場合は、フリートークなどのレッスンになります' : 'Without a course, the lesson is free talk or similar'}
+                      </span>
+                    </span>
+                  )}
                 </button>
               )}
             </div>
@@ -786,13 +820,16 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
         </div>
       )}
 
-      {sheetOpen && coursesOn && (
+      {sheetOpen && (coursesOn || rpOn) && (
         <CourseSheet
-          courses={catalog}
+          courses={coursesOn ? catalog : []}
           initialId={courseId}
           lang={locale === 'ja' ? 'ja' : 'en'}
-          onChoose={(id) => { setCourseId(id); setSheetOpen(false) }}
+          onChoose={(id) => { setCourseId(id); setRpPick(null); setSheetOpen(false) }}
           onClose={closeSheet}
+          roleplays={rpOn ? rpList : null}
+          initialRoleplay={roleplay ? rpPick : null}
+          onChooseRoleplay={(c) => { setRpPick(c); setCourseId(null); setSheetOpen(false) }}
         />
       )}
     </div>

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { checkRoleplayPick, roleplayColumns } from '@/lib/roleplay/booking'
 import { createClient } from '@supabase/supabase-js'
 import { createBookingEvent, getAvailableSlots, timezoneToJst } from '@/lib/google-calendar'
 import { createWherebyRoom } from '@/lib/whereby'
@@ -25,7 +26,7 @@ export async function POST(request: NextRequest) {
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   try {
     const body = await request.json()
-    const { date, time, duration, timezone = 'Asia/Tokyo', skipAdminEmail = false, slideCourseId = null, lessonKind = 'human' } = body
+    const { date, time, duration, timezone = 'Asia/Tokyo', skipAdminEmail = false, slideCourseId = null, lessonKind = 'human', roleplay: rawRoleplay = null } = body
 
     if (!date || !time || !duration) {
       return NextResponse.json(
@@ -83,6 +84,9 @@ export async function POST(request: NextRequest) {
       if (!(await aiAccess(user)).ok) {
         return NextResponse.json({ error: 'AI lessons are not available for this account' }, { status: 403 })
       }
+      // a role-play instead of a course (AI lessons only: the AI tutor plays the other character)
+      const roleplay = await checkRoleplayPick(user.id, rawRoleplay)
+      if (roleplay === 'bad') return NextResponse.json({ error: 'This role-play or level is not available' }, { status: 400 })
       // AI lessons: 15 or 30 minutes, or a shorter length that uses up the month's last minutes (aiLengthsFor);
       // any whole length from 5 to 30 is fine here, the minute check below decides what they can afford
       if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !/^\d{2}:\d{2}$/.test(time) || !Number.isInteger(duration) || duration < AI_MIN_LENGTH || duration > AI_MAX_LENGTH) {
@@ -117,8 +121,9 @@ export async function POST(request: NextRequest) {
           lesson_kind: 'ai',
           // minutes taken from the student's balances (AI + top-up + plan); the exact split is in minute_usage
           ai_minutes_charged: (parts ?? []).reduce((a, p) => a + p.minutes, 0),
-          slide_course_id: slideCourse?.courseId ?? null,
-          slide_lesson_id: slideCourse?.lessonId ?? null,
+          slide_course_id: roleplay ? null : (slideCourse?.courseId ?? null),
+          slide_lesson_id: roleplay ? null : (slideCourse?.lessonId ?? null),
+          ...roleplayColumns(roleplay),
         })
         .select('id')
         .single()

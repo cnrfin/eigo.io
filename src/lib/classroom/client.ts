@@ -58,6 +58,8 @@ export type JoinInfo = {
   aiBlush?: boolean
   /** the student's free 5-minute welcome call */
   aiWelcome?: boolean
+  /** AI lessons: a role-play chosen when booking; it opens as the lesson starts (null on a rejoin) */
+  roleplay?: { sceneId: string; level: 0 | 1 | 2 } | null
 }
 
 export type JoinDenied = {
@@ -203,7 +205,7 @@ export type StudentAction =
   | { kind: 'save'; term: string }
   | { kind: 'activity'; text: string }
   | { kind: 'media'; text: string }
-  | { kind: 'start'; slide?: SlideRef | null }
+  | { kind: 'start'; slide?: SlideRef | null; roleplay?: string }
   | { kind: 'resume'; slide?: SlideRef | null }
   | ({ kind: 'slide'; review?: { returnTo: number } } & SlideRef)
   | { kind: 'lesson'; courseId: string; lessonId: string }

@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import './course-sheet.css'
+import { CATEGORY_NAMES, LEVEL_NAMES, nextLevel, type Category, type LevelIndex, type SceneSummary } from '@/lib/roleplay/types'
 
 /**
  * Booking course picker (design: mockups/booking-course-mockups.html, D2).
@@ -10,7 +11,12 @@ import './course-sheet.css'
  * pictures, level, title, chips, description, progress), a search box and
  * one row of course cards per series. Tapping a card shows it in the banner;
  * 「このコースを選ぶ」 chooses it. Mount it only while open.
+ *
+ * AI lessons also offer role-plays (phase 3c, design: mockups/roleplay-picker.html, "Dashboard: the picker"):
+ * a コース / ロールプレイ toggle at the top; the chosen scene on top (its tasks, the three level dots, and the levels
+ * they may pick: any up to the one they're due), every role-play listed below by category, with a search.
  */
+export type RoleplayChoice = { sceneId: string; level: LevelIndex }
 
 export type CatalogEntry = {
   id: string
@@ -35,9 +41,26 @@ export type CatalogEntry = {
 
 type Lang = 'ja' | 'en'
 const TX = {
-  ja: { search: '検索', choose: 'このコースを選ぶ', of: (d: number, n: number) => `${d} / ${n} レッスン`, none: '見つかりませんでした', results: '検索結果', close: '閉じる', prev: '前へ', next: '次へ' },
-  en: { search: 'Search', choose: 'Choose this course', of: (d: number, n: number) => `${d} / ${n} lessons`, none: 'No results', results: 'Results', close: 'Close', prev: 'Previous', next: 'Next' },
+  ja: {
+    search: '検索', choose: 'このコースを選ぶ', of: (d: number, n: number) => `${d} / ${n} レッスン`, none: '見つかりませんでした', results: '検索結果', close: '閉じる', prev: '前へ', next: '次へ',
+    courses: 'コース', roleplays: 'ロールプレイ', chooseRp: 'このロールプレイを選ぶ', rpKick: 'ロールプレイ',
+    rpFirst: 'はじめて · 初級から', rpAll: '全レベルクリア', rpNext: (lv: string) => `次は${lv}`, rpNew: 'はじめて', rpClear: 'クリア', level: 'レベル',
+  },
+  en: {
+    search: 'Search', choose: 'Choose this course', of: (d: number, n: number) => `${d} / ${n} lessons`, none: 'No results', results: 'Results', close: 'Close', prev: 'Previous', next: 'Next',
+    courses: 'Courses', roleplays: 'Role-plays', chooseRp: 'Choose this role-play', rpKick: 'Role-play',
+    rpFirst: 'First time · from Beginner', rpAll: 'All levels cleared', rpNext: (lv: string) => `Next: ${lv}`, rpNew: 'New', rpClear: 'Cleared', level: 'Level',
+  },
 }
+
+/** filled = level cleared, ring = the level they'll play next */
+const Dots = ({ cleared }: { cleared: number }) => (
+  <span className="cs-dots" aria-hidden>
+    {[0, 1, 2].map((i) => (
+      <i key={i} className={i < cleared ? 'on' : i === cleared && cleared < 3 ? 'next' : ''} />
+    ))}
+  </span>
+)
 
 const Chevron = ({ dir }: { dir: 'l' | 'r' }) => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
@@ -130,14 +153,23 @@ export default function CourseSheet({
   lang,
   onChoose,
   onClose,
+  roleplays,
+  initialRoleplay,
+  onChooseRoleplay,
 }: {
   courses: CatalogEntry[]
   initialId: string | null
   lang: Lang
   onChoose: (id: string) => void
   onClose: () => void
+  /** AI lessons: the role-plays (with the student's progress); the toggle shows when these are given */
+  roleplays?: SceneSummary[] | null
+  initialRoleplay?: RoleplayChoice | null
+  onChooseRoleplay?: (c: RoleplayChoice) => void
 }) {
   const tx = TX[lang]
+  const rpOn = !!roleplays?.length && !!onChooseRoleplay
+  const [mode, setMode] = useState<'course' | 'rp'>(() => (rpOn && (initialRoleplay || !courses.length) ? 'rp' : 'course'))
   const [shown, setShown] = useState(
     () => (initialId && courses.find((c) => c.id === initialId)?.id) || courses.find((c) => c.doneCount > 0 && c.queue.length)?.id || courses[0]?.id,
   )
@@ -185,6 +217,21 @@ export default function CourseSheet({
   }
   const card = (x: CatalogEntry) => <Card key={x.id} c={x} lang={lang} on={x.id === shown} onPick={() => pick(x.id)} />
 
+  const toggle = rpOn && (
+    <div className="cs-seg" role="tablist">
+      <button type="button" role="tab" aria-selected={mode === 'course'} className={mode === 'course' ? 'on' : ''} onClick={() => setMode('course')} disabled={!courses.length}>
+        {tx.courses}
+      </button>
+      <button type="button" role="tab" aria-selected={mode === 'rp'} className={mode === 'rp' ? 'on' : ''} onClick={() => setMode('rp')}>
+        {tx.roleplays}
+      </button>
+    </div>
+  )
+  if (rpOn && mode === 'rp')
+    return createPortal(
+      <RoleplayPicker tx={tx} lang={lang} scenes={roleplays!} initial={initialRoleplay ?? null} toggle={toggle} onChoose={onChooseRoleplay!} onClose={onClose} />,
+      document.body,
+    )
   if (!c) return null
   const chips = lang === 'ja' ? c.chips.ja : c.chips.en
   const desc = (lang === 'ja' ? c.descriptionJa : c.description) || c.description
@@ -192,11 +239,8 @@ export default function CourseSheet({
   return createPortal(
     <div className="cs-scrim" onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div className="cs-sheet" role="dialog" aria-modal="true" aria-label={lang === 'ja' ? 'コースを選ぶ' : 'Choose a course'}>
-        <button type="button" className="cs-close" aria-label={tx.close} onClick={onClose}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden>
-            <path d="M6 6l12 12M18 6L6 18" />
-          </svg>
-        </button>
+        {toggle}
+        <CloseBtn label={tx.close} onClose={onClose} />
         <div className="cs-body" ref={body}>
           <div className="cs-hero">
             <Reel key={c.id} scenes={c.scenes} playing video={c.reel} />
@@ -268,5 +312,145 @@ function Row({ name, tx, children }: { name: string; tx: (typeof TX)[Lang]; chil
         {children}
       </div>
     </section>
+  )
+}
+
+function CloseBtn({ label, onClose }: { label: string; onClose: () => void }) {
+  return (
+    <button type="button" className="cs-close" aria-label={label} onClick={onClose}>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden>
+        <path d="M6 6l12 12M18 6L6 18" />
+      </svg>
+    </button>
+  )
+}
+
+/** The role-play side of the sheet. */
+function RoleplayPicker({
+  tx,
+  lang,
+  scenes,
+  initial,
+  toggle,
+  onChoose,
+  onClose,
+}: {
+  tx: (typeof TX)[Lang]
+  lang: Lang
+  scenes: SceneSummary[]
+  initial: RoleplayChoice | null
+  toggle: React.ReactNode
+  onChoose: (c: RoleplayChoice) => void
+  onClose: () => void
+}) {
+  const [shown, setShown] = useState(() => (initial && scenes.find((x) => x.id === initial.sceneId)?.id) || scenes[0]?.id)
+  const [level, setLevel] = useState<LevelIndex | null>(() => (initial ? initial.level : null))
+  const [q, setQ] = useState('')
+  const body = useRef<HTMLDivElement>(null)
+  const sc = scenes.find((x) => x.id === shown) ?? scenes[0]
+  const lv = level ?? nextLevel(sc?.cleared ?? 0)
+  const lvName = (n: number) => LEVEL_NAMES[n as LevelIndex][lang]
+  const line = (x: SceneSummary) => (x.cleared === 0 ? tx.rpNew : x.cleared >= 3 ? tx.rpClear : tx.rpNext(lvName(x.cleared)))
+
+  const groups = useMemo(() => {
+    const s = q.trim().toLowerCase()
+    const list = s
+      ? scenes.filter((x) => [x.title.ja, x.title.en, x.summary.ja, x.summary.en, CATEGORY_NAMES[x.category].ja, CATEGORY_NAMES[x.category].en].join(' ').toLowerCase().includes(s))
+      : scenes
+    const m = new Map<Category, SceneSummary[]>()
+    for (const x of list) m.set(x.category, [...(m.get(x.category) ?? []), x])
+    return [...m.entries()]
+  }, [q, scenes])
+
+  const pick = (id: string) => {
+    setShown(id)
+    setLevel(null)
+    body.current?.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+  if (!sc) return null
+  return (
+    <div className="cs-scrim" onClick={(e) => e.target === e.currentTarget && onClose()}>
+      <div className="cs-sheet" role="dialog" aria-modal="true" aria-label={tx.roleplays}>
+        {toggle}
+        <CloseBtn label={tx.close} onClose={onClose} />
+        <div className="cs-body" ref={body}>
+          <div className="cs-hero">
+            <div className="cs-reel" key={sc.id}>
+              {sc.image ? <img className="cs-in" src={sc.image} alt="" /> : <span className="cs-rph" />}
+            </div>
+            <div className="cs-info" key={`i${sc.id}`}>
+              <span className="cs-kick">
+                {tx.rpKick} · {lvName(lv)}
+              </span>
+              <h2>{sc.title[lang]}</h2>
+              {lang === 'ja' && <div className="cs-en">{sc.title.en}</div>}
+              {lv === sc.next && sc.tasks.length > 0 && (
+                <div className="cs-chips">
+                  {sc.tasks.map((t) => (
+                    <span key={t.en} className="cs-chip">
+                      {t[lang]}
+                    </span>
+                  ))}
+                </div>
+              )}
+              <p className="cs-desc">{sc.summary[lang]}</p>
+              <div className="cs-lvrow">
+                <Dots cleared={sc.cleared} />
+                <span>{sc.cleared === 0 ? tx.rpFirst : sc.cleared >= 3 ? tx.rpAll : tx.rpNext(lvName(sc.next))}</span>
+              </div>
+              {sc.cleared > 0 && (
+                <div className="cs-lvpick" role="radiogroup" aria-label={tx.level}>
+                  {([0, 1, 2] as LevelIndex[]).map((i) => (
+                    <button key={i} type="button" role="radio" aria-checked={i === lv} className={i === lv ? 'on' : ''} disabled={i > sc.next} onClick={() => setLevel(i)}>
+                      {lvName(i)}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <label className="cs-search">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden>
+              <circle cx="11" cy="11" r="7" />
+              <path d="M20 20l-3.5-3.5" />
+            </svg>
+            <input value={q} placeholder={tx.search} aria-label={tx.search} onChange={(e) => setQ(e.target.value)} />
+          </label>
+
+          {groups.length ? (
+            groups.map(([cat, list]) => (
+              <section key={cat} className="cs-sec">
+                <div className="cs-sech">
+                  <h3>{CATEGORY_NAMES[cat][lang]}</h3>
+                </div>
+                <div className="cs-rlist">
+                  {list.map((x) => (
+                    <button key={x.id} type="button" className={`cs-rrow${x.id === sc.id ? ' cs-on' : ''}`} aria-pressed={x.id === sc.id} onClick={() => pick(x.id)}>
+                      {x.image ? <img src={x.image} alt="" /> : <span className="cs-rph" />}
+                      <span className="cs-rt">
+                        <b>{x.title[lang]}</b>
+                        <span>{x.summary[lang]}</span>
+                      </span>
+                      <span className={`cs-rl${x.cleared === 0 ? ' new' : ''}`}>
+                        <Dots cleared={x.cleared} />
+                        <span>{line(x)}</span>
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </section>
+            ))
+          ) : (
+            <p className="cs-empty">{tx.none}</p>
+          )}
+        </div>
+        <div className="cs-foot">
+          <button type="button" className="cs-cta" onClick={() => onChoose({ sceneId: sc.id, level: lv })}>
+            {tx.chooseRp}
+          </button>
+        </div>
+      </div>
+    </div>
   )
 }

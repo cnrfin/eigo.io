@@ -23,7 +23,7 @@ type Action =
   | { kind: 'save'; term: string }
   | { kind: 'activity'; text: string }
   | { kind: 'media'; text: string }
-  | { kind: 'start'; slide?: SlideRef | null }
+  | { kind: 'start'; slide?: SlideRef | null; roleplay?: string }
   | { kind: 'resume'; slide?: SlideRef | null }
   | ({ kind: 'slide'; review?: { returnTo: number } } & SlideRef)
   | { kind: 'lesson'; courseId: string; lessonId: string }
@@ -67,6 +67,8 @@ function instruction(a: Action, secondsLeft: number): string | null {
       return t ? `On the student's screen: ${t}` : null
     }
     case 'start':
+      if (a.roleplay)
+        return `The student has joined and can hear you. Greet them by name in one short sentence and say you're starting the role-play they chose, "${q(a.roleplay, 80)}". It is opening on their screen now and you'll get the scene and your character in a moment: then begin it in character. Don't ask what they'd like to do.`
       return a.slide
         ? 'The student has joined and can hear you. Greet them now by name and begin as your instructions say (warm-up chat and review of the last lesson as your preferences say, then the slide on screen). Then pause and listen.'
         : 'The student has joined and can hear you. Greet them now by name and begin as your instructions say (in the welcome call: the welcome). If this is free talk: after a short greeting, ask whether they\'d just like to chat today or whether there\'s anything they\'d like to do. Do not start a role-play or open a course yourself. Then pause and listen.'

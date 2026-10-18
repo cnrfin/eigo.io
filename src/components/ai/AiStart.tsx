@@ -11,7 +11,9 @@ import { aiMinutesLeft, splitAiCharge } from '@/lib/minutes-core'
 import { newMood } from '@/lib/ai-tutor/avatar-mood'
 import type { AiStartState } from '@/lib/ai-tutor/start'
 import AiAvatar from './AiAvatar'
-import CourseSheet, { type CatalogEntry } from '@/components/booking/CourseSheet'
+import CourseSheet, { type CatalogEntry, type RoleplayChoice } from '@/components/booking/CourseSheet'
+import { aiRoleplays } from '@/lib/classroom/client'
+import { LEVEL_NAMES, type SceneSummary } from '@/lib/roleplay/types'
 import './ai-start.css'
 
 /**
@@ -159,6 +161,10 @@ const tx = (ja: boolean) => ({
   close: ja ? '閉じる' : 'Close',
   welcomeTalk: ja ? '5分のウェルカムトーク' : '5-minute welcome talk',
   pickCourse: ja ? 'コースを選ぶか、空欄のままでフリートーク' : 'Select a course or leave blank for free talk',
+  pickAny: ja ? 'コース・ロールプレイを選ぶか、空欄でフリートーク' : 'Choose a course or role-play, or leave blank for free talk',
+  rp: ja ? 'ロールプレイ' : 'Role-play',
+  changeRp: ja ? 'ロールプレイを変更' : 'Change role-play',
+  removeRp: ja ? 'ロールプレイを外す' : 'Remove role-play',
   lessonN: (n: number) => (ja ? `レッスン${n}` : `Lesson ${n}`),
   changeCourse: ja ? 'コースを変更' : 'Change course',
   removeCourse: ja ? 'コースを外す' : 'Remove course',
@@ -209,6 +215,20 @@ export function AiStartCard({
   const [choice, setChoice] = useState<string | null | undefined>(undefined)
   const [catalog, setCatalog] = useState<CatalogEntry[]>(() => mem.catalog ?? [])
   const [sheet, setSheet] = useState(false)
+  // role-plays (phase 3c): chosen instead of a course; the lesson opens straight into it
+  const [rpList, setRpList] = useState<SceneSummary[] | null>(null)
+  const [rpPick, setRpPick] = useState<RoleplayChoice | null>(null)
+  useEffect(() => {
+    if (!pickCourse || !session?.access_token) return
+    let alive = true
+    void aiRoleplays().then((l) => {
+      if (alive) setRpList(l)
+    })
+    return () => {
+      alive = false
+    }
+  }, [pickCourse, session?.access_token])
+  const roleplay = rpPick ? (rpList ?? []).find((x) => x.id === rpPick.sceneId) ?? null : null
   useEffect(() => {
     if (!pickCourse || !session?.access_token) return
     let alive = true
@@ -251,7 +271,13 @@ export function AiStartCard({
       const r = await fetch('/api/ai-tutor/start', {
         method: 'POST',
         headers: { Authorization: `Bearer ${session.access_token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify(pickCourse && choice !== undefined ? { duration, courseId: choice } : { duration }),
+        body: JSON.stringify(
+          pickCourse && roleplay && rpPick && !state?.trial
+            ? { duration, courseId: null, roleplay: rpPick }
+            : pickCourse && choice !== undefined
+              ? { duration, courseId: choice }
+              : { duration },
+        ),
       })
       const d = await r.json().catch(() => ({}))
       if (!r.ok || !d.bookingId) throw new Error(d.error || 'failed')
@@ -313,6 +339,20 @@ export function AiStartCard({
               </span>
             </span>
           </div>
+        ) : roleplay && rpPick ? (
+          <div className="cs-picked ais-course">
+            <button type="button" className="cs-pmain" onClick={() => setSheet(true)} aria-label={t.changeRp}>
+              {roleplay.image ? <img src={roleplay.image} alt="" /> : <span className="cs-ph" />}
+              <span className="ais-line">
+                <span className="cs-rpk">{t.rp}</span>
+                <b>{roleplay.title[locale]}</b>
+                <span> · {LEVEL_NAMES[rpPick.level][locale]}</span>
+              </span>
+            </button>
+            <button type="button" className="cs-x" onClick={() => setRpPick(null)} aria-label={t.removeRp}>
+              ✕
+            </button>
+          </div>
         ) : picked ? (
           <div className="cs-picked ais-course">
             <button type="button" className="cs-pmain" onClick={() => setSheet(true)} aria-label={t.changeCourse}>
@@ -327,24 +367,32 @@ export function AiStartCard({
             </button>
           </div>
         ) : (
-          <button type="button" className="cs-add ais-course" onClick={() => setSheet(true)} disabled={!catalog.length}>
+          <button type="button" className="cs-add ais-course" onClick={() => setSheet(true)} disabled={!catalog.length && !rpList?.length}>
             <span className="cs-plus">＋</span>
-            <span className="ais-line">{t.pickCourse}</span>
+            <span className="ais-line">{rpList?.length ? t.pickAny : t.pickCourse}</span>
           </button>
         )
       ) : (
         state && !state.liveId && !state.blocked && !state.trial && <div className="ais-resume">{state.resume ? t.resume(state.resume) : t.freeTalk}</div>
       )}
-      {sheet && catalog.length > 0 && (
+      {sheet && (catalog.length > 0 || !!rpList?.length) && (
         <CourseSheet
           courses={catalog}
           initialId={picked?.id ?? null}
           lang={locale}
           onChoose={(id) => {
             setChoice(id)
+            setRpPick(null)
             setSheet(false)
           }}
           onClose={() => setSheet(false)}
+          roleplays={rpList}
+          initialRoleplay={roleplay ? rpPick : null}
+          onChooseRoleplay={(c) => {
+            setRpPick(c)
+            setChoice(null)
+            setSheet(false)
+          }}
         />
       )}
       <div className="ais-row">

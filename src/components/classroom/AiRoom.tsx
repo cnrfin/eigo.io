@@ -157,6 +157,8 @@ export default function AiRoom(props: Props) {
   /** when each side last said something (wall clock) */
   const lastSaid = useRef({ student: 0, tutor: 0 })
   const speakIfSilent = useRef<(noteAt: number, still?: () => boolean) => void>(() => {})
+  /** starts a role-play (set further down, once the panel exists) */
+  const beginRoleplayRef = useRef<(scene: Scene, role: RoleId, level: LevelIndex) => void>(() => {})
   /**
    * Each side's current stretch of speech, joined by audio timing. The transcript starts a new line whenever the
    * other side talks, so a student's "could we close this… course" over the tutor's "Sure! I'll close… the course
@@ -811,9 +813,15 @@ export default function AiRoom(props: Props) {
             const ref = slideRef()
             lastSent.current = ref?.slideId ?? null
             const first = !sessionsStarted.current++
-            // the note asks it to greet (or carry on); if it then says nothing, ask it to speak
-            void act({ kind: first ? 'start' : 'resume', slide: ref }).then((ok) => {
-              if (ok && first) speakIfSilent.current(Date.now(), () => lastSaid.current.tutor === 0)
+            // a role-play chosen when booking: it opens straight away (after the greeting note, so the tutor
+            // greets, then begins the scene in character)
+            const booked = first && info.roleplay ? info.roleplay : null
+            void (booked ? aiRoleplayScene(booked.sceneId) : Promise.resolve(null)).then((scene) => {
+              // the note asks it to greet (or carry on); if it then says nothing, ask it to speak
+              void act({ kind: first ? 'start' : 'resume', slide: ref, ...(scene ? { roleplay: scene.title.en } : {}) }).then((ok) => {
+                if (ok && first) speakIfSilent.current(Date.now(), () => lastSaid.current.tutor === 0)
+                if (scene && booked) beginRoleplayRef.current(scene, scene.studentRole, booked.level)
+              })
             })
           }
           postEvent(info.bookingId, 'student_joined')
@@ -859,7 +867,7 @@ export default function AiRoom(props: Props) {
         }
       }
     },
-    [info.bookingId, setSession, act, slideRef, addText, runTool, sendEvent, flush, clockOffset, feelTutor, feelStudent],
+    [info.bookingId, info.roleplay, setSession, act, slideRef, addText, runTool, sendEvent, flush, clockOffset, feelTutor, feelStudent],
   )
   const handleRef = useRef(handleEvent)
   useEffect(() => {
@@ -1286,6 +1294,9 @@ export default function AiRoom(props: Props) {
     },
     [act],
   )
+  useEffect(() => {
+    beginRoleplayRef.current = beginRoleplay
+  }, [beginRoleplay])
   const startRoleplay = useCallback(
     async (s: SceneSummary) => {
       const scene = await aiRoleplayScene(s.id)

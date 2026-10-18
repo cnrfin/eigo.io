@@ -3,6 +3,7 @@ import { getSupabaseAdmin } from '@/lib/supabase-admin'
 import { serializeWindow } from '@/lib/classroom/booking-window'
 import { findLesson, loadCourse } from '@/lib/classroom/courses'
 import { resolveOpen } from '@/lib/classroom/open-state'
+import { bookedRoleplay } from '@/lib/roleplay/booking'
 import { json, loadClassroom, personName, publicSession, uiLangFor, wherebyParts } from '@/lib/classroom/server'
 
 const ADMIN_EMAIL = 'cnrfin93@gmail.com'
@@ -65,6 +66,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   }
 
   const tutorInfo = ai ? await aiTutor(booking.user_id, booking.id) : null
+  // a role-play booked for this AI lesson: it opens when the lesson starts (only the first time, not on a rejoin)
+  const roleplay = ai && !session?.started_at ? await bookedRoleplay(booking.id) : null
   return json(200, {
     bookingId: booking.id,
     role,
@@ -79,6 +82,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     aiColor: tutorInfo?.color ?? null,
     aiBlush: tutorInfo?.blush ?? true,
     aiWelcome: tutorInfo?.welcome ?? false,
+    roleplay,
     uiLang: role === 'teacher' ? 'en' : student?.preferred_language === 'en' ? 'en' : 'ja',
     nativeLang: student?.native_language || 'ja',
     open,

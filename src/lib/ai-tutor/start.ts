@@ -1,3 +1,4 @@
+import { roleplayColumns, type RoleplayPick } from '@/lib/roleplay/booking'
 import { getSupabaseAdmin } from '@/lib/supabase-admin'
 import { chargeAiLesson, getBalance, type Balance } from '@/lib/minutes'
 import { aiLengthsFor, splitAiCharge, type MinuteSnapshot } from '@/lib/minutes-core'
@@ -142,6 +143,8 @@ export async function startAiNow(
   duration: number,
   /** the course the student chose: undefined = carry on where they left off, null = free talk */
   courseId?: string | null,
+  /** a role-play instead of a course (checked by checkRoleplayPick); the lesson opens straight into it */
+  roleplay?: RoleplayPick,
 ): Promise<{ ok: true; bookingId: string; resumed: boolean } | { ok: false; reason: string; state?: AiStartState }> {
   const { state, balance } = await startState(userId, unlimited)
   if (state.liveId) return { ok: true, bookingId: state.liveId, resumed: true }
@@ -151,7 +154,8 @@ export async function startAiNow(
   const parts = state.trial || !balance ? [] : splitAiCharge(balance.snapshot, duration)
   if (!parts) return { ok: false, reason: 'minutes', state }
   // the welcome call has no course; otherwise their choice (checked here, never trusted from the browser)
-  const course = state.trial ? null : courseId === undefined ? state.resume : courseId === null ? null : await courseLesson(userId, courseId, true)
+  const rp = state.trial ? undefined : roleplay
+  const course = state.trial || rp ? null : courseId === undefined ? state.resume : courseId === null ? null : await courseLesson(userId, courseId, true)
   if (courseId && !state.trial && !course) return { ok: false, reason: 'bad_course', state }
   const { date, time } = jstNow(Date.now())
   const { data: row, error } = await getSupabaseAdmin()
@@ -166,6 +170,7 @@ export async function startAiNow(
       ai_minutes_charged: parts.reduce((a, p) => a + p.minutes, 0),
       slide_course_id: course?.courseId ?? null,
       slide_lesson_id: course?.lessonId ?? null,
+      ...roleplayColumns(rp),
     })
     .select('id')
     .single()
