@@ -1,0 +1,100 @@
+{
+  "id": "return-item",
+  "category": "travel",
+  "title": { "ja": "お店で返品・交換する", "en": "Returning or exchanging an item" },
+  "summary": { "ja": "買った服のサイズが合わないことを伝えて、交換や返金をお願いする。", "en": "Explain that something you bought doesn't fit, and ask to exchange it or get a refund." },
+  "setting": "A clothes shop in a shopping street abroad. A traveller comes back with a sweater and a T-shirt they bought yesterday, and the receipt.",
+  "image": "",
+  "studentRole": "a",
+  "roles": [
+    {
+      "id": "a",
+      "name": { "ja": "お客さん", "en": "Customer" },
+      "persona": "A Japanese traveller returning clothes they bought yesterday.",
+      "levels": [
+        {
+          "tutor": "You are the shop assistant. Speak slowly, in short simple sentences. Ask what the problem is and ask for the receipt. You have the sweater in a large, and you can swap it.",
+          "tasks": [
+            { "id": "return", "title": { "ja": "交換したいと伝える", "en": "Say you'd like to exchange this" }, "hints": ["交換したいと伝えましょう", "I'd like to … this.", "I'd like to exchange this."] },
+            { "id": "reason", "title": { "ja": "理由を伝える", "en": "Say what's wrong" }, "hints": ["サイズが合わないと伝えましょう", "It's too …", "It's too small."] },
+            { "id": "size", "title": { "ja": "ほしいサイズを聞く", "en": "Ask for another size" }, "hints": ["大きいサイズがあるか聞きましょう", "Do you have this in …?", "Do you have this in a large?"] },
+            { "id": "receipt", "title": { "ja": "レシートを渡す", "en": "Hand over the receipt" }, "hints": ["レシートを渡しましょう", "Here's the …", "Here's the receipt."] }
+          ]
+        },
+        {
+          "tutor": "You are the shop assistant, speaking at a natural but clear pace. Ask what's wrong with the item and ask for the receipt. You have the sweater in a large; the fitting rooms are at the back. Refunds go back on the card they paid with.",
+          "tasks": [
+            { "id": "explain", "title": { "ja": "買った日と問題を伝える", "en": "Explain the problem" }, "hints": ["昨日買ったことと、サイズが合わないことを伝えましょう", "I bought this …, but it's …", "I bought this sweater yesterday, but it's too small."] },
+            { "id": "exchange", "title": { "ja": "サイズ交換をお願いする", "en": "Ask to exchange it" }, "hints": ["大きいサイズへの交換をお願いしましょう", "Could I exchange it for …?", "Could I exchange it for a large?"] },
+            { "id": "try", "title": { "ja": "試着したいと伝える", "en": "Ask to try it on" }, "hints": ["試着できるか聞きましょう", "Can I … first?", "Can I try it on first?"] },
+            { "id": "refund", "title": { "ja": "Tシャツの返金をお願いする", "en": "Ask for a refund on the T-shirt" }, "hints": ["Tシャツは返金してほしいと伝えましょう", "I'd also like a refund for …", "I'd also like a refund for this T-shirt."] }
+          ]
+        },
+        {
+          "tutor": "You are a friendly shop assistant, speaking at natural speed with a little small talk. Ask what the problem is, ask for the receipt, and use the shop's policy on it. Refunds go back on the card and take three to five working days.",
+          "tasks": [
+            { "id": "explain", "title": { "ja": "問題を詳しく説明する", "en": "Explain the problem in detail" }, "hints": ["昨日ここで買ったことと、どこがきついか説明しましょう", "I bought this here …, but it's a bit … in the …", "I bought this here yesterday, but it's a bit tight in the shoulders."] },
+            { "id": "refund", "title": { "ja": "Tシャツを返品する", "en": "Return the T-shirt" }, "hints": ["気が変わったと言って、Tシャツの返金をお願いしましょう", "I've also changed my mind about … Could I get …?", "I've also changed my mind about this T-shirt. Could I get a refund?"] },
+            { "id": "exchange", "title": { "ja": "セーターの交換をお願いする", "en": "Ask to exchange the sweater" }, "hints": ["同じ色の大きいサイズに交換をお願いしましょう", "Could I swap the sweater for … in the same …?", "Could I swap the sweater for a large in the same colour?"] },
+            { "id": "timing", "title": { "ja": "返金のタイミングを聞く", "en": "Ask when the refund arrives" }, "hints": ["返金がいつカードに戻るか聞きましょう", "How long will it take for … to …?", "How long will it take for the refund to show on my card?"] }
+          ],
+          "twist": {
+            "after": "exchange",
+            "tutor": "Check the stock and apologise: the navy sweater is sold out in a large. Offer the choices: the same sweater in grey in a large, or a refund on the sweater too.",
+            "task": { "id": "decide", "title": { "ja": "どうするか決める", "en": "Decide what to do" }, "hints": ["グレーにするか、返金にするか決めて伝えましょう", "In that case, I'll take …", "In that case, I'll take the grey one in a large."] }
+          }
+        }
+      ]
+    },
+    {
+      "id": "b",
+      "name": { "ja": "店員", "en": "Shop assistant" },
+      "persona": "A shop assistant at the clothes shop's counter.",
+      "levels": [
+        {
+          "tutor": "You are a customer who bought a sweater yesterday that is too small. Speak slowly and simply, and wait for the shop assistant to ask you things. You want a large, and you have the receipt.",
+          "tasks": [
+            { "id": "help", "title": { "ja": "用件を聞く", "en": "Ask how you can help" }, "hints": ["用件を聞きましょう", "Hi! How can …?", "Hi! How can I help?"] },
+            { "id": "receipt", "title": { "ja": "レシートがあるか聞く", "en": "Ask for the receipt" }, "hints": ["レシートがあるか聞きましょう", "Do you have …?", "Do you have the receipt?"] },
+            { "id": "size", "title": { "ja": "サイズを聞く", "en": "Ask what size they want" }, "hints": ["どのサイズがいいか聞きましょう", "What size …?", "What size would you like?"] }
+          ]
+        },
+        {
+          "tutor": "You are a customer at natural pace. You bought a sweater yesterday that's too small and want a large, and you'd like to try it on. You also want a refund for a T-shirt.",
+          "tasks": [
+            { "id": "problem", "title": { "ja": "何が問題か聞く", "en": "Ask what the problem is" }, "hints": ["何が問題か聞きましょう", "Is there a problem …?", "Is there a problem with it?"] },
+            { "id": "receipt", "title": { "ja": "レシートをお願いする", "en": "Ask for the receipt" }, "hints": ["レシートを見せてもらいましょう", "Could I see …?", "Could I see the receipt, please?"] },
+            { "id": "fitting", "title": { "ja": "試着室を案内する", "en": "Show where the fitting rooms are" }, "hints": ["試着室の場所を伝えましょう", "Sure. The fitting rooms are …", "Sure. The fitting rooms are at the back."] },
+            { "id": "refund", "title": { "ja": "返金の方法を伝える", "en": "Explain how the refund works" }, "hints": ["カードに返金されると伝えましょう", "The refund will go back …", "The refund will go back on your card."] }
+          ]
+        },
+        {
+          "tutor": "You are a customer at natural speed, a little disappointed. You want to swap the navy sweater for a large in navy, and get a refund for the T-shirt. The navy large is sold out; if offered grey, take it.",
+          "tasks": [
+            { "id": "problem", "title": { "ja": "問題をていねいに聞く", "en": "Ask politely about the problem" }, "hints": ["何が問題か、ていねいに聞きましょう", "Of course. Could you tell me …?", "Of course. Could you tell me what the problem is?"] },
+            { "id": "soldout", "title": { "ja": "在庫がないと伝える", "en": "Say it's sold out" }, "hints": ["ていねいに謝って、在庫がないと伝えましょう", "I'm sorry, we're out of …", "I'm sorry, we're out of navy in a large."] },
+            { "id": "options", "title": { "ja": "ほかの選択肢を提案する", "en": "Offer other options" }, "hints": ["グレーか、返金を提案しましょう", "We have it in …, or I can …", "We have it in grey, or I can refund it for you."] },
+            { "id": "timing", "title": { "ja": "返金の時期を説明する", "en": "Explain when the refund arrives" }, "hints": ["返金がいつカードに戻るか説明しましょう", "The refund should be on your card in …", "The refund should be on your card in three to five days."] }
+          ]
+        }
+      ]
+    }
+  ],
+  "prop": {
+    "label": { "ja": "レシート", "en": "Receipt" },
+    "title": "CITY STYLE · Receipt",
+    "sections": [
+      { "heading": "YESTERDAY · 4:32 P.M.", "items": [
+        { "name": "Wool sweater · navy · M", "value": "$59.00", "key": "sweater" },
+        { "name": "T-shirt · white · L", "value": "$25.00", "key": "T-shirt" },
+        { "name": "Total · paid by card", "value": "$84.00", "key": "card" }
+      ] },
+      { "heading": "RETURNS", "items": [
+        { "name": "Refund or exchange within 30 days with this receipt", "key": "refund" },
+        { "name": "Refunds go back on the card you paid with" },
+        { "name": "Exchange for any size or colour", "key": "exchange" }
+      ] }
+    ],
+    "foot": "Thank you for shopping with us!"
+  }
+}

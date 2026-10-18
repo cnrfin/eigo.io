@@ -1,0 +1,101 @@
+{
+  "id": "tickets-abroad",
+  "category": "travel",
+  "title": { "ja": "駅で切符を買って乗り方を聞く", "en": "Buying a train ticket" },
+  "summary": { "ja": "切符を買って、発車時間やホーム、乗り換えを聞く。", "en": "Buy a ticket and ask about times, platforms and changing trains." },
+  "setting": "The ticket office at Central Station in a city abroad, at 10 a.m. on a weekday. A traveller wants to go to Lakeside, a town about an hour away, for a day trip.",
+  "image": "",
+  "studentRole": "a",
+  "roles": [
+    {
+      "id": "a",
+      "name": { "ja": "旅行者", "en": "Traveller" },
+      "persona": "A Japanese traveller on a day trip to Lakeside.",
+      "levels": [
+        {
+          "tutor": "You are the station staff at the ticket office. Speak slowly, in short simple sentences, one thing at a time. Ask single or return, and use the timetable: the next train is the 10:15 from platform 4.",
+          "tasks": [
+            { "id": "ticket", "title": { "ja": "切符を買う", "en": "Ask for a ticket" }, "hints": ["行き先を言って切符を買いましょう", "One ticket to …, please.", "One ticket to Lakeside, please."] },
+            { "id": "type", "title": { "ja": "片道か往復か伝える", "en": "Say single or return" }, "hints": ["片道か往復か伝えましょう", "Single / Return, please.", "Return, please."] },
+            { "id": "next", "title": { "ja": "次の電車の時間を聞く", "en": "Ask when the next train is" }, "hints": ["次の電車の時間を聞きましょう", "When is the …?", "When is the next train?"] },
+            { "id": "platform", "title": { "ja": "ホームを聞く", "en": "Ask which platform" }, "hints": ["何番ホームか聞きましょう", "Which platform …?", "Which platform is it?"] }
+          ]
+        },
+        {
+          "tutor": "You are the station staff, speaking at a natural but clear pace. Use the timetable: the 10:15 is direct from platform 4; the 10:45 needs a change at Hill Park. Mention that they scan their ticket at the gates.",
+          "tasks": [
+            { "id": "ticket", "title": { "ja": "往復の切符を買う", "en": "Ask for a return ticket" }, "hints": ["往復の切符をお願いしましょう", "Could I get a return ticket to …?", "Could I get a return ticket to Lakeside, please?"] },
+            { "id": "next", "title": { "ja": "次の電車を聞く", "en": "Ask about the next train" }, "hints": ["次の電車の時間を聞きましょう", "When's the next train to …?", "When's the next train to Lakeside?"] },
+            { "id": "change", "title": { "ja": "乗り換えがあるか聞く", "en": "Ask if you need to change" }, "hints": ["乗り換えが必要か聞きましょう", "Do I need to …?", "Do I need to change trains?"] },
+            { "id": "platform", "title": { "ja": "ホームを聞く", "en": "Ask which platform" }, "hints": ["何番ホームか聞きましょう", "Which platform does it …?", "Which platform does it leave from?"] }
+          ]
+        },
+        {
+          "tutor": "You are a helpful station staff member, speaking at natural speed. Use the timetable and the fares. If they ask about a cheaper ticket, explain the off-peak return ($32): they can't travel back between 16:00 and 19:00. Mention that they scan their ticket at the gates.",
+          "tasks": [
+            { "id": "ticket", "title": { "ja": "予定を伝えて切符を買う", "en": "Buy a ticket for your plans" }, "hints": ["往復で、夜に帰ってくると伝えましょう", "I'd like a return to … I'm coming back …", "I'd like a return to Lakeside. I'm coming back this evening."] },
+            { "id": "cheaper", "title": { "ja": "安い切符があるか聞く", "en": "Ask about a cheaper ticket" }, "hints": ["もっと安い切符がないか聞きましょう", "Is there a cheaper … if …?", "Is there a cheaper ticket if I travel outside rush hour?"] },
+            { "id": "train", "title": { "ja": "直通の電車を確認する", "en": "Check for a direct train" }, "hints": ["次の直通の電車を聞きましょう", "Is the next train …?", "Is the next train to Lakeside a direct one?"] },
+            { "id": "platform", "title": { "ja": "ホームと乗り方を確認する", "en": "Check the platform and gates" }, "hints": ["ホームと、改札で何をするか聞きましょう", "Which platform …, and do I need to …?", "Which platform is it, and do I need to show my ticket at the gate?"] }
+          ],
+          "twist": {
+            "after": "train",
+            "tutor": "Check your screen and apologise: the 10:15 has just been cancelled. Explain the choices from the timetable: the 10:45 with a change at Hill Park (arriving 12:05), or the direct 11:15 (arriving 12:20).",
+            "task": { "id": "choose", "title": { "ja": "別の電車を選ぶ", "en": "Choose another train" }, "hints": ["どの電車にするか決めて伝えましょう", "Then I'll take the … and …", "Then I'll take the 10:45 and change at Hill Park."] }
+          }
+        }
+      ]
+    },
+    {
+      "id": "b",
+      "name": { "ja": "駅員", "en": "Station staff" },
+      "persona": "A member of staff at the Central Station ticket office.",
+      "levels": [
+        {
+          "tutor": "You are a traveller who wants a return ticket to Lakeside. Speak slowly and simply, and wait for the staff to ask you things. Ask which platform the train leaves from.",
+          "tasks": [
+            { "id": "where", "title": { "ja": "行き先を聞く", "en": "Ask where they're going" }, "hints": ["行き先を聞きましょう", "Hello! Where …?", "Hello! Where are you going?"] },
+            { "id": "type", "title": { "ja": "片道か往復か聞く", "en": "Ask single or return" }, "hints": ["片道か往復か聞きましょう", "Single or …?", "Single or return?"] },
+            { "id": "price", "title": { "ja": "料金を伝える", "en": "Say the price" }, "hints": ["料金を伝えましょう", "That's … dollars, please.", "That's 40 dollars, please."] },
+            { "id": "platform", "title": { "ja": "ホームを伝える", "en": "Say the platform" }, "hints": ["何番ホームか伝えましょう", "It's platform …", "It's platform 4."] }
+          ]
+        },
+        {
+          "tutor": "You are a traveller going to Lakeside for the day, speaking at natural pace. Buy a return ticket, ask when the next train is, and ask whether you need to change.",
+          "tasks": [
+            { "id": "where", "title": { "ja": "行き先を聞く", "en": "Ask where they'd like to go" }, "hints": ["行き先を聞きましょう", "Where would you …?", "Where would you like to go today?"] },
+            { "id": "next", "title": { "ja": "次の電車を伝える", "en": "Give the next train time" }, "hints": ["次の電車の時間を伝えましょう", "The next train is at …", "The next train is at 10:15."] },
+            { "id": "direct", "title": { "ja": "乗り換えについて答える", "en": "Answer about changing trains" }, "hints": ["直通で乗り換えはないと伝えましょう", "It's … You don't need to …", "It's direct. You don't need to change."] },
+            { "id": "gate", "title": { "ja": "改札の通り方を説明する", "en": "Explain the gates" }, "hints": ["改札で切符をかざすと伝えましょう", "Just scan … at the …", "Just scan your ticket at the gates."] }
+          ]
+        },
+        {
+          "tutor": "You are a traveller on a budget, speaking at natural speed. You want the 10:15 to Lakeside and to come back in the evening, around 20:00. Ask for the cheapest ticket. You haven't heard that the 10:15 is cancelled.",
+          "tasks": [
+            { "id": "offpeak", "title": { "ja": "安い切符を案内する", "en": "Offer the cheaper ticket" }, "hints": ["オフピークの往復券を説明しましょう", "An off-peak return is … but you can't …", "An off-peak return is 32 dollars, but you can't come back between four and seven."] },
+            { "id": "cancel", "title": { "ja": "運休を伝える", "en": "Say the train is cancelled" }, "hints": ["ていねいに謝って、運休を伝えましょう", "I'm sorry, the … has been …", "I'm sorry, the 10:15 has been cancelled."] },
+            { "id": "options", "title": { "ja": "ほかの電車を案内する", "en": "Offer other trains" }, "hints": ["乗り換えありの電車と、次の直通を案内しましょう", "You can take the … and change at …, or wait for …", "You can take the 10:45 and change at Hill Park, or wait for the 11:15."] },
+            { "id": "platform", "title": { "ja": "ホームを伝える", "en": "Give the platform" }, "hints": ["選んだ電車のホームを伝えましょう", "The … leaves from platform …", "The 10:45 leaves from platform 2."] }
+          ]
+        }
+      ]
+    }
+  ],
+  "prop": {
+    "label": { "ja": "時刻表", "en": "Timetable" },
+    "title": "CENTRAL STATION · Trains to Lakeside",
+    "sections": [
+      { "heading": "TODAY", "items": [
+        { "name": "10:15 · direct · arrives 11:20", "value": "Platform 4", "key": "10:15" },
+        { "name": "10:45 · change at Hill Park · arrives 12:05", "value": "Platform 2", "key": "10:45" },
+        { "name": "11:15 · direct · arrives 12:20", "value": "Platform 4", "key": "11:15" }
+      ] },
+      { "heading": "FARES TO LAKESIDE", "items": [
+        { "name": "Single", "value": "$24", "key": "single" },
+        { "name": "Return", "value": "$40", "key": "return" },
+        { "name": "Off-peak return (no travel back 16:00–19:00)", "value": "$32", "key": "off-peak" }
+      ] }
+    ],
+    "foot": "Scan your ticket at the gates · Last train back from Lakeside 22:40"
+  }
+}

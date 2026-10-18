@@ -1,0 +1,103 @@
+{
+  "id": "taxi-abroad",
+  "category": "travel",
+  "title": { "ja": "タクシーで行き先を伝える", "en": "Telling a taxi driver where to go" },
+  "summary": { "ja": "行き先を伝えて、時間や料金を聞き、降りる場所を伝える。", "en": "Say where you're going, ask about time and price, and say where to stop." },
+  "setting": "A taxi in a city abroad, on a Sunday morning. The passenger gets in outside the Park Lane Hotel downtown. A city marathon is on today, so some roads are closed.",
+  "image": "",
+  "studentRole": "a",
+  "roles": [
+    {
+      "id": "a",
+      "name": { "ja": "乗客", "en": "Passenger" },
+      "persona": "A Japanese traveller taking a taxi from their hotel.",
+      "levels": [
+        {
+          "tutor": "You are the taxi driver. Speak slowly, in short simple sentences. Ask where they want to go, and answer simply using the map (City Museum: about 15 minutes, about $18). You take cards.",
+          "tasks": [
+            { "id": "where", "title": { "ja": "行き先を伝える", "en": "Say where you're going" }, "hints": ["行き先を伝えましょう", "To the …, please.", "To the City Museum, please."] },
+            { "id": "time", "title": { "ja": "かかる時間を聞く", "en": "Ask how long it takes" }, "hints": ["どのくらいかかるか聞きましょう", "How long does …?", "How long does it take?"] },
+            { "id": "pay", "title": { "ja": "カードで払えるか聞く", "en": "Ask if you can pay by card" }, "hints": ["カードで払えるか聞きましょう", "Can I pay by …?", "Can I pay by card?"] },
+            { "id": "stop", "title": { "ja": "ここで降りると伝える", "en": "Say where to stop" }, "hints": ["ここで止めてほしいと伝えましょう", "Here is …, thank you.", "Here is fine, thank you."] }
+          ]
+        },
+        {
+          "tutor": "You are the taxi driver, speaking at natural pace with a little small talk (is this your first time here?). Use the map for times and prices. Traffic is a bit heavy today because of the marathon, so trips take about five minutes longer.",
+          "tasks": [
+            { "id": "where", "title": { "ja": "行き先と通りの名前を伝える", "en": "Give the place and street" }, "hints": ["行き先と通りの名前を伝えましょう", "Could you take me to …, on …?", "Could you take me to Riverside Market, on Water Street?"] },
+            { "id": "time", "title": { "ja": "かかる時間を聞く", "en": "Ask how long it'll take" }, "hints": ["だいたいの時間を聞きましょう", "About how long will …?", "About how long will it take?"] },
+            { "id": "price", "title": { "ja": "料金の目安を聞く", "en": "Ask roughly how much" }, "hints": ["だいたいの料金を聞きましょう", "Roughly how much …?", "Roughly how much will it be?"] },
+            { "id": "stop", "title": { "ja": "降りる場所を伝える", "en": "Say where to drop you" }, "hints": ["降りたい場所を伝えましょう", "Could you stop at …, please?", "Could you stop at the main entrance, please?"] }
+          ]
+        },
+        {
+          "tutor": "You are a friendly, chatty taxi driver, speaking at natural speed. Chat about the city and give local tips when asked (Riverside Market is great for lunch). Use the map for times and prices, and give them a receipt if they ask.",
+          "tasks": [
+            { "id": "where", "title": { "ja": "行き先と到着したい時間を伝える", "en": "Say where and when to arrive" }, "hints": ["行き先と、何時までに着きたいか伝えましょう", "I need to be at … by … Will we …?", "I need to be at the City Museum by ten. Will we make it?"] },
+            { "id": "tip", "title": { "ja": "地元のおすすめを聞く", "en": "Ask for a local tip" }, "hints": ["近くでおすすめの食事場所を聞きましょう", "Is there anywhere good to … near …?", "Is there anywhere good to eat near the museum?"] },
+            { "id": "dropoff", "title": { "ja": "降りる場所を詳しく伝える", "en": "Say exactly where to stop" }, "hints": ["どこで降りたいか、詳しく伝えましょう", "Could you drop me at …?", "Could you drop me at the main entrance, please?"] },
+            { "id": "pay", "title": { "ja": "支払いとレシートをお願いする", "en": "Pay and ask for a receipt" }, "hints": ["カードで払って、レシートをお願いしましょう", "Could I pay by … and get …?", "Could I pay by card and get a receipt, please?"] }
+          ],
+          "twist": {
+            "after": "dropoff",
+            "tutor": "As you get close, say the road to the museum's main entrance is closed for the marathon. Offer two options: go the long way round (about 10 more minutes and $5 more), or drop them at the side entrance, a five-minute walk away.",
+            "task": { "id": "route", "title": { "ja": "新しいルートを選ぶ", "en": "Choose what to do" }, "hints": ["どちらにするか決めて伝えましょう", "In that case, I'll …", "In that case, I'll walk from the side entrance."] }
+          }
+        }
+      ]
+    },
+    {
+      "id": "b",
+      "name": { "ja": "運転手", "en": "Driver" },
+      "persona": "A taxi driver who knows the city well.",
+      "levels": [
+        {
+          "tutor": "You are a traveller going to the City Museum. Speak slowly and simply, and wait for the driver to ask you things. Ask how long it takes and how much it is.",
+          "tasks": [
+            { "id": "where", "title": { "ja": "行き先を聞く", "en": "Ask where they're going" }, "hints": ["行き先を聞きましょう", "Hi! Where …?", "Hi! Where would you like to go?"] },
+            { "id": "time", "title": { "ja": "かかる時間を伝える", "en": "Say how long it takes" }, "hints": ["かかる時間を伝えましょう", "About … minutes.", "About 15 minutes."] },
+            { "id": "price", "title": { "ja": "料金を伝える", "en": "Say the fare" }, "hints": ["料金を伝えましょう", "That's … dollars, please.", "That's 18 dollars, please."] }
+          ]
+        },
+        {
+          "tutor": "You are a traveller going to Riverside Market, speaking at natural pace. Say it's on Water Street, ask how long it will take, and ask whether you can pay by card.",
+          "tasks": [
+            { "id": "where", "title": { "ja": "行き先を聞く", "en": "Ask where they're going" }, "hints": ["行き先を聞きましょう", "Where are you …?", "Where are you heading today?"] },
+            { "id": "confirm", "title": { "ja": "行き先を確認する", "en": "Check the destination" }, "hints": ["行き先を確認しましょう", "… on Water Street, right?", "Riverside Market on Water Street, right?"] },
+            { "id": "traffic", "title": { "ja": "時間と道の混み具合を伝える", "en": "Talk about time and traffic" }, "hints": ["時間と混み具合を伝えましょう", "It's about … The traffic is …", "It's about 15 minutes. The traffic is a bit heavy today."] },
+            { "id": "pay", "title": { "ja": "支払い方法に答える", "en": "Answer about paying" }, "hints": ["カードで払えると伝えましょう", "Yes, card is … You can tap …", "Yes, card is fine. You can tap it here."] }
+          ]
+        },
+        {
+          "tutor": "You are a traveller in a hurry to get to the City Museum by ten, speaking at natural speed. It's 9:35; ask whether you'll make it. Ask for a lunch recommendation nearby. When the road is closed, choose to walk from the side entrance.",
+          "tasks": [
+            { "id": "time", "title": { "ja": "間に合うか答える", "en": "Say if they'll make it" }, "hints": ["間に合うかどうか答えましょう", "We should get there by … if …", "We should get there by 9:50 if the traffic is okay."] },
+            { "id": "recommend", "title": { "ja": "地元のおすすめを伝える", "en": "Give a local tip" }, "hints": ["近くのおすすめの場所を伝えましょう", "You should try … It's great for …", "You should try Riverside Market. It's great for lunch."] },
+            { "id": "closed", "title": { "ja": "通行止めを伝える", "en": "Explain the road is closed" }, "hints": ["謝って、通行止めを伝えましょう", "Sorry, the road to … is closed for …", "Sorry, the road to the main entrance is closed for the marathon."] },
+            { "id": "options", "title": { "ja": "別の方法を提案する", "en": "Offer two options" }, "hints": ["遠回りするか、横の入口で降りるか提案しましょう", "I can go …, or drop you …", "I can go the long way round, or drop you at the side entrance."] }
+          ]
+        }
+      ]
+    }
+  ],
+  "prop": {
+    "label": { "ja": "地図", "en": "Map" },
+    "title": "DOWNTOWN MAP",
+    "sections": [
+      { "heading": "FROM THE PARK LANE HOTEL", "items": [
+        { "name": "City Museum · Park Avenue", "value": "15 min · about $18", "key": "museum" },
+        { "name": "Riverside Market · Water Street", "value": "10 min · about $12", "key": "market" },
+        { "name": "Central Station", "value": "8 min · about $10", "key": "station" },
+        { "name": "Airport", "value": "35 min · about $55", "key": "airport" }
+      ] },
+      { "heading": "CITY MUSEUM", "items": [
+        { "name": "Main entrance", "value": "Park Avenue", "key": "main entrance" },
+        { "name": "Side entrance", "value": "Hill Street · 5 min walk", "key": "side entrance" }
+      ] },
+      { "heading": "TODAY", "items": [
+        { "name": "City Marathon", "value": "8:00–13:00 · some roads closed", "key": "marathon" }
+      ] }
+    ],
+    "foot": "Taxis take cards · tipping 10–15% is common"
+  }
+}

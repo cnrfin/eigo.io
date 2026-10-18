@@ -1,0 +1,106 @@
+{
+  "id": "airport-check-in",
+  "category": "travel",
+  "title": { "ja": "空港でチェックイン", "en": "Checking in at the airport" },
+  "summary": { "ja": "荷物を預けて座席を選び、搭乗口と搭乗時間を確認する。", "en": "Check in your bag, choose a seat and check your gate and boarding time." },
+  "setting": "The check-in counter of Sky Pacific at Vancouver Airport, Canada, two and a half hours before flight SP 102 to Tokyo. One checked bag of up to 23 kg is included.",
+  "image": "",
+  "studentRole": "a",
+  "roles": [
+    {
+      "id": "a",
+      "name": { "ja": "乗客", "en": "Passenger" },
+      "persona": "A Japanese traveller flying home to Tokyo with one suitcase.",
+      "levels": [
+        {
+          "tutor": "You are the airline check-in staff. Speak slowly, in short simple sentences, one thing at a time. Ask for their passport, ask how many bags, and ask window or aisle (window is 14A, aisle is 14C). Answer simply when they ask about the gate (gate 23).",
+          "tasks": [
+            { "id": "passport", "title": { "ja": "パスポートを渡す", "en": "Hand over your passport" }, "hints": ["パスポートを渡しましょう", "Here's my …", "Here's my passport."] },
+            { "id": "bags", "title": { "ja": "預ける荷物の数を伝える", "en": "Say how many bags" }, "hints": ["預ける荷物の数を伝えましょう", "Just … bag.", "Just one bag."] },
+            { "id": "seat", "title": { "ja": "座席の希望を伝える", "en": "Choose a seat" }, "hints": ["窓側か通路側か伝えましょう", "Window / Aisle, please.", "Window, please."] },
+            { "id": "gate", "title": { "ja": "搭乗口を聞く", "en": "Ask which gate" }, "hints": ["搭乗口を聞きましょう", "Which gate …?", "Which gate is it?"] }
+          ]
+        },
+        {
+          "tutor": "You are the airline check-in staff, speaking at a natural but clear pace. Ask where they're flying to, ask them to put their bag on the scale, and ask whether they packed it themselves. Window seat 14A is free. Boarding starts at 13:40 at gate 23.",
+          "tasks": [
+            { "id": "checkin", "title": { "ja": "行き先を伝えてチェックインする", "en": "Say where you're flying" }, "hints": ["行き先を伝えましょう", "I'm checking in for the flight to …", "Hi, I'm checking in for the flight to Tokyo."] },
+            { "id": "bags", "title": { "ja": "荷物について答える", "en": "Answer about your bag" }, "hints": ["自分で荷造りしたと答えましょう", "Yes, I … myself.", "Yes, I packed it myself."] },
+            { "id": "seat", "title": { "ja": "窓側の席をお願いする", "en": "Ask for a window seat" }, "hints": ["窓側の席をお願いしましょう", "Could I have a …?", "Could I have a window seat, please?"] },
+            { "id": "boarding", "title": { "ja": "搭乗時間を聞く", "en": "Ask the boarding time" }, "hints": ["搭乗が始まる時間を聞きましょう", "What time does … start?", "What time does boarding start?"] }
+          ]
+        },
+        {
+          "tutor": "You are a friendly airline check-in staff member, speaking at natural speed with small talk (how was your trip?). Put a fragile sticker on the bag if they ask. Window seat 14A, near the front, is free. Boarding is at 13:40 at gate 23; they should be at the gate by 13:30.",
+          "tasks": [
+            { "id": "checkin", "title": { "ja": "チェックインして旅の話をする", "en": "Check in and chat about your trip" }, "hints": ["行き先を伝えて、旅の感想を一言話しましょう", "I'm flying back to … I had …", "I'm flying back to Tokyo. I had a great time here."] },
+            { "id": "fragile", "title": { "ja": "割れ物があると伝える", "en": "Say there's something fragile" }, "hints": ["割れ物が入っていると伝えて、シールを頼みましょう", "There's something … in this bag. Could you …?", "There's something fragile in this bag. Could you put a sticker on it?"] },
+            { "id": "seat", "title": { "ja": "座席の希望を詳しく伝える", "en": "Ask for the seat you'd like" }, "hints": ["窓側で前の方の席がいいと伝えましょう", "Could I have a window seat …, if …?", "Could I have a window seat near the front, if there is one?"] },
+            { "id": "gate", "title": { "ja": "搭乗口と時間を確認する", "en": "Check the gate and time" }, "hints": ["搭乗口と、何時に行けばいいか聞きましょう", "Which gate is it, and what time …?", "Which gate is it, and what time should I be there?"] }
+          ],
+          "twist": {
+            "after": "fragile",
+            "tutor": "When you weigh the bag, it's 26 kg: 3 kg over the 23 kg limit. Apologise and explain the options: pay a $75 overweight fee, or take some things out and put them in their carry-on.",
+            "task": { "id": "weight", "title": { "ja": "重量オーバーに対応する", "en": "Deal with the heavy bag" }, "hints": ["手荷物に移せるか聞きましょう", "Could I move some things into …?", "Could I move some things into my carry-on instead?"] }
+          }
+        }
+      ]
+    },
+    {
+      "id": "b",
+      "name": { "ja": "航空会社の係員", "en": "Airline staff" },
+      "persona": "A check-in agent for Sky Pacific at Vancouver Airport.",
+      "levels": [
+        {
+          "tutor": "You are a passenger flying to Tokyo with one suitcase. Speak slowly and simply, and wait for the staff to ask you things. Choose a window seat.",
+          "tasks": [
+            { "id": "passport", "title": { "ja": "パスポートをお願いする", "en": "Ask for their passport" }, "hints": ["パスポートを見せてもらいましょう", "Can I see …?", "Can I see your passport, please?"] },
+            { "id": "bags", "title": { "ja": "荷物の数を聞く", "en": "Ask how many bags" }, "hints": ["預ける荷物の数を聞きましょう", "How many bags are you …?", "How many bags are you checking?"] },
+            { "id": "seat", "title": { "ja": "座席の希望を聞く", "en": "Ask window or aisle" }, "hints": ["窓側か通路側か聞きましょう", "Window or …?", "Window or aisle?"] },
+            { "id": "gate", "title": { "ja": "搭乗口を伝える", "en": "Tell them the gate" }, "hints": ["搭乗口を伝えましょう", "Your gate is …", "Your gate is 23."] }
+          ]
+        },
+        {
+          "tutor": "You are a passenger flying to Tokyo, speaking at natural pace. Answer the staff's questions, ask for a window seat, and ask what time boarding starts.",
+          "tasks": [
+            { "id": "where", "title": { "ja": "行き先を聞く", "en": "Ask where they're flying" }, "hints": ["行き先を聞きましょう", "Where are you flying …?", "Where are you flying to today?"] },
+            { "id": "scale", "title": { "ja": "荷物をはかりに乗せてもらう", "en": "Ask them to weigh the bag" }, "hints": ["荷物をはかりに乗せるようお願いしましょう", "Could you put your bag …?", "Could you put your bag on the scale, please?"] },
+            { "id": "packed", "title": { "ja": "荷造りについて質問する", "en": "Ask the security question" }, "hints": ["自分で荷造りしたか聞きましょう", "Did you pack …?", "Did you pack this bag yourself?"] },
+            { "id": "boarding", "title": { "ja": "搭乗時間と搭乗口を伝える", "en": "Give the boarding time and gate" }, "hints": ["搭乗時間と搭乗口を伝えましょう", "Boarding starts at … at gate …", "Boarding starts at 13:40 at gate 23."] }
+          ]
+        },
+        {
+          "tutor": "You are a passenger flying home to Tokyo, speaking at natural speed with some small talk. Your suitcase weighs 26 kg, and you're surprised it's too heavy. Choose to move some things into your carry-on, and ask for a window seat.",
+          "tasks": [
+            { "id": "welcome", "title": { "ja": "あいさつして行き先を確認する", "en": "Greet them and check the flight" }, "hints": ["あいさつして、行き先を確認しましょう", "Good morning! You're flying to … today?", "Good morning! You're flying to Tokyo today?"] },
+            { "id": "weight", "title": { "ja": "重量オーバーを伝える", "en": "Say the bag is too heavy" }, "hints": ["ていねいに重量オーバーを伝えましょう", "I'm afraid your bag is … over the limit.", "I'm afraid your bag is three kilos over the limit."] },
+            { "id": "options", "title": { "ja": "選択肢を説明する", "en": "Explain the options" }, "hints": ["料金を払うか、荷物を移すか説明しましょう", "You can pay …, or move …", "You can pay a 75-dollar fee, or move some things to your carry-on."] },
+            { "id": "seat", "title": { "ja": "座席を案内する", "en": "Offer them a seat" }, "hints": ["空いている席を伝えましょう", "I have a window seat near … Is that okay?", "I have a window seat near the front. Is that okay?"] },
+            { "id": "gate", "title": { "ja": "搭乗口と時間を伝える", "en": "Give the gate and time" }, "hints": ["搭乗口と、何時までに行けばいいか伝えましょう", "You're at gate … Please be there by …", "You're at gate 23. Please be there by 13:30."] }
+          ]
+        }
+      ]
+    }
+  ],
+  "prop": {
+    "label": { "ja": "搭乗券", "en": "Boarding pass" },
+    "title": "SKY PACIFIC · Boarding pass",
+    "sections": [
+      { "heading": "FLIGHT", "items": [
+        { "name": "Flight", "value": "SP 102" },
+        { "name": "From → To", "value": "Vancouver → Tokyo", "key": "Tokyo" },
+        { "name": "Departure", "value": "14:20", "key": "departure" }
+      ] },
+      { "heading": "BOARDING", "items": [
+        { "name": "Gate", "value": "23", "key": "gate" },
+        { "name": "Boarding time", "value": "13:40", "key": "boarding" },
+        { "name": "Seat", "value": "14A (window)", "key": "window" }
+      ] },
+      { "heading": "BAGGAGE", "items": [
+        { "name": "Checked bag", "value": "1 × 23 kg included", "key": "bag" },
+        { "name": "Overweight (23–32 kg)", "value": "$75", "key": "overweight" }
+      ] }
+    ],
+    "foot": "Gate closes 20 minutes before departure"
+  }
+}

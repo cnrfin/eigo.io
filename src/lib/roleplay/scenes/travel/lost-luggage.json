@@ -1,0 +1,103 @@
+{
+  "id": "lost-luggage",
+  "category": "travel",
+  "title": { "ja": "空港で荷物が出てこない", "en": "When your bag doesn't arrive" },
+  "summary": { "ja": "空港のカウンターで、届かない荷物の特徴や連絡先を伝える。", "en": "Report a missing bag at the airport: describe it and say where to send it." },
+  "setting": "The baggage service desk in the arrivals hall at Vancouver Airport, Canada. A passenger has just arrived on Sky Pacific flight SP 101 from Tokyo, and their suitcase hasn't come out on the belt.",
+  "image": "",
+  "studentRole": "a",
+  "roles": [
+    {
+      "id": "a",
+      "name": { "ja": "乗客", "en": "Passenger" },
+      "persona": "A Japanese traveller whose suitcase didn't arrive.",
+      "levels": [
+        {
+          "tutor": "You are the baggage desk staff. Speak slowly, in short simple sentences, one question at a time. Ask what the problem is, which flight they were on, what the bag looks like, and where they're staying. Say the bag will probably arrive tomorrow.",
+          "tasks": [
+            { "id": "problem", "title": { "ja": "荷物が出てこないと伝える", "en": "Say your bag didn't arrive" }, "hints": ["荷物が出てこないと伝えましょう", "My suitcase didn't …", "My suitcase didn't arrive."] },
+            { "id": "flight", "title": { "ja": "便名を伝える", "en": "Say your flight" }, "hints": ["乗ってきた便を伝えましょう", "Flight … from …", "Flight SP 101 from Tokyo."] },
+            { "id": "bag", "title": { "ja": "荷物の特徴を伝える", "en": "Say what it looks like" }, "hints": ["大きさと色を伝えましょう", "It's a … suitcase.", "It's a big black suitcase."] },
+            { "id": "hotel", "title": { "ja": "泊まる場所を伝える", "en": "Say where you're staying" }, "hints": ["泊まるホテルを伝えましょう", "I'm staying at …", "I'm staying at the Harbour Hotel."] }
+          ]
+        },
+        {
+          "tutor": "You are the baggage desk staff, speaking at a natural but clear pace, calm and sympathetic. Ask for the bag tag, a description of the bag, and a delivery address. The bag will most likely come on tomorrow morning's flight, and you can deliver it to their hotel.",
+          "tasks": [
+            { "id": "problem", "title": { "ja": "状況を説明する", "en": "Explain what happened" }, "hints": ["荷物が出てこなかったことと、乗ってきた便を伝えましょう", "My suitcase didn't come out. I was on …", "My suitcase didn't come out. I was on the flight from Tokyo."] },
+            { "id": "tag", "title": { "ja": "荷物のタグを渡す", "en": "Give them your bag tag" }, "hints": ["荷物のタグを渡しましょう", "Here's my …", "Here's my baggage tag."] },
+            { "id": "bag", "title": { "ja": "荷物の特徴を詳しく伝える", "en": "Describe your bag" }, "hints": ["大きさ、色、目印を伝えましょう", "It's a … suitcase with …", "It's a large grey suitcase with a red strap."] },
+            { "id": "deliver", "title": { "ja": "ホテルに届けてもらう", "en": "Ask for delivery to your hotel" }, "hints": ["ホテルに届けてもらえるか聞きましょう", "Could you deliver it to …?", "Could you deliver it to my hotel?"] },
+            { "id": "when", "title": { "ja": "いつ届くか聞く", "en": "Ask when it will arrive" }, "hints": ["いつ届きそうか聞きましょう", "When do you think …?", "When do you think it will arrive?"] }
+          ]
+        },
+        {
+          "tutor": "You are the baggage desk staff, speaking at natural speed, sympathetic and professional. Fill in the form with them. Most bags arrive within 48 hours; they can buy essentials up to $100 and claim the money back with receipts. Give them the reference number SP-73520 to track the bag online.",
+          "tasks": [
+            { "id": "problem", "title": { "ja": "状況を詳しく説明する", "en": "Explain what happened" }, "hints": ["どのくらい待ったかと、乗ってきた便を伝えましょう", "I've been waiting for … but my suitcase … I was on …", "I've been waiting for 40 minutes, but my suitcase hasn't come out. I was on SP 101."] },
+            { "id": "bag", "title": { "ja": "荷物と中身を説明する", "en": "Describe the bag and what's inside" }, "hints": ["荷物の特徴と、中に何が入っているか伝えましょう", "It's a … suitcase. It has … in it.", "It's a medium grey suitcase. It has my clothes and a laptop charger in it."] },
+            { "id": "essentials", "title": { "ja": "必要なものについて相談する", "en": "Ask about buying what you need" }, "hints": ["明日の予定を伝えて、必要なものを買ってもいいか聞きましょう", "I have … tomorrow. Can I buy … and …?", "I have a meeting tomorrow. Can I buy some clothes and get the money back?"] },
+            { "id": "deliver", "title": { "ja": "届け先と期間を伝える", "en": "Give your hotel and dates" }, "hints": ["ホテルの名前と、いつまでいるか伝えましょう", "I'm staying at … until … Could you …?", "I'm staying at the Harbour Hotel until Friday. Could you send it there?"] },
+            { "id": "track", "title": { "ja": "確認方法を聞く", "en": "Ask how to check on it" }, "hints": ["荷物の状況をどう確認するか聞きましょう", "How can I check …?", "How can I check where my bag is?"] }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b",
+      "name": { "ja": "手荷物カウンターの係員", "en": "Baggage desk staff" },
+      "persona": "A staff member at the airport's baggage service desk.",
+      "levels": [
+        {
+          "tutor": "You are a passenger from flight SP 101 from Tokyo whose big black suitcase didn't arrive. Speak slowly and simply, and wait for the staff to ask you things. You have your bag tag.",
+          "tasks": [
+            { "id": "help", "title": { "ja": "用件を聞く", "en": "Ask how you can help" }, "hints": ["どうしたか聞きましょう", "Hello. How can …?", "Hello. How can I help you?"] },
+            { "id": "flight", "title": { "ja": "便名を聞く", "en": "Ask which flight" }, "hints": ["乗ってきた便を聞きましょう", "Which flight were you …?", "Which flight were you on?"] },
+            { "id": "colour", "title": { "ja": "荷物の色を聞く", "en": "Ask the bag's colour" }, "hints": ["荷物の色を聞きましょう", "What colour is …?", "What colour is your bag?"] },
+            { "id": "tag", "title": { "ja": "タグがあるか聞く", "en": "Ask for the bag tag" }, "hints": ["荷物のタグがあるか聞きましょう", "Do you have your …?", "Do you have your baggage tag?"] }
+          ]
+        },
+        {
+          "tutor": "You are a passenger from flight SP 101 whose suitcase didn't arrive, speaking at natural pace. It's a large grey suitcase with a red strap. You're staying at the Harbour Hotel. Ask when it will arrive.",
+          "tasks": [
+            { "id": "describe", "title": { "ja": "荷物の特徴を聞く", "en": "Ask them to describe the bag" }, "hints": ["荷物の特徴を説明してもらいましょう", "Can you describe …?", "Can you describe your bag, please?"] },
+            { "id": "stay", "title": { "ja": "滞在先を聞く", "en": "Ask where they're staying" }, "hints": ["滞在先を聞きましょう", "Where are you …?", "Where are you staying in Vancouver?"] },
+            { "id": "phone", "title": { "ja": "連絡先を聞く", "en": "Ask for a phone number" }, "hints": ["連絡のつく電話番号を聞きましょう", "Could I have …?", "Could I have a phone number for you?"] },
+            { "id": "when", "title": { "ja": "届く時期を伝える", "en": "Say when it will arrive" }, "hints": ["いつ届きそうか伝えましょう", "It will probably come on …", "It will probably come on tomorrow morning's flight."] }
+          ]
+        },
+        {
+          "tutor": "You are an upset but polite passenger from flight SP 101, speaking at natural speed. Your grey suitcase has a laptop charger and your clothes in it, and you have a meeting tomorrow. Ask what you can do in the meantime and how you'll know where the bag is.",
+          "tasks": [
+            { "id": "sorry", "title": { "ja": "謝って安心させる", "en": "Apologise and reassure them" }, "hints": ["謝って、ほとんどの荷物は届くと伝えましょう", "I'm sorry about that. Most bags …", "I'm sorry about that. Most bags arrive within two days."] },
+            { "id": "contents", "title": { "ja": "中身を聞く", "en": "Ask what's inside" }, "hints": ["貴重品が入っているか聞きましょう", "Is there anything … inside?", "Is there anything valuable inside?"] },
+            { "id": "essentials", "title": { "ja": "必要なものの補償を説明する", "en": "Explain about buying essentials" }, "hints": ["100ドルまで買えて、レシートが必要だと伝えましょう", "You can buy essentials up to … Please keep …", "You can buy essentials up to 100 dollars. Please keep the receipts."] },
+            { "id": "track", "title": { "ja": "確認方法を伝える", "en": "Explain how to track it" }, "hints": ["受付番号でオンライン確認できると伝えましょう", "You can check … online with …", "You can check the status online with this reference number."] }
+          ]
+        }
+      ]
+    }
+  ],
+  "prop": {
+    "label": { "ja": "申請用紙", "en": "Claim form" },
+    "title": "SKY PACIFIC · Missing baggage report",
+    "sections": [
+      { "heading": "FLIGHT", "items": [
+        { "name": "Flight", "value": "SP 101 · Tokyo → Vancouver", "key": "SP 101" },
+        { "name": "Bag tag number", "value": "SP 482913", "key": "tag" },
+        { "name": "Reference number", "value": "SP-73520", "key": "reference" }
+      ] },
+      { "heading": "YOUR BAG", "items": [
+        { "name": "Type and size", "value": "suitcase / backpack · small / medium / large", "key": "suitcase" },
+        { "name": "Colour", "key": "colour" },
+        { "name": "Anything that makes it easy to spot (strap, sticker…)", "key": "strap" },
+        { "name": "What's inside", "key": "inside" }
+      ] },
+      { "heading": "DELIVERY", "items": [
+        { "name": "Hotel or address, and until when", "key": "hotel" },
+        { "name": "Phone number", "key": "phone" }
+      ] }
+    ],
+    "foot": "Most bags arrive within 48 hours · Essentials up to $100 can be claimed with receipts"
+  }
+}
