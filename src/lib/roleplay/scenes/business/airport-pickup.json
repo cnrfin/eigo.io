@@ -2,7 +2,7 @@
   "id": "airport-pickup",
   "category": "business",
   "title": { "ja": "空港で取引先を出迎える", "en": "Meeting a visitor at the airport" },
-  "summary": { "ja": "空港で来訪者を出迎え、今日の予定を説明して、ホテルへ案内する。", "en": "Meet a visitor at arrivals, explain the plan for the day and take them to the taxi." },
+  "summary": { "ja": "空港で来訪者を出迎え、今日の予定を説明して、タクシー乗り場へ案内する。", "en": "Meet a visitor at arrivals, explain the plan for the day and take them to the taxi." },
   "setting": "The arrivals hall at Haneda Airport, Terminal 3, in the afternoon. Someone from the Tokyo office is waiting with a name sign for David Moore, a manager visiting from the Sydney office.",
   "image": "",
   "studentRole": "a",

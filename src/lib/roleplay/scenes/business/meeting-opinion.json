@@ -89,11 +89,11 @@
         { "name": "Campaign starts", "value": "1 March", "key": "1 March|March 1|March 1st" }
       ] },
       { "heading": "ALEX'S PROPOSAL", "items": [
-        { "name": "Online video ads", "value": "70%", "key": "video|70 percent|70%" },
-        { "name": "In-store events", "value": "30%", "key": "in-store|events|30 percent|30%" }
+        { "name": "Online video ads", "value": "70%", "key": "video ads|video ad|70 percent" },
+        { "name": "In-store events", "value": "30%", "key": "in-store|events|30 percent" }
       ] },
       { "heading": "LAST YEAR", "items": [
-        { "name": "New customers who came from in-store events", "value": "45%", "key": "45 percent|45%|last year" },
+        { "name": "New customers who came from in-store events", "value": "45%", "key": "45 percent|last year" },
         { "name": "Cost per new customer: video ads", "value": "¥2,000", "key": "2,000|2000" },
         { "name": "Cost per new customer: in-store events", "value": "¥3,500", "key": "3,500|3500|per new customer" }
       ] },

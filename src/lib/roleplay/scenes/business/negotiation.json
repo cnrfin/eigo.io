@@ -89,8 +89,8 @@
     "sections": [
       { "heading": "PRICE", "items": [
         { "name": "Quantity", "value": "2,000 units", "key": "2,000|2000" },
-        { "name": "Unit price", "value": "US$18", "key": "18 dollars|$18" },
-        { "name": "Unit price for 3,000 units or more", "value": "US$16", "key": "16 dollars|$16|3,000|3000" }
+        { "name": "Unit price", "value": "US$18", "key": "18 dollars" },
+        { "name": "Unit price for 3,000 units or more", "value": "US$16", "key": "16 dollars|3,000|3000" }
       ] },
       { "heading": "DELIVERY", "items": [
         { "name": "Standard delivery", "value": "6 weeks after the order", "key": "six weeks|6 weeks" },
@@ -100,7 +100,7 @@
       { "heading": "TERMS", "items": [
         { "name": "Payment", "value": "30 days after delivery", "key": "30 days|payment terms" },
         { "name": "Warranty", "value": "2 years", "key": "warranty|two years|two-year|2 years" },
-        { "name": "Quote valid until", "value": "31 October 2026", "key": "31 October|October 31" }
+        { "name": "Quote valid for", "value": "30 days", "key": "valid for|quote is valid" }
       ] }
     ],
     "foot": "All prices in US dollars, per unit"
