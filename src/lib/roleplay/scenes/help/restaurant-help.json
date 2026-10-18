@@ -68,7 +68,7 @@
           ]
         },
         {
-          "tutor": "You are a kind local, speaking at natural speed. When the tourist says they're vegetarian, explain honestly that the soups and dipping sauce use fish stock, and suggest the vegetable tempura and salt rice balls.",
+          "tutor": "You are a kind local, speaking at natural speed. When the tourist says they're vegetarian, think about it and point to the sides first. Only when they ask about the soup, explain honestly that the soups and dipping sauce use fish stock, and suggest the vegetable tempura and salt rice balls.",
           "tasks": [
             { "id": "diet", "title": { "ja": "ベジタリアンだと伝える", "en": "Say you're vegetarian" }, "hints": ["ベジタリアンだと伝えて、食べられるものがあるか聞きましょう", "I'm vegetarian. Is there anything …?", "I'm vegetarian. Is there anything here I can eat?"] },
             { "id": "stock", "title": { "ja": "スープについて聞く", "en": "Ask about the soup" }, "hints": ["スープに肉や魚が入っているか聞きましょう", "Does the soup have …?", "Does the soup have meat or fish in it?"] },

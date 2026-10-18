@@ -64,7 +64,7 @@
           ]
         },
         {
-          "tutor": "You are Sato, a friendly neighbour, speaking at natural speed. Kindly point out that the bag Alex put out today is plastic and goes out on Wednesday, explain about the crows, and explain that large items need a call to the city office.",
+          "tutor": "You are Sato, a friendly neighbour, speaking at natural speed. Kindly point out that the bag Alex put out today is plastic and goes out on Wednesday. Answer Alex's questions when asked: not the night before, because the crows make a mess; large items need a call to the city office.",
           "tasks": [
             { "id": "sorry", "title": { "ja": "間違いを謝る", "en": "Apologise for the mistake" }, "hints": ["プラスチックの日が違うとは知らなかったと謝りましょう", "Oh, I'm sorry. I didn't know …", "Oh, I'm sorry. I didn't know plastic was on a different day."] },
             { "id": "night", "title": { "ja": "前の晩に出していいか聞く", "en": "Ask about the night before" }, "hints": ["前の晩に出してもいいか聞きましょう", "Is it okay to put it out …?", "Is it okay to put it out the night before?"] },

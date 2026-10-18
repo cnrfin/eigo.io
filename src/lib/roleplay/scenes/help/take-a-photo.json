@@ -30,7 +30,7 @@
           ]
         },
         {
-          "tutor": "You are Emma, a friendly tourist with a friend, speaking at natural speed with a little small talk. You'd like the whole gate in the photo. Follow the local's suggestions about where to stand, and look through the photos happily at the end.",
+          "tutor": "You are Emma, a friendly tourist with a friend, speaking at natural speed with a little small talk. You'd like the whole gate in the photo. Another visitor is standing just behind you on your left, in the shot, and you haven't noticed. Follow the local's suggestions about where to stand, and look through the photos happily at the end.",
           "tasks": [
             { "id": "spot", "title": { "ja": "いい場所を提案する", "en": "Suggest a better spot" }, "hints": ["門が全部入る場所を提案しましょう", "Sure. If you stand …, you'll get …", "Sure. If you stand over there, you'll get the whole gate in."] },
             { "id": "move", "title": { "ja": "立ち位置をていねいに直す", "en": "Ask them to move, politely" }, "hints": ["後ろに人がいるので、少し動いてもらいましょう", "Could you move a little to the …? There's …", "Could you move a little to the right? There's someone behind you."] },

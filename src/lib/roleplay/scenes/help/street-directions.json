@@ -22,7 +22,7 @@
           ]
         },
         {
-          "tutor": "You are a tourist looking for the City Museum, speaking at natural pace. Ask how to get there and whether it's far, and check one detail. Use the map: straight down Main Street past the traffic lights, on the left, opposite the post office.",
+          "tutor": "You are a tourist looking for the City Museum, speaking at natural pace. Open the scene by thinking aloud to yourself (\"Hmm, which way is it...?\"), not by asking the local, and wait for them to offer help. Then ask how to get there and whether it's far, and check one detail. Use the map: straight down Main Street past the traffic lights, on the left, opposite the post office.",
           "tasks": [
             { "id": "offer", "title": { "ja": "声をかける", "en": "Offer to help" }, "hints": ["何か探しているか聞きましょう", "Are you looking for …?", "Are you looking for something?"] },
             { "id": "directions", "title": { "ja": "目印を使って道を説明する", "en": "Give directions with a landmark" }, "hints": ["信号を目印に説明しましょう", "Go straight down …, past the traffic lights.", "Go straight down Main Street, past the traffic lights."] },
@@ -31,7 +31,7 @@
           ]
         },
         {
-          "tutor": "You are a friendly tourist, speaking at natural speed with a little small talk. You want the City Museum first. Ask how late it's open; it's 3 p.m. now and the map says it closes at 5.",
+          "tutor": "You are a friendly tourist, speaking at natural speed with a little small talk. Open the scene by thinking aloud to yourself (\"Hmm, which way is it...?\"), not by asking the local, and wait for them to offer help. You want the City Museum first. Ask how late it's open; it's 3 p.m. now and the map says it closes at 5.",
           "tasks": [
             { "id": "check", "title": { "ja": "行き先を確かめて声をかける", "en": "Check where they're going" }, "hints": ["博物館を探しているか確かめましょう", "Are you looking for …? It's not …", "Are you looking for the City Museum? It's not far."] },
             { "id": "directions", "title": { "ja": "道順をまとめて説明する", "en": "Give the full directions" }, "hints": ["信号と郵便局を目印に、まとめて説明しましょう", "Go straight past … It's on the left, opposite …", "Go straight past the traffic lights. It's on the left, opposite the post office."] },
@@ -94,7 +94,8 @@
         { "name": "City Museum · on the left, 5 min walk", "value": "open 9:00–17:00", "key": "museum" },
         { "name": "Post office · opposite the museum", "key": "post office" },
         { "name": "Convenience store · corner of Main St and Sakura St", "key": "convenience store" },
-        { "name": "Ramen Hana · Sakura Street", "key": "Ramen Hana" }
+        { "name": "Ramen Hana · Sakura Street", "key": "Ramen Hana" },
+        { "name": "Tanaka Ramen · Sakura Street (closed last year)", "key": "Tanaka Ramen" }
       ] }
     ],
     "foot": "You are here: Kitamachi Station, north exit"

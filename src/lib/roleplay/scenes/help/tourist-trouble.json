@@ -13,7 +13,7 @@
       "persona": "A Japanese person passing through the station on the way home.",
       "levels": [
         {
-          "tutor": "You are a tourist who has lost a small black bag. Speak slowly and simply, look worried, and answer the local's questions in short sentences. You think you left it on the train.",
+          "tutor": "You are a tourist who has lost a small black bag. Open the scene by searching your pockets and saying \"Oh no, oh no...\" to yourself, and wait for the local to speak to you. Speak slowly and simply, look worried, and answer the local's questions in short sentences. You think you left it on the train.",
           "tasks": [
             { "id": "okay", "title": { "ja": "大丈夫か声をかける", "en": "Ask if they're okay" }, "hints": ["大丈夫か声をかけましょう", "Are you …?", "Are you okay?"] },
             { "id": "what", "title": { "ja": "何をなくしたか聞く", "en": "Ask what they lost" }, "hints": ["何をなくしたか聞きましょう", "What did you …?", "What did you lose?"] },
@@ -21,7 +21,7 @@
           ]
         },
         {
-          "tutor": "You are a tourist who has lost a small black bag with a red keyring, speaking at natural pace. You were on the train from the airport about 30 minutes ago. Answer the local's questions and accept their help gratefully.",
+          "tutor": "You are a tourist who has lost a small black bag with a red keyring, speaking at natural pace. Open the scene by searching your bag and pockets, worried, without asking anyone for help, and wait for the local to speak to you. You were on the train from the airport about 30 minutes ago. Answer the local's questions and accept their help gratefully.",
           "tasks": [
             { "id": "okay", "title": { "ja": "声をかける", "en": "Offer to help" }, "hints": ["大丈夫か、手伝おうかと声をかけましょう", "Are you okay? Can I …?", "Are you okay? Can I help?"] },
             { "id": "describe", "title": { "ja": "特徴を聞く", "en": "Ask what it looks like" }, "hints": ["どんなものか聞きましょう", "What does it …?", "What does it look like?"] },
@@ -31,7 +31,7 @@
           ]
         },
         {
-          "tutor": "You are a tourist who has lost a small black bag, speaking at natural speed and quite stressed. You were in the third car of the train from the airport about 30 minutes ago. Answer the local's questions in detail.",
+          "tutor": "You are a tourist who has lost a small black bag, speaking at natural speed and quite stressed. Open the scene by searching your pockets and muttering to yourself, and wait for the local to speak to you. You were in the third car of the train from the airport about 30 minutes ago. Answer the local's questions in detail.",
           "tasks": [
             { "id": "okay", "title": { "ja": "様子を見てやさしく声をかける", "en": "Check on them kindly" }, "hints": ["心配そうなので、やさしく声をかけましょう", "You look … Is everything …?", "You look worried. Is everything all right?"] },
             { "id": "details", "title": { "ja": "くわしい状況を聞く", "en": "Ask for the details" }, "hints": ["どの電車の何両目にいたか聞きましょう", "Which train were you on, and do you remember …?", "Which train were you on, and do you remember which car?"] },
@@ -69,7 +69,7 @@
           ]
         },
         {
-          "tutor": "You are a kind, calm local, speaking at natural speed. Ask for details, reassure the tourist, and explain that the police box just outside can take a report for the passport and the station staff can contact the train.",
+          "tutor": "You are a kind, calm local, speaking at natural speed. Ask for details and reassure the tourist that the station staff can contact the train. When they mention the passport and ask about the police, explain that the police box just outside can take a report.",
           "tasks": [
             { "id": "lost", "title": { "ja": "状況をくわしく伝える", "en": "Explain what happened" }, "hints": ["どの電車で何両目にいたかも伝えましょう", "I left my bag on the train from … I was in …", "I left my bag on the train from the airport. I was in the third car."] },
             { "id": "passport", "title": { "ja": "パスポートのことを相談する", "en": "Ask about your passport" }, "hints": ["パスポートも入っていると伝えて、どうすればいいか聞きましょう", "My passport is … too. What should I …?", "My passport is in it, too. What should I do?"] },

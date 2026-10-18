@@ -13,7 +13,7 @@
       "persona": "A Japanese person who lives in the area and stays calm.",
       "levels": [
         {
-          "tutor": "You are a frightened tourist who has never felt an earthquake. You are not hurt. Speak slowly and simply, and follow the local. Ask what happened and where to go. Use the evacuation map.",
+          "tutor": "You are a frightened tourist who has never felt an earthquake. You are not hurt. Open the scene with a frightened \"What was that?!\" and wait for the local to speak to you. Speak slowly and simply, and follow the local. Ask what happened and where to go. Use the evacuation map.",
           "tasks": [
             { "id": "okay", "title": { "ja": "大丈夫か聞く", "en": "Ask if they're okay" }, "hints": ["大丈夫か声をかけましょう", "Are you …?", "Are you okay?"] },
             { "id": "calm", "title": { "ja": "揺れが止まったと伝える", "en": "Say the shaking has stopped" }, "hints": ["もう揺れは止まったと伝えて、安心させましょう", "It's okay now. The shaking …", "It's okay now. The shaking has stopped."] },
@@ -22,7 +22,7 @@
           ]
         },
         {
-          "tutor": "You are a worried tourist who isn't hurt, speaking at natural pace. Ask whether it's over, whether the trains are running, and where you should go. You want to message your family. Use the evacuation map.",
+          "tutor": "You are a worried tourist who isn't hurt, speaking at natural pace. Open the scene with a shaky \"Wow... that was scary\" and wait for the local to check on you. Then ask whether it's over, whether the trains are running, and where you should go. You want to message your family. Use the evacuation map.",
           "tasks": [
             { "id": "hurt", "title": { "ja": "けががないか聞く", "en": "Ask if they're hurt" }, "hints": ["けががないか聞きましょう", "Are you …?", "Are you hurt at all?"] },
             { "id": "trains", "title": { "ja": "電車の状況を説明する", "en": "Explain about the trains" }, "hints": ["安全確認で電車が止まっていると伝えましょう", "The trains have stopped for …", "The trains have stopped for safety checks."] },
@@ -32,7 +32,7 @@
           ]
         },
         {
-          "tutor": "You are a shaken tourist who isn't hurt, speaking at natural speed. Your hotel is in Midoribashi, two stops away, and you want to know how long the trains will be stopped and whether it's safe. You need to tell your family you're okay. Use the evacuation map.",
+          "tutor": "You are a shaken tourist who isn't hurt, speaking at natural speed. Your hotel is in Midoribashi, three stops away, and you want to know how long the trains will be stopped and whether it's safe. You need to tell your family you're okay. Use the evacuation map.",
           "tasks": [
             { "id": "calm", "title": { "ja": "落ち着かせて状況を説明する", "en": "Calm them and explain" }, "hints": ["地震は日本ではよくあり、建物も強いと伝えて安心させましょう", "Don't worry. Earthquakes like this are …, and the buildings …", "Don't worry. Earthquakes like this are common here, and the buildings are built for them."] },
             { "id": "trains", "title": { "ja": "電車の見通しを伝える", "en": "Say how long the trains may stop" }, "hints": ["安全確認に1時間以上かかるかもしれないと伝えましょう", "The trains are stopped for … It could take …", "The trains are stopped for checks. It could take an hour or more."] },
@@ -65,9 +65,9 @@
           ]
         },
         {
-          "tutor": "You are a calm local, speaking at natural speed. Reassure the tourist, explain the trains could be stopped for an hour or more, suggest going together to the elementary school, and explain the free emergency Wi-Fi from the evacuation map.",
+          "tutor": "You are a calm local, speaking at natural speed. Reassure the tourist, explain the trains could be stopped for an hour or more, and suggest going together to the elementary school. Answer their questions when asked (aftershocks are likely; the free emergency Wi-Fi is on the evacuation map).",
           "tasks": [
-            { "id": "situation", "title": { "ja": "状況を伝えて相談する", "en": "Explain your situation" }, "hints": ["ホテルが2駅先なのに電車が止まっていると伝えて、相談しましょう", "My hotel is in …, but the trains … What should I …?", "My hotel is in Midoribashi, but the trains have stopped. What should I do?"] },
+            { "id": "situation", "title": { "ja": "状況を伝えて相談する", "en": "Explain your situation" }, "hints": ["ホテルが3駅先なのに電車が止まっていると伝えて、相談しましょう", "My hotel is in …, but the trains … What should I …?", "My hotel is in Midoribashi, but the trains have stopped. What should I do?"] },
             { "id": "aftershock", "title": { "ja": "余震について聞く", "en": "Ask about aftershocks" }, "hints": ["また揺れるかもしれないか聞きましょう", "Should I expect …?", "Should I expect more shaking?"] },
             { "id": "family", "title": { "ja": "家族への連絡について聞く", "en": "Ask how to contact family" }, "hints": ["家族に無事を伝えたいと言って、Wi-Fiがあるか聞きましょう", "I need to tell my family … Is there …?", "I need to tell my family I'm okay. Is there any Wi-Fi?"] },
             { "id": "thanks", "title": { "ja": "心をこめてお礼を言う", "en": "Thank them warmly" }, "hints": ["一緒にいてくれたことにお礼を言いましょう", "Thank you for … I feel …", "Thank you for staying with me. I feel much calmer now."] }

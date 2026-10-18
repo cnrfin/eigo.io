@@ -69,7 +69,7 @@
           ]
         },
         {
-          "tutor": "You are a kind local, speaking at natural speed. Recommend an IC card for a week's stay and explain the deposit. If the tourist only has a card, explain that this machine is cash only and the one next to the ticket office takes cards.",
+          "tutor": "You are a kind local, speaking at natural speed. Recommend an IC card for a week's stay and give the price (¥2,000). Answer questions about the deposit when asked. If the tourist only has a card, explain that this machine is cash only and the one next to the ticket office takes cards.",
           "tasks": [
             { "id": "plans", "title": { "ja": "事情を伝えてアドバイスを求める", "en": "Explain and ask for advice" }, "hints": ["1週間いると伝えて、いい移動方法を聞きましょう", "I'm here for … What's the best way to …?", "I'm here for a week. What's the best way to get around?"] },
             { "id": "deposit", "title": { "ja": "デポジットについて聞く", "en": "Ask about the deposit" }, "hints": ["デポジットが戻ってくるか聞きましょう", "Do I get the … back?", "Do I get the deposit back when I leave?"] },
@@ -90,14 +90,14 @@
         { "name": "Airport", "value": "¥620", "key": "airport" }
       ] },
       { "heading": "IC CARD", "items": [
-        { "name": "New card (includes ¥500 deposit)", "value": "¥2,000", "key": "2,000|two thousand|new card" },
+        { "name": "New card (includes ¥500 deposit)", "value": "¥2,000", "key": "2,000|2000|two thousand|new card" },
         { "name": "Top up at any machine", "value": "from ¥1,000", "key": "top up|top it up|charge" },
         { "name": "Deposit back at the ticket office", "key": "deposit back|refund" }
       ] },
       { "heading": "MACHINES", "items": [
         { "name": "English button · top right of the screen", "key": "English" },
         { "name": "These machines: cash only", "key": "cash" },
-        { "name": "Big machine next to the ticket office: cards OK", "key": "ticket office|credit card" }
+        { "name": "Big machine next to the ticket office: cards OK", "key": "takes cards|credit card" }
       ] }
     ],
     "foot": "Children's fares are half price"
