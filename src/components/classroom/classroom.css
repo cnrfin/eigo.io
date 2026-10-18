@@ -559,6 +559,27 @@
 .cr .ai-tile .ai-status{position:absolute;left:50%;top:10px;transform:translateX(-50%);display:flex;align-items:center;gap:8px;padding:4px 10px;border-radius:999px;background:rgba(10,10,15,.6);color:#fff;font-size:12px;white-space:nowrap}
 .cr .ai-tile .ai-status .spin{width:12px;height:12px;border-radius:50%;border:2px solid currentColor;border-top-color:transparent;animation:cr-spin .7s linear infinite}
 .cr .ai-tile .ai-status .ebtn{padding:3px 10px;font-size:12px}
+/* the AI classroom has no camera tiles: the AI tutor floats on a soft light in its colour (mockups/ai-classroom-layout.html) */
+.cr .ai-float{display:grid;place-items:center;overflow:visible;z-index:2;transition:left .55s var(--ease),top .55s var(--ease),width .55s var(--ease),height .55s var(--ease)}
+.cr .ai-lesson .slot.panelBox{transition:left .55s var(--ease),top .55s var(--ease),width .55s var(--ease),height .55s var(--ease)}
+.cr .ai-float .ai-orb-float{width:100%;height:auto;position:relative;animation:ai-float 5s ease-in-out infinite}
+.cr .ai-float.idle .ai-orb-float{filter:saturate(.5);opacity:.75}
+@keyframes ai-float{50%{translate:0 -6px}}
+.cr .ai-glow{position:absolute;left:50%;top:50%;width:260%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;pointer-events:none;z-index:-1;filter:blur(8px);
+  background:radial-gradient(closest-side,color-mix(in srgb,var(--tc) 30%,transparent),color-mix(in srgb,var(--tc) 10%,transparent) 55%,transparent)}
+[data-theme=light] .cr .ai-glow{background:radial-gradient(closest-side,color-mix(in srgb,var(--tc) 38%,transparent),color-mix(in srgb,var(--tc) 13%,transparent) 55%,transparent)}
+.cr .ai-float.speaking .ai-glow{animation:ai-breathe 1.6s ease-in-out infinite alternate}
+@keyframes ai-breathe{to{transform:translate(-50%,-50%) scale(1.08)}}
+.cr .ai-float .vol{display:none}
+.cr .ai-float .name{position:absolute;left:50%;top:calc(100% + 8px);transform:translateX(-50%);white-space:nowrap;font-size:13.5px;font-weight:500;color:var(--text-secondary)}
+.cr .ai-float .ai-status{position:absolute;left:50%;bottom:calc(100% + 6px);transform:translateX(-50%);display:flex;align-items:center;gap:8px;padding:4px 10px;border-radius:999px;background:rgba(10,10,15,.6);color:#fff;font-size:12px;white-space:nowrap;z-index:1}
+.cr .ai-float .ai-status .spin{width:12px;height:12px;border-radius:50%;border:2px solid currentColor;border-top-color:transparent;animation:cr-spin .7s linear infinite}
+.cr .ai-float .ai-status .ebtn{padding:3px 10px;font-size:12px}
+/* the student's mic level, in place of their tile */
+.cr .mic-ring .cface{overflow:visible}
+.cr .mic-ring .cface::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;box-shadow:0 0 0 calc(var(--lv,0) * 5px) color-mix(in srgb,var(--accent) 50%,transparent);transition:box-shadow .08s linear}
+.cr .mic-ring.off .cface::before{display:none}
+@media (prefers-reduced-motion:reduce){.cr .ai-float,.cr .ai-float .ai-orb-float,.cr .ai-glow,.cr .ai-lesson .slot.panelBox{animation:none;transition:none}}
 .cr .info.warn{color:var(--warning)}
 
 /* word list (design: mockups/ai-panel.html) */

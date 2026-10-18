@@ -114,3 +114,69 @@ export function computeLayout(
   const lift = Math.max(0, H - bottom - 28)
   return { ...r, lift }
 }
+
+/* ---------------- the AI classroom: no camera tiles, the AI tutor floats ---------------- */
+
+export type AiLayoutMode = 'float' | 'panel-side' | 'panel-top' | 'slide-side' | 'slide-top'
+export type AiLayoutResult = {
+  mode: AiLayoutMode
+  /** the panel or the slide (null = nothing open) */
+  main: Rect | null
+  /** the AI tutor: a square; its name sits under it */
+  tutor: Rect
+  lift: number
+}
+
+/**
+ * The AI classroom (design: mockups/ai-classroom-layout.html).
+ *  - nothing open: the tutor in the middle (up to 210px)
+ *  - the panel: a square flush left (up to 4:5 when width is tight), the tutor centred in the space on the right;
+ *    in a tall window the panel goes on top, full width, and the tutor underneath
+ *  - a slide (or the whiteboard): its own shape, on the left with the tutor on the right when that costs the
+ *    slide (almost) nothing; otherwise centred on top with a smaller tutor underneath
+ */
+export function computeAiLayout(W: number, H: number, opts: { main: 'none' | 'panel' | 'slide'; ratio?: number }): AiLayoutResult | null {
+  if (!W || !H) return null
+  const NAME = 30 // room for the name under the tutor
+  const sq = (cx: number, cy: number, s: number): Rect => ({ x: cx - s / 2, y: cy - s / 2 - NAME / 2, w: s, h: s })
+  const done = (mode: AiLayoutMode, main: Rect | null, tutor: Rect): AiLayoutResult => {
+    let bottom = tutor.y + tutor.h + NAME
+    if (main) bottom = Math.max(bottom, main.y + main.h)
+    return { mode, main, tutor, lift: main ? Math.max(0, H - bottom - 28) : 0 }
+  }
+
+  if (opts.main === 'none') {
+    const s = Math.max(72, Math.min(W * 0.3, H * 0.38, 210))
+    return done('float', null, sq(W / 2, H / 2, s))
+  }
+
+  if (opts.main === 'panel') {
+    if (W / H >= 0.95) {
+      const mw = Math.max(0, Math.min(H, W - G - 140))
+      const mh = Math.min(H, mw * 1.25)
+      const rw = W - mw - G
+      const s = Math.max(72, Math.min(rw * 0.62, H * 0.42, 240))
+      return done('panel-side', { x: 0, y: 0, w: mw, h: mh }, sq(mw + G + rw / 2, H / 2, s))
+    }
+    const minT = Math.max(96, Math.min(160, H * 0.2))
+    const mh = Math.max(0, Math.min(H - minT - NAME - G * 2, W * 1.25))
+    const left = H - mh
+    const s = Math.max(72, Math.min(left * 0.6 - NAME / 2, W * 0.5, 220))
+    return done('panel-top', { x: 0, y: 0, w: W, h: mh }, sq(W / 2, mh + left / 2, s))
+  }
+
+  const SR = Math.min(1.2, Math.max(0.4, opts.ratio ?? 3 / 4))
+  const band = Math.max(130, Math.min(190, H * 0.27))
+  const sideW = Math.max(0, Math.min(H / SR, W - G - 200))
+  const topW = Math.max(0, Math.min(W, (H - band) / SR))
+  if (sideW >= topW * 0.95) {
+    const mh = sideW * SR
+    const rw = W - sideW - G
+    const s = Math.max(80, Math.min(rw * 0.6, H * 0.36, 190))
+    return done('slide-side', { x: 0, y: (H - mh) / 2, w: sideW, h: mh }, sq(sideW + G + rw / 2, H / 2, s))
+  }
+  const mh = topW * SR
+  const left = H - mh
+  const s = Math.max(72, Math.min(left * 0.62 - NAME / 2, 150))
+  return done('slide-top', { x: (W - topW) / 2, y: 0, w: topW, h: mh }, sq(W / 2, mh + left / 2, s))
+}

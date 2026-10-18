@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { aiAssist, aiCourses, aiCourseTitles, aiOpenLesson, aiRoleplays, aiRoleplayScene, aiTurn, postEvent, sendAiReport, saveAiTranscript, sendAiAction, startAiSession, type PanelCourse, type SlideRef, type StudentAction } from '@/lib/classroom/client'
 import type { Lesson } from '@/lib/slides/types'
 import { useAudioLevel, useVolDot } from './audio'
@@ -19,7 +19,8 @@ import { hasJapanese, words as wordsOf } from '@/lib/ai-tutor/voice-match'
 import { Ico } from './Icons'
 import SlideStage from './SlideStage'
 import Toolbar from './Toolbar'
-import { computeLayout, type Rect } from '@/lib/classroom/layout'
+import { computeAiLayout, type Rect } from '@/lib/classroom/layout'
+import { orbColor } from '@/lib/ai-tutor/orb-colors'
 import type { RoomProps } from './Room'
 
 /**
@@ -1007,7 +1008,11 @@ export default function AiRoom(props: Props) {
   useAudioLevel(remoteStream, (v) => {
     voiceLevel.current = v
   })
-  const myDot = useVolDot(micStream, !micOn)
+  // no tile for the student: the mic button's ring grows with their voice
+  const micBtn = useRef<HTMLButtonElement | null>(null)
+  useAudioLevel(micOn ? micStream : null, (v) => {
+    micBtn.current?.style.setProperty('--lv', v.toFixed(2))
+  })
   useEffect(() => {
     if (!remoteStream) return
     let raf = 0
@@ -1120,12 +1125,11 @@ export default function AiRoom(props: Props) {
     }
   })
 
-  /* ---------- layout: the same slide + tiles layout as a lesson with Connor ---------- */
+  /* ---------- layout: no camera tiles; the AI tutor floats beside or under the panel / slide (lib/classroom/layout.ts) ---------- */
   const layoutRef = useRef<HTMLDivElement | null>(null)
   const appRef = useRef<HTMLDivElement | null>(null)
   const slideBoxRef = useRef<HTMLDivElement | null>(null)
   const otherRef = useRef<HTMLDivElement | null>(null)
-  const meRef = useRef<HTMLDivElement | null>(null)
   const showSlide = !freeTalk || props.whiteboard
   const rects = useRef(new Map<HTMLElement, Rect>())
   const place = useCallback((el: HTMLElement | null, r: Rect | null) => {
@@ -1143,12 +1147,11 @@ export default function AiRoom(props: Props) {
   const doLayout = useCallback(() => {
     const box = layoutRef.current
     if (!box) return
-    const res = computeLayout(box.clientWidth, box.clientHeight, { showSlide: showSlide || panelOn, ratio: 3 / 4, square: panelOn })
+    const res = computeAiLayout(box.clientWidth, box.clientHeight, { main: panelOn ? 'panel' : showSlide ? 'slide' : 'none', ratio: 3 / 4 })
     if (!res) return
-    place(slideBoxRef.current, panelOn ? null : res.slide)
-    place(panelBoxRef.current, panelOn ? res.slide : null)
-    place(otherRef.current, res.other)
-    place(meRef.current, res.me)
+    place(slideBoxRef.current, panelOn ? null : res.main)
+    place(panelBoxRef.current, panelOn ? res.main : null)
+    place(otherRef.current, res.tutor)
     if (appRef.current) {
       appRef.current.dataset.mode = res.mode
       appRef.current.style.setProperty('--lift', res.lift.toFixed(1) + 'px')
@@ -1304,6 +1307,12 @@ export default function AiRoom(props: Props) {
               : speaking
                 ? t('aiSpeaking')
                 : t('aiListening')
+
+  const glowStyle = useMemo(() => {
+    const p = orbColor(info.aiColor)
+    const c = (v: readonly number[]) => v.map((x) => Math.round(x * 255)).join(' ')
+    return { '--tc': `rgb(${c(p.accent)})`, '--tc2': `rgb(${c(p.deep)})` } as CSSProperties
+  }, [info.aiColor])
 
   return (
     <div
@@ -1464,10 +1473,9 @@ export default function AiRoom(props: Props) {
                 />
               )}
             </div>
-            <div className={`slot tile ai-tile${speaking ? ' speaking' : ''}${status !== 'live' ? ' idle' : ''}`} ref={otherRef}>
-              <div className="face">
-                <AiAvatar className="ai-orb-tile" color={info.aiColor} blush={info.aiBlush !== false} level={voiceLevel} mood={mood} title={info.other.name} />
-              </div>
+            <div className={`slot ai-float${speaking ? ' speaking' : ''}${status !== 'live' ? ' idle' : ''}`} ref={otherRef} style={glowStyle}>
+              <span className="ai-glow" aria-hidden />
+              <AiAvatar className="ai-orb-float" color={info.aiColor} blush={info.aiBlush !== false} level={voiceLevel} mood={mood} title={info.other.name} />
               <span className="vol" ref={tutorDot}>
                 <i />
               </span>
@@ -1483,22 +1491,6 @@ export default function AiRoom(props: Props) {
                 </div>
               )}
               <span className="name">{info.other.name}</span>
-            </div>
-            <div className={"slot tile camoff"} ref={meRef}>
-              <div className="face">
-                <div className="avatar" style={{ background: '#fae1d8' }}>
-                  {(info.me.name || '?').trim().charAt(0).toUpperCase()}
-                </div>
-              </div>
-              <span className={`vol${micOn ? '' : ' muted'}`} ref={myDot}>
-                <i />
-                <span className="mut" title={t('muted')}>
-                  <Ico name="micoff" />
-                </span>
-              </span>
-              <span className="name">
-                {info.me.name} {t('you')}
-              </span>
             </div>
             <AiCards t={t} shown={status === 'live' ? shown : null} hearRef={cardHear} onSave={saveFromCard} onClose={() => setShown(null)} onChose={onChose} />
             {undo && !shown && (
@@ -1522,7 +1514,7 @@ export default function AiRoom(props: Props) {
           <Toolbar t={t} ink={props.ink} open={tbOpen} setOpen={setTbOpen} toast={props.toast} enabled={!!surface} />
 
           <nav className="controls">
-            <button className={`cbtn ${micOn ? 'on' : 'off'}`} aria-pressed={micOn} onClick={toggleMic}>
+            <button ref={micBtn} className={`cbtn mic-ring ${micOn ? 'on' : 'off'}`} aria-pressed={micOn} onClick={toggleMic}>
               <span className="cface">
                 <Ico name={micOn ? 'mic' : 'micoff'} />
               </span>
