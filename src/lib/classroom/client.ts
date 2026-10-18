@@ -208,7 +208,7 @@ export type StudentAction =
   | ({ kind: 'slide'; review?: { returnTo: number } } & SlideRef)
   | { kind: 'lesson'; courseId: string; lessonId: string }
   | { kind: 'not_yet'; missing: string[] }
-  | { kind: 'nudge' }
+  | { kind: 'nudge'; where?: 'slides' | 'free' | 'roleplay' }
   /** the lesson was started again from slide 1 */
   | { kind: 'restarted' }
   /** left: seconds on the classroom clock (it can end a little before the server's end) */

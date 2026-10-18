@@ -28,7 +28,7 @@ type Action =
   | ({ kind: 'slide'; review?: { returnTo: number } } & SlideRef)
   | { kind: 'lesson'; courseId: string; lessonId: string }
   | { kind: 'not_yet'; missing: string[] }
-  | { kind: 'nudge' }
+  | { kind: 'nudge'; where?: 'slides' | 'free' | 'roleplay' }
   | { kind: 'restarted' }
   | { kind: 'time'; left?: number }
   | { kind: 'view'; what: 'closed' | 'board_on' | 'board_off' | 'open_failed' }
@@ -67,7 +67,9 @@ function instruction(a: Action, secondsLeft: number): string | null {
       return t ? `On the student's screen: ${t}` : null
     }
     case 'start':
-      return 'The student has joined and can hear you. Greet them now by name and begin as your instructions say (in a lesson: warm-up chat and review of the last lesson as your preferences say, then the slide on screen; in the welcome call: the welcome). Then pause and listen.'
+      return a.slide
+        ? 'The student has joined and can hear you. Greet them now by name and begin as your instructions say (warm-up chat and review of the last lesson as your preferences say, then the slide on screen). Then pause and listen.'
+        : 'The student has joined and can hear you. Greet them now by name and begin as your instructions say (in the welcome call: the welcome). If this is free talk: after a short greeting, ask whether they\'d just like to chat today or whether there\'s anything they\'d like to do. Do not start a role-play or open a course yourself. Then pause and listen.'
     case 'not_yet': {
       const items = (Array.isArray(a.missing) ? a.missing : []).map((m) => q(m, 120)).filter(Boolean).slice(0, 8)
       if (!items.length) return null
@@ -111,8 +113,8 @@ function instruction(a: Action, secondsLeft: number): string | null {
         : 'try it again or try another scene'
       return `The role-play is over and the mission-complete screen is on the student's screen. Step out of character now and give short spoken feedback, in 3 short sentences (under 30 seconds in all), each one on its own:
 1. One specific thing they did well, quoting their own words.
-2. One thing to try next time: "A more natural way is: <a better version of one of their lines>".
-3. Ask if they'd like to ${offer}. Then stop and wait for their answer: don't start anything yourself. Once they answer, say "Let's swap roles", "Let's try it again" or "Let's try another scene" to match what they chose (the screen changes then), or carry on with free talk if they'd rather chat.${missed.length ? `\nThey didn't get to: ${missed.join('; ')}. You can mention one of these as the thing to try.` : ''}
+2. One thing to try next time: "A more natural way is: <a better version of one of their lines>". Pick a line that really had a mistake or sounded unnatural, never one they already said well, and never sounds like "mm" or "uh". If every line was fine, suggest one useful extra phrase for this situation instead.
+3. Ask if they'd like to ${offer}. Then stop and wait for their answer, however long it takes: don't start anything yourself, don't talk about slides (there are none), and don't fill the silence. Once they answer, say "Let's swap roles", "Let's try it again" or "Let's try another scene" to match what they chose (the screen changes then), or carry on with free talk if they'd rather chat.${missed.length ? `\nThey didn't get to: ${missed.join('; ')}. You can mention one of these as the thing to try.` : ''}
 What they said for each task:
 ${done || '(nothing recorded)'}`
     }
@@ -124,7 +126,10 @@ ${done || '(nothing recorded)'}`
       return "The lesson has started again from the beginning (slide 1), as the student asked. Teach it again from the start, slide by slide, as if it were new: begin with slide 1 now. Don't ask what they want to look at, and don't jump back to where you were."
     case 'nudge':
       if (secondsLeft < 30) return null
-      return 'Nobody has spoken for about 9 seconds. You lead the lesson: if the student is in the middle of a task, give a short, friendly prompt; if everything on this slide is done, say now that you’re moving on to the next slide (it appears by itself). In free talk, ask a new question or bring a new topic.'
+      if (a.where === 'roleplay') return 'The student has been quiet for a while in the role-play. In character, give a short, friendly prompt that helps them with their next task (a simple question they can answer). Do not end the scene.'
+      if (a.where === 'free')
+        return 'Nobody has spoken for about 9 seconds. This is free talk (there are no slides). Ask a new, easy question or bring a new topic. Do not start a role-play or open a course yourself.'
+      return 'Nobody has spoken for about 9 seconds. You lead the lesson: if the student is in the middle of a task, give a short, friendly prompt; if everything on this slide is done, say now that you’re moving on to the next slide (it appears by itself).'
     case 'time': {
       // the classroom clock starts when the AI tutor first speaks, so it can end ~20 s before the server's end:
       // go by whichever is sooner, or the goodbye note never comes

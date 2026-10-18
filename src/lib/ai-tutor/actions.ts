@@ -78,10 +78,11 @@ export const normText = (t: string) =>
  * Guardrail 2: the quote must be words that were actually said in the lines shown, and if only the tutor said it,
  * it must be a statement ("I'll close the course now"), not a question or offer ("Shall I close it?").
  */
-export function checkEvidence(quote: string, lines: { from: 'student' | 'tutor'; text: string }[]): boolean {
+export function checkEvidence(quote: string, lines: { from: 'student' | 'tutor'; text: string }[], studentOnly = false): boolean {
   const q = normText(quote)
   if (q.length < 2) return false
   for (const l of lines) {
+    if (studentOnly && l.from !== 'student') continue
     // find the sentence(s) holding the quote
     const sentences = l.text.split(/(?<=[.!?。？！])\s*/)
     for (let i = 0; i < sentences.length; i++) {
@@ -107,7 +108,10 @@ export function validateDecision(
   const kind = String(r.action ?? 'none') as ActionKind
   const quote = typeof r.quote === 'string' ? r.quote.slice(0, 200) : ''
   if (kind === 'none' || !allowedActions(screen).includes(kind)) return NONE
-  if (!checkEvidence(quote, lines)) return NONE
+  // starting something (a course, the role-play list, a role-play) needs the STUDENT's words: the AI tutor never
+  // starts these by itself. Closing or the whiteboard may also follow the tutor's own statement.
+  const studentOnly = kind === 'open_course' || kind === 'open_roleplays' || kind === 'start_roleplay'
+  if (!checkEvidence(quote, lines, studentOnly)) return NONE
   const num = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) ? Math.round(v) : typeof v === 'string' && /^\d+$/.test(v) ? Number(v) : null)
   const c = screen.course
   switch (kind) {

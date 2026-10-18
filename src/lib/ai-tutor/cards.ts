@@ -116,10 +116,42 @@ const lastSentence = (s: string) => {
   return (parts.length > 1 && words(s).length > 14 ? parts[parts.length - 1] : s).trim().slice(0, 160)
 }
 
+const FILLER = new Set(['mm', 'mmm', 'hmm', 'hm', 'uh', 'um', 'umm', 'er', 'erm', 'ah', 'oh', 'okay', 'ok', 'yeah', 'yes', 'yep', 'no', 'right', 'sure', 'thanks', 'thank', 'you', 'too', 'so', 'well', 'and', 'nice', 'cool', 'great'])
+/** only a thinking sound or a one-word reply ("mm", "uh", "okay", "thank you"): never a mistake to correct */
+export const isFiller = (s: string) => words(s).filter((w) => !FILLER.has(w)).length < 2 && words(s).length <= 3
+
+/**
+ * The student's words a correction is about. Usually their last turn, but not always: in role-play feedback the
+ * AI tutor corrects an earlier line ("We accept cash or card. How would you like to pay?"), and the last thing the
+ * student said may be "Mm". So: the student sentence (recent turns) closest to the corrected sentence; fillers never.
+ */
+export function mistakeFor(lines: CardLine[], tutor: string): string {
+  const c = cueSentence(tutor)
+  const sentences = lines
+    .filter((l) => l.from === 'student')
+    .flatMap((l) => l.text.split(/(?<=[.!?。？！])\s+/))
+    .map((x) => x.trim())
+    .filter((x) => x && !isFiller(x))
+  if (!sentences.length) return ''
+  if (!c) return sentences[sentences.length - 1]
+  let best = ''
+  let score = 0
+  for (const x of sentences) {
+    // how much of the corrected sentence they had (later sentences win ties)
+    const v = share(x, c.sentence) + share(c.sentence, x)
+    if (v >= score) {
+      best = x
+      score = v
+    }
+  }
+  return score >= 0.6 ? best : sentences[sentences.length - 1]
+}
+
 /** A card made in the browser from the AI tutor's words alone (no reason or Japanese yet). */
 export function cueCard(student: string, tutor: string): Card | null {
   const c = cueSentence(tutor)
   if (!c || !student) return null
+  if (isFiller(student) && !hasJapanese(student)) return null // "mm" is never the mistake
   const ja = hasJapanese(student)
   if (c.say || ja) return { kind: 'say', heard: ja ? lastSentence(student).slice(0, 120) : '', options: [{ style: 'normal', text: c.sentence }] }
   if (sameWords(c.sentence, student) || share(student, c.sentence) === 1) return null

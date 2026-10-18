@@ -16,7 +16,7 @@ import { normText } from '@/lib/ai-tutor/actions'
 import { panelIntent, type PanelIntent } from '@/lib/roleplay/intent'
 import type { SceneSummary } from '@/lib/roleplay/types'
 import { shrinkInto } from './save-fly'
-import { cueCard, fitDraft, lastExchange, mayHaveCard, mergeCard, tutorItemId, type Card, type SayStyle } from '@/lib/ai-tutor/cards'
+import { cueCard, fitDraft, lastExchange, mayHaveCard, mergeCard, mistakeFor, tutorItemId, type Card, type SayStyle } from '@/lib/ai-tutor/cards'
 import { hasJapanese, words as wordsOf } from '@/lib/ai-tutor/voice-match'
 import { Ico } from './Icons'
 import SlideStage from './SlideStage'
@@ -153,6 +153,7 @@ export default function AiRoom(props: Props) {
   const breakLine = useRef(false)
   /** when each side last said something (wall clock) */
   const lastSaid = useRef({ student: 0, tutor: 0 })
+  const speakIfSilent = useRef<(noteAt: number, still?: () => boolean) => void>(() => {})
   /**
    * Each side's current stretch of speech, joined by audio timing. The transcript starts a new line whenever the
    * other side talks, so a student's "could we close this… course" over the tutor's "Sure! I'll close… the course
@@ -216,7 +217,8 @@ export default function AiRoom(props: Props) {
     if (!delta) return
     lastSpeech.current = Date.now()
     lastSaid.current[from] = Date.now()
-    nudged.current = false
+    // the silence reminder re-arms only when the student speaks (the tutor talking to itself mustn't loop it)
+    if (from === 'student') nudged.current = false
     const L = lines.current
     const last = L[L.length - 1]
     if (last && last.from === from && startMs - lastEnd.current[from] < 2500 && !breakLine.current) last.text += delta
@@ -276,6 +278,11 @@ export default function AiRoom(props: Props) {
   const completeRp = useRef<() => void>(() => {})
   const hintAsk = useRef<() => void>(() => {})
   const rpPlaying = useRef(false)
+  /** the role-play list or the mission-complete screen is up: the student is choosing */
+  const waitingForChoice = useRef(false)
+  /** when the role-play list appeared, and whether it's up now */
+  const pickerAt = useRef(0)
+  const pickerShown = useRef(false)
   /** when the mission-complete screen appeared (the student's answer has to come after it) */
   const doneAt = useRef(0)
   /** when the screen last changed (course, panel, whiteboard), and the transcript line it changed at */
@@ -380,7 +387,9 @@ export default function AiRoom(props: Props) {
       const i = L.lastIndexOf(line)
       const recent = L.slice(Math.max(0, i - 5), i + 1).map((l) => ({ from: l.from, text: l.text }))
       const ex = lastExchange(recent)
-      const local = cueCard(ex.student, ex.tutor)
+      // the student's line the correction is about: not always the last one (role-play feedback; "mm")
+      const wider = L.slice(Math.max(0, i - 14), i).map((l) => ({ from: l.from, text: l.text }))
+      const local = cueCard(hasJapanese(ex.student) ? ex.student : mistakeFor(wider, ex.tutor) || ex.student, ex.tutor)
       if (!local) return
       cardFor.current = line
       const from = L.length // the student's attempt starts after this
@@ -779,7 +788,11 @@ export default function AiRoom(props: Props) {
           {
             const ref = slideRef()
             lastSent.current = ref?.slideId ?? null
-            void act({ kind: sessionsStarted.current++ ? 'resume' : 'start', slide: ref })
+            const first = !sessionsStarted.current++
+            // the note asks it to greet (or carry on); if it then says nothing, ask it to speak
+            void act({ kind: first ? 'start' : 'resume', slide: ref }).then((ok) => {
+              if (ok && first) speakIfSilent.current(Date.now(), () => lastSaid.current.tutor === 0)
+            })
           }
           postEvent(info.bookingId, 'student_joined')
           postEvent(info.bookingId, 'start').then((s) => s && setSession(s))
@@ -976,26 +989,29 @@ export default function AiRoom(props: Props) {
     void lessonNote.current
       .then(() => act({ kind: 'slide', ...ref, slideId: id, ...(looking ? { review: { returnTo: furthest.current + 1 } } : {}) }))
       .then((ok) => {
-        if (!ok) return
-        // GPT-Live sometimes just waits after "let's move on to the next slide" (the note itself doesn't make it
-        // speak). If it hasn't started on the new slide shortly after the note, ask it to: never over the student
-        // or while it's talking, at most twice per slide.
-        const noteAt = Date.now()
-        let tries = 0
-        const kick = () => {
-          if (closing.current || wrapUp.current || statusRef.current !== 'live' || lastSent.current !== id) return
-          // it's teaching the new slide, or the student has spoken (the tutor answers them as usual)
-          if (lastSaid.current.tutor > noteAt || lastSaid.current.student > noteAt) return
-          if (speakingRef.current) {
-            if (++tries <= 4) setTimeout(kick, 1200) // its voice is still playing: look again shortly
-            return
-          }
-          sendEvent({ type: 'response.create' })
-          if (++tries <= 1) setTimeout(kick, 4000) // once more if it still says nothing
-        }
-        setTimeout(kick, 1500)
+        // GPT-Live sometimes just waits after "let's move on to the next slide" (the note itself doesn't make it speak)
+        if (ok) speakIfSilent.current(Date.now(), () => lastSent.current === id)
       })
-  }, [status, slide, idx, slideRef, act, sendEvent])
+  }, [status, slide, idx, slideRef, act])
+  // After a note that should make the AI tutor speak (the greeting, a new slide): if it hasn't started shortly
+  // after, ask it to. Never over the student or while its voice is playing; at most twice.
+  useEffect(() => {
+    speakIfSilent.current = (noteAt, still) => {
+      let tries = 0
+      const kick = () => {
+        if (closing.current || wrapUp.current || statusRef.current !== 'live' || (still && !still())) return
+        // it's talking, or the student has spoken (the tutor answers them as usual)
+        if (lastSaid.current.tutor > noteAt || lastSaid.current.student > noteAt) return
+        if (speakingRef.current) {
+          if (++tries <= 4) setTimeout(kick, 1200) // its voice is still playing: look again shortly
+          return
+        }
+        sendEvent({ type: 'response.create' })
+        if (++tries <= 1) setTimeout(kick, 4000) // once more if it still says nothing
+      }
+      setTimeout(kick, 1500)
+    }
+  })
 
   /* ---------- the student's chat messages → context (the tutor can't see the chat) ---------- */
   const seenMsgs = useRef(props.messages.length)
@@ -1116,13 +1132,15 @@ export default function AiRoom(props: Props) {
   }, [status, tutorReady, info.aiWelcome])
   // connected: play the reveal; the calling screen stays until it's over (and the AI tutor has started talking)
   useEffect(() => {
-    if (status !== 'live' || introDone) return
+    // the reveal plays when the AI tutor starts talking (not when the line connects), so the student enters the
+    // room as it says hello, rather than to a tutor that's been waiting
+    if (status !== 'live' || introDone || !tutorReady) return
     const i = intro.current
     if (i?.phase === 'wait') introLive(i, performance.now())
     const left = i?.phase === 'live' ? INTRO_REVEAL_MS - (performance.now() - i.t0) : 0
     const id = setTimeout(() => setIntroDone(true), Math.max(0, left))
     return () => clearTimeout(id)
-  }, [status, introDone])
+  }, [status, introDone, tutorReady])
   // couldn't connect: a short ending before the calling screen fades and the tile shows Reconnect
   useEffect(() => {
     if (status !== 'failed' && status !== 'dropped' && status !== 'too_early') return
@@ -1147,10 +1165,12 @@ export default function AiRoom(props: Props) {
   // GPT-Live sometimes waits after a slide is finished; nudge it once per silence
   useEffect(() => {
     if (status !== 'live' || !tutorReady || left <= 30 || nudged.current) return
+    // waiting for the student's choice (the role-play list, or the mission-complete question): never hurry them
+    if (waitingForChoice.current) return
     // during a role-play the hints come first (6, 12, 18 s): the AI tutor is only reminded after 25 s
     if (Date.now() - lastSpeech.current < (rpPlaying.current ? 25_000 : 9000)) return
     nudged.current = true
-    void act({ kind: 'nudge' })
+    void act({ kind: 'nudge', where: rpPlaying.current ? 'roleplay' : live.current.slides.length ? 'slides' : 'free' })
   }, [now, left, status, tutorReady, act])
 
   useEffect(() => {
@@ -1218,6 +1238,7 @@ export default function AiRoom(props: Props) {
   const openPicker = useCallback(
     (mode: 'rp' | 'course' = 'rp') => {
       if (whiteboardRef.current) showBoard.current(false)
+      pickerAt.current = Date.now()
       setPanel({ view: 'picker', mode, rpSel: null, courseSel: null })
       void aiRoleplays().then(setRpList)
       void aiCourses().then(setCourseList)
@@ -1379,6 +1400,8 @@ export default function AiRoom(props: Props) {
   const playing = panel?.view === 'roleplay' && panel.phase === 'play' ? panel : null
   useEffect(() => {
     rpPlaying.current = !!playing && panelOn
+    waitingForChoice.current = panelOn && (panel?.view === 'picker' || (panel?.view === 'roleplay' && panel.phase === 'done'))
+    pickerShown.current = panelOn && panel?.view === 'picker'
   })
   useEffect(() => {
     // ticks from the turn check: only for this play, only tasks on the list (checked on the server too)
@@ -1562,6 +1585,10 @@ export default function AiRoom(props: Props) {
             // mission complete: the tutor's "let's swap roles / try again / another scene" only counts once the student
             // has answered its offer (or tapped); its own offer never moves on by itself
             if (i && (i.kind === 'swap' || i.kind === 'again' || i.kind === 'next') && lastSaid.current.student <= doneAt.current) return
+            // the AI tutor never starts a role-play by itself: only from the list, once the student has chosen
+            // (spoken since the list appeared). It can show the list only after the student has said something.
+            if (i?.kind === 'start' && (!pickerShown.current || lastSaid.current.student <= pickerAt.current)) return
+            if (i?.kind === 'open' && !lastSaid.current.student) return
             if (i) panelDo.current(i)
           } else if (kind === 'board_on' && !whiteboardRef.current) {
             showBoard.current(true)
@@ -1571,6 +1598,8 @@ export default function AiRoom(props: Props) {
             void act({ kind: 'view', what: 'board_off' })
           } else if (kind === 'close' && slidesOpen) {
             closeCourseNow.current()
+          } else if (kind === 'open' && !lastSaid.current.student) {
+            // the AI tutor never opens a course before the student has said anything (free talk starts with a chat)
           } else if (kind === 'open' && (!slidesOpen || (named && named.id !== props.open?.courseId))) {
             const n = LESSON_NO.exec(s)?.[1]
             openCourseNow.current(named?.id ?? '', n ? `#${n}` : '')
