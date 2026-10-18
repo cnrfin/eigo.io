@@ -1,0 +1,108 @@
+{
+  "id": "convenience-store",
+  "category": "service",
+  "title": { "ja": "コンビニのレジで対応", "en": "At the convenience store register" },
+  "summary": { "ja": "お弁当を温めるか、袋やおはしがいるか聞いて、金額と支払い方法を案内する。", "en": "Offer to heat the bento, ask about a bag and chopsticks, and take the payment." },
+  "setting": "A convenience store near a station in Tokyo, at lunchtime. A tourist brings a bento, a rice ball and a bottle of green tea to the register; the clerk speaks English to them.",
+  "image": "",
+  "studentRole": "a",
+  "roles": [
+    {
+      "id": "a",
+      "name": { "ja": "店員", "en": "Clerk" },
+      "persona": "A clerk at the register of a convenience store.",
+      "levels": [
+        {
+          "tutor": "You are a tourist buying lunch: the karaage bento, a salmon rice ball and a green tea on the register screen. Open by putting them on the counter and saying hi; wait for the clerk to speak to you. Speak slowly and simply, in short sentences. Say yes to heating the bento and no to a bag. Pay with a 1,000-yen note.",
+          "tasks": [
+            { "id": "heat", "title": { "ja": "温めるか聞く", "en": "Ask about heating the bento" }, "hints": ["お弁当を温めるか聞きましょう", "Would you like it …?", "Would you like it heated up?"] },
+            { "id": "bag", "title": { "ja": "袋がいるか聞く", "en": "Ask if they need a bag" }, "hints": ["袋がいるか聞きましょう", "Do you need …?", "Do you need a bag?"] },
+            { "id": "total", "title": { "ja": "合計金額を伝える", "en": "Say the total" }, "hints": ["レジの画面を見て、合計を伝えましょう", "That's … yen.", "That's 860 yen, please."] },
+            { "id": "change", "title": { "ja": "おつりを渡す", "en": "Give the change" }, "hints": ["おつりを渡しましょう", "Here's your … Thank you!", "Here's your change, 140 yen. Thank you!"] }
+          ]
+        },
+        {
+          "tutor": "You are a tourist buying lunch (the items on the register screen), speaking at natural pace with a little small talk. Open by putting them on the counter and saying hi; wait for the clerk to speak to you. Say yes to heating the bento, ask for one pair of chopsticks, and say no to a bag. Ask whether you can pay with your IC card.",
+          "tasks": [
+            { "id": "heat", "title": { "ja": "お弁当の温めをすすめる", "en": "Offer to heat the bento" }, "hints": ["お弁当を温めましょうかと聞きましょう", "Shall I …?", "Shall I heat up the bento for you?"] },
+            { "id": "chopsticks", "title": { "ja": "おはしの数を聞く", "en": "Ask how many chopsticks" }, "hints": ["おはしが何膳いるか聞きましょう", "How many pairs of … would you like?", "How many pairs of chopsticks would you like?"] },
+            { "id": "bag", "title": { "ja": "袋が有料だと伝える", "en": "Say bags cost 5 yen" }, "hints": ["袋がいるか、5円かかることも伝えましょう", "Would you like a bag? It's …", "Would you like a bag? It's 5 yen."] },
+            { "id": "ic", "title": { "ja": "ICカードの払い方を案内する", "en": "Explain how to pay by IC card" }, "hints": ["ICカードは読み取り機にタッチすると伝えましょう", "Yes. Please touch it …", "Yes. Please touch it on the reader here."] }
+          ]
+        },
+        {
+          "tutor": "You are a tourist buying lunch (the items on the register screen), speaking at natural speed with small talk. Open by putting them on the counter and saying hi; wait for the clerk to speak to you. Say yes to heating the bento and no to a bag. You'd like to pay by credit card.",
+          "tasks": [
+            { "id": "heat", "title": { "ja": "温めるか聞いて時間を伝える", "en": "Offer heating, and say how long" }, "hints": ["温めるか聞いて、少し時間がかかると伝えましょう", "Would you like … heated? It'll take …", "Would you like the bento heated? It'll take about a minute."] },
+            { "id": "bag", "title": { "ja": "袋について説明する", "en": "Explain about bags" }, "hints": ["袋は有料だと伝えて、いるか聞きましょう", "Bags are … each. Would you …?", "Bags are 5 yen each. Would you like one?"] },
+            { "id": "pay", "title": { "ja": "カードの払い方を案内する", "en": "Explain how to pay by card" }, "hints": ["カードを差し込むか、タッチするよう伝えましょう", "Please insert your card, or …", "Please insert your card, or just touch it on the reader."] },
+            { "id": "receipt", "title": { "ja": "レシートを渡してあいさつする", "en": "Offer the receipt and say goodbye" }, "hints": ["レシートがいるか聞いて、あいさつしましょう", "Would you like …? Have a …!", "Would you like the receipt? Have a nice day!"] }
+          ],
+          "twist": {
+            "after": "pay",
+            "tutor": "When you try to pay by card, it doesn't work: your card has been declined. Say the machine is beeping and ask whether it worked. When the clerk explains, say you don't have another card, and pay with your IC card instead.",
+            "task": { "id": "declined", "title": { "ja": "カードが使えなかったと伝える", "en": "Say the card didn't work" }, "hints": ["カードが使えなかったことをていねいに伝えて、ほかの払い方を聞きましょう", "I'm sorry, it didn't … Do you have …?", "I'm sorry, it didn't go through. Do you have another card or cash?"] }
+          }
+        }
+      ]
+    },
+    {
+      "id": "b",
+      "name": { "ja": "お客さん", "en": "Customer" },
+      "persona": "A tourist buying lunch at a convenience store.",
+      "levels": [
+        {
+          "tutor": "You are the convenience store clerk. Speak slowly and simply, in short sentences. Ask whether they'd like the bento heated, and whether they need a bag (¥5). Say the total from the register screen: ¥860, or ¥865 with a bag. Card is fine. When asked, give them chopsticks.",
+          "tasks": [
+            { "id": "heat", "title": { "ja": "温めをお願いする", "en": "Say yes to heating it" }, "hints": ["温めてほしいと答えましょう", "Yes, …", "Yes, please. Thank you."] },
+            { "id": "bag", "title": { "ja": "袋はいらないと伝える", "en": "Say you don't need a bag" }, "hints": ["袋はいらないと伝えましょう", "No, I don't …", "No, I don't need a bag."] },
+            { "id": "chopsticks", "title": { "ja": "おはしをもらう", "en": "Ask for chopsticks" }, "hints": ["おはしをお願いしましょう", "Can I have …?", "Can I have some chopsticks, please?"] },
+            { "id": "card", "title": { "ja": "カードで払えるか聞く", "en": "Ask to pay by card" }, "hints": ["カードで払えるか聞きましょう", "Can I pay …?", "Can I pay by card?"] }
+          ]
+        },
+        {
+          "tutor": "You are the convenience store clerk, speaking at natural pace. Don't offer to heat the bento: wait to be asked. When asked: a bag is ¥5, IC cards are fine (touch the card on the reader), and the ATM is by the door. The total is ¥860, or ¥865 with a bag.",
+          "tasks": [
+            { "id": "heat", "title": { "ja": "温めてもらう", "en": "Ask them to heat the bento" }, "hints": ["お弁当を温めてもらいましょう", "Could you heat …, please?", "Could you heat up the bento, please?"] },
+            { "id": "bag", "title": { "ja": "袋代を聞く", "en": "Ask if bags cost extra" }, "hints": ["袋にお金がかかるか聞きましょう", "Do I have to pay for …?", "Do I have to pay for a bag?"] },
+            { "id": "ic", "title": { "ja": "ICカードが使えるか聞く", "en": "Ask about paying by IC card" }, "hints": ["ICカードが使えるか聞きましょう", "Can I use …?", "Can I use my IC card here?"] },
+            { "id": "atm", "title": { "ja": "ATMの場所を聞く", "en": "Ask where the ATM is" }, "hints": ["店内にATMがあるか聞きましょう", "Is there an … in this store?", "Is there an ATM in this store?"] }
+          ]
+        },
+        {
+          "tutor": "You are a friendly convenience store clerk, speaking at natural speed. Ask the usual questions (heat it up? a bag?). The total is ¥860. When the customer pays by card, it's declined: say so politely, and try again when asked (it's declined again). When asked, say they can pay by IC card or cash, and that the ATM by the door takes foreign cards.",
+          "tasks": [
+            { "id": "heat", "title": { "ja": "温めとおはしをお願いする", "en": "Ask for it heated, and chopsticks" }, "hints": ["温めてもらって、おはしもお願いしましょう", "Could you heat …? And could I have …?", "Could you heat this up? And could I have some chopsticks?"] },
+            { "id": "again", "title": { "ja": "もう一度試してもらう", "en": "Ask them to try again" }, "hints": ["驚いたことを伝えて、もう一度試してもらいましょう", "Oh, really? Could you try …?", "Oh, really? Could you try it one more time?"] },
+            { "id": "other", "title": { "ja": "ほかの払い方を聞く", "en": "Ask about another way to pay" }, "hints": ["ICカードで払えるか聞きましょう", "Can I pay with … instead?", "Can I pay with my IC card instead?"] },
+            { "id": "atm", "title": { "ja": "ATMについて聞く", "en": "Ask about an ATM" }, "hints": ["海外のカードが使えるATMがあるか聞きましょう", "Is there an ATM here that …?", "Is there an ATM here that takes foreign cards?"] }
+          ]
+        }
+      ]
+    }
+  ],
+  "prop": {
+    "label": { "ja": "レジ画面", "en": "Register" },
+    "title": "REGISTER · Lunch",
+    "sections": [
+      { "heading": "ITEMS", "items": [
+        { "name": "Karaage bento", "value": "¥550", "key": "bento" },
+        { "name": "Rice ball (salmon)", "value": "¥160", "key": "rice ball|onigiri" },
+        { "name": "Green tea (500 ml)", "value": "¥150", "key": "green tea|tea" },
+        { "name": "Total", "value": "¥860", "key": "860" }
+      ] },
+      { "heading": "ASK THE CUSTOMER", "items": [
+        { "name": "Heat it up? (about 1 minute)", "key": "heat|heated|microwave" },
+        { "name": "Bag", "value": "¥5", "key": "bag|5 yen" },
+        { "name": "Chopsticks", "value": "Free", "key": "chopsticks" }
+      ] },
+      { "heading": "PAYMENT", "items": [
+        { "name": "Credit / debit card · insert or touch", "key": "credit card|by card|insert" },
+        { "name": "IC card · touch the reader", "key": "IC card" },
+        { "name": "Cash", "key": "cash" },
+        { "name": "ATM by the door · takes foreign cards", "key": "ATM" }
+      ] }
+    ],
+    "foot": "Receipt: ask if the customer wants it"
+  }
+}

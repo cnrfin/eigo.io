@@ -1,0 +1,106 @@
+{
+  "id": "ramen-shop",
+  "category": "service",
+  "title": { "ja": "ラーメン店で注文・食べ方を案内", "en": "Helping guests at a ramen shop" },
+  "summary": { "ja": "食券の買い方や麺のかたさ、替え玉、食べ方のマナーを英語で案内する。", "en": "Explain the ticket machine, noodle firmness, kaedama and how to enjoy ramen." },
+  "setting": "A small, popular ramen shop with a counter in Tokyo, at lunchtime. Customers buy a ticket from the machine by the door and hand it to the staff. A tourist comes in for their first ramen in Japan.",
+  "image": "",
+  "studentRole": "a",
+  "roles": [
+    {
+      "id": "a",
+      "name": { "ja": "店員", "en": "Staff" },
+      "persona": "A member of staff at the ramen shop.",
+      "levels": [
+        {
+          "tutor": "You are a tourist who wants ramen. Open by walking in and standing in front of the ticket machine, looking a little lost; wait for the staff to speak to you. Speak slowly and simply, in short sentences. Buy a ticket for shoyu ramen and hand it over when asked. Ask for regular noodles.",
+          "tasks": [
+            { "id": "machine", "title": { "ja": "食券を買うよう伝える", "en": "Tell them to buy a ticket" }, "hints": ["機械で食券を買うよう伝えましょう", "Please buy a … from …", "Please buy a ticket from the machine."] },
+            { "id": "ticket", "title": { "ja": "食券を受け取る", "en": "Ask for the ticket" }, "hints": ["食券を受け取りましょう", "Can I have …?", "Can I have your ticket, please?"] },
+            { "id": "firmness", "title": { "ja": "麺のかたさを聞く", "en": "Ask about noodle firmness" }, "hints": ["麺のかたさを聞きましょう", "Soft, regular or …?", "Soft, regular or firm noodles?"] },
+            { "id": "water", "title": { "ja": "水はセルフだと伝える", "en": "Say the water is self-service" }, "hints": ["水は自分で取ると伝えましょう", "Water is over there. Help …", "Water is over there. Help yourself."] }
+          ]
+        },
+        {
+          "tutor": "You are a tourist at your first ramen shop, speaking at natural pace with a little small talk. Open by walking in, looking at the ticket machine and asking how it works. Ask what tonkotsu ramen is, choose it, and ask which topping is good. When you see \"kaedama\" on the menu, ask what it means.",
+          "tasks": [
+            { "id": "machine", "title": { "ja": "食券機の使い方を説明する", "en": "Explain the ticket machine" }, "hints": ["お金を入れてボタンを押すと説明しましょう", "First, put … in and press …", "First, put your money in and press the button."] },
+            { "id": "tonkotsu", "title": { "ja": "ラーメンの種類を説明する", "en": "Explain a type of ramen" }, "hints": ["とんこつラーメンがどんなものか説明しましょう", "Tonkotsu has a … soup. It's …", "Tonkotsu has a pork bone soup. It's rich and creamy."] },
+            { "id": "topping", "title": { "ja": "トッピングをすすめる", "en": "Recommend a topping" }, "hints": ["おすすめのトッピングと値段を伝えましょう", "I'd recommend … It's only …", "I'd recommend the seasoned egg. It's only 150 yen."] },
+            { "id": "kaedama", "title": { "ja": "替え玉を説明する", "en": "Explain kaedama" }, "hints": ["替え玉とは何か、いつ頼むか説明しましょう", "Kaedama means … Order it while …", "Kaedama means extra noodles. Order it while you still have soup."] }
+          ]
+        },
+        {
+          "tutor": "You are a chatty tourist, speaking at natural speed. Open by walking in and saying you're starving and it's your first real ramen in Japan; ask what to get. Ask how to eat ramen the Japanese way, and whether slurping is rude. After eating, mention the long queue outside and ask whether it's okay to stay and rest for a while.",
+          "tasks": [
+            { "id": "recommend", "title": { "ja": "おなかいっぱいになる注文をすすめる", "en": "Recommend a filling order" }, "hints": ["おなかがすいているなら、セットでおすすめしましょう", "If you're really hungry, try … with …", "If you're really hungry, try the tonkotsu ramen with gyoza."] },
+            { "id": "eat", "title": { "ja": "食べ方を説明する", "en": "Explain how to eat it" }, "hints": ["まずスープ、それから熱いうちに麺を、と説明しましょう", "Try the soup first, then …", "Try the soup first, then eat the noodles while they're hot."] },
+            { "id": "slurp", "title": { "ja": "すすっても大丈夫と伝える", "en": "Reassure them about slurping" }, "hints": ["すするのは失礼ではないと安心させましょう", "Don't worry, slurping is … It …", "Don't worry, slurping is fine here. It cools the noodles down."] },
+            { "id": "queue", "title": { "ja": "行列があることをやんわり伝える", "en": "Politely explain about the queue" }, "hints": ["外で待っている人がいるので、長居はご遠慮いただいているとやんわり伝えましょう", "Sorry, with the queue outside, we ask …", "Sorry, with the queue outside, we ask guests not to stay too long."] }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b",
+      "name": { "ja": "お客さん", "en": "Customer" },
+      "persona": "A tourist eating at a Japanese ramen shop for the first time.",
+      "levels": [
+        {
+          "tutor": "You are the ramen shop staff. Speak slowly and simply, in short sentences. Welcome the customer. When asked, explain the ticket machine, then take the ticket and ask how they'd like their noodles (soft, regular or firm). When asked about water, say it's free and self-service, over there.",
+          "tasks": [
+            { "id": "how", "title": { "ja": "注文のしかたを聞く", "en": "Ask how to order" }, "hints": ["注文のしかたを聞きましょう", "Excuse me, where do I …?", "Excuse me, where do I order?"] },
+            { "id": "choose", "title": { "ja": "食べたいものを伝える", "en": "Say what you'd like" }, "hints": ["食べたいラーメンを伝えましょう", "I'd like …, please.", "I'd like shoyu ramen, please."] },
+            { "id": "firm", "title": { "ja": "麺のかたさを伝える", "en": "Say how you like your noodles" }, "hints": ["麺のかたさを伝えましょう", "I'd like … noodles, please.", "I'd like firm noodles, please."] },
+            { "id": "water", "title": { "ja": "水をお願いする", "en": "Ask for water" }, "hints": ["水がもらえるか聞きましょう", "Can I have …?", "Can I have some water, please?"] }
+          ]
+        },
+        {
+          "tutor": "You are the ramen shop staff, speaking at natural pace and friendly. When asked, explain the types of ramen and the toppings from the menu (you like the seasoned egg), and explain that kaedama means extra noodles for ¥150, ordered while there's still soup in the bowl.",
+          "tasks": [
+            { "id": "difference", "title": { "ja": "ラーメンの違いを聞く", "en": "Ask about the types of ramen" }, "hints": ["みそととんこつの違いを聞きましょう", "What's the difference between … and …?", "What's the difference between miso and tonkotsu?"] },
+            { "id": "topping", "title": { "ja": "おすすめのトッピングを聞く", "en": "Ask which topping is good" }, "hints": ["おすすめのトッピングを聞きましょう", "Which topping do you …?", "Which topping do you recommend?"] },
+            { "id": "order", "title": { "ja": "好みを伝えて注文する", "en": "Order your ramen your way" }, "hints": ["ラーメン、トッピング、麺のかたさを伝えましょう", "I'll have … with … and … noodles.", "I'll have tonkotsu with an egg and firm noodles."] },
+            { "id": "kaedama", "title": { "ja": "替え玉について聞く", "en": "Ask about more noodles" }, "hints": ["あとで麺を追加できるか聞きましょう", "Can I get more … later? How …?", "Can I get more noodles later? How does that work?"] }
+          ]
+        },
+        {
+          "tutor": "You are a friendly member of staff, speaking at natural speed. When asked about pork, explain that the shoyu and miso soups are made with chicken and tonkotsu is pork bone, but every ramen comes with chashu (pork slices); you can leave it out if they ask. When asked, say slurping is completely fine. When they ask for more noodles, kaedama is ¥150: they buy a kaedama ticket from the machine and hand it to you.",
+          "tasks": [
+            { "id": "diet", "title": { "ja": "食べられないものを伝える", "en": "Say what you don't eat" }, "hints": ["豚肉を食べないと伝えて、食べられるラーメンがあるか聞きましょう", "I don't eat … Is there …?", "I don't eat pork. Is there a ramen without pork?"] },
+            { "id": "without", "title": { "ja": "抜いてほしいものを伝える", "en": "Ask to leave something out" }, "hints": ["チャーシュー抜きで頼みましょう", "Could I have the … without …?", "Could I have the shoyu ramen without the chashu, please?"] },
+            { "id": "slurp", "title": { "ja": "食べ方のマナーを聞く", "en": "Ask about manners" }, "hints": ["すすって食べてもいいか聞きましょう", "Is it okay to …? I don't want …", "Is it okay to slurp? I don't want to be rude."] },
+            { "id": "more", "title": { "ja": "ほめて替え玉を頼む", "en": "Praise it and order more noodles" }, "hints": ["おいしいと伝えて、替え玉を頼みましょう", "This is …! Could I get …?", "This is delicious! Could I get some more noodles?"] }
+          ]
+        }
+      ]
+    }
+  ],
+  "prop": {
+    "label": { "ja": "メニュー（食券機）", "en": "Menu (ticket machine)" },
+    "title": "RAMEN SHOP · Ticket machine",
+    "sections": [
+      { "heading": "RAMEN", "items": [
+        { "name": "Shoyu ramen · chicken soup, chashu pork", "value": "¥850", "key": "shoyu|soy sauce" },
+        { "name": "Miso ramen · chicken soup, chashu pork", "value": "¥950", "key": "miso" },
+        { "name": "Tonkotsu ramen · pork bone soup, chashu pork", "value": "¥980", "key": "tonkotsu|pork bone" }
+      ] },
+      { "heading": "TOPPINGS", "items": [
+        { "name": "Seasoned egg", "value": "¥150", "key": "egg|seasoned egg" },
+        { "name": "Extra chashu (pork slices)", "value": "¥250", "key": "extra chashu" },
+        { "name": "Kaedama (extra noodles) · order while you still have soup", "value": "¥150", "key": "kaedama|extra noodles|more noodles" }
+      ] },
+      { "heading": "SIDES & DRINKS", "items": [
+        { "name": "Gyoza (5 pieces)", "value": "¥400", "key": "gyoza|dumplings" },
+        { "name": "Rice", "value": "¥150", "key": "rice" },
+        { "name": "Beer", "value": "¥550", "key": "beer" }
+      ] },
+      { "heading": "GOOD TO KNOW", "items": [
+        { "name": "Noodles: soft / regular / firm (tell the staff)", "key": "firm|soft|firmness" },
+        { "name": "Water is free · self-service", "key": "water" },
+        { "name": "Slurping is fine!", "key": "slurp|slurping" }
+      ] }
+    ],
+    "foot": "Buy a ticket from the machine, then hand it to the staff · Cash only"
+  }
+}

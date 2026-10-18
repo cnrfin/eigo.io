@@ -1,0 +1,107 @@
+{
+  "id": "clothes-shop",
+  "category": "service",
+  "title": { "ja": "洋服・雑貨店で接客", "en": "Serving customers at a clothes shop" },
+  "summary": { "ja": "サイズや色の質問に答えて、試着や免税、お会計を英語で案内する。", "en": "Help with sizes and colours, offer the fitting room and explain tax-free shopping." },
+  "setting": "Sakura Style, a small clothes and gift shop in Tokyo, on a weekday afternoon. A tourist comes in and looks around; the staff speak English to them.",
+  "image": "",
+  "studentRole": "a",
+  "roles": [
+    {
+      "id": "a",
+      "name": { "ja": "店員", "en": "Shop staff" },
+      "persona": "A member of staff at Sakura Style.",
+      "levels": [
+        {
+          "tutor": "You are a tourist shopping for clothes. Open by walking in and looking at the linen shirts; wait for the staff to greet you. Speak slowly and simply, in short sentences. You'd like the linen shirt in medium (M). When the staff offers, try it on and say it fits. Buy it (¥4,800) and pay by card.",
+          "tasks": [
+            { "id": "greet", "title": { "ja": "あいさつして声をかける", "en": "Greet the customer" }, "hints": ["あいさつして、何か探しているか聞きましょう", "Hello! Can I help you …?", "Hello! Can I help you find anything?"] },
+            { "id": "size", "title": { "ja": "サイズを聞く", "en": "Ask the size" }, "hints": ["サイズを聞きましょう", "What size …?", "What size are you looking for?"] },
+            { "id": "fitting", "title": { "ja": "試着をすすめる", "en": "Offer the fitting room" }, "hints": ["試着するか聞きましょう", "Would you like to …?", "Would you like to try it on?"] },
+            { "id": "price", "title": { "ja": "金額を伝える", "en": "Say the price" }, "hints": ["値札を見て金額を伝えましょう", "That's … yen.", "That's 4,800 yen, please."] }
+          ]
+        },
+        {
+          "tutor": "You are a tourist, speaking at natural pace with a little small talk. Open by picking up the denim jacket and looking at the price tag; wait for the staff to speak to you. You try the medium, but it's a bit small. Ask whether it comes in other colours. You buy the large in black (¥8,900) and ask whether you can buy it tax-free; you have your passport with you.",
+          "tasks": [
+            { "id": "greet", "title": { "ja": "声をかける", "en": "Offer help" }, "hints": ["何かあれば声をかけてと伝えましょう", "Hi! Let me know if …", "Hi! Let me know if you need any help."] },
+            { "id": "size", "title": { "ja": "別のサイズを持ってくると申し出る", "en": "Offer another size" }, "hints": ["大きいサイズを持ってくると申し出ましょう", "Shall I get you …?", "Shall I get you a large?"] },
+            { "id": "colour", "title": { "ja": "色について答える", "en": "Answer about colours" }, "hints": ["値札を見て、ほかの色を伝えましょう", "It comes in … and …", "It comes in blue and black."] },
+            { "id": "taxfree", "title": { "ja": "免税の手続きを案内する", "en": "Explain tax-free shopping" }, "hints": ["出国時に税金が戻ると伝えて、パスポートをお願いしましょう", "You can get the tax back … Could I see …?", "You can get the tax back when you leave Japan. Could I see your passport?"] }
+          ]
+        },
+        {
+          "tutor": "You are a tourist on your first trip to Japan, speaking at natural speed with small talk. Open by asking the staff for help: you're looking for a present for your sister, something to wear, and she likes simple, natural things. You don't know her size: she's about your height but slimmer. Whatever you choose for her, add a tenugui (¥1,200) for yourself, and ask whether you can buy them tax-free.",
+          "tasks": [
+            { "id": "recommend", "title": { "ja": "理由をつけておすすめする", "en": "Recommend something, with a reason" }, "hints": ["理由も添えて、おすすめの服を伝えましょう", "How about this …? It's …", "How about this linen shirt? It's light and very comfortable."] },
+            { "id": "size", "title": { "ja": "サイズ選びを手伝う", "en": "Help choose a size" }, "hints": ["贈る相手の体型を聞いて、合いそうなサイズを伝えましょう", "If she's a bit slimmer than you, … should …", "If she's a bit slimmer than you, a small should be fine."] },
+            { "id": "taxfree", "title": { "ja": "免税の条件を説明する", "en": "Explain what's needed for tax-free" }, "hints": ["5,500円以上なので免税できると伝えて、パスポートをお願いしましょう", "That's over … yen, so I'll just need …", "That's over 5,500 yen, so I'll just need your passport."] },
+            { "id": "wrap", "title": { "ja": "プレゼント包装をすすめる", "en": "Offer gift wrapping" }, "hints": ["プレゼント用に包むか聞きましょう", "Shall I gift-wrap …?", "Shall I gift-wrap it for your sister?"] }
+          ],
+          "twist": {
+            "after": "taxfree",
+            "tutor": "Say you left your passport at the hotel; you only have a photo of it on your phone. Ask whether that's okay. When the staff explains it isn't, decide to buy it without the tax refund, because you're leaving Tokyo tonight.",
+            "task": { "id": "nopassport", "title": { "ja": "パスポートがないときの対応をする", "en": "Handle the missing passport" }, "hints": ["写真では免税にできないとていねいに伝えて、別の方法を提案しましょう", "I'm sorry, we need the … You could …", "I'm sorry, we need the actual passport. You could come back with it later."] }
+          }
+        }
+      ]
+    },
+    {
+      "id": "b",
+      "name": { "ja": "お客さん", "en": "Customer" },
+      "persona": "A tourist shopping for clothes and gifts in Tokyo.",
+      "levels": [
+        {
+          "tutor": "You are the shop staff. Speak slowly and simply, in short sentences. Greet the customer and ask if they need help. When asked, find the linen shirt in medium. Offer the fitting room only when they ask to try it on. When asked, say the price from the tag (¥4,800).",
+          "tasks": [
+            { "id": "size", "title": { "ja": "サイズがあるか聞く", "en": "Ask for your size" }, "hints": ["Mサイズがあるか聞きましょう", "Do you have this in …?", "Do you have this in medium?"] },
+            { "id": "try", "title": { "ja": "試着したいと伝える", "en": "Ask to try it on" }, "hints": ["試着できるか聞きましょう", "Can I …?", "Can I try it on?"] },
+            { "id": "price", "title": { "ja": "値段を聞く", "en": "Ask the price" }, "hints": ["値段を聞きましょう", "How much …?", "How much is this shirt?"] },
+            { "id": "buy", "title": { "ja": "買うと伝える", "en": "Say you'll take it" }, "hints": ["これを買うと伝えましょう", "I'll …, please.", "I'll take it, please."] }
+          ]
+        },
+        {
+          "tutor": "You are the shop staff, speaking at natural pace with a little small talk. The customer is looking at the denim jacket. When asked, get the size they want (it comes in S, M and L), and say it comes in blue and black. When they ask about tax-free, explain it's for ¥5,500 or more and you need their passport. Card and cash are both fine.",
+          "tasks": [
+            { "id": "size", "title": { "ja": "大きいサイズを頼む", "en": "Ask for a bigger size" }, "hints": ["少し小さいと伝えて、大きいサイズを頼みましょう", "This is a bit … Do you have it in …?", "This is a bit small. Do you have it in a large?"] },
+            { "id": "colour", "title": { "ja": "ほかの色があるか聞く", "en": "Ask about other colours" }, "hints": ["ほかの色があるか聞きましょう", "Does it come in …?", "Does it come in any other colours?"] },
+            { "id": "taxfree", "title": { "ja": "免税できるか聞く", "en": "Ask about tax-free" }, "hints": ["免税で買えるか聞きましょう", "Can I buy this …?", "Can I buy this tax-free?"] },
+            { "id": "pay", "title": { "ja": "支払い方法を伝える", "en": "Say how you'll pay" }, "hints": ["カードで払えるか聞きましょう", "Can I pay …?", "Can I pay by card?"] }
+          ]
+        },
+        {
+          "tutor": "You are a helpful member of staff, speaking at natural speed with small talk. Ask questions to help the customer choose a present. When asked about tax-free, explain the rule on the price tags: ¥5,500 or more, with the original passport (a photo or copy isn't accepted). When asked, say you can keep their items at the counter until closing time (8 p.m.).",
+          "tasks": [
+            { "id": "gift", "title": { "ja": "誰へのプレゼントか伝える", "en": "Say who the present is for" }, "hints": ["誰へのプレゼントか、好みも伝えましょう", "I'm looking for a present for … She likes …", "I'm looking for a present for my sister. She likes simple things."] },
+            { "id": "size", "title": { "ja": "相手のサイズを説明する", "en": "Describe her size" }, "hints": ["サイズがわからないと伝えて、体型を説明しましょう", "I'm not sure of her size. She's …", "I'm not sure of her size. She's about my height, but slimmer."] },
+            { "id": "nopassport", "title": { "ja": "パスポートがないと相談する", "en": "Ask about tax-free without a passport" }, "hints": ["パスポートをホテルに置いてきたと伝えて、写真でいいか聞きましょう", "I left my passport at … Is a … okay?", "I left my passport at the hotel. Is a photo okay?"] },
+            { "id": "keep", "title": { "ja": "取り置きをお願いする", "en": "Ask them to keep the items" }, "hints": ["パスポートを取ってくるまで取り置きを頼みましょう", "Could you keep … until …?", "Could you keep these for me until this evening?"] }
+          ]
+        }
+      ]
+    }
+  ],
+  "prop": {
+    "label": { "ja": "値札", "en": "Price tags" },
+    "title": "SAKURA STYLE · Price tags",
+    "sections": [
+      { "heading": "CLOTHES", "items": [
+        { "name": "Linen shirt · white / beige · S M L", "value": "¥4,800", "key": "linen shirt|shirt" },
+        { "name": "Denim jacket · blue / black · S M L", "value": "¥8,900", "key": "denim jacket|jacket" },
+        { "name": "Cotton sweater · grey / navy · S M L", "value": "¥5,900", "key": "sweater" }
+      ] },
+      { "heading": "GIFTS", "items": [
+        { "name": "Tenugui (cotton hand towel)", "value": "¥1,200", "key": "tenugui|hand towel" },
+        { "name": "Furoshiki (wrapping cloth)", "value": "¥1,800", "key": "furoshiki" },
+        { "name": "Gift wrapping", "value": "Free", "key": "gift-wrap|gift wrapping|gift wrapped" }
+      ] },
+      { "heading": "GOOD TO KNOW", "items": [
+        { "name": "Tax-free for visitors: ¥5,500 or more in total (incl. tax)", "key": "tax-free" },
+        { "name": "Pay the full price now · get the tax back when you leave Japan", "key": "tax back|tax refund" },
+        { "name": "Bring your original passport (no photos or copies)", "key": "passport" },
+        { "name": "Fitting room · up to 3 items", "key": "fitting room|try it on" }
+      ] }
+    ],
+    "foot": "Prices include tax · Card or cash · Open 10:00–20:00"
+  }
+}

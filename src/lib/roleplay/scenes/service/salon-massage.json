@@ -1,0 +1,106 @@
+{
+  "id": "salon-massage",
+  "category": "service",
+  "title": { "ja": "マッサージ店で接客", "en": "Serving customers at a massage salon" },
+  "summary": { "ja": "コースや時間を案内して、力加減を確かめ、施術のあとのアドバイスを伝える。", "en": "Explain the treatments, check the pressure and give advice afterwards." },
+  "setting": "A relaxation salon near a busy shopping street in Tokyo, in the early evening. A tourist who has been walking all day comes in; the staff speak English to them.",
+  "image": "",
+  "studentRole": "a",
+  "roles": [
+    {
+      "id": "a",
+      "name": { "ja": "スタッフ", "en": "Staff" },
+      "persona": "A member of staff at the relaxation salon.",
+      "levels": [
+        {
+          "tutor": "You are a tourist who has walked a lot today. Open by walking in and looking at the menu by the door; wait for the staff to greet you. Speak slowly and simply, in short sentences. You'd like a foot massage. During the massage, when the staff asks about the pressure, say it's a little strong.",
+          "tasks": [
+            { "id": "welcome", "title": { "ja": "どのコースか聞く", "en": "Ask which treatment" }, "hints": ["あいさつして、どのマッサージがいいか聞きましょう", "Hello! Which … would you like?", "Hello! Which massage would you like?"] },
+            { "id": "time", "title": { "ja": "時間と料金を伝える", "en": "Say the time and price" }, "hints": ["メニューを見て、時間と料金を伝えましょう", "It's … minutes, … yen.", "It's 30 minutes, 3,000 yen."] },
+            { "id": "shoes", "title": { "ja": "靴を脱ぐよう伝える", "en": "Ask them to take off their shoes" }, "hints": ["靴を脱いでもらいましょう", "Please take off …", "Please take off your shoes here."] },
+            { "id": "pressure", "title": { "ja": "力加減を聞く", "en": "Ask about the pressure" }, "hints": ["強さがちょうどいいか聞きましょう", "Is the pressure …?", "Is the pressure okay?"] }
+          ]
+        },
+        {
+          "tutor": "You are a tourist, speaking at natural pace with a little small talk. You have about an hour before dinner. Open by walking in and asking what kind of massages they have. Ask what the head and shoulder massage is like, but choose the 60-minute body massage. Say yes if the staff offers aroma oil.",
+          "tasks": [
+            { "id": "time", "title": { "ja": "時間の希望を聞く", "en": "Ask how long they'd like" }, "hints": ["何分のコースがいいか聞きましょう", "How long would you like? We have …", "How long would you like? We have 30 or 60 minutes."] },
+            { "id": "explain", "title": { "ja": "コースを説明する", "en": "Explain a treatment" }, "hints": ["頭と肩のマッサージがどんなものか説明しましょう", "The head and shoulder massage is good for … It's …", "The head and shoulder massage is good for stiff shoulders. It's 20 minutes."] },
+            { "id": "oil", "title": { "ja": "アロマオイルをすすめる", "en": "Offer the aroma oil" }, "hints": ["アロマオイルを追加するか聞きましょう", "Would you like to add …? It's …", "Would you like to add aroma oil? It's 500 yen extra."] },
+            { "id": "change", "title": { "ja": "着替えの案内をする", "en": "Explain where to change" }, "hints": ["着替えと更衣室の場所を伝えましょう", "Please change into … The changing room is …", "Please change into these clothes. The changing room is on the left."] },
+            { "id": "total", "title": { "ja": "合計金額を伝える", "en": "Say the total" }, "hints": ["オイル代も入れた合計を伝えましょう", "That's … in total.", "That's 7,000 yen in total."] }
+          ]
+        },
+        {
+          "tutor": "You are a tourist, speaking at natural speed with small talk. You've been walking around all day and your legs and shoulders are tired. Open by walking in and saying you'd like a massage; wait for the staff to ask what you need. Take the staff's recommendation. After the massage, say you feel much better.",
+          "tasks": [
+            { "id": "needs", "title": { "ja": "お客さんの希望を聞く", "en": "Ask what they need" }, "hints": ["特にほぐしたい場所があるか聞きましょう", "Is there any part of your body you'd like us to …?", "Is there any part of your body you'd like us to focus on?"] },
+            { "id": "recommend", "title": { "ja": "理由をつけてコースをすすめる", "en": "Recommend a treatment, with a reason" }, "hints": ["理由も添えて、合うコースをすすめましょう", "I'd recommend … It covers …", "I'd recommend the 60-minute body massage. It covers your legs and shoulders."] },
+            { "id": "pressure", "title": { "ja": "施術中に様子を確かめる", "en": "Check they're comfortable" }, "hints": ["強さを確かめて、痛かったら言ってと伝えましょう", "How's the …? Please let me know if …", "How's the pressure? Please let me know if anything hurts."] },
+            { "id": "aftercare", "title": { "ja": "施術後のアドバイスをする", "en": "Give advice afterwards" }, "hints": ["水を飲んでゆっくり休むようすすめましょう", "Please drink … and …", "Please drink some water and take it easy tonight."] }
+          ],
+          "twist": {
+            "after": "recommend",
+            "tutor": "Before the massage starts, mention that your lower back is a little sore: you hurt it lifting your suitcase yesterday. It's not serious, but you're worried about the massage. Ask whether it's okay.",
+            "task": { "id": "back", "title": { "ja": "腰の痛みに対応する", "en": "Respond to the sore back" }, "hints": ["腰はさけて施術すると伝えて、安心してもらいましょう", "Thank you for telling me. We'll … your lower back today.", "Thank you for telling me. We'll avoid your lower back today."] }
+          }
+        }
+      ]
+    },
+    {
+      "id": "b",
+      "name": { "ja": "お客さん", "en": "Customer" },
+      "persona": "A tourist visiting a relaxation salon in Tokyo.",
+      "levels": [
+        {
+          "tutor": "You are the salon staff. Speak slowly and simply, in short sentences. Greet the customer and ask which massage they'd like. When asked, say the price from the menu. During the massage, ask once if the pressure is okay, and change it when they ask.",
+          "tasks": [
+            { "id": "want", "title": { "ja": "受けたいコースを伝える", "en": "Say what you'd like" }, "hints": ["受けたいマッサージを伝えましょう", "A …, please.", "A foot massage, please."] },
+            { "id": "price", "title": { "ja": "料金を聞く", "en": "Ask the price" }, "hints": ["料金を聞きましょう", "How much is …?", "How much is the foot massage?"] },
+            { "id": "softer", "title": { "ja": "弱めにお願いする", "en": "Ask for softer pressure" }, "hints": ["もう少し弱くしてもらいましょう", "A bit …, please.", "A bit softer, please."] },
+            { "id": "thanks", "title": { "ja": "お礼を言う", "en": "Say thank you" }, "hints": ["お礼を言いましょう", "Thank you. That was …", "Thank you. That was great!"] }
+          ]
+        },
+        {
+          "tutor": "You are the salon staff, speaking at natural pace with a little small talk. Ask how long they'd like. When asked, recommend a treatment from the menu and mention the aroma oil option (+¥500). During the massage, ask once about the pressure.",
+          "tasks": [
+            { "id": "time", "title": { "ja": "時間を伝えておすすめを聞く", "en": "Say how long you have" }, "hints": ["時間を伝えて、おすすめを聞きましょう", "I have about … What do you …?", "I have about an hour. What do you recommend?"] },
+            { "id": "choose", "title": { "ja": "コースを選ぶ", "en": "Choose a treatment" }, "hints": ["受けたいコースとオプションを伝えましょう", "I'll have the … with …", "I'll have the 60-minute body massage with aroma oil."] },
+            { "id": "focus", "title": { "ja": "重点的にほぐしてほしい場所を伝える", "en": "Ask them to focus on an area" }, "hints": ["肩をよくほぐしてほしいと伝えましょう", "Could you focus on …? They're …", "Could you focus on my shoulders? They're really stiff."] },
+            { "id": "stronger", "title": { "ja": "強めにお願いする", "en": "Ask for firmer pressure" }, "hints": ["もう少し強くしてもらいましょう", "Could you make it a bit …?", "Could you make it a bit stronger, please?"] }
+          ]
+        },
+        {
+          "tutor": "You are the salon staff, speaking at natural speed, kind and professional. Ask about the customer's needs and recommend a treatment from the menu. When they mention a problem, thank them for telling you, adjust the treatment (stay away from that area completely) and ask them to tell you if anything hurts. After the massage, suggest drinking some water.",
+          "tasks": [
+            { "id": "tired", "title": { "ja": "体の状態を伝える", "en": "Say how you feel" }, "hints": ["一日歩いて、足が疲れていると伝えましょう", "I've been … all day, and my … are …", "I've been walking all day, and my legs are really tired."] },
+            { "id": "back", "title": { "ja": "腰が痛いと伝える", "en": "Mention your sore back" }, "hints": ["腰が少し痛いと伝えて、大丈夫か聞きましょう", "Also, my lower back is a bit … Is that …?", "Also, my lower back is a bit sore. Is that a problem?"] },
+            { "id": "avoid", "title": { "ja": "腰はさけてほしいとお願いする", "en": "Ask them to avoid that area" }, "hints": ["腰はさけてほしいとお願いしましょう", "Could you … my lower back, please?", "Could you avoid my lower back, please?"] },
+            { "id": "after", "title": { "ja": "感想を伝えてお礼を言う", "en": "Thank them and say how you feel" }, "hints": ["感想を伝えてお礼を言いましょう", "That was … I feel …", "That was wonderful. I feel so much better."] }
+          ]
+        }
+      ]
+    }
+  ],
+  "prop": {
+    "label": { "ja": "メニュー", "en": "Treatment menu" },
+    "title": "RELAXATION SALON · Treatments",
+    "sections": [
+      { "heading": "MASSAGE", "items": [
+        { "name": "Body massage · 30 min / 60 min", "value": "¥3,500 / ¥6,500", "key": "body massage|full body" },
+        { "name": "Foot massage · 30 min", "value": "¥3,000", "key": "foot massage" },
+        { "name": "Head and shoulder massage · 20 min", "value": "¥2,500", "key": "head and shoulder|stiff shoulders" }
+      ] },
+      { "heading": "OPTIONS", "items": [
+        { "name": "Aroma oil", "value": "+¥500", "key": "aroma|oil" },
+        { "name": "Pressure: soft / medium / firm", "key": "pressure|softer|stronger" }
+      ] },
+      { "heading": "GOOD TO KNOW", "items": [
+        { "name": "Clothes to change into are provided · changing room on the left", "key": "changing room|change into" },
+        { "name": "Sore back or an injury? Please tell us before we start", "key": "lower back|sore|injury" },
+        { "name": "Please take off your shoes at the entrance", "key": "shoes" }
+      ] }
+    ],
+    "foot": "Open 11:00–22:00 · Card or cash"
+  }
+}

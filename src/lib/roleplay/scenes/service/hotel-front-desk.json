@@ -1,0 +1,111 @@
+{
+  "id": "hotel-front-desk",
+  "category": "service",
+  "title": { "ja": "ホテルのフロントで対応", "en": "Working at a hotel front desk" },
+  "summary": { "ja": "予約を確認してチェックインを受け付け、朝食や館内の案内をする。", "en": "Check a guest in, explain breakfast and the hotel, and help with their requests." },
+  "setting": "The front desk of the Sakura Hotel, a hotel near Kyoto Station. A guest from abroad arrives with a suitcase; the booking is on the screen.",
+  "image": "",
+  "studentRole": "a",
+  "roles": [
+    {
+      "id": "a",
+      "name": { "ja": "フロント係", "en": "Front desk" },
+      "persona": "A clerk at the front desk of the Sakura Hotel.",
+      "levels": [
+        {
+          "tutor": "You are Alex Brown, a guest from abroad. Open by walking up to the desk with your suitcase and saying hello; wait for the clerk to speak to you. Speak slowly and simply, in short sentences. Your booking is under Brown. Hand over your passport when asked.",
+          "tasks": [
+            { "id": "welcome", "title": { "ja": "チェックインか聞く", "en": "Ask if they're checking in" }, "hints": ["あいさつして、チェックインか聞きましょう", "Good afternoon. Are you …?", "Good afternoon. Are you checking in?"] },
+            { "id": "name", "title": { "ja": "名前を聞く", "en": "Ask for their name" }, "hints": ["予約の名前を聞きましょう", "May I have …?", "May I have your name, please?"] },
+            { "id": "passport", "title": { "ja": "パスポートをお願いする", "en": "Ask for their passport" }, "hints": ["パスポートを見せてもらいましょう", "Could I see …?", "Could I see your passport, please?"] },
+            { "id": "key", "title": { "ja": "部屋番号を伝えて鍵を渡す", "en": "Give the room number and key" }, "hints": ["部屋番号を伝えて鍵を渡しましょう", "Your room is … Here's …", "Your room is 712. Here's your key."] }
+          ]
+        },
+        {
+          "tutor": "You are Alex Brown, a guest arriving at 4 p.m., speaking at natural pace with a little small talk (you came from Tokyo by shinkansen). Open by walking up to the desk and saying you'd like to check in. Agree when the clerk checks your booking, and hand over your passport. Ask what time breakfast is and where, and what time check-out is.",
+          "tasks": [
+            { "id": "confirm", "title": { "ja": "予約内容を確認する", "en": "Check the booking details" }, "hints": ["部屋のタイプと泊数を確認しましょう", "That's a … for …, is that right?", "That's a double room for two nights, is that right?"] },
+            { "id": "passport", "title": { "ja": "パスポートのコピーをお願いする", "en": "Ask to copy their passport" }, "hints": ["外国のお客様はパスポートのコピーが必要だと伝えましょう", "For guests from abroad, we need …", "For guests from abroad, we need a copy of your passport."] },
+            { "id": "breakfast", "title": { "ja": "朝食について答える", "en": "Answer about breakfast" }, "hints": ["朝食の時間と場所を伝えましょう", "Breakfast is from … in …", "Breakfast is from 6:30 to 9:30 in the restaurant on the second floor."] },
+            { "id": "checkout", "title": { "ja": "チェックアウトの時間を伝える", "en": "Say the check-out time" }, "hints": ["チェックアウトの時間を伝えましょう", "Check-out is by …", "Check-out is by 11 a.m. on the 20th."] }
+          ]
+        },
+        {
+          "tutor": "You are Alex Brown, a guest who has just arrived after a long flight, speaking at natural speed with small talk. Open by walking up to the desk and saying hello; wait for the clerk to welcome you. Your booking is under Brown. Fill in the form when asked. Ask about breakfast, and ask whether the hotel can send your suitcase to your next hotel in Osaka on the day you leave.",
+          "tasks": [
+            { "id": "welcome", "title": { "ja": "歓迎して予約を確認する", "en": "Welcome them and find the booking" }, "hints": ["あいさつして、予約が見つかったと伝えましょう", "Welcome to … I have your booking for …", "Welcome to the Sakura Hotel. I have your booking for two nights."] },
+            { "id": "form", "title": { "ja": "宿泊カードの記入をお願いする", "en": "Ask them to fill in the form" }, "hints": ["用紙に記入してサインしてもらいましょう", "Could you fill in … and sign …?", "Could you fill in this form and sign at the bottom?"] },
+            { "id": "breakfast", "title": { "ja": "朝食について説明する", "en": "Explain breakfast" }, "hints": ["朝食が付いていることと、場所と時間を伝えましょう", "Breakfast is included. It's served …", "Breakfast is included. It's served on the second floor from 6:30."] },
+            { "id": "delivery", "title": { "ja": "荷物の配送について説明する", "en": "Explain luggage delivery" }, "hints": ["次のホテルまで荷物を送れると、料金と日数も伝えましょう", "We can send … It's about … and …", "We can send it for you. It's about 2,000 yen and arrives the next day."] }
+          ],
+          "twist": {
+            "after": "welcome",
+            "tutor": "Say you've arrived early: it's 11:30 a.m. Ask whether you can go up to your room now, because you're very tired. When the clerk explains the options, take the early check-in at 1 p.m. and leave your suitcase at the desk until then.",
+            "task": { "id": "early", "title": { "ja": "アーリーチェックインを案内する", "en": "Offer an early check-in" }, "hints": ["チェックインは3時からと伝えて、アーリーチェックインを提案しましょう", "Check-in is from 3, but early check-in at … is …", "Check-in is from 3, but early check-in at 1 is 3,000 yen."] }
+          }
+        }
+      ]
+    },
+    {
+      "id": "b",
+      "name": { "ja": "宿泊客", "en": "Guest" },
+      "persona": "Alex Brown, a guest from abroad staying two nights at the Sakura Hotel.",
+      "levels": [
+        {
+          "tutor": "You are the front desk clerk. Speak slowly and simply, one thing at a time. Greet the guest, ask for their name and find the booking (under Brown), and ask for their passport. Give them the key to room 712. When asked, say breakfast is 6:30 to 9:30 on the second floor, and the elevators are on the right of the lobby.",
+          "tasks": [
+            { "id": "checkin", "title": { "ja": "チェックインしたいと伝える", "en": "Say you're checking in" }, "hints": ["チェックインしたいと伝えましょう", "Hi, I'd like to …, please.", "Hi, I'd like to check in, please."] },
+            { "id": "name", "title": { "ja": "名前を伝える", "en": "Give your name" }, "hints": ["予約の名前を伝えましょう", "My name is …", "My name is Alex Brown."] },
+            { "id": "breakfast", "title": { "ja": "朝食の時間を聞く", "en": "Ask what time breakfast is" }, "hints": ["朝食の時間を聞きましょう", "What time is …?", "What time is breakfast?"] },
+            { "id": "elevator", "title": { "ja": "エレベーターの場所を聞く", "en": "Ask where the elevator is" }, "hints": ["エレベーターの場所を聞きましょう", "Where is …?", "Where is the elevator, please?"] }
+          ]
+        },
+        {
+          "tutor": "You are the front desk clerk, speaking at natural pace with a little small talk. Ask for the name on the booking (Brown), and ask for their passport. When asked: the Wi-Fi is free and the password is on the key card; check-out is by 11 a.m.; there's a convenience store next door.",
+          "tasks": [
+            { "id": "booking", "title": { "ja": "予約の名前と泊数を伝える", "en": "Give your name and how long" }, "hints": ["予約の名前と泊数を伝えましょう", "I have a reservation under … for …", "I have a reservation under Brown for two nights."] },
+            { "id": "wifi", "title": { "ja": "Wi-Fiについて聞く", "en": "Ask about Wi-Fi" }, "hints": ["Wi-Fiが無料か、パスワードも聞きましょう", "Is the Wi-Fi …? What's …?", "Is the Wi-Fi free? What's the password?"] },
+            { "id": "checkout", "title": { "ja": "チェックアウトの時間を聞く", "en": "Ask the check-out time" }, "hints": ["チェックアウトの時間を聞きましょう", "What time do I need to …?", "What time do I need to check out?"] },
+            { "id": "shop", "title": { "ja": "近くの店について聞く", "en": "Ask about a shop nearby" }, "hints": ["近くにコンビニがあるか聞きましょう", "Is there a … near here?", "Is there a convenience store near here?"] }
+          ]
+        },
+        {
+          "tutor": "You are a friendly front desk clerk, speaking at natural speed. Greet the guest and let them say what they need. It's 11:30 a.m. and check-in is from 3 p.m. When asked, explain the options from the booking information: early check-in at 1 p.m. for ¥3,000, and you can keep their bags for free. When asked about sending luggage to another hotel, say it's about ¥2,000 and arrives the next day. Card is fine.",
+          "tasks": [
+            { "id": "early", "title": { "ja": "早めにチェックインできるか聞く", "en": "Ask to check in early" }, "hints": ["早く着いたことを伝えて、今チェックインできるか聞きましょう", "I know it's early, but could I …?", "I know it's early, but could I check in now?"] },
+            { "id": "bags", "title": { "ja": "荷物を預けたいと伝える", "en": "Ask to leave your suitcase" }, "hints": ["1時まで荷物を預けられるか聞きましょう", "Could I leave my … and come back at …?", "Could I leave my suitcase here and come back at 1?"] },
+            { "id": "delivery", "title": { "ja": "荷物を送れるか聞く", "en": "Ask about sending your suitcase" }, "hints": ["出発の日に、次のホテルへ荷物を送れるか聞きましょう", "When I leave, could you send … to …?", "When I leave, could you send my suitcase to my hotel in Osaka?"] },
+            { "id": "pay", "title": { "ja": "カードで払えるか聞く", "en": "Ask to pay by card" }, "hints": ["アーリーチェックインの料金をカードで払えるか聞きましょう", "Can I pay for … by card?", "Can I pay for the early check-in by card?"] }
+          ]
+        }
+      ]
+    }
+  ],
+  "prop": {
+    "label": { "ja": "予約情報", "en": "Booking" },
+    "title": "SAKURA HOTEL KYOTO · Booking",
+    "sections": [
+      { "heading": "BOOKING", "items": [
+        { "name": "Guest name", "value": "Alex Brown", "key": "Brown" },
+        { "name": "Room type", "value": "Double room, non-smoking", "key": "double" },
+        { "name": "Stay", "value": "Oct 18–20 · 2 nights", "key": "two nights|2 nights" },
+        { "name": "Breakfast", "value": "Included", "key": "included" },
+        { "name": "Room number (today)", "value": "712 · 7th floor", "key": "712" }
+      ] },
+      { "heading": "HOTEL INFORMATION", "items": [
+        { "name": "Check-in", "value": "from 15:00", "key": "from 3|3 p.m.|15:00" },
+        { "name": "Early check-in (if a room is ready)", "value": "from 13:00 · ¥3,000", "key": "early check-in|1 p.m.|13:00|3,000|3000" },
+        { "name": "Check-out", "value": "by 11:00", "key": "check-out|11 a.m.|11:00" },
+        { "name": "Breakfast", "value": "6:30–9:30 · restaurant, 2nd floor", "key": "breakfast" },
+        { "name": "Wi-Fi", "value": "Free · password on your key card", "key": "Wi-Fi|password" }
+      ] },
+      { "heading": "SERVICES", "items": [
+        { "name": "Luggage storage", "value": "Free", "key": "luggage storage|keep your bags|keep your suitcase|leave my suitcase" },
+        { "name": "Luggage delivery to another hotel · arrives the next day", "value": "about ¥2,000", "key": "luggage delivery|delivery|send" },
+        { "name": "Elevators", "value": "on the right of the lobby", "key": "elevator|elevators|lift" },
+        { "name": "Convenience store", "value": "next door", "key": "convenience store" }
+      ] }
+    ],
+    "foot": "Guests from abroad: please show your passport at check-in (we take a copy)"
+  }
+}
