@@ -1,0 +1,105 @@
+{
+  "id": "ticket-machine",
+  "category": "help",
+  "title": { "ja": "券売機やICカードの買い方を教える", "en": "Helping at the ticket machine" },
+  "summary": { "ja": "券売機の使い方や、ICカードの買い方・チャージのしかたを説明する。", "en": "Show a tourist how to buy a ticket, get an IC card and top it up." },
+  "setting": "The ticket machines at Chuo Station in Tokyo, on a weekend morning. A tourist is staring at the screen of a ticket machine and wants to go to Kitamachi.",
+  "image": "",
+  "studentRole": "a",
+  "roles": [
+    {
+      "id": "a",
+      "name": { "ja": "地元の人", "en": "Local" },
+      "persona": "A Japanese person waiting to buy a ticket at the next machine.",
+      "levels": [
+        {
+          "tutor": "You are a tourist who wants a ticket to Kitamachi. Speak slowly and simply, and follow the local's instructions one step at a time. You have cash. Use the fare chart (Kitamachi is ¥210).",
+          "tasks": [
+            { "id": "english", "title": { "ja": "英語ボタンを教える", "en": "Show the English button" }, "hints": ["英語のボタンを押すよう伝えましょう", "Press this … button.", "Press this English button."] },
+            { "id": "fare", "title": { "ja": "運賃を伝える", "en": "Say the fare" }, "hints": ["北町までの運賃を伝えましょう", "It's … yen to Kitamachi.", "It's 210 yen to Kitamachi."] },
+            { "id": "money", "title": { "ja": "お金を入れるよう伝える", "en": "Say where the money goes" }, "hints": ["お金を入れる場所を教えましょう", "Put the money in …", "Put the money in here."] },
+            { "id": "ticket", "title": { "ja": "切符を取るよう伝える", "en": "Say take your ticket" }, "hints": ["切符とおつりを取るよう伝えましょう", "Take your … and your …", "Take your ticket and your change."] }
+          ]
+        },
+        {
+          "tutor": "You are a tourist going to Kitamachi, speaking at natural pace. You'll be in Tokyo for a few days. Ask what an IC card is and how much it costs, and use the fare chart. You have cash.",
+          "tasks": [
+            { "id": "where", "title": { "ja": "行き先を聞く", "en": "Ask where they're going" }, "hints": ["どこへ行くか聞きましょう", "Where are you …?", "Where are you going today?"] },
+            { "id": "suggest", "title": { "ja": "ICカードをすすめる", "en": "Suggest an IC card" }, "hints": ["ICカードのほうが便利だとすすめましょう", "You could get an … It's …", "You could get an IC card. It's much easier."] },
+            { "id": "cost", "title": { "ja": "ICカードの値段を説明する", "en": "Explain what the card costs" }, "hints": ["デポジットを含めた値段を説明しましょう", "A new card is …, including a … deposit.", "A new card is 2,000 yen, including a 500-yen deposit."] },
+            { "id": "use", "title": { "ja": "使い方を説明する", "en": "Explain how to use it" }, "hints": ["改札でタッチするだけと伝えましょう", "Just touch the card on …", "Just touch the card on the gate."] }
+          ]
+        },
+        {
+          "tutor": "You are a tourist in Tokyo for a week, speaking at natural speed with a little small talk. Ask what the best way to get around is, and ask questions about the IC card. Use the fare chart.",
+          "tasks": [
+            { "id": "plans", "title": { "ja": "滞在期間を聞いてすすめる", "en": "Ask about their stay, then advise" }, "hints": ["何日いるか聞いて、ICカードをすすめましょう", "How long are you …? If it's …, an IC card is …", "How long are you staying? If it's a few days, an IC card is better."] },
+            { "id": "cost", "title": { "ja": "値段とデポジットを説明する", "en": "Explain the cost and deposit" }, "hints": ["値段と、そのうちいくらがデポジットか説明しましょう", "It's … The … deposit, and the rest …", "It's 2,000 yen. That's a 500-yen deposit, and the rest you can spend."] },
+            { "id": "topup", "title": { "ja": "チャージのしかたを説明する", "en": "Explain how to top it up" }, "hints": ["残高が少なくなったらチャージできると伝えましょう", "When it runs low, you can …", "When it runs low, you can top it up at any machine."] },
+            { "id": "refund", "title": { "ja": "デポジットの返し方を伝える", "en": "Say how to get the deposit back" }, "hints": ["帰るときに窓口でデポジットが戻ると伝えましょう", "You can get … back at …", "You can get the deposit back at the ticket office when you leave."] }
+          ],
+          "twist": {
+            "after": "cost",
+            "tutor": "Say you only have a credit card, no cash. This machine takes cash only, so let the local work out where to go (the big machine next to the ticket office takes cards).",
+            "task": { "id": "card", "title": { "ja": "カードが使える機械を案内する", "en": "Find a machine that takes cards" }, "hints": ["この機械は現金だけと伝えて、カードが使える機械を案内しましょう", "This one only takes …, but the one next to …", "This one only takes cash, but the one next to the ticket office takes cards."] }
+          }
+        }
+      ]
+    },
+    {
+      "id": "b",
+      "name": { "ja": "観光客", "en": "Tourist" },
+      "persona": "A tourist trying to use a Japanese ticket machine for the first time.",
+      "levels": [
+        {
+          "tutor": "You are a kind local at the next machine. Speak slowly and simply. Show the tourist the English button and tell them the fare from the fare chart (Kitamachi is ¥210).",
+          "tasks": [
+            { "id": "help", "title": { "ja": "買い方を聞く", "en": "Ask how to buy a ticket" }, "hints": ["切符の買い方を聞きましょう", "Excuse me. How do I …?", "Excuse me. How do I buy a ticket?"] },
+            { "id": "fare", "title": { "ja": "運賃を聞く", "en": "Ask the fare" }, "hints": ["北町までいくらか聞きましょう", "How much is it to …?", "How much is it to Kitamachi?"] },
+            { "id": "thanks", "title": { "ja": "お礼を言う", "en": "Say thank you" }, "hints": ["お礼を言いましょう", "Thank you …!", "Thank you very much!"] }
+          ]
+        },
+        {
+          "tutor": "You are a kind local, speaking at natural pace. Suggest an IC card, and explain the price and how to top it up using the fare chart.",
+          "tasks": [
+            { "id": "which", "title": { "ja": "どの切符を買えばいいか聞く", "en": "Ask which ticket to buy" }, "hints": ["北町に行くにはどれを買えばいいか聞きましょう", "I'm going to … Which … should I buy?", "I'm going to Kitamachi. Which ticket should I buy?"] },
+            { "id": "what", "title": { "ja": "ICカードについて聞く", "en": "Ask what an IC card is" }, "hints": ["ICカードとは何か聞きましょう", "What's …?", "What's an IC card?"] },
+            { "id": "charge", "title": { "ja": "チャージの方法を聞く", "en": "Ask how to add money" }, "hints": ["お金の足し方を聞きましょう", "How do I put … on it?", "How do I put more money on it?"] },
+            { "id": "thanks", "title": { "ja": "お礼を言う", "en": "Thank them" }, "hints": ["しっかりお礼を言いましょう", "Thanks so much. That's …", "Thanks so much. That's really helpful."] }
+          ]
+        },
+        {
+          "tutor": "You are a kind local, speaking at natural speed. Recommend an IC card for a week's stay and give the price (¥2,000). Answer questions about the deposit when asked. If the tourist only has a card, explain that this machine is cash only and the one next to the ticket office takes cards.",
+          "tasks": [
+            { "id": "plans", "title": { "ja": "事情を伝えてアドバイスを求める", "en": "Explain and ask for advice" }, "hints": ["1週間いると伝えて、いい移動方法を聞きましょう", "I'm here for … What's the best way to …?", "I'm here for a week. What's the best way to get around?"] },
+            { "id": "deposit", "title": { "ja": "デポジットについて聞く", "en": "Ask about the deposit" }, "hints": ["デポジットが戻ってくるか聞きましょう", "Do I get the … back?", "Do I get the deposit back when I leave?"] },
+            { "id": "cardonly", "title": { "ja": "カードしかないと伝える", "en": "Say you only have a card" }, "hints": ["クレジットカードしかないと伝えて、使えるか聞きましょう", "I only have a … Can I use it …?", "I only have a credit card. Can I use it here?"] },
+            { "id": "thanks", "title": { "ja": "心をこめてお礼を言う", "en": "Thank them warmly" }, "hints": ["時間を取ってくれたことにお礼を言いましょう", "Thank you for … You've …", "Thank you for your time. You've been really kind."] }
+          ]
+        }
+      ]
+    }
+  ],
+  "prop": {
+    "label": { "ja": "運賃表", "en": "Fare chart" },
+    "title": "CHUO STATION · Fares and IC cards",
+    "sections": [
+      { "heading": "FARES FROM CHUO", "items": [
+        { "name": "Midoribashi", "value": "¥170", "key": "Midoribashi" },
+        { "name": "Kitamachi", "value": "¥210", "key": "Kitamachi|210" },
+        { "name": "Airport", "value": "¥620", "key": "airport" }
+      ] },
+      { "heading": "IC CARD", "items": [
+        { "name": "New card (includes ¥500 deposit)", "value": "¥2,000", "key": "2,000|2000|two thousand|new card" },
+        { "name": "Top up at any machine", "value": "from ¥1,000", "key": "top up|top it up|charge" },
+        { "name": "Deposit back at the ticket office", "key": "deposit back|refund" }
+      ] },
+      { "heading": "MACHINES", "items": [
+        { "name": "English button · top right of the screen", "key": "English" },
+        { "name": "These machines: cash only", "key": "cash" },
+        { "name": "Big machine next to the ticket office: cards OK", "key": "takes cards|credit card" }
+      ] }
+    ],
+    "foot": "Children's fares are half price"
+  }
+}

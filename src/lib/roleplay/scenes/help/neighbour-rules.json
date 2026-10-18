@@ -1,0 +1,100 @@
+{
+  "id": "neighbour-rules",
+  "category": "help",
+  "title": { "ja": "ご近所さんにゴミ出しを説明する", "en": "Explaining garbage day to a neighbour" },
+  "summary": { "ja": "引っ越してきた外国人のご近所さんに、ゴミの分け方や出す日を説明する。", "en": "Explain to a new neighbour how to sort the garbage and when to put it out." },
+  "setting": "The garbage collection point (a corner with a green net) in front of a small apartment building in Tokyo, on a Monday morning. A neighbour who moved in last week comes out with a bag of garbage.",
+  "image": "",
+  "studentRole": "a",
+  "roles": [
+    {
+      "id": "a",
+      "name": { "ja": "ご近所さん", "en": "Neighbour" },
+      "persona": "A Japanese person who has lived in the building for years.",
+      "levels": [
+        {
+          "tutor": "You are Alex, who moved into the building last week. Speak slowly and simply, and be friendly. Ask when garbage day is and where to put the bags. Use the garbage calendar.",
+          "tasks": [
+            { "id": "hello", "title": { "ja": "あいさつして名乗る", "en": "Say hello and your name" }, "hints": ["あいさつして、隣に住んでいると伝えましょう", "Hi, I'm … from next door.", "Hi, I'm Sato from next door."] },
+            { "id": "day", "title": { "ja": "燃えるゴミの日を伝える", "en": "Say which days are burnable" }, "hints": ["燃えるゴミの曜日を伝えましょう", "Burnable garbage is … and …", "Burnable garbage is Monday and Thursday."] },
+            { "id": "time", "title": { "ja": "出す時間を伝える", "en": "Say what time to put it out" }, "hints": ["朝8時までに出すと伝えましょう", "Put it out by …", "Put it out by 8 a.m."] },
+            { "id": "place", "title": { "ja": "出す場所を伝える", "en": "Say where it goes" }, "hints": ["ネットの下に置くと伝えましょう", "Put it here, under …", "Put it here, under the net."] }
+          ]
+        },
+        {
+          "tutor": "You are Alex, who moved in last week, speaking at natural pace. Ask what bags to use, where to buy them, and when plastic goes out. You have plastic bottles to throw away too. Use the garbage calendar.",
+          "tasks": [
+            { "id": "hello", "title": { "ja": "あいさつして声をかける", "en": "Introduce yourself and offer help" }, "hints": ["隣に住んでいると伝えて、何でも聞いてと言いましょう", "I live next door. Let me know if …", "I live next door. Let me know if you need anything."] },
+            { "id": "bags", "title": { "ja": "指定のゴミ袋を説明する", "en": "Explain the city bags" }, "hints": ["市の黄色い袋を使うこと、どこで買えるかを伝えましょう", "You need to use the … They sell them at …", "You need to use the yellow city bags. They sell them at the supermarket."] },
+            { "id": "plastic", "title": { "ja": "プラスチックの日を伝える", "en": "Say when plastic goes out" }, "hints": ["プラスチックは水曜日と伝えましょう", "Plastic goes out on …", "Plastic goes out on Wednesday."] },
+            { "id": "bottles", "title": { "ja": "ペットボトルの出し方を説明する", "en": "Explain about plastic bottles" }, "hints": ["すすいでラベルをはがすよう伝えましょう", "Please rinse … and take off …", "Please rinse the bottles and take off the labels."] }
+          ]
+        },
+        {
+          "tutor": "You are Alex, who moved in last week, speaking at natural speed with a little small talk. You've just put a bag of plastic packaging out today (Monday) by mistake, and last night you left a bag out overnight. Ask what to do with an old sofa. Use the garbage calendar.",
+          "tasks": [
+            { "id": "hello", "title": { "ja": "あいさつして話しかける", "en": "Greet them warmly" }, "hints": ["隣に住んでいると伝えて、親しみをこめてあいさつしましょう", "Hi, you must be … I'm … from next door.", "Hi, you must be the new neighbour. I'm Sato from next door."] },
+            { "id": "mistake", "title": { "ja": "間違いをやんわり伝える", "en": "Point out a mistake kindly" }, "hints": ["プラスチックは水曜日だと、やさしく伝えましょう", "I think this is …, so it goes out on … It's easy to …", "I think this is plastic, so it goes out on Wednesday. It's easy to mix up."] },
+            { "id": "crows", "title": { "ja": "前の晩に出さない理由を説明する", "en": "Explain why not the night before" }, "hints": ["前の晩に出すとカラスが散らかすと説明しましょう", "If you put it out the night before, the … can …", "If you put it out the night before, the crows can make a mess."] },
+            { "id": "sofa", "title": { "ja": "粗大ゴミの出し方を説明する", "en": "Explain about large items" }, "hints": ["大きなものは区役所に電話すると伝えましょう", "For big things like …, you need to …", "For big things like a sofa, you need to call the city office first."] }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b",
+      "name": { "ja": "新しいご近所さん", "en": "New neighbour" },
+      "persona": "Alex, who moved into the building last week from abroad.",
+      "levels": [
+        {
+          "tutor": "You are Sato, a friendly neighbour who has lived in the building for years. Speak slowly and simply. Explain garbage day using the garbage calendar.",
+          "tasks": [
+            { "id": "hello", "title": { "ja": "あいさつして名乗る", "en": "Say hello and your name" }, "hints": ["あいさつして、引っ越してきたと伝えましょう", "Hi, I'm … I just …", "Hi, I'm Alex. I just moved in."] },
+            { "id": "day", "title": { "ja": "ゴミの日を聞く", "en": "Ask when garbage day is" }, "hints": ["ゴミの日はいつか聞きましょう", "When is …?", "When is garbage day?"] },
+            { "id": "thanks", "title": { "ja": "お礼を言う", "en": "Say thank you" }, "hints": ["お礼を言いましょう", "Thank you …!", "Thank you very much!"] }
+          ]
+        },
+        {
+          "tutor": "You are Sato, a friendly neighbour, speaking at natural pace. Explain the yellow city bags (sold at the supermarket), the plastic day and how to put out bottles, using the garbage calendar.",
+          "tasks": [
+            { "id": "bags", "title": { "ja": "ゴミ袋について聞く", "en": "Ask which bags to use" }, "hints": ["どの袋を使えばいいか聞きましょう", "Which bags should I …?", "Which bags should I use?"] },
+            { "id": "buy", "title": { "ja": "どこで買えるか聞く", "en": "Ask where to buy them" }, "hints": ["どこで買えるか聞きましょう", "Where can I …?", "Where can I buy them?"] },
+            { "id": "plastic", "title": { "ja": "プラスチックの日を聞く", "en": "Ask about plastic" }, "hints": ["プラスチックはいつ出すか聞きましょう", "When does … go out?", "When does plastic go out?"] },
+            { "id": "thanks", "title": { "ja": "お礼を言う", "en": "Thank them" }, "hints": ["しっかりお礼を言いましょう", "Thanks so much. That's …", "Thanks so much. That's really helpful."] }
+          ]
+        },
+        {
+          "tutor": "You are Sato, a friendly neighbour, speaking at natural speed. Kindly point out that the bag Alex put out today is plastic and goes out on Wednesday. Answer Alex's questions when asked: not the night before, because the crows make a mess; large items need a call to the city office.",
+          "tasks": [
+            { "id": "sorry", "title": { "ja": "間違いを謝る", "en": "Apologise for the mistake" }, "hints": ["プラスチックの日が違うとは知らなかったと謝りましょう", "Oh, I'm sorry. I didn't know …", "Oh, I'm sorry. I didn't know plastic was on a different day."] },
+            { "id": "night", "title": { "ja": "前の晩に出していいか聞く", "en": "Ask about the night before" }, "hints": ["前の晩に出してもいいか聞きましょう", "Is it okay to put it out …?", "Is it okay to put it out the night before?"] },
+            { "id": "sofa", "title": { "ja": "粗大ゴミについて聞く", "en": "Ask about a large item" }, "hints": ["古いソファをどうすればいいか聞きましょう", "I have an old … What should I …?", "I have an old sofa. What should I do with it?"] },
+            { "id": "thanks", "title": { "ja": "お礼を言ってお願いする", "en": "Thank them and ask a favour" }, "hints": ["教えてくれたお礼と、また間違えたら教えてとお願いしましょう", "Thanks for telling me. Please let me know if …", "Thanks for telling me. Please let me know if I get anything else wrong."] }
+          ]
+        }
+      ]
+    }
+  ],
+  "prop": {
+    "label": { "ja": "ゴミ出しカレンダー", "en": "Garbage calendar" },
+    "title": "GARBAGE CALENDAR · Sakura Apartments",
+    "sections": [
+      { "heading": "WHAT GOES OUT WHEN", "items": [
+        { "name": "Burnable (food waste, paper tissues)", "value": "Mon · Thu", "key": "burnable" },
+        { "name": "Plastic packaging", "value": "Wed", "key": "plastic packaging|Wednesday" },
+        { "name": "Cans, glass and plastic bottles", "value": "Fri", "key": "bottles|cans" },
+        { "name": "Paper and cardboard", "value": "Sat", "key": "cardboard" }
+      ] },
+      { "heading": "RULES", "items": [
+        { "name": "Put it out by 8:00 a.m. on the day, not the night before", "key": "8 a.m.|8 am|night before" },
+        { "name": "Use the yellow city bags (sold at supermarkets)", "key": "yellow|city bags" },
+        { "name": "Rinse bottles and remove labels", "key": "rinse|labels" },
+        { "name": "Put bags under the green net", "key": "net" }
+      ] },
+      { "heading": "LARGE ITEMS", "items": [
+        { "name": "Furniture and big items: call the city office (fee)", "key": "city office|sofa" }
+      ] }
+    ],
+    "foot": "Questions? Ask the building manager"
+  }
+}

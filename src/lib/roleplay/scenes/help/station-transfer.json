@@ -1,0 +1,108 @@
+{
+  "id": "station-transfer",
+  "category": "help",
+  "title": { "ja": "駅で乗り換えを聞かれる", "en": "Helping with a train transfer" },
+  "summary": { "ja": "観光客に行き方を聞かれて、路線や乗り換え、ホームを説明する。", "en": "A tourist asks the way: explain the line, where to change and which platform." },
+  "setting": "The ticket gates at Chuo Station in Tokyo, on a weekday afternoon. A tourist with a suitcase is looking at the route map and wants to get to Kitamachi.",
+  "image": "",
+  "studentRole": "a",
+  "roles": [
+    {
+      "id": "a",
+      "name": { "ja": "地元の人", "en": "Local" },
+      "persona": "A Japanese person who uses this station every day.",
+      "levels": [
+        {
+          "tutor": "You are a tourist going to Kitamachi. Speak slowly and simply, and look a little lost. Open the scene by thinking aloud to yourself (\"Hmm, which way is it...?\"), not by asking the local, and wait for them to offer help. Then let the local lead: when they ask, say you want to go to Kitamachi, and use the route map (Red Line two stops, change at Midoribashi to the Blue Line).",
+          "tasks": [
+            { "id": "offer", "title": { "ja": "声をかける", "en": "Offer to help" }, "hints": ["困っていないか声をかけましょう", "Can I …?", "Can I help you?"] },
+            { "id": "where", "title": { "ja": "行き先を聞く", "en": "Ask where they're going" }, "hints": ["どこへ行きたいか聞きましょう", "Where are you …?", "Where are you going?"] },
+            { "id": "line", "title": { "ja": "乗る路線を伝える", "en": "Say which line to take" }, "hints": ["乗る路線を伝えましょう", "Take the …", "Take the Red Line."] },
+            { "id": "change", "title": { "ja": "乗り換える駅を伝える", "en": "Say where to change" }, "hints": ["乗り換える駅を伝えましょう", "Change at …", "Change at Midoribashi."] }
+          ]
+        },
+        {
+          "tutor": "You are a tourist going to Kitamachi, speaking at natural pace. Open the scene by thinking aloud to yourself (\"Hmm, which way is it...?\"), not by asking the local, and wait for them to offer help. Then ask how to get there, which platform the train leaves from, and how long it takes. Use the route map for the details.",
+          "tasks": [
+            { "id": "offer", "title": { "ja": "声をかける", "en": "Offer to help" }, "hints": ["困っていないか声をかけましょう", "Excuse me, do you …?", "Excuse me, do you need any help?"] },
+            { "id": "route", "title": { "ja": "行き方を説明する", "en": "Explain the route" }, "hints": ["路線と乗り換えを説明しましょう", "Take the … and change at …", "Take the Red Line and change at Midoribashi."] },
+            { "id": "platform", "title": { "ja": "ホームを伝える", "en": "Say which platform" }, "hints": ["何番線か伝えましょう", "The Red Line is on platform …", "The Red Line is on platform 3."] },
+            { "id": "time", "title": { "ja": "時間と運賃を伝える", "en": "Say the time and fare" }, "hints": ["かかる時間と運賃を伝えましょう", "It takes about … It's … yen.", "It takes about 20 minutes. It's 210 yen."] }
+          ]
+        },
+        {
+          "tutor": "You are a tourist going to Kitamachi, speaking at natural speed with a little small talk (it's your first time in Tokyo). Open the scene by thinking aloud to yourself (\"Hmm, which way is it...?\"), not by asking the local, and wait for them to offer help. Then ask for details and check you've understood. You're going to Kitamachi to look around, you don't have an IC card yet, and you've been buying paper tickets.",
+          "tasks": [
+            { "id": "offer", "title": { "ja": "様子を見て声をかける", "en": "Offer help kindly" }, "hints": ["迷っていそうなので、やさしく声をかけましょう", "Excuse me, you look a bit … Can I …?", "Excuse me, you look a bit lost. Can I help?"] },
+            { "id": "route", "title": { "ja": "行き方を詳しく説明する", "en": "Explain the route in detail" }, "hints": ["何駅目で、何線に乗り換えるか説明しましょう", "Take the … two stops to …, then change to …", "Take the Red Line two stops to Midoribashi, then change to the Blue Line."] },
+            { "id": "card", "title": { "ja": "ICカードをすすめる", "en": "Suggest an IC card" }, "hints": ["ICカードがあると便利だと伝えましょう", "Do you have an IC card? It's …", "Do you have an IC card? It's much easier than buying tickets."] },
+            { "id": "enjoy", "title": { "ja": "おすすめを添えて見送る", "en": "Say goodbye with a tip" }, "hints": ["北町のおすすめを一言添えて、見送りましょう", "Enjoy Kitamachi! The … there is …", "Enjoy Kitamachi! The old shopping street there is lovely."] }
+          ],
+          "twist": {
+            "after": "route",
+            "tutor": "Point at the departure board: a message in Japanese is flashing next to the Blue Line. Ask the local what it says (the Blue Line is delayed by about 15 minutes, as the route map shows), and ask whether there's another way to get to Kitamachi (the bus from the east exit takes 25 minutes).",
+            "task": { "id": "delay", "title": { "ja": "遅れを伝えて別の行き方をすすめる", "en": "Explain the delay, suggest the bus" }, "hints": ["遅れていることを伝えて、バスをすすめましょう", "The Blue Line is … You could take …", "The Blue Line is delayed. You could take the bus from the east exit instead."] }
+          }
+        }
+      ]
+    },
+    {
+      "id": "b",
+      "name": { "ja": "観光客", "en": "Tourist" },
+      "persona": "A tourist in Tokyo for the first time, trying to get to Kitamachi.",
+      "levels": [
+        {
+          "tutor": "You are a local who uses this station every day. Speak slowly and simply. When the tourist asks, explain the way using the route map, one step at a time.",
+          "tasks": [
+            { "id": "ask", "title": { "ja": "助けを求める", "en": "Ask for help" }, "hints": ["すみません、と声をかけましょう", "Excuse me, can you …?", "Excuse me, can you help me?"] },
+            { "id": "where", "title": { "ja": "行き先を伝える", "en": "Say where you're going" }, "hints": ["行き先を伝えましょう", "I want to go to …", "I want to go to Kitamachi."] },
+            { "id": "platform", "title": { "ja": "ホームを聞く", "en": "Ask which platform" }, "hints": ["何番線か聞きましょう", "Which platform …?", "Which platform is it?"] },
+            { "id": "thanks", "title": { "ja": "お礼を言う", "en": "Say thank you" }, "hints": ["お礼を言いましょう", "Thank you …!", "Thank you very much!"] }
+          ]
+        },
+        {
+          "tutor": "You are a local who uses this station every day, speaking at natural pace. Explain the route with the route map and add one helpful tip (the Blue Line platform at Midoribashi is a short walk).",
+          "tasks": [
+            { "id": "ask", "title": { "ja": "行き方を聞く", "en": "Ask how to get there" }, "hints": ["行き方を聞きましょう", "Excuse me, how do I get to …?", "Excuse me, how do I get to Kitamachi?"] },
+            { "id": "change", "title": { "ja": "乗り換えがあるか聞く", "en": "Ask if you need to change" }, "hints": ["乗り換えが必要か聞きましょう", "Do I need to …?", "Do I need to change trains?"] },
+            { "id": "time", "title": { "ja": "かかる時間を聞く", "en": "Ask how long it takes" }, "hints": ["どのくらいかかるか聞きましょう", "How long does …?", "How long does it take?"] },
+            { "id": "thanks", "title": { "ja": "お礼を言う", "en": "Thank them" }, "hints": ["しっかりお礼を言いましょう", "Thanks so much for …", "Thanks so much for your help."] }
+          ]
+        },
+        {
+          "tutor": "You are a friendly local, speaking at natural speed. Explain the route with the route map. Partway through, read the departure board for the tourist: the Blue Line is delayed by about 15 minutes. Suggest the bus from the east exit if they ask about another way.",
+          "tasks": [
+            { "id": "ask", "title": { "ja": "事情を伝えて行き方を聞く", "en": "Explain and ask the way" }, "hints": ["初めてで迷っていると伝えて、行き方を聞きましょう", "Sorry, it's my first time … Could you tell me …?", "Sorry, it's my first time here. Could you tell me how to get to Kitamachi?"] },
+            { "id": "check", "title": { "ja": "理解したか確認する", "en": "Check you've understood" }, "hints": ["聞いた内容をくり返して確認しましょう", "So I change at … to …, right?", "So I change at Midoribashi to the Blue Line, right?"] },
+            { "id": "other", "title": { "ja": "ほかの行き方を聞く", "en": "Ask about another way" }, "hints": ["遅れているなら、ほかの行き方がないか聞きましょう", "Is there another way to …?", "Is there another way to get to Kitamachi?"] },
+            { "id": "thanks", "title": { "ja": "心をこめてお礼を言う", "en": "Thank them warmly" }, "hints": ["助けてもらったことに、しっかりお礼を言いましょう", "Thank you so much. You've been …", "Thank you so much. You've been really helpful."] }
+          ]
+        }
+      ]
+    }
+  ],
+  "prop": {
+    "label": { "ja": "路線図", "en": "Route map" },
+    "title": "CHUO STATION · Route map",
+    "sections": [
+      { "heading": "TO KITAMACHI", "items": [
+        { "name": "Red Line · 2 stops to Midoribashi", "value": "Platform 3", "key": "Red Line" },
+        { "name": "Change at Midoribashi to the Blue Line · 3 stops", "key": "Midoribashi" },
+        { "name": "Blue Line to Kitamachi", "key": "Blue Line" },
+        { "name": "Total time", "value": "about 20 min", "key": "20 minutes|twenty minutes" },
+        { "name": "Fare", "value": "¥210", "key": "210" }
+      ] },
+      { "heading": "OTHER WAYS", "items": [
+        { "name": "Bus to Kitamachi · from the east exit", "value": "25 min · ¥230", "key": "bus" },
+        { "name": "East exit · up the stairs on the right", "key": "east exit" }
+      ] },
+      { "heading": "DEPARTURE BOARD (NOW)", "items": [
+        { "name": "Blue Line: delayed about 15 min (signal check)", "key": "delayed|delay" }
+      ] },
+      { "heading": "IC CARDS", "items": [
+        { "name": "Use on trains and buses · touch the card on the gate", "key": "IC card" }
+      ] }
+    ],
+    "foot": "Trains every 5 minutes"
+  }
+}

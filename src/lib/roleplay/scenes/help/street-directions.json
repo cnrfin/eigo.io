@@ -1,0 +1,103 @@
+{
+  "id": "street-directions",
+  "category": "help",
+  "title": { "ja": "街で道をたずねられる", "en": "Giving directions in the street" },
+  "summary": { "ja": "道に迷った観光客に、目印を使って行き方を説明する。", "en": "Help a lost tourist: give directions using landmarks." },
+  "setting": "Outside the north exit of Kitamachi Station in Tokyo, at 3 p.m. on a sunny day. A tourist holding a phone is looking around for the City Museum.",
+  "image": "",
+  "studentRole": "a",
+  "roles": [
+    {
+      "id": "a",
+      "name": { "ja": "地元の人", "en": "Local" },
+      "persona": "A Japanese person who lives near Kitamachi Station.",
+      "levels": [
+        {
+          "tutor": "You are a tourist looking for the City Museum. Speak slowly and simply, and let the local lead. Use the map: the museum is straight down Main Street from the north exit, on the left, about five minutes on foot.",
+          "tasks": [
+            { "id": "where", "title": { "ja": "行き先を聞く", "en": "Ask where they want to go" }, "hints": ["どこへ行きたいか聞きましょう", "Where do you …?", "Where do you want to go?"] },
+            { "id": "straight", "title": { "ja": "まっすぐ行くと伝える", "en": "Say go straight" }, "hints": ["この道をまっすぐ行くと伝えましょう", "Go straight …", "Go straight down this street."] },
+            { "id": "left", "title": { "ja": "左側にあると伝える", "en": "Say it's on the left" }, "hints": ["左側にあると伝えましょう", "It's on …", "It's on the left."] },
+            { "id": "time", "title": { "ja": "かかる時間を伝える", "en": "Say how long it takes" }, "hints": ["歩いて何分か伝えましょう", "It's about … on foot.", "It's about five minutes on foot."] }
+          ]
+        },
+        {
+          "tutor": "You are a tourist looking for the City Museum, speaking at natural pace. Open the scene by thinking aloud to yourself (\"Hmm, which way is it...?\"), not by asking the local, and wait for them to offer help. Then ask how to get there and whether it's far, and check one detail. Use the map: straight down Main Street past the traffic lights, on the left, opposite the post office.",
+          "tasks": [
+            { "id": "offer", "title": { "ja": "声をかける", "en": "Offer to help" }, "hints": ["何か探しているか聞きましょう", "Are you looking for …?", "Are you looking for something?"] },
+            { "id": "directions", "title": { "ja": "目印を使って道を説明する", "en": "Give directions with a landmark" }, "hints": ["信号を目印に説明しましょう", "Go straight down …, past the traffic lights.", "Go straight down Main Street, past the traffic lights."] },
+            { "id": "opposite", "title": { "ja": "建物の場所を説明する", "en": "Say where the building is" }, "hints": ["郵便局の向かいにあると伝えましょう", "The museum is … the post office.", "The museum is opposite the post office."] },
+            { "id": "time", "title": { "ja": "距離を伝える", "en": "Say how far it is" }, "hints": ["歩いてどのくらいか伝えましょう", "It's about a …-minute walk.", "It's about a five-minute walk."] }
+          ]
+        },
+        {
+          "tutor": "You are a friendly tourist, speaking at natural speed with a little small talk. Open the scene by thinking aloud to yourself (\"Hmm, which way is it...?\"), not by asking the local, and wait for them to offer help. You want the City Museum first. Ask how late it's open; it's 3 p.m. now and the map says it closes at 5.",
+          "tasks": [
+            { "id": "check", "title": { "ja": "行き先を確かめて声をかける", "en": "Check where they're going" }, "hints": ["博物館を探しているか確かめましょう", "Are you looking for …? It's not …", "Are you looking for the City Museum? It's not far."] },
+            { "id": "directions", "title": { "ja": "道順をまとめて説明する", "en": "Give the full directions" }, "hints": ["信号と郵便局を目印に、まとめて説明しましょう", "Go straight past … It's on the left, opposite …", "Go straight past the traffic lights. It's on the left, opposite the post office."] },
+            { "id": "hours", "title": { "ja": "閉館時間を伝える", "en": "Tell them when it closes" }, "hints": ["閉館時間と、まだ時間があることを伝えましょう", "It closes at …, so you've got …", "It closes at five, so you've got plenty of time."] },
+            { "id": "lost", "title": { "ja": "迷ったときのことを伝える", "en": "Say what to do if lost" }, "hints": ["迷ったら角のコンビニで聞けばいいと伝えましょう", "If you get lost, just ask at …", "If you get lost, just ask at the convenience store on the corner."] }
+          ],
+          "twist": {
+            "after": "directions",
+            "tutor": "Show the local an old blog post: you also want to eat at Tanaka Ramen on Sakura Street. It closed last year, so let the local tell you and suggest somewhere else (Ramen Hana, also on Sakura Street, is on the map).",
+            "task": { "id": "closed", "title": { "ja": "閉店を伝えて別の店をすすめる", "en": "Say it closed and suggest another" }, "hints": ["その店は閉店したと伝えて、別の店をすすめましょう", "Actually, that place … Ramen Hana on … is …", "Actually, that place closed last year. Ramen Hana on Sakura Street is really good."] }
+          }
+        }
+      ]
+    },
+    {
+      "id": "b",
+      "name": { "ja": "観光客", "en": "Tourist" },
+      "persona": "A tourist visiting Kitamachi, looking for the City Museum.",
+      "levels": [
+        {
+          "tutor": "You are a local who lives near the station. Speak slowly and simply, in short sentences. Give the way to the City Museum from the map: straight down Main Street, on the left, five minutes on foot.",
+          "tasks": [
+            { "id": "ask", "title": { "ja": "場所を聞く", "en": "Ask where it is" }, "hints": ["博物館の場所を聞きましょう", "Excuse me. Where is …?", "Excuse me. Where is the City Museum?"] },
+            { "id": "far", "title": { "ja": "遠いか聞く", "en": "Ask if it's far" }, "hints": ["遠いか聞きましょう", "Is it …?", "Is it far from here?"] },
+            { "id": "thanks", "title": { "ja": "お礼を言う", "en": "Say thank you" }, "hints": ["お礼を言いましょう", "Thank you …!", "Thank you so much!"] }
+          ]
+        },
+        {
+          "tutor": "You are a local who lives near the station, speaking at natural pace. Explain the way with the map, using the traffic lights and the post office as landmarks.",
+          "tasks": [
+            { "id": "ask", "title": { "ja": "ていねいに道を聞く", "en": "Ask the way politely" }, "hints": ["ていねいに道を聞きましょう", "Excuse me, could you tell me the way to …?", "Excuse me, could you tell me the way to the City Museum?"] },
+            { "id": "check", "title": { "ja": "聞いた道を確認する", "en": "Check the directions" }, "hints": ["聞いた道順をくり返して確認しましょう", "So I go … and it's opposite …?", "So I go straight and it's opposite the post office?"] },
+            { "id": "walk", "title": { "ja": "歩いてどのくらいか聞く", "en": "Ask how long the walk is" }, "hints": ["歩いてどのくらいか聞きましょう", "How long does it take to …?", "How long does it take to walk there?"] },
+            { "id": "thanks", "title": { "ja": "お礼を言う", "en": "Thank them" }, "hints": ["しっかりお礼を言いましょう", "Thanks so much for …", "Thanks so much for your help."] }
+          ]
+        },
+        {
+          "tutor": "You are a friendly local, speaking at natural speed. Give the way to the City Museum with the map. When asked about Tanaka Ramen, explain it closed last year and recommend Ramen Hana on Sakura Street.",
+          "tasks": [
+            { "id": "ask", "title": { "ja": "事情を伝えて道を聞く", "en": "Explain and ask the way" }, "hints": ["地図アプリが使えないと伝えて、道を聞きましょう", "I'm trying to find …, but my map app …", "I'm trying to find the City Museum, but my map app isn't working."] },
+            { "id": "landmark", "title": { "ja": "目印を聞く", "en": "Ask for a landmark" }, "hints": ["途中で目印になるものを聞きましょう", "Is there anything I can … on the way?", "Is there anything I can look out for on the way?"] },
+            { "id": "ramen", "title": { "ja": "ラーメン店について聞く", "en": "Ask about a ramen shop" }, "hints": ["ガイドブックのラーメン店を知っているか聞きましょう", "Do you know …? It's in …", "Do you know Tanaka Ramen? It's in my guidebook."] },
+            { "id": "another", "title": { "ja": "ほかの店を聞く", "en": "Ask for another place" }, "hints": ["残念と伝えて、ほかのお店を聞きましょう", "Oh no. Is there another …?", "Oh no. Is there another good ramen place nearby?"] },
+            { "id": "thanks", "title": { "ja": "心をこめてお礼を言う", "en": "Thank them warmly" }, "hints": ["助けてもらったことに、しっかりお礼を言いましょう", "Thank you so much. That's really …", "Thank you so much. That's really kind of you."] }
+          ]
+        }
+      ]
+    }
+  ],
+  "prop": {
+    "label": { "ja": "地図", "en": "Map" },
+    "title": "AROUND KITAMACHI STATION",
+    "sections": [
+      { "heading": "STREETS", "items": [
+        { "name": "Main Street · straight on from the north exit", "key": "Main Street" },
+        { "name": "Traffic lights · first crossing on Main Street", "key": "traffic lights" },
+        { "name": "Sakura Street · shops and restaurants, turn right at the lights", "key": "Sakura Street" }
+      ] },
+      { "heading": "PLACES", "items": [
+        { "name": "City Museum · on the left, 5 min walk", "value": "open 9:00–17:00", "key": "museum" },
+        { "name": "Post office · opposite the museum", "key": "post office" },
+        { "name": "Convenience store · corner of Main St and Sakura St", "key": "convenience store" },
+        { "name": "Ramen Hana · Sakura Street", "key": "Ramen Hana" },
+        { "name": "Tanaka Ramen · Sakura Street (closed last year)", "key": "Tanaka Ramen" }
+      ] }
+    ],
+    "foot": "You are here: Kitamachi Station, north exit"
+  }
+}
