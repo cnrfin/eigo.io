@@ -514,7 +514,14 @@ export default function AiRoom(props: Props) {
         // start the lesson over: slide 1, and the lesson carries on from there (1, 2, 3…), not back to where they were
         review.current = false
         furthest.current = 0
-        return i === 0 ? 'Already on the first slide.' : show(0)
+        // tell the AI tutor plainly: a slide-1 note alone looked like "looking back", and it asked what to look at
+        void act({ kind: 'restarted' })
+        if (i === 0) {
+          slideStart.current = lines.current.length
+          slideShownAt.current = Date.now()
+          return 'Back at the start of the lesson.'
+        }
+        return show(0)
       }
       if (kind === 'return') {
         if (!review.current) return 'Already on the lesson slide.'
@@ -527,7 +534,7 @@ export default function AiRoom(props: Props) {
       review.current = true
       return show(k)
     },
-    [onGo],
+    [onGo, act],
   )
 
   /* ---------- the AI tutor plays the slide's clip ---------- */
@@ -1328,7 +1335,8 @@ export default function AiRoom(props: Props) {
     judgeDo.current = (a, quote, asked) => {
       // guardrails on arrival: the screen changed meanwhile (a command or a tap got there first), the lesson is
       // wrapping up, or the judge acted a moment ago → nothing
-      if (screenAt.current.t > asked || wrapUp.current || closing.current || Date.now() - lastJudged.current < 4000) return
+      // a slide moved meanwhile (a restart, the next slide): that request was already handled
+      if (screenAt.current.t > asked || lastMove.current > asked || wrapUp.current || closing.current || Date.now() - lastJudged.current < 4000) return
       lastJudged.current = Date.now()
       console.info('[eigo] AI action', a.kind, JSON.stringify(quote))
       switch (a.kind) {

@@ -97,7 +97,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
           pickerMode: b.screen?.pickerMode === 'course' ? 'course' : 'rp',
           roleplay: typeof b.screen?.roleplay === 'string' ? b.screen.roleplay.slice(0, 100) : undefined,
           wrappingUp: !!b.screen?.wrappingUp,
-          course: view === 'course' && lesson && c && found ? { title: c.course.title, lesson: found.number, slideNo: i + 1, total, furthest, reviewing } : undefined,
+          course: view === 'course' && lesson && c && found ? { id: String(b.courseId), title: c.course.title, lesson: found.number, slideNo: i + 1, total, furthest, reviewing } : undefined,
         }
       : null
   const judge: Promise<Decision> = screen && recent.length ? decideScreenAction(screen, { courses: cleanNamed(b.courses), scenes: cleanNamed(b.scenes) }, recent) : Promise.resolve(none)

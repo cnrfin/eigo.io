@@ -29,6 +29,7 @@ type Action =
   | { kind: 'lesson'; courseId: string; lessonId: string }
   | { kind: 'not_yet'; missing: string[] }
   | { kind: 'nudge' }
+  | { kind: 'restarted' }
   | { kind: 'time'; left?: number }
   | { kind: 'view'; what: 'closed' | 'board_on' | 'board_off' | 'open_failed' }
   | { kind: 'card'; what: 'saved' | 'chose'; text: string; style?: string }
@@ -96,6 +97,8 @@ function instruction(a: Action, secondsLeft: number): string | null {
       if (a.what === 'picker') return "The list of role-plays (and courses) is now on the student's screen. Briefly suggest one that fits their goals, or let them choose; they tap or say one. Don't start a role-play until it's on their screen."
       if (a.what === 'closed') return "The student closed the role-play screen. Carry on with free talk."
       return null
+    case 'restarted':
+      return "The lesson has started again from the beginning (slide 1), as the student asked. Teach it again from the start, slide by slide, as if it were new: begin with slide 1 now. Don't ask what they want to look at, and don't jump back to where you were."
     case 'nudge':
       if (secondsLeft < 30) return null
       return 'Nobody has spoken for about 9 seconds. You lead the lesson: if the student is in the middle of a task, give a short, friendly prompt; if everything on this slide is done, say now that you’re moving on to the next slide (it appears by itself). In free talk, ask a new question or bring a new topic.'

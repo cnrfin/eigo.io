@@ -24,7 +24,7 @@ export type Screen = {
   /** the whiteboard is over the slides / free talk */
   board: boolean
   /** a course lesson (view 'course') */
-  course?: { title: string; lesson: number; slideNo: number; total: number; furthest: number; reviewing: boolean }
+  course?: { id?: string; title: string; lesson: number; slideNo: number; total: number; furthest: number; reviewing: boolean }
   /** the role-play list's tab (view 'picker') */
   pickerMode?: 'rp' | 'course'
   /** the scene being played (view 'roleplay') */
@@ -119,8 +119,14 @@ export function validateDecision(
       const id = typeof r.id === 'string' && r.id ? r.id : null
       if (id && !lists.courses.some((x) => x.id === id)) return NONE
       const lesson = num(r.lesson)
-      // with a course open, only a different course or a lesson number makes sense
-      if (screen.view === 'course' && !id && !lesson) return NONE
+      if (screen.view === 'course' && c) {
+        // with a course open: only a different course, or a lesson the student NAMED by number. "Start the course
+        // from the beginning" is a restart of this lesson (handled elsewhere), never "lesson 1".
+        const sameCourse = !id || id === c.id
+        if (sameCourse && !lesson) return NONE
+        if (sameCourse && lesson === c.lesson) return NONE
+        if (lesson && !namesLesson(quote, lesson)) return NONE
+      }
       return { action: { kind, courseId: id, lesson: lesson && lesson >= 1 && lesson <= 99 ? lesson : null }, quote }
     }
     case 'start_roleplay': {
@@ -132,12 +138,21 @@ export function validateDecision(
   }
 }
 
+/** the quote says the lesson number itself: "lesson 3", "the third lesson", "レッスン3", "第3課" */
+export function namesLesson(quote: string, n: number): boolean {
+  const words = ['', 'one|first', 'two|second', 'three|third', 'four|fourth', 'five|fifth', 'six|sixth', 'seven|seventh', 'eight|eighth', 'nine|ninth', 'ten|tenth', 'eleven|eleventh', 'twelve|twelfth']
+  const w = words[n] ? `|${words[n]}` : ''
+  const en = new RegExp(`\\blessons?\\s*(?:no\\.?\\s*|number\\s*)?(?:${n}${w})\\b|\\b(?:${n}(?:st|nd|rd|th)${w})\\s+lesson\\b`, 'i')
+  const ja = new RegExp(`(?:レッスン|第)\\s*${n}|${n}\\s*(?:課|回目|つ目)`)
+  return en.test(quote) || ja.test(quote.normalize('NFKC'))
+}
+
 const DESCRIBE: Record<ActionKind, string> = {
   none: '"none": nothing should change (the default).',
   next: '"next": go to the next slide (the student asks to move on, or the tutor says it is moving on now).',
   back: '"back": show an earlier slide again; "slide" = its number.',
   return: '"return": go back to where the lesson was, after looking back at an earlier slide.',
-  open_course: '"open_course": open a course lesson; "id" = a course id from COURSES, or null for the one they were doing; "lesson" = a lesson number if one is named, else null.',
+  open_course: '"open_course": open a course lesson; "id" = a course id from COURSES, or null for the one they were doing; "lesson" = a lesson number ONLY if the student says the number, else null.',
   close_course: '"close_course": close the course (back to free talk, no slides).',
   open_roleplays: '"open_roleplays": show the list of role-plays.',
   start_roleplay: '"start_roleplay": start a role-play; "id" = a scene id from ROLE-PLAYS.',
@@ -168,6 +183,7 @@ Rules:
 - Choose an action only if, in the conversation below, the STUDENT clearly asks for it (in English or Japanese, any wording), or the student accepts the tutor's offer of it ("yes please"), or the TUTOR clearly says it is doing it now (a statement like "I'll open the course now").
 - A question or offer by the tutor that the student hasn't accepted is NOT enough. Talking ABOUT a course or a role-play is not asking to open it. "Next time", goodbyes, "close to…" are not actions.
 - "quote": copy, word for word, the words in the conversation that ask for it (or the student's acceptance). Copy exactly; don't paraphrase.
+- Not yours (choose "none"): starting over or "from the beginning" (of the course or the lesson), going back to an earlier slide, moving on to the next slide. Those are handled separately.
 - If you're not sure, choose "none".`
   const user = `SCREEN NOW: ${describeScreen(screen)}
 ${lists.courses.length ? `COURSES:\n${lists.courses.map((c) => `- id "${c.id}": ${c.title}`).join('\n')}\n` : ''}${lists.scenes.length && allowed.includes('start_roleplay') ? `ROLE-PLAYS:\n${lists.scenes.map((c) => `- id "${c.id}": ${c.title}`).join('\n')}\n` : ''}CONVERSATION since the screen last changed (most recent last):
