@@ -308,6 +308,9 @@ export function RoleplayDone({
   mission,
   took,
   feedback,
+  phrases,
+  isSaved,
+  onSavePhrase,
   onAgain,
   onSwap,
   onNext,
@@ -322,6 +325,10 @@ export function RoleplayDone({
   took: number
   /** the AI tutor's spoken feedback, sentence by sentence as it says them */
   feedback: string[]
+  /** model phrases from the scene worth saving (lib/roleplay/phrases.ts) */
+  phrases: { term: string; ja: string }[]
+  isSaved: (term: string) => boolean
+  onSavePhrase: (term: string, ja: string) => void
   onAgain: () => void
   onSwap: (() => void) | null
   onNext: () => void
@@ -357,6 +364,25 @@ export function RoleplayDone({
           <span className="apn-bl">{t('rpBest')}</span>
           <span className="apn-bm">{mmss(took)}</span>
           <span className="apn-bq">“{best}”</span>
+        </div>
+      )}
+      {phrases.length > 0 && (
+        <div className="apn-phr">
+          <span className="apn-bl">{t('rpPhrases')}</span>
+          {phrases.map((p) => {
+            const saved = isSaved(p.term)
+            return (
+              <div key={p.term} className={`apn-pr${saved ? ' saved' : ''}`}>
+                <span className="apn-prt">
+                  <b>{p.term}</b>
+                  {lang === 'ja' && <span>{p.ja}</span>}
+                </span>
+                <button className="apn-prs" disabled={saved} aria-label={saved ? t('rpSaved') : t('rpSave')} title={saved ? t('rpSaved') : t('rpSave')} onClick={() => onSavePhrase(p.term, p.ja)}>
+                  <Ico name={saved ? 'check' : 'words'} />
+                </button>
+              </div>
+            )
+          })}
         </div>
       )}
       <div className="apn-fb">

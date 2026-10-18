@@ -37,7 +37,7 @@ type Action =
   /** every task on the student's list is ticked: the AI tutor brings the scene to an end */
   | { kind: 'roleplay_tasks_done' }
   /** the mission-complete screen is up: spoken feedback, then swap / again / another */
-  | { kind: 'roleplay_done'; sceneId: string; role: 'a' | 'b'; done: { task: string; said: string }[]; missed: string[]; canSwap: boolean }
+  | { kind: 'roleplay_done'; sceneId: string; role: 'a' | 'b'; done: { task: string; said: string }[]; missed: string[]; canSwap: boolean; phrases?: string[] }
   | { kind: 'panel'; what: 'picker' | 'closed' | 'course' }
 
 const q = (v: unknown, max: number) => (typeof v === 'string' ? v.replace(/\s+/g, ' ').replace(/"/g, "'").trim().slice(0, max) : '')
@@ -100,7 +100,7 @@ function instruction(a: Action, secondsLeft: number): string | null {
       return roleplayInstruction(scene, a.role === 'b' ? 'b' : 'a', a.level === 1 || a.level === 2 ? a.level : 0)
     }
     case 'roleplay_tasks_done':
-      return 'The student has now done every task on their list. Bring the scene to a natural close in character within a line or two, then say "That\'s the end of the role-play!"'
+      return 'The student has now done every task on their list. Bring the scene to a natural close in character within a line or two, then say "That\'s the end of the role-play!" and stop there: wait for the note with how they did before you give any feedback.'
     case 'roleplay_done': {
       const scene = sceneById(a.sceneId)
       if (!scene) return null
@@ -114,7 +114,12 @@ function instruction(a: Action, secondsLeft: number): string | null {
       return `The role-play is over and the mission-complete screen is on the student's screen. Step out of character now and give short spoken feedback, in 3 short sentences (under 30 seconds in all), each one on its own:
 1. One specific thing they did well, quoting their own words.
 2. One thing to try next time: "A more natural way is: <a better version of one of their lines>". Pick a line that really had a mistake or sounded unnatural, never one they already said well, and never sounds like "mm" or "uh". If every line was fine, suggest one useful extra phrase for this situation instead.
-3. Ask if they'd like to ${offer}. Then stop and wait for their answer, however long it takes: don't start anything yourself, don't talk about slides (there are none), and don't fill the silence. Once they answer, say "Let's swap roles", "Let's try it again" or "Let's try another scene" to match what they chose (the screen changes then), or carry on with free talk if they'd rather chat.${missed.length ? `\nThey didn't get to: ${missed.join('; ')}. You can mention one of these as the thing to try.` : ''}
+3. Ask if they'd like to ${offer}. Then stop and wait for their answer, however long it takes: don't start anything yourself, don't talk about slides (there are none), and don't fill the silence. Once they answer, say "Let's swap roles", "Let's try it again" or "Let's try another scene" to match what they chose (the screen changes then), or carry on with free talk if they'd rather chat.${missed.length ? `\nThey didn't get to: ${missed.join('; ')}. You can mention one of these as the thing to try.` : ''}${
+        Array.isArray(a.phrases) && a.phrases.length
+          ? `\nTheir screen also shows these phrases from the scene to save to their word list: ${a.phrases.slice(0, 3).map((x) => `"${q(x, 120)}"`).join('; ')}. If it fits, point them to one in a few words (don't read them all out).`
+          : ''
+      }
+Only correct something they actually said in the list below; never suggest a line they already said.
 What they said for each task:
 ${done || '(nothing recorded)'}`
     }

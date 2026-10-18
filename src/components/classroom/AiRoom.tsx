@@ -15,7 +15,8 @@ import { otherRole, tasksFor, roleOf, type LevelIndex, type RoleId, type Scene }
 import { normText } from '@/lib/ai-tutor/actions'
 import { panelIntent, type PanelIntent } from '@/lib/roleplay/intent'
 import type { SceneSummary } from '@/lib/roleplay/types'
-import { shrinkInto } from './save-fly'
+import { flashSaved, shrinkInto } from './save-fly'
+import { phrasesToSave } from '@/lib/roleplay/phrases'
 import { cueCard, fitDraft, lastExchange, mayHaveCard, mergeCard, mistakeFor, tutorItemId, type Card, type SayStyle } from '@/lib/ai-tutor/cards'
 import { hasJapanese, words as wordsOf } from '@/lib/ai-tutor/voice-match'
 import { Ico } from './Icons'
@@ -62,6 +63,8 @@ const GOODBYE =
   /\b(?:good ?bye|bye(?: for now)?|see you(?:\s+(?:next time|next week|soon|later|again|tomorrow|then)\b|\s*[.!]|\s*$)|take care|until next time|have a (?:good|great|nice|lovely) (?:day|evening|night|week|weekend)|that'?s (?:all|it) for today|thanks?(?: you)? (?:so much )?for (?:today|the lesson|your time))|またね|さようなら|ありがとうございました|お疲れ様でした|おつかれさまでした/i
 /** a goodbye this close to the end means the lesson is wrapping up */
 const GOODBYE_WINDOW_S = 300
+/** the AI tutor ends a role-play scene */
+const END_RP = /\bthat'?s the end of the role[- ]?play\b[.!]?/i
 // "…I'll press play now" (not a question): the classroom plays the slide's clip once the AI tutor stops talking
 const PLAY_CUE = /\b(press(ing)? play|play (it|the clip|the video|the audio|this clip|this video)|playing (it|the clip|the video) now)\b/i
 const RETURN_CUE = /\b(carry on|continue|get back|go back) (with|to) (the|our) lesson\b/i
@@ -272,12 +275,16 @@ export default function AiRoom(props: Props) {
   const rpToken = useRef(0) // which play (a new one, again or swapped, gets a new token)
   const rpFrom = useRef(0) // the transcript line the play started at
   const allDoneSent = useRef(false)
-  const feedbackFrom = useRef(0)
+  /** where the tutor's feedback starts: the line, and the place in it just after "That's the end of the role-play!" */
+  const feedbackFrom = useRef({ line: 0, offset: 0 })
   const hintAskAt = useRef(0)
   const tickDo = useRef<(ticks: { id: string; said: string }[], token: number) => void>(() => {})
-  const completeRp = useRef<() => void>(() => {})
+  const completeRp = useRef<(from?: { line: number; offset: number }) => void>(() => {})
   const hintAsk = useRef<() => void>(() => {})
   const rpPlaying = useRef(false)
+  /** the play in progress or just ended (late ticks still count for it) */
+  const rpCur = useRef<{ token: number; scene: Scene; role: RoleId; level: LevelIndex } | null>(null)
+  const missionRef = useRef<Mission>(newMission())
   /** the role-play list or the mission-complete screen is up: the student is choosing */
   const waitingForChoice = useRef(false)
   /** when the role-play list appeared, and whether it's up now */
@@ -437,7 +444,13 @@ export default function AiRoom(props: Props) {
         if (prepTimer.current) clearTimeout(prepTimer.current)
         prepTimer.current = setTimeout(prepare, 700)
       }
-      if (from === 'tutor' && rpPlaying.current && /\bthat'?s the end of the role[- ]?play\b/i.test(runs.current.tutor.text)) completeRp.current()
+      if (from === 'tutor' && rpPlaying.current && END_RP.test(runs.current.tutor.text)) {
+        // the feedback may follow in the same breath: it starts right after the end phrase
+        const L = lines.current
+        const last = L[L.length - 1]
+        const m = last ? END_RP.exec(last.text) : null
+        completeRp.current(m && last ? { line: L.length - 1, offset: m.index + m[0].length } : { line: L.length, offset: 0 })
+      }
       if (from === 'tutor') {
         if (prepTimer.current) prepare()
         // the card appears as soon as the AI tutor has said the sentence; otherwise the helper looks after the turn
@@ -589,6 +602,7 @@ export default function AiRoom(props: Props) {
   const cued = useRef<Line | null>(null)
   const turnTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const checking = useRef(false)
+  const turnAgain = useRef(false)
   const checkedSig = useRef('')
   /** keep per-slide tracking right when the slide changed some other way (student buttons, a new lesson) */
   const syncSlide = useCallback(() => {
@@ -607,7 +621,11 @@ export default function AiRoom(props: Props) {
    */
   const checkTurn = useCallback(async () => {
     const sid = sessionId.current
-    if (!sid || closing.current || checking.current || wrapUp.current) return
+    if (checking.current) {
+      turnAgain.current = true // one is running: look again as soon as it's back (don't drop this turn)
+      return
+    }
+    if (!sid || closing.current || wrapUp.current) return
     const ref = syncSlide()
     const L = lines.current
     const slideLines = ref ? L.slice(slideStart.current) : []
@@ -638,6 +656,10 @@ export default function AiRoom(props: Props) {
       ...(shot.roleplay ? { roleplay: { ...shot.roleplay, lines: plain(L.slice(rpFrom.current).slice(-24)) } } : {}),
     })
     checking.current = false
+    if (turnAgain.current) {
+      turnAgain.current = false
+      setTimeout(() => void checkTurnRef.current(), 50)
+    }
     if (wrapUp.current || closing.current) return
     // role-play: the student's tasks done now (only for the play that was asked about)
     if (r.ticks?.length && shot.roleplay) tickDo.current(r.ticks, shot.roleplay.token)
@@ -1254,6 +1276,7 @@ export default function AiRoom(props: Props) {
   const beginRoleplay = useCallback(
     (scene: Scene, role: RoleId, level: LevelIndex) => {
       rpToken.current++
+      rpCur.current = { token: rpToken.current, scene, role, level }
       rpFrom.current = lines.current.length
       allDoneSent.current = false
       hintAskAt.current = 0
@@ -1399,6 +1422,7 @@ export default function AiRoom(props: Props) {
   /* ---------- role-plays (phase 3b): ticks, the twist, the end of the scene, hints ---------- */
   const playing = panel?.view === 'roleplay' && panel.phase === 'play' ? panel : null
   useEffect(() => {
+    missionRef.current = mission
     rpPlaying.current = !!playing && panelOn
     waitingForChoice.current = panelOn && (panel?.view === 'picker' || (panel?.view === 'roleplay' && panel.phase === 'done'))
     pickerShown.current = panelOn && panel?.view === 'picker'
@@ -1406,9 +1430,10 @@ export default function AiRoom(props: Props) {
   useEffect(() => {
     // ticks from the turn check: only for this play, only tasks on the list (checked on the server too)
     tickDo.current = (ticks, token) => {
-      if (!playing || token !== rpToken.current) return
+      const cur = rpCur.current
+      if (!cur || token !== rpToken.current || token !== cur.token) return
       setMission((m) => {
-        const L = roleOf(playing.scene, playing.role).levels[playing.level]
+        const L = roleOf(cur.scene, cur.role).levels[cur.level]
         const done = { ...m.done }
         let added = false
         for (const x of ticks) {
@@ -1423,26 +1448,49 @@ export default function AiRoom(props: Props) {
       })
     }
     // the scene is over (the AI tutor said "That's the end of the role-play!", or every task was done a while ago)
-    completeRp.current = () => {
-      if (!playing) return
+    completeRp.current = (from) => {
+      const cur = rpCur.current
+      if (!playing || !cur || cur.token !== rpToken.current) return
+      const token = cur.token
       const finishedAt = Date.now()
       doneAt.current = finishedAt
       setPanel((p) => (p?.view === 'roleplay' && p.phase === 'play' ? { ...p, phase: 'done', finishedAt } : p))
-      feedbackFrom.current = lines.current.length
-      const tasks = tasksFor(roleOf(playing.scene, playing.role).levels[playing.level], mission.twisted)
-      const done = tasks.filter((x) => mission.done[x.id])
-      const missed = tasks.filter((x) => !mission.done[x.id])
-      // progress: every task done, or all but one of a longer list (a missed tick shouldn't hold them back)
-      if (missed.length === 0 || (missed.length === 1 && tasks.length >= 4)) {
-        void recordRoleplay(playing.scene.id, playing.role, playing.level).then(() => void aiRoleplays().then(setRpList))
-      }
-      void act({
-        kind: 'roleplay_done',
-        sceneId: playing.scene.id,
-        role: playing.role,
-        done: done.map((x) => ({ task: x.title.en, said: mission.done[x.id] })),
-        missed: missed.map((x) => x.title.en),
-        canSwap: playing.role === playing.scene.studentRole,
+      const L = lines.current
+      feedbackFrom.current = from ?? { line: L.length, offset: 0 }
+      // one last look at the whole scene before the results: a task done in the last few seconds still counts
+      // (before, a tick that came back a moment after the end was lost, and the feedback asked for what they'd said)
+      const m0 = missionRef.current
+      const sid = sessionId.current
+      const plain = (x: Line[]) => x.map((l) => ({ from: l.from, text: l.text }))
+      const last: Promise<{ id: string; said: string }[]> = sid
+        ? aiTurn(info.bookingId, {
+            sessionId: sid,
+            roleplay: { sceneId: cur.scene.id, role: cur.role, level: cur.level, twisted: m0.twisted, done: Object.keys(m0.done), lines: plain(L.slice(rpFrom.current).slice(-30)) },
+          }).then((r) => r.ticks ?? [])
+        : Promise.resolve([])
+      void Promise.race([last, new Promise<{ id: string; said: string }[]>((r) => setTimeout(() => r([]), 5000))]).then((ticks) => {
+        if (rpToken.current !== token) return
+        if (ticks.length) tickDo.current(ticks, token)
+        const lv = roleOf(cur.scene, cur.role).levels[cur.level]
+        const doneMap = { ...missionRef.current.done }
+        for (const x of ticks) if (!doneMap[x.id]) doneMap[x.id] = x.said
+        const twisted = missionRef.current.twisted || (!!lv.twist && !!doneMap[lv.twist.after])
+        const tasks = tasksFor(lv, twisted)
+        const done = tasks.filter((x) => doneMap[x.id])
+        const missed = tasks.filter((x) => !doneMap[x.id])
+        // progress: every task done, or all but one of a longer list (a missed tick shouldn't hold them back)
+        if (missed.length === 0 || (missed.length === 1 && tasks.length >= 4)) {
+          void recordRoleplay(cur.scene.id, cur.role, cur.level).then(() => void aiRoleplays().then(setRpList))
+        }
+        void act({
+          kind: 'roleplay_done',
+          sceneId: cur.scene.id,
+          role: cur.role,
+          done: done.map((x) => ({ task: x.title.en, said: doneMap[x.id] })),
+          missed: missed.map((x) => x.title.en),
+          canSwap: cur.role === cur.scene.studentRole,
+          phrases: phrasesToSave(cur.scene, cur.role, cur.level, twisted, doneMap).map((p) => p.term),
+        })
       })
     }
     hintAsk.current = () => {
@@ -1878,12 +1926,20 @@ export default function AiRoom(props: Props) {
                   mission={mission}
                   took={(panel.finishedAt ?? now) - mission.startedAt}
                   feedback={lines.current
-                    .slice(feedbackFrom.current)
+                    .map((l, k) => ({ ...l, k }))
+                    .slice(feedbackFrom.current.line)
                     .filter((l) => l.from === 'tutor')
-                    .flatMap((l) => l.text.split(/(?<=[.!?])\s+/))
+                    .map((l) => (l.k === feedbackFrom.current.line ? l.text.slice(feedbackFrom.current.offset) : l.text))
+                    .flatMap((t) => t.split(/(?<=[.!?])\s+/))
                     .map((x) => x.trim())
                     .filter((x) => x.length > 2)
                     .slice(0, 5)}
+                  phrases={phrasesToSave(panel.scene, panel.role, panel.level, mission.twisted, mission.done)}
+                  isSaved={(term) => props.savedIds.has(tutorItemId(term))}
+                  onSavePhrase={(term, ja) => {
+                    saveTerm(term, ja)
+                    flashSaved(document.querySelector<HTMLElement>('[data-words-btn] .cface'))
+                  }}
                   onAgain={() => beginRoleplay(panel.scene, panel.role, panel.level)}
                   onSwap={panel.role === panel.scene.studentRole ? () => beginRoleplay(panel.scene, otherRole(panel.role), panel.level) : null}
                   onNext={() => openPicker('rp')}

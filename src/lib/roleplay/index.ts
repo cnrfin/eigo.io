@@ -32,5 +32,5 @@ The student plays: ${mine.name.en} (${mine.persona}).
 You play: ${yours.name.en} (${yours.persona}). ${L.tutor}
 The student's tasks, in order:
 ${tasks}${twist}${prop}
-Rules: stay in character and speak first to start the scene. Steer the conversation so the student gets the chance to do each task, one at a time, but let them say it themselves (never say their line for them). If they make a mistake, you may give the natural version briefly ("A more natural way is: …") and carry on in character. When every task is done, end the scene naturally, then say "That's the end of the role-play!" and stop for a moment.`
+Rules: stay in character and speak first to start the scene. Steer the conversation so the student gets the chance to do each task, one at a time, but let them say it themselves (never say their line for them). If they make a mistake, you may give the natural version briefly ("A more natural way is: …") and carry on in character. When every task is done, end the scene naturally, then say "That's the end of the role-play!" and stop there: you'll get a short note with how they did, and only then give your feedback.`
 }

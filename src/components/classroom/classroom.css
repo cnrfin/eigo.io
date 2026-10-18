@@ -738,6 +738,14 @@
 .cr .apn-best{margin-top:12px;padding:11px 14px;border-radius:14px;background:var(--inset);display:grid;grid-template-columns:1fr auto;gap:2px 12px;align-items:baseline}
 .cr .apn-bl,.cr .apn-bm{font-size:11.5px;color:var(--text-muted)}.cr .apn-bm{font-variant-numeric:tabular-nums;text-align:right}
 .cr .apn-bq{grid-column:1/-1;font-size:15px;font-weight:600}
+.cr .apn-phr{margin-top:12px;display:flex;flex-direction:column;gap:6px}
+.cr .apn-pr{display:flex;align-items:center;gap:10px;padding:8px 8px 8px 14px;border-radius:14px;background:var(--inset);animation:apn-hin .4s var(--ease)}
+.cr .apn-prt{flex:1;min-width:0;display:flex;flex-direction:column}
+.cr .apn-prt b{font-size:14px;font-weight:600}.cr .apn-prt span{font-size:12px;color:var(--text-muted)}
+.cr .apn-prs{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;flex:none;background:var(--panel);color:var(--text-secondary);transition:transform .12s ease-out,background .2s,color .2s}
+.cr .apn-prs:active{transform:scale(.92)}
+.cr .apn-prs .ico{width:16px;height:16px}
+.cr .apn-pr.saved .apn-prs{background:var(--accent-bg);color:var(--accent)}
 .cr .apn-fb{margin-top:14px;flex:1;min-height:0;display:flex;flex-direction:column;gap:8px}
 .cr .apn-fbl{display:flex;gap:10px;align-items:flex-start;font-size:14px;line-height:1.5;animation:apn-hin .45s var(--ease)}
 .cr .apn-fic{width:24px;height:24px;border-radius:999px;display:grid;place-items:center;flex:none;margin-top:1px;background:var(--accent-bg);color:var(--accent)}
