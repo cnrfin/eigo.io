@@ -41,8 +41,8 @@
           ],
           "twist": {
             "after": "options",
-            "tutor": "Say you'll take the train, and check your watch: it's 10:25 p.m. now. The last train (22:15) has already gone. Let the staff tell you, look disappointed, and choose the airport bus at 22:30 when it's suggested (a taxi costs about ¥20,000).",
-            "task": { "id": "lasttrain", "title": { "ja": "終電が出たことを伝えて代わりを提案する", "en": "Say the last train has gone" }, "hints": ["終電はもう出たと伝えて、バスを提案しましょう", "I'm afraid the last train …, but there's …", "I'm afraid the last train has gone, but there's a bus at 10:30."] }
+            "tutor": "Say you'll take the train, and check your watch: it's 10:25 p.m. now. The last train (22:15) has already gone. Let the staff tell you and look disappointed. The 22:30 bus leaves too soon (you still need to change money), so choose the 23:20 bus when it's suggested (a taxi costs about ¥20,000).",
+            "task": { "id": "lasttrain", "title": { "ja": "終電が出たことを伝えて代わりを提案する", "en": "Say the last train has gone" }, "hints": ["終電はもう出たと伝えて、バスを提案しましょう", "I'm afraid the last train …, but there's …", "I'm afraid the last train has gone, but there's a bus at 11:20."] }
           }
         }
       ]
@@ -71,7 +71,7 @@
           ]
         },
         {
-          "tutor": "You are the information counter staff, speaking at natural speed, kind and calm. It's 10:25 p.m. and the last train (22:15) has gone. When asked, explain the other options from the timetable: the airport bus at 22:30 or 23:20 from bus stop 7, or a taxi for about ¥20,000. When asked about changing money, the currency exchange in the arrivals hall is open until 11 p.m.",
+          "tutor": "You are the information counter staff, speaking at natural speed, kind and calm. It's 10:25 p.m. and the last train (22:15) has gone. When asked, explain the other options from the timetable: the airport bus at 22:30 or 23:20 from bus stop 7 (the 22:30 leaves in five minutes, so suggest the 23:20 if they still need to change money), or a taxi for about ¥20,000. When asked about changing money, the currency exchange in the arrivals hall is open until 11 p.m.",
           "tasks": [
             { "id": "train", "title": { "ja": "電車がまだあるか聞く", "en": "Ask if there's still a train" }, "hints": ["今夜まだ東京駅行きの電車があるか聞きましょう", "Is there still a … tonight?", "Is there still a train to Tokyo Station tonight?"] },
             { "id": "options", "title": { "ja": "ほかの方法を聞く", "en": "Ask about other options" }, "hints": ["ほかに行く方法があるか聞きましょう", "Oh no. What are my …?", "Oh no. What are my other options?"] },
@@ -103,6 +103,6 @@
         { "name": "IC cards: use them on trains, buses and in shops", "key": "IC card|IC cards" }
       ] }
     ],
-    "foot": "Information counter open 7:00–23:00"
+    "foot": "Time now 22:25 · Information counter open 7:00–23:00"
   }
 }

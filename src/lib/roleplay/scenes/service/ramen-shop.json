@@ -65,7 +65,7 @@
           ]
         },
         {
-          "tutor": "You are a friendly member of staff, speaking at natural speed. When asked about pork, explain that the shoyu and miso soups are made with chicken and tonkotsu is pork bone, but every ramen comes with chashu (pork slices); you can leave it out if they ask. When asked, say slurping is completely fine. When they ask for more noodles, kaedama is ¥150, paid to the staff in cash.",
+          "tutor": "You are a friendly member of staff, speaking at natural speed. When asked about pork, explain that the shoyu and miso soups are made with chicken and tonkotsu is pork bone, but every ramen comes with chashu (pork slices); you can leave it out if they ask. When asked, say slurping is completely fine. When they ask for more noodles, kaedama is ¥150: they buy a kaedama ticket from the machine and hand it to you.",
           "tasks": [
             { "id": "diet", "title": { "ja": "食べられないものを伝える", "en": "Say what you don't eat" }, "hints": ["豚肉を食べないと伝えて、食べられるラーメンがあるか聞きましょう", "I don't eat … Is there …?", "I don't eat pork. Is there a ramen without pork?"] },
             { "id": "without", "title": { "ja": "抜いてほしいものを伝える", "en": "Ask to leave something out" }, "hints": ["チャーシュー抜きで頼みましょう", "Could I have the … without …?", "Could I have the shoyu ramen without the chashu, please?"] },

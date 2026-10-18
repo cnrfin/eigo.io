@@ -39,7 +39,7 @@
             { "id": "delivery", "title": { "ja": "荷物の配送について説明する", "en": "Explain luggage delivery" }, "hints": ["次のホテルまで荷物を送れると、料金と日数も伝えましょう", "We can send … It's about … and …", "We can send it for you. It's about 2,000 yen and arrives the next day."] }
           ],
           "twist": {
-            "after": "form",
+            "after": "welcome",
             "tutor": "Say you've arrived early: it's 11:30 a.m. Ask whether you can go up to your room now, because you're very tired. When the clerk explains the options, take the early check-in at 1 p.m. and leave your suitcase at the desk until then.",
             "task": { "id": "early", "title": { "ja": "アーリーチェックインを案内する", "en": "Offer an early check-in" }, "hints": ["チェックインは3時からと伝えて、アーリーチェックインを提案しましょう", "Check-in is from 3, but early check-in at … is …", "Check-in is from 3, but early check-in at 1 is 3,000 yen."] }
           }
@@ -54,7 +54,7 @@
         {
           "tutor": "You are the front desk clerk. Speak slowly and simply, one thing at a time. Greet the guest, ask for their name and find the booking (under Brown), and ask for their passport. Give them the key to room 712. When asked, say breakfast is 6:30 to 9:30 on the second floor, and the elevators are on the right of the lobby.",
           "tasks": [
-            { "id": "checkin", "title": { "ja": "チェックインしたいと伝える", "en": "Say you're checking in" }, "hints": ["チェックインしたいと伝えましょう", "I'd like to …, please.", "Hi, I'd like to check in, please."] },
+            { "id": "checkin", "title": { "ja": "チェックインしたいと伝える", "en": "Say you're checking in" }, "hints": ["チェックインしたいと伝えましょう", "Hi, I'd like to …, please.", "Hi, I'd like to check in, please."] },
             { "id": "name", "title": { "ja": "名前を伝える", "en": "Give your name" }, "hints": ["予約の名前を伝えましょう", "My name is …", "My name is Alex Brown."] },
             { "id": "breakfast", "title": { "ja": "朝食の時間を聞く", "en": "Ask what time breakfast is" }, "hints": ["朝食の時間を聞きましょう", "What time is …?", "What time is breakfast?"] },
             { "id": "elevator", "title": { "ja": "エレベーターの場所を聞く", "en": "Ask where the elevator is" }, "hints": ["エレベーターの場所を聞きましょう", "Where is …?", "Where is the elevator, please?"] }

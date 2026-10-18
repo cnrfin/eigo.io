@@ -34,7 +34,7 @@
           "tutor": "You are a chatty traveller from abroad, speaking at natural speed; this is your first time in a bar like this. Open by coming in, sitting at the counter and asking how this kind of bar works. You like whisky: ask for a recommendation for something Japanese. You're in Osaka for three days. Later, notice the karaoke machine and ask about it.",
           "tasks": [
             { "id": "system", "title": { "ja": "お店のしくみを説明する", "en": "Explain how the bar works" }, "hints": ["チャージとおつまみのことを説明しましょう", "There's a … table charge, and it comes with …", "There's a 1,000 yen table charge, and it comes with snacks."] },
-            { "id": "recommend", "title": { "ja": "理由をつけておすすめする", "en": "Recommend a drink, with a reason" }, "hints": ["好みに合わせて、理由も添えてすすめましょう", "If you like whisky, try … It's …", "If you like whisky, try a highball. It's light and refreshing."] },
+            { "id": "recommend", "title": { "ja": "理由をつけておすすめする", "en": "Recommend a drink, with a reason" }, "hints": ["好みに合わせて、理由も添えてすすめましょう", "If you like whisky, try … It's …", "If you like whisky, try our Japanese whisky. It's really smooth."] },
             { "id": "chat", "title": { "ja": "旅の話で会話を広げる", "en": "Keep the conversation going" }, "hints": ["滞在期間や行った場所を聞きましょう", "How long are you …? Have you been to …?", "How long are you in Osaka? Have you been to Dotonbori yet?"] },
             { "id": "karaoke", "title": { "ja": "カラオケを説明して誘う", "en": "Explain the karaoke" }, "hints": ["料金を伝えて、歌うか聞きましょう", "It's … a song. Would you like to …?", "It's 200 yen a song. Would you like to sing one?"] }
           ]
@@ -83,8 +83,8 @@
       { "heading": "DRINKS", "items": [
         { "name": "Bottled beer", "value": "¥700", "key": "beer" },
         { "name": "Highball (whisky and soda)", "value": "¥600", "key": "highball|highballs" },
-        { "name": "Japanese whisky · one shot", "value": "¥900", "key": "Japanese whisky|on the rocks" },
-        { "name": "Shochu · with water or soda", "value": "¥600", "key": "shochu" },
+        { "name": "Japanese whisky · one shot", "value": "¥900", "key": "Japanese whisky" },
+        { "name": "Shochu · with water, soda or on the rocks", "value": "¥600", "key": "shochu|on the rocks" },
         { "name": "Umeshu (plum wine)", "value": "¥600", "key": "umeshu|plum wine" },
         { "name": "Oolong tea · soft drinks", "value": "¥400", "key": "oolong|soft drink|soft drinks" }
       ] },

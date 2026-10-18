@@ -42,7 +42,7 @@
           "twist": {
             "after": "recommend",
             "tutor": "Before the massage starts, mention that your lower back is a little sore: you hurt it lifting your suitcase yesterday. It's not serious, but you're worried about the massage. Ask whether it's okay.",
-            "task": { "id": "back", "title": { "ja": "腰の痛みに対応する", "en": "Respond to the sore back" }, "hints": ["腰は強く押さないと伝えて、安心してもらいましょう", "Thank you for telling me. We'll use … on …", "Thank you for telling me. We'll use soft pressure on your lower back."] }
+            "task": { "id": "back", "title": { "ja": "腰の痛みに対応する", "en": "Respond to the sore back" }, "hints": ["腰はさけて施術すると伝えて、安心してもらいましょう", "Thank you for telling me. We'll … your lower back today.", "Thank you for telling me. We'll avoid your lower back today."] }
           }
         }
       ]
@@ -71,11 +71,11 @@
           ]
         },
         {
-          "tutor": "You are the salon staff, speaking at natural speed, kind and professional. Ask about the customer's needs and recommend a treatment from the menu. When they mention a problem, thank them for telling you, adjust the treatment (soft pressure, careful with that area) and ask them to tell you if anything hurts. After the massage, suggest drinking some water.",
+          "tutor": "You are the salon staff, speaking at natural speed, kind and professional. Ask about the customer's needs and recommend a treatment from the menu. When they mention a problem, thank them for telling you, adjust the treatment (stay away from that area completely) and ask them to tell you if anything hurts. After the massage, suggest drinking some water.",
           "tasks": [
             { "id": "tired", "title": { "ja": "体の状態を伝える", "en": "Say how you feel" }, "hints": ["一日歩いて、足が疲れていると伝えましょう", "I've been … all day, and my … are …", "I've been walking all day, and my legs are really tired."] },
             { "id": "back", "title": { "ja": "腰が痛いと伝える", "en": "Mention your sore back" }, "hints": ["腰が少し痛いと伝えて、大丈夫か聞きましょう", "Also, my lower back is a bit … Is that …?", "Also, my lower back is a bit sore. Is that a problem?"] },
-            { "id": "gentle", "title": { "ja": "腰はやさしくとお願いする", "en": "Ask them to be gentle there" }, "hints": ["腰はやさしくしてほしいとお願いしましょう", "Could you go … on my …?", "Could you go gently on my lower back, please?"] },
+            { "id": "avoid", "title": { "ja": "腰はさけてほしいとお願いする", "en": "Ask them to avoid that area" }, "hints": ["腰はさけてほしいとお願いしましょう", "Could you … my lower back, please?", "Could you avoid my lower back, please?"] },
             { "id": "after", "title": { "ja": "感想を伝えてお礼を言う", "en": "Thank them and say how you feel" }, "hints": ["感想を伝えてお礼を言いましょう", "That was … I feel …", "That was wonderful. I feel so much better."] }
           ]
         }

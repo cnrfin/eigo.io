@@ -27,7 +27,7 @@
             { "id": "greet", "title": { "ja": "声をかける", "en": "Offer help" }, "hints": ["何かあれば声をかけてと伝えましょう", "Hi! Let me know if …", "Hi! Let me know if you need any help."] },
             { "id": "size", "title": { "ja": "別のサイズを持ってくると申し出る", "en": "Offer another size" }, "hints": ["大きいサイズを持ってくると申し出ましょう", "Shall I get you …?", "Shall I get you a large?"] },
             { "id": "colour", "title": { "ja": "色について答える", "en": "Answer about colours" }, "hints": ["値札を見て、ほかの色を伝えましょう", "It comes in … and …", "It comes in blue and black."] },
-            { "id": "taxfree", "title": { "ja": "免税の手続きを案内する", "en": "Explain tax-free shopping" }, "hints": ["免税になると伝えて、パスポートをお願いしましょう", "You can buy it tax-free. Could I see …?", "You can buy it tax-free. Could I see your passport?"] }
+            { "id": "taxfree", "title": { "ja": "免税の手続きを案内する", "en": "Explain tax-free shopping" }, "hints": ["出国時に税金が戻ると伝えて、パスポートをお願いしましょう", "You can get the tax back … Could I see …?", "You can get the tax back when you leave Japan. Could I see your passport?"] }
           ]
         },
         {
@@ -40,7 +40,7 @@
           ],
           "twist": {
             "after": "taxfree",
-            "tutor": "Say you left your passport at the hotel; you only have a photo of it on your phone. Ask whether that's okay. When the staff explains it isn't, decide to pay the full price now, because you're leaving Tokyo tonight.",
+            "tutor": "Say you left your passport at the hotel; you only have a photo of it on your phone. Ask whether that's okay. When the staff explains it isn't, decide to buy it without the tax refund, because you're leaving Tokyo tonight.",
             "task": { "id": "nopassport", "title": { "ja": "パスポートがないときの対応をする", "en": "Handle the missing passport" }, "hints": ["写真では免税にできないとていねいに伝えて、別の方法を提案しましょう", "I'm sorry, we need the … You could …", "I'm sorry, we need the actual passport. You could come back with it later."] }
           }
         }
@@ -96,7 +96,8 @@
         { "name": "Gift wrapping", "value": "Free", "key": "gift-wrap|gift wrapping|gift wrapped" }
       ] },
       { "heading": "GOOD TO KNOW", "items": [
-        { "name": "Tax-free: ¥5,500 or more in total (incl. tax)", "key": "tax-free" },
+        { "name": "Tax-free for visitors: ¥5,500 or more in total (incl. tax)", "key": "tax-free" },
+        { "name": "Pay the full price now · get the tax back when you leave Japan", "key": "tax back|tax refund" },
         { "name": "Bring your original passport (no photos or copies)", "key": "passport" },
         { "name": "Fitting room · up to 3 items", "key": "fitting room|try it on" }
       ] }
