@@ -126,5 +126,6 @@ At most 4 sections, about 6 items each. `key` (optional) is the word that lights
 - [ ] Each is listed in your folder's `index.ts`, in the order of `docs/roleplay-scenes.md`
 - [ ] `npm run check:roleplay` passes with no errors
 - [ ] `npx eslint src/lib/roleplay` passes
+- [ ] `npm run test:classroom -- unit` passes (it checks every scene from the app's side too)
 - [ ] You read through each scene once as a learner: every task can be done, every hint 3 is something you'd really say, and the Japanese reads naturally
 - [ ] Nothing outside your category folder changed

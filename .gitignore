@@ -49,3 +49,6 @@ next-env.d.ts
 /mockups/
 /supabase/images/old/
 /supabase/pron-audit-*
+
+# classroom test suite build output
+/tests/classroom/.build/
