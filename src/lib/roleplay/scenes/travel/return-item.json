@@ -87,11 +87,11 @@
       { "heading": "YESTERDAY · 4:32 P.M.", "items": [
         { "name": "Wool sweater · navy · M", "value": "$59.00", "key": "sweater" },
         { "name": "T-shirt · white · L", "value": "$25.00", "key": "T-shirt" },
-        { "name": "Total · paid by card", "value": "$84.00", "key": "card" }
+        { "name": "Total · paid by card", "value": "$84.00", "key": "total|paid by card" }
       ] },
       { "heading": "RETURNS", "items": [
         { "name": "Refund or exchange within 30 days with this receipt", "key": "refund" },
-        { "name": "Refunds go back on the card you paid with" },
+        { "name": "Refunds go back on the card you paid with", "key": "back on" },
         { "name": "Exchange for any size or colour", "key": "exchange" }
       ] }
     ],

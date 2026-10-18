@@ -13,11 +13,11 @@
       "persona": "A Japanese traveller flying home to Tokyo with one suitcase.",
       "levels": [
         {
-          "tutor": "You are the airline check-in staff. Speak slowly, in short simple sentences, one thing at a time. Ask for their passport, ask how many bags, and ask window or aisle (window is 14A, aisle is 14C). Answer simply when they ask about the gate (gate 23).",
+          "tutor": "You are the airline check-in staff. Speak slowly, in short simple sentences, one thing at a time. Ask for their passport, ask how many bags, and ask window or aisle; the free seat is window seat 14A. Answer simply when they ask about the gate (gate 23).",
           "tasks": [
             { "id": "passport", "title": { "ja": "パスポートを渡す", "en": "Hand over your passport" }, "hints": ["パスポートを渡しましょう", "Here's my …", "Here's my passport."] },
             { "id": "bags", "title": { "ja": "預ける荷物の数を伝える", "en": "Say how many bags" }, "hints": ["預ける荷物の数を伝えましょう", "Just … bag.", "Just one bag."] },
-            { "id": "seat", "title": { "ja": "座席の希望を伝える", "en": "Choose a seat" }, "hints": ["窓側か通路側か伝えましょう", "Window / Aisle, please.", "Window, please."] },
+            { "id": "seat", "title": { "ja": "窓側の席をお願いする", "en": "Ask for a window seat" }, "hints": ["窓側の席がいいと伝えましょう", "A window …, please.", "A window seat, please."] },
             { "id": "gate", "title": { "ja": "搭乗口を聞く", "en": "Ask which gate" }, "hints": ["搭乗口を聞きましょう", "Which gate …?", "Which gate is it?"] }
           ]
         },
@@ -87,7 +87,7 @@
     "title": "SKY PACIFIC · Boarding pass",
     "sections": [
       { "heading": "FLIGHT", "items": [
-        { "name": "Flight", "value": "SP 102" },
+        { "name": "Flight", "value": "SP 102", "key": "SP 102" },
         { "name": "From → To", "value": "Vancouver → Tokyo", "key": "Tokyo" },
         { "name": "Departure", "value": "14:20", "key": "departure" }
       ] },

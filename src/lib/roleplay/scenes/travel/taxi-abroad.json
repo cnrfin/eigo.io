@@ -31,7 +31,7 @@
           ]
         },
         {
-          "tutor": "You are a friendly, chatty taxi driver, speaking at natural speed. Chat about the city and give local tips when asked (Riverside Market is great for lunch). Use the map for times and prices, and give them a receipt if they ask.",
+          "tutor": "You are a friendly, chatty taxi driver, speaking at natural speed. It's 9:35: the museum is about 15 minutes away, plus a few minutes of marathon traffic, so you should just make it by ten. Chat about the city and give local tips when asked (Riverside Market is great for lunch). Use the map for times and prices, and give them a receipt if they ask.",
           "tasks": [
             { "id": "where", "title": { "ja": "行き先と到着したい時間を伝える", "en": "Say where and when to arrive" }, "hints": ["行き先と、何時までに着きたいか伝えましょう", "I need to be at … by … Will we …?", "I need to be at the City Museum by ten. Will we make it?"] },
             { "id": "tip", "title": { "ja": "地元のおすすめを聞く", "en": "Ask for a local tip" }, "hints": ["近くでおすすめの食事場所を聞きましょう", "Is there anywhere good to … near …?", "Is there anywhere good to eat near the museum?"] },

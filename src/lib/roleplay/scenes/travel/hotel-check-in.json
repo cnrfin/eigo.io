@@ -84,17 +84,17 @@
     "title": "HARBOUR VIEW HOTEL · Booking confirmation",
     "sections": [
       { "heading": "YOUR BOOKING", "items": [
-        { "name": "Booking number", "value": "HV-4821" },
+        { "name": "Booking number", "value": "HV-4821", "key": "booking number" },
         { "name": "Guest name", "value": "Tanaka", "key": "Tanaka" },
         { "name": "Room", "value": "Double room, non-smoking", "key": "double" },
         { "name": "Stay", "value": "3 nights", "key": "three nights" },
-        { "name": "Breakfast", "value": "Included", "key": "breakfast" }
+        { "name": "Breakfast", "value": "Included", "key": "included" }
       ] },
       { "heading": "HOTEL INFORMATION", "items": [
         { "name": "Check-in", "value": "from 3:00 p.m.", "key": "check-in" },
         { "name": "Check-out", "value": "by 11:00 a.m.", "key": "check-out" },
         { "name": "Late check-out until 1:00 p.m.", "value": "$30", "key": "late" },
-        { "name": "Breakfast", "value": "6:30–10:00 · ground floor" },
+        { "name": "Breakfast", "value": "6:30–10:00 · ground floor", "key": "breakfast" },
         { "name": "Wi-Fi", "value": "Free · password on your key card", "key": "Wi-Fi" }
       ] }
     ],

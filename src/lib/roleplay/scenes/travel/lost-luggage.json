@@ -89,7 +89,7 @@
       ] },
       { "heading": "YOUR BAG", "items": [
         { "name": "Type and size", "value": "suitcase / backpack · small / medium / large", "key": "suitcase" },
-        { "name": "Colour", "key": "colour" },
+        { "name": "Colour", "key": "colour|color" },
         { "name": "Anything that makes it easy to spot (strap, sticker…)", "key": "strap" },
         { "name": "What's inside", "key": "inside" }
       ] },
