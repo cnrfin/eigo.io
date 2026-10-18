@@ -1,6 +1,6 @@
 /**
  * Role-plays (ai-panel-implementation-plan.md, phase 3; design: mockups/ai-roleplay-mission.html and
- * mockups/roleplay-picker.html). One JSON file per scene in src/lib/roleplay/scenes/.
+ * mockups/roleplay-picker.html). One JSON file per scene in src/lib/roleplay/scenes/<category>/ (how to write one: docs/roleplay-authoring.md).
  *
  * Every scene has two roles. The student plays `studentRole` first; after the mission they can swap.
  * Each role has three levels (初級 / 中級 / 上級): the student's tasks, how the AI tutor plays its character,

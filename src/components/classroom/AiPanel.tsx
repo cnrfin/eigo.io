@@ -77,8 +77,8 @@ export function PanelPicker({
     mode === 'rp' ? (
       rp && (
         <>
-          <div className="apn-reel" key={rp.id}>
-            <img src={rp.image} alt="" />
+          <div className={`apn-reel${rp.image ? '' : ' ph'}`} key={rp.id}>
+            {rp.image && <img src={rp.image} alt="" />}
           </div>
           <div className="apn-info">
             <span className="apn-kick">
@@ -125,7 +125,7 @@ export function PanelPicker({
         {mode === 'rp'
           ? (scenes ?? []).map((s) => (
                 <button key={s.id} className={`apn-row${s.id === rp?.id ? ' on' : ''}`} aria-pressed={s.id === rp?.id} onClick={() => onPick(s.id)}>
-                  <img src={s.image} alt="" />
+                  {s.image ? <img src={s.image} alt="" /> : <span className="apn-ph" />}
                   <span className="apn-rt">
                     <b>{s.title[lang]}</b>
                     <span>{rpLine(s)}</span>

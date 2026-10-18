@@ -1,13 +1,18 @@
-import cafeAbroad from './scenes/cafe-abroad.json'
-import izakayaGuests from './scenes/izakaya-guests.json'
-import workIntro from './scenes/work-intro.json'
+import { scenes as travel } from './scenes/travel'
+import { scenes as help } from './scenes/help'
+import { scenes as service } from './scenes/service'
+import { scenes as friends } from './scenes/friends'
+import { scenes as business } from './scenes/business'
 import { LEVEL_NAMES, otherRole, roleOf, type LevelIndex, type RoleId, type Scene } from './types'
 
 // the scene files are server-side (and in the role-play API); the browser imports './types' only
 export * from './types'
 
-/** Every role-play, in the order the picker lists them. Add a scene: write its JSON in scenes/ and list it here. */
-export const SCENES: Scene[] = [cafeAbroad, izakayaGuests, workIntro] as Scene[]
+/**
+ * Every role-play, in the order the pickers list them: by category, then as each category's folder lists them.
+ * Add a scene: its JSON goes in scenes/<category>/ and is listed in that folder's index.ts (docs/roleplay-authoring.md).
+ */
+export const SCENES: Scene[] = [...travel, ...help, ...service, ...friends, ...business]
 
 export const sceneById = (id: string | null | undefined): Scene | null => SCENES.find((s) => s.id === id) ?? null
 
