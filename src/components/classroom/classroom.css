@@ -852,7 +852,7 @@
 .cr .apn-btn .ico.flip{transform:scaleX(-1)}
 .cr .apn-acts .apn-end{margin-left:auto}
 .cr .apn-sum{margin-top:14px;display:flex;flex-direction:column;gap:6px}
-.cr .apn-sr{display:flex;align-items:flex-start;gap:10px;padding:9px 12px;border-radius:12px;background:var(--inset)}
+.cr .apn-sr{display:flex;align-items:flex-start;gap:10px;padding:9px 12px;border-radius:12px;background:var(--inset);animation:wlc-in .4s var(--ease) both}
 .cr .apn-sic{width:22px;height:22px;border-radius:999px;display:grid;place-items:center;flex:none;background:var(--accent);color:#0d1a16;margin-top:1px}
 .cr .apn-sic .ico{width:12px;height:12px}
 .cr .apn-sr.miss .apn-sic{background:transparent;border:2px solid var(--edge)}

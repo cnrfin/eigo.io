@@ -233,10 +233,9 @@ export type StudentAction =
   | WelcomeAction
 
 export type WelcomeAction =
-  /** the welcome talk: the role-play chosen for them (the tutor suggests it), and time reminders (wrap the scene up /
-   *  move on to the voice command) */
-  | { kind: 'welcome'; step: 'pick'; sceneId: string }
-  | { kind: 'welcome'; step: 'wrap' | 'command' }
+  /** the welcome talk's time reminders, only if a part runs late: suggest the role-play / wrap the scene up / move on
+   *  to the voice command */
+  | { kind: 'welcome'; step: 'suggest' | 'wrap' | 'command' }
 
 /* ---------- the welcome call (lib/classroom/welcome.ts, /api/classroom/[id]/ai-welcome) ---------- */
 async function welcomeCall<T>(bookingId: string, body: Record<string, unknown>, fallback: T): Promise<T> {

@@ -64,12 +64,10 @@ ok('one word missed in a long phrase is fine', heardPhrase("Let's do massage sal
 ok('"OK" or "let\'s do it" no longer opens it', !heardPhrase('OK', phrase).whole && !heardPhrase("let's do it", phrase).whole)
 
 /* ---- the director: only time limits and fallbacks (the tutor moves it on) ---- */
-const snap = (o: Partial<WelcomeSnap>): WelcomeSnap => ({ step: 'about', elapsed: 30, left: 270, stepAge: 10, pickReady: false, pickAge: null, factsIn: false, wrapSent: false, commandAge: null, ...o })
+const snap = (o: Partial<WelcomeSnap>): WelcomeSnap => ({ step: 'about', elapsed: 30, left: 270, stepAge: 10, suggestSent: false, wrapSent: false, commandAge: null, ...o })
 const to = (o: Partial<WelcomeSnap>) => JSON.stringify(welcomeNext(snap(o)))
-ok('about: the tutor leads; nothing while the facts come in', welcomeNext(snap({ elapsed: 60, pickReady: true })) === null)
-ok('about: the role-play for them, once the three facts are in (not before 0:50)', welcomeNext(snap({ elapsed: 40, pickReady: true, factsIn: true })) === null && to({ elapsed: WELCOME_AT.pickMin, pickReady: true, factsIn: true }) === '{"do":"sendPick"}')
-ok('about: by 1:40 with whatever there is', to({ elapsed: WELCOME_AT.pickBy }) === '{"do":"sendPick"}')
-ok('about: the card by itself 30 s after the note, if the tutor hasn\'t taught the phrase', welcomeNext(snap({ elapsed: 90, pickAge: 20 })) === null && to({ elapsed: 100, pickAge: WELCOME_AT.cardAfter }) === '{"to":"suggest"}')
+ok('about: the tutor leads; nothing from the classroom', welcomeNext(snap({ elapsed: 90 })) === null)
+ok('about: no role-play by 1:45 → one reminder', to({ elapsed: WELCOME_AT.suggestBy }) === '{"do":"promptSuggest"}' && welcomeNext(snap({ elapsed: 120, suggestSent: true })) === null)
 for (const s2 of ["Let's do a role-play", "let's do a roleplay", 'Can we do the role play?', "Please say: Let's do a role-play.", 'ロールプレイをやりたい']) ok(`the phrase: "${s2}"`, SAYS_ROLEPLAY.test(s2))
 for (const s2 of ["Let's do a", 'I like role-plays', 'What is a role-play']) ok(`not the phrase: "${s2}"`, !SAYS_ROLEPLAY.test(s2))
 ok('the phrase is always the same', ROLEPLAY_PHRASE === "Let's do a role-play")

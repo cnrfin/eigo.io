@@ -101,13 +101,7 @@ const emit = async (ev) => { await act(async () => { channel.dispatchEvent(new w
   check('the last check ticks "confirm": the results include it, nothing missed', dn.includes('so two draft beers') && dn.includes('"missed":[]'), dn)
   check('…and the summary shows all 3 done, with their words', document.querySelectorAll('.apn-sr.miss').length === 0 && document.querySelectorAll('.apn-sr').length === 3 && document.querySelectorAll('.apn-sr .apn-said').length === 3)
   check('progress recorded', g.log.some((l) => l.startsWith('fetch POST') && l.includes('/api/roleplay ')))
-  // phrases to save
-  const pr = [...document.querySelectorAll('.apn-pr')]
-  check('phrases to keep are shown (up to 3)', pr.length >= 1 && pr.length <= 3 && txt('.apn-phr .apn-bl') === '覚えておきたいフレーズ', txt('.apn-phr'))
-  check('the tutor is told about them', dn.includes('"phrases":['))
-  const w0 = g.log.filter((l) => l.includes('/words') && l.startsWith('fetch POST')).length
-  await T.click(pr[0].querySelector('.apn-prs')); await T.tick(200)
-  check('saving a phrase saves it to the word list', g.log.filter((l) => l.includes('/words') && l.startsWith('fetch POST')).length === w0 + 1, g.log.filter((l) => l.includes('/words')).slice(-2))
+  check('no generic example phrases on the complete screen (only the summary)', !T.$('.apn-pr') && !dn.includes('"phrases"'))
   g.turnDelay = 0
   console.log(fails ? `${fails} FAILED` : 'all passed')
   process.exit(fails ? 1 : 0)

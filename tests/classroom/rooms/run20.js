@@ -78,11 +78,9 @@ const emit = async (ev) => { await act(async () => { channel.dispatchEvent(new w
   await say('you', "I'm from Tokyo. I'm an aromatherapist. I like Netflix and cafés, and I study English to talk with customers.", 7000); await T.tick(2400)
   check('the helper picks out the facts, quietly (for the end screen)', fetched('"op":"about"').length >= 1 && !T.$('.wlc-row'))
   await T.tick(1500)
-  // 3) the role-play is chosen for them in the background, and the tutor gets one note with it
-  const pk = posts('welcome')
-  check('the tutor is told the role-play chosen for them (from their job)', pk.length === 1 && pk[0].includes('"step":"pick"') && pk[0].includes('"sceneId":"salon-massage"'), pk)
-  check('no card until the tutor teaches the phrase', !T.$('.wlc-say'))
-  await say('ai', 'Since you work with customers, a salon role-play suits you. In the classroom, you can open things just by asking. Please say, Let\'s do a role-play.', 12000); await T.tick(1200)
+  // 3) the role-play is chosen for them in the background; the tutor never waits for a note about it
+  check('no note about it, and no card until the tutor teaches the phrase', posts('welcome').length === 0 && !T.$('.wlc-say'), posts('welcome'))
+  await say('ai', 'I have a short role-play for you. In the classroom, you can open things just by asking. Please say, Let\'s do a role-play.', 12000); await T.tick(1200)
   check('the card: the scene chosen for them, and always "Let\'s do a role-play"', txt('.wlc-st b').startsWith('マッサージ') && txt('.wlc-p') === "Let's do a role-play", txt('.aic'))
   await say('you', "Let's do a", 15000); await T.tick(2500)
   check('half the phrase opens nothing', !T.$('.apn-mission') && document.querySelectorAll('.wlc-p span.on').length >= 3, txt('.wlc-p'))
@@ -113,7 +111,7 @@ const emit = async (ev) => { await act(async () => { channel.dispatchEvent(new w
   // 6) the Q&A: the preview goes
   await say('ai', 'That is what a course lesson looks like. Do you have any questions about eigo?', 45000); await T.tick(800)
   check('the Q&A: the preview and the card go', !T.$('.app.wl-preview') && !T.$('.wlc-tip'))
-  check('the tutor led it all: no reminders were needed (only the role-play note)', posts('welcome').length === 1, posts('welcome'))
+  check('the tutor led it all: no reminders or notes needed', posts('welcome').length === 0, posts('welcome'))
   check('no time notes but the goodbye', posts('time').length === 0)
   console.log(fails ? `${fails} FAILED` : 'all passed')
   process.exit(fails ? 1 : 0)
