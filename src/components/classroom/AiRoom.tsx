@@ -865,8 +865,10 @@ export default function AiRoom(props: Props) {
       // (not a goodbye in a role-play, said in character: "See you! Take care!" once froze the welcome talk's last
       // two minutes, and the classroom stopped following the tutor. In the welcome talk, only after its goodbye note)
       const inScene = rpPlaying.current || END_RP.test(line.text)
+      // (nor a goodbye the tutor quotes or corrects: "A more natural way is: yeah, see you next time")
+      const quoted = (x: string) => x.replace(/["“][^"”]*["”]/g, ' ').replace(/\b(?:natural way (?:is|would be)|you can say|you could say|we (?:usually )?say|try saying)\b[^.!?]*[.!?]?/gi, ' ')
       const early = welcome && !noted.current.has('0')
-      if (!wrapUp.current && !inScene && !early && GOODBYE.test(line.text) && endsAt.current - (Date.now() + clockOffset) <= GOODBYE_WINDOW_S * 1000) {
+      if (!wrapUp.current && !inScene && !early && GOODBYE.test(quoted(line.text)) && endsAt.current - (Date.now() + clockOffset) <= GOODBYE_WINDOW_S * 1000) {
         wrapUp.current = true
         if (turnTimer.current) clearTimeout(turnTimer.current)
       }
