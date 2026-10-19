@@ -61,7 +61,7 @@ import { normText } from '@/lib/ai-tutor/actions'
 import { panelIntent, type PanelIntent } from '@/lib/roleplay/intent'
 import type { SceneSummary } from '@/lib/roleplay/types'
 import { shrinkInto } from './save-fly'
-import { cueCard, fitDraft, lastExchange, mergeCard, mistakeFor, tutorItemId, type Card, type SayStyle } from '@/lib/ai-tutor/cards'
+import { cueCard, cueSentence, fitDraft, lastExchange, letters, mergeCard, mistakeFor, tutorItemId, type Card, type SayStyle } from '@/lib/ai-tutor/cards'
 import { hasJapanese, sameWords, words as wordsOf } from '@/lib/ai-tutor/voice-match'
 import { Ico } from './Icons'
 import SlideStage from './SlideStage'
@@ -516,7 +516,8 @@ export default function AiRoom(props: Props) {
   /**
    * The AI tutor has just said the corrected / English sentence. Show the card complete: at once when the
    * prepared card is about that sentence; otherwise as soon as the helper has the details (it's asked now),
-   * and after 3 s at the latest (then without the reason line, which is added if it comes later).
+   * and after 0.8 s at the latest (then without the reason line, added when it comes: at 3 s, the card often
+   * came after the student's try).
    */
   const cueNow = useCallback(
     (line: Line) => {
@@ -532,17 +533,30 @@ export default function AiRoom(props: Props) {
         return
       }
       const i = L.lastIndexOf(line)
+      // what they said before it, however the transcript split it ("I'm an aroma" + "therapist" when they paused):
+      // if it already had the tutor's sentence, there was nothing to correct (no card, and nothing saved)
+      const cs = cueSentence(line.text)
+      const before = L.slice(Math.max(0, i - 6), i).filter((l) => l.from === 'student')
+      if (cs && !cs.say && letters(before.map((l) => l.text).join(' ')).includes(letters(cs.sentence))) {
+        cardFor.current = line
+        for (const l of before) handled.current.add(l)
+        return
+      }
       const recent = L.slice(Math.max(0, i - 5), i + 1).map((l) => ({ from: l.from, text: l.text }))
       const ex = lastExchange(recent)
       // the student's line the correction is about: not always the last one (role-play feedback; "mm")
       const wider = L.slice(Math.max(0, i - 14), i).map((l) => ({ from: l.from, text: l.text }))
-      const local = cueCard(hasJapanese(ex.student) ? ex.student : mistakeFor(wider, ex.tutor) || ex.student, ex.tutor)
+      const mistake = hasJapanese(ex.student) ? ex.student : mistakeFor(wider, ex.tutor) || ex.student
+      const local = cueCard(mistake, ex.tutor)
+      // the tutor dealt with it (a card, or nothing to correct): never saved again quietly
+      if (cs) for (const l of before) handled.current.add(l)
       if (!local) return
       cardFor.current = line
       const from = L.length // the student's attempt starts after this
       const studentLine = i > 0 && L[i - 1].from === 'student' ? L[i - 1] : null
-      if (studentLine) handled.current.add(studentLine)
-      const prepared = prep.current && prep.current.line === studentLine ? prep.current.card : Promise.resolve(null)
+      // the prepared card: for the line just before, or the line the mistake is in (a pause can split it)
+      const p = prep.current
+      const prepared = p && (p.line === studentLine || (mistake && p.text.includes(mistake.trim()))) ? p.card : Promise.resolve(null)
       const fromPrep = prepared.then((c) => fitDraft(local, c))
       let late: Promise<Card | null> | null = null
       const helper = () => (late ??= aiAssist(info.bookingId, { sessionId: sid, lines: recent }))
@@ -556,7 +570,7 @@ export default function AiRoom(props: Props) {
         // the prepared card is usually ready already
         const quick = await Promise.race([fromPrep, new Promise<undefined>((r) => setTimeout(() => r(undefined), 150))])
         if (quick) return show(quick, true)
-        const full = await firstCard([fromPrep, helper().then((h) => fitDraft(local, h))], 3000 - (Date.now() - started))
+        const full = await firstCard([fromPrep, helper().then((h) => fitDraft(local, h))], 800 - (Date.now() - started))
         show(full ?? local, !!full)
       })()
     },

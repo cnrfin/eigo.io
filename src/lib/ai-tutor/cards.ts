@@ -1,4 +1,4 @@
-import { hasJapanese, sameWords, share, words } from './voice-match'
+import { hasJapanese, near, sameWords, share, words } from './voice-match'
 
 /**
  * Cards in AI lessons (ai-panel-implementation-plan.md): a correction, or "How do I say…?". They slide up
@@ -155,13 +155,44 @@ export function mistakeFor(lines: CardLine[], tutor: string): string {
 }
 
 /** A card made in the browser from the AI tutor's words alone (no reason or Japanese yet). */
+/** the letters only ("aroma therapist" and "aromatherapist" are the same: a transcript split, not a mistake) */
+export const letters = (s: string) => words(s).join('')
+
+/** a different form of the same word ("customer" / "customers", "like" / "liked"): a real correction */
+const inflected = (a: string, b: string) => {
+  const [s, l] = a.length <= b.length ? [a, b] : [b, a]
+  return l !== s && l.startsWith(s) && /^(?:s|es|d|ed|ing|er|est|ly)$/.test(l.slice(s.length))
+}
+
+/**
+ * They already said the corrected sentence: every word of it, in order, as the same word. A word the transcript
+ * spelt a little differently ("colour" / "color") counts; a different ending ("customer" / "customers") doesn't.
+ * (It used to count too, so the most common small fixes got no card.)
+ */
+export function alreadySaid(student: string, sentence: string): boolean {
+  if (sameWords(student, sentence) || letters(student) === letters(sentence)) return true
+  const said = words(student)
+  let j = 0
+  for (const w of words(sentence)) {
+    let k = -1
+    for (let i = j; i < said.length; i++)
+      if (said[i] === w || (near(said[i], w) && !inflected(said[i], w))) {
+        k = i
+        break
+      }
+    if (k < 0) return false
+    j = k + 1
+  }
+  return true
+}
+
 export function cueCard(student: string, tutor: string): Card | null {
   const c = cueSentence(tutor)
   if (!c || !student) return null
   if (isFiller(student) && !hasJapanese(student)) return null // "mm" is never the mistake
   const ja = hasJapanese(student)
   if (c.say || ja) return { kind: 'say', heard: ja ? lastSentence(student).slice(0, 120) : '', options: [{ style: 'normal', text: c.sentence }] }
-  if (sameWords(c.sentence, student) || share(student, c.sentence) === 1) return null
+  if (alreadySaid(student, c.sentence)) return null
   return { kind: 'correction', was: lastSentence(student), now: c.sentence, ja: '', why: '' }
 }
 
