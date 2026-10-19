@@ -257,8 +257,11 @@ export function welcomeNudge(step?: string): string {
     about: 'You are in the three questions (step 2): ask the next one, or, if you have asked all three, go on to the role-play (step 3).',
     suggest: 'You have just taught "Let\'s do a role-play" (step 3): gently ask them to say it.',
     done: 'The role-play is over and you have given your feedback. Next is the voice command (step 5).',
-    command:
-      'The role-play is done, and this is the voice command (step 5). If they have said "Open the course", say this is what a course lesson looks like, then ask if they have any questions about eigo dot I O (step 6). If not, ask them to say "Open the course".',
+    command: 'The role-play is done, and this is the voice command (step 5): ask them to say "Open the course".',
+    // (the classroom knows they've said it: the note says so plainly. With an "if they have / if not" note the tutor
+    // once asked for the voice command again after it was done)
+    command_said:
+      'The role-play and the voice command are both done: they said "Open the course" and the preview is on their screen. Don\'t ask for the voice command again. Ask if they have any questions about eigo dot I O (step 6).',
     qa: 'The role-play and the voice command are done: this is the questions about eigo dot I O (step 6). Ask if they have any other questions, or chat about what they told you.',
   }
   return `Nobody has spoken for a few seconds. This is the welcome talk. ${at[String(step)] ?? 'Carry on with your plan, gently and simply.'} Never go back to a part that is already done.`

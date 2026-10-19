@@ -35,7 +35,7 @@ export function roleplayInstructionParts(
   const twist = L.twist ? `\nTwist: after the student has done "${L.tasks.find((t) => t.id === L.twist!.after)?.title.en ?? L.twist.after}", ${L.twist.tutor}` : ''
   const head = `${
     ready
-      ? `ROLE-PLAY READY (${LEVEL_NAMES[level].en} level): this is the role-play for them. It opens on their screen when they say "Let's do a role-play": as soon as they've said it, start it as below (not before, and no other scene).`
+      ? `ROLE-PLAY READY, FOR LATER (${LEVEL_NAMES[level].en} level): this is the role-play for step 3 of your plan. Don't mention it yet: carry on with what you're doing, and finish the three questions first. At step 3, teach the phrase, then stop and wait: it opens on their screen when they say "Let's do a role-play". Only once they've said it, start it as below (no other scene).`
       : `ROLE-PLAY STARTS NOW (${LEVEL_NAMES[level].en} level). The student sees the scene and their task list on screen.`
   }
 Scene: ${scene.title.en}. ${scene.setting}
