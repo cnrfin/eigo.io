@@ -5,6 +5,7 @@ import { json, loadClassroom } from '@/lib/classroom/server'
 import { appendInstructions } from '@/lib/ai-tutor/openai'
 import { lessonOpenedInstruction, slideInstructionParts } from '@/lib/ai-tutor/brief'
 import { findLesson, loadCourse } from '@/lib/classroom/courses'
+import { welcomeNudge } from '@/lib/classroom/welcome'
 
 /**
  * POST /api/classroom/[id]/ai-context   { sessionId, action }
@@ -175,16 +176,7 @@ ${done || '(nothing recorded)'}${fixes.length ? `\nTheir mistakes, with the natu
     case 'nudge':
       if (secondsLeft < 30) return null
       if (welcome && a.where !== 'roleplay') {
-        // where it is in its plan, from the classroom: once, a vague "carry on" let it go back to an earlier part
-        const at: Record<string, string> = {
-          about: 'You are in the three questions (step 2): ask the next one, or, if you have asked all three, go on to the role-play (step 3).',
-          suggest: 'You have just taught "Let\'s do a role-play" (step 3): gently ask them to say it.',
-          done: 'The role-play is over and you have given your feedback. Next is the voice command (step 5).',
-          command:
-            'The role-play is done, and this is the voice command (step 5). If they have said "Open the course", say this is what a course lesson looks like, then ask if they have any questions about eigo dot I O (step 6). If not, ask them to say "Open the course".',
-          qa: 'The role-play and the voice command are done: this is the questions about eigo dot I O (step 6). Ask if they have any other questions, or chat about what they told you.',
-        }
-        return `Nobody has spoken for a few seconds. This is the welcome talk. ${at[String(a.step)] ?? 'Carry on with your plan, gently and simply.'} Never go back to a part that is already done.`
+        return welcomeNudge(a.step)
       }
 
       if (a.where === 'roleplay') return 'The student has been quiet for a while in the role-play. In character, give a short, friendly prompt that helps them with their next task (a simple question they can answer). Do not end the scene.'

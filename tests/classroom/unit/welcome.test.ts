@@ -1,4 +1,4 @@
-import { FALLBACK_PICK, ROLEPLAY_PHRASE, SAYS_ROLEPLAY, TUTOR_COMMAND, TUTOR_QA, WELCOME_AT, commandSaid, factsReady, heardPhrase, mergeAboutMe, quoteIsTheirs, sameFact, stillToAsk, suggestedPhrase, validateWelcome, voicePhrase, waitsForGap, welcomeNext, welcomeStartStep, type WelcomeSnap } from '@/lib/classroom/welcome'
+import { FALLBACK_PICK, ROLEPLAY_PHRASE, SAYS_ROLEPLAY, TUTOR_COMMAND, TUTOR_QA, WELCOME_AT, commandSaid, factsReady, heardPhrase, mergeAboutMe, quoteIsTheirs, sameFact, stillToAsk, suggestedPhrase, validateWelcome, voicePhrase, waitsForGap, welcomeNext, welcomeStartStep, welcomeNudge, type WelcomeSnap } from '@/lib/classroom/welcome'
 import { SCENES, roleplayInstruction, roleplayInstructionParts } from '@/lib/roleplay'
 import { BEGINNER_JA, LEVEL_RULES, normalizeSettings, settingsToRules } from '@/lib/ai-tutor/settings'
 let bad = 0
@@ -97,4 +97,8 @@ ok('the rules always arrive whole (the last part)', SCENES.every((sc) => {
   const last = roleplayInstructionParts(sc, 'a', 2).at(-1)!
   return last.includes('only then give your feedback') && last.includes('unless that note says so')
 }))
+// the silence note knows where the welcome talk is (ai-context's nudge for a welcome call)
+const cmdNudge = welcomeNudge('command')
+ok('silence note in the command step: the voice command, never back to a done part', /voice command/.test(cmdNudge) && cmdNudge.includes('"Open the course"') && cmdNudge.includes('Never go back to a part that is already done'), cmdNudge)
+ok('silence note without a step: carry on, never back', welcomeNudge().includes('Carry on with your plan') && welcomeNudge().includes('Never go back to a part that is already done'))
 console.log(bad ? bad + ' FAILED' : 'all passed')

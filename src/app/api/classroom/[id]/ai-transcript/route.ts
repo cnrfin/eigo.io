@@ -3,6 +3,7 @@ import { waitUntil } from '@vercel/functions'
 import { getSupabaseAdmin } from '@/lib/supabase-admin'
 import { json, loadClassroom } from '@/lib/classroom/server'
 import { summarizeAiLesson } from '@/lib/ai-tutor/summary'
+import { mergeTranscript } from '@/lib/classroom/transcript'
 
 /**
  * POST /api/classroom/[id]/ai-transcript   { sessionId, lines: [{ from, text, t }], final }
@@ -48,13 +49,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
   // Several sessions can make up one lesson (reconnects): keep earlier text, append this session's.
   const { data: cur } = await db.from('bookings').select('transcript_text').eq('id', booking.id).maybeSingle()
-  const marker = sess ? `\n[session ${sess.session_id}]\n` : '\n'
   const prev = (cur?.transcript_text as string | null) ?? ''
-  // (the first session's marker is at the very start, without the newline before it: it wasn't found, and every
-  // save added the whole transcript again)
-  const at = sess ? prev.indexOf(marker.trim()) : -1
-  const before = at >= 0 ? prev.slice(0, at) : prev
-  const merged = text ? `${before}${marker}${text}`.trim() : prev
+  const merged = mergeTranscript(prev, sess ? sess.session_id : null, text)
   if (merged !== prev) await db.from('bookings').update({ transcript_text: merged, cleaned_transcript: merged }).eq('id', booking.id)
 
   if (body.final && sess && !sess.ended_at) {

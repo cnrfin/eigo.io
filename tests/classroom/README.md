@@ -35,8 +35,9 @@ It exits with 1 if anything fails, and lists the failing checks. Run it after an
 | `names.test.ts` | Recognising a course by its spoken name (`lib/ai-tutor/course-names.ts`) |
 | `phrases.test.ts` | Phrases to save after a role-play (`lib/roleplay/phrases.ts`) |
 | `roleplay.test.ts` | Every scene in `SCENES` is well formed, levels, progress, the tutor's start instruction |
+| `transcript.test.ts` | Saving an AI lesson's transcript (`lib/classroom/transcript.ts`): each session once, however often it's saved, after the earlier sessions |
 | `ticks.test.ts` | Ticking role-play tasks (`lib/roleplay/ticks.ts`): only the student's own words count |
-| `welcome.test.ts` | The welcome talk (`lib/classroom/welcome.ts`): the helper's facts need the student's own words, About me, the tutor's set sentences the classroom follows, the whole phrase, the time limits, English only, role-play notes that fit |
+| `welcome.test.ts` | The welcome talk (`lib/classroom/welcome.ts`): the helper's facts need the student's own words, About me, the tutor's set sentences the classroom follows, the whole phrase, the time limits, English only, role-play notes that fit, the silence note for each step |
 
 ## Classroom runs
 
@@ -63,6 +64,7 @@ It exits with 1 if anything fails, and lists the failing checks. Run it after an
 | `run20` | The welcome talk, led by the tutor: no courses or whiteboard, the facts picked out quietly, the role-play card when the tutor names one, opening only on the whole phrase once they've stopped, mission complete, the voice command and its course preview, the Q&A, and no reminders needed |
 | `run21` | The welcome call's end screen: replaces the classroom at 0:00, About me saved from there, what to try next |
 | `run22` | Correction cards: they stay until the student's try is over (saved 1.2 s after the tutor reacts, or at 30 s), never the same phrase twice, a try never prepared again, the slide-change correction moment in a course (`fix` in the slide note, one every 2 minutes, the rest saved), missed mistakes saved quietly in free talk, no card or save when a pause split a word ("aroma" … "therapist") |
+| `run23` | The welcome talk, replayed from real calls: the role-play opens on the tutor's next turn when the transcript lost the student's phrase (and no second scene note), or when the tutor was cut off teaching it, but not on "Go ahead, just say it!"; a silent tutor after "Open the course" is asked to answer; the silence note's step; the session's events sent with the transcript |
 
 ## Writing a new run
 
