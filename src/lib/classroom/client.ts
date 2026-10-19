@@ -226,7 +226,7 @@ export type StudentAction =
   /** every task on the student's list is ticked: the AI tutor brings the scene to an end */
   | { kind: 'roleplay_tasks_done' }
   /** the mission-complete screen is up: spoken feedback, then swap / again / another */
-  | { kind: 'roleplay_done'; sceneId: string; role: 'a' | 'b'; done: { task: string; said: string }[]; missed: string[]; canSwap: boolean; phrases?: string[]; welcome?: boolean }
+  | { kind: 'roleplay_done'; sceneId: string; role: 'a' | 'b'; done: { task: string; said: string }[]; missed: string[]; canSwap: boolean; phrases?: string[]; welcome?: boolean; fixes?: { was: string; now: string }[] }
   /** the AI panel: the picker opened, or the student closed it */
   | { kind: 'panel'; what: 'picker' | 'closed' | 'course' }
   /** the welcome call (lib/classroom/welcome.ts): a new step on its rails */

@@ -108,9 +108,9 @@ const emit = async (ev) => { await act(async () => { channel.dispatchEvent(new w
   await T.tick(1300) // (notes to the tutor wait for a pause in its speech)
   const dn = posts('roleplay_done').pop() || ''
   check('the tutor gets the results and is asked for feedback (with swap)', dn.includes('"canSwap":true') && dn.includes('Regular please'), dn)
-  check('the summary: each task with what they said', document.querySelectorAll('.apn-sr').length === 4 && txt('.apn-sr .apn-said').length > 3, txt('.apn-sum'))
+  check('the summary: each task with what they said', document.querySelectorAll('.apn-sr:not(.fix)').length === 4 && txt('.apn-sr .apn-said').length > 3, txt('.apn-sum'))
   await say('ai', 'Great job! You asked about the Wi-Fi clearly. A more natural way is: Could I get a hot coffee? Would you like to swap roles?', 33000); await T.tick(300)
-  check('the tutor\'s comments appear as it says them, without its corrections or questions', txt('.apn-fbx').includes('You asked about the Wi-Fi clearly') && !txt('.apn-fbx').includes('natural way') && !txt('.apn-fbx').includes('swap roles'), txt('.apn-fbx'))
+  check('no live speech on the results (only the tasks, and ✎ rows for mistakes found in the scene)', !T.$('.apn-fbx') && !txt('.apn-done').includes('swap roles'), txt('.apn-done'))
   check('swap / again / next scene buttons', [...document.querySelectorAll('.apn-acts .apn-btn')].map((b) => b.textContent).join('|') === 'もう一度|役割を交代|次のシーン', [...document.querySelectorAll('.apn-acts .apn-btn')].map((b) => b.textContent))
   // 7) "let's swap roles": the student plays the barista
   g.TICK = [] // (the new play starts with nothing done)

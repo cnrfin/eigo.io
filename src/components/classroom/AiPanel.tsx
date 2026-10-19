@@ -316,7 +316,7 @@ export function RoleplayDone({
   level,
   mission,
   took,
-  feedback,
+  fixes,
   onAgain,
   onSwap,
   onNext,
@@ -330,8 +330,8 @@ export function RoleplayDone({
   level: LevelIndex
   mission: Mission
   took: number
-  /** what the AI tutor says about it, as it says it (its comments only: no questions or "say it again") */
-  feedback: string[]
+  /** their mistakes in the scene with the natural versions (collected during it: no cards while they play) */
+  fixes: { was: string; now: string }[]
   onAgain: () => void
   onSwap: (() => void) | null
   onNext: () => void
@@ -365,15 +365,22 @@ export function RoleplayDone({
             </span>
           </div>
         ))}
+        {/* ✓ what they did, ✎ what to say more naturally (the same ones the tutor goes through) */}
+        {fixes.map((f, i) => (
+          <div key={f.now} className="apn-sr fix" style={{ animationDelay: `${0.15 + (tasks.length + i) * 0.25}s` }}>
+            <span className="apn-sic">
+              <Ico name="pen" />
+            </span>
+            <span className="apn-st">
+              <b lang="en">{f.now}</b>
+              <span>
+                {t('rpYouSaid')}: <s lang="en">{f.was}</s>
+              </span>
+            </span>
+          </div>
+        ))}
         <div className="apn-time">{mmss(took)}</div>
       </div>
-      {feedback.length > 0 && (
-        <div className="apn-fbx" aria-live="polite">
-          {feedback.map((line, i) => (
-            <p key={i}>{line}</p>
-          ))}
-        </div>
-      )}
       {welcome ? (
         <div className="apn-next" role="status">
           <i />

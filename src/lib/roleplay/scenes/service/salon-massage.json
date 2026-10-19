@@ -16,7 +16,7 @@
           "tutor": "You are a tourist who has walked a lot today. Open by walking in and looking at the menu by the door; wait for the staff to greet you. Speak slowly and simply, in short sentences. You'd like a foot massage. During the massage, when the staff asks about the pressure, say it's a little strong.",
           "tasks": [
             { "id": "welcome", "title": { "ja": "どのコースか聞く", "en": "Ask which treatment" }, "hints": ["あいさつして、どのマッサージがいいか聞きましょう", "Hello! Which … would you like?", "Hello! Which massage would you like?"] },
-            { "id": "time", "title": { "ja": "時間と料金を伝える", "en": "Say the time and price" }, "hints": ["メニューを見て、時間と料金を伝えましょう", "It's … minutes, … yen.", "It's 30 minutes, 3,000 yen."] },
+            { "id": "time", "title": { "ja": "コースの長さと料金を伝える", "en": "Say the length and price" }, "hints": ["メニューを見て、コースの長さと料金を伝えましょう", "It's … minutes, … yen.", "It's 30 minutes, 3,000 yen."] },
             { "id": "shoes", "title": { "ja": "靴を脱ぐよう伝える", "en": "Ask them to take off their shoes" }, "hints": ["靴を脱いでもらいましょう", "Please take off …", "Please take off your shoes here."] },
             { "id": "pressure", "title": { "ja": "力加減を聞く", "en": "Ask about the pressure" }, "hints": ["強さがちょうどいいか聞きましょう", "Is the pressure …?", "Is the pressure okay?"] }
           ]

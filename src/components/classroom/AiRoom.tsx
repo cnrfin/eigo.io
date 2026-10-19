@@ -359,8 +359,6 @@ export default function AiRoom(props: Props) {
   const rpToken = useRef(0) // which play (a new one, again or swapped, gets a new token)
   const rpFrom = useRef(0) // the transcript line the play started at
   const allDoneSent = useRef(false)
-  /** where the tutor's feedback starts: the line, and the place in it just after "That's the end of the role-play!" */
-  const feedbackFrom = useRef({ line: 0, offset: 0 })
   const hintAskAt = useRef(0)
   const tickDo = useRef<(ticks: { id: string; said: string }[], token: number) => void>(() => {})
   /** the quick tick check, right after each of the student's lines in a role-play (one at a time) */
@@ -368,9 +366,20 @@ export default function AiRoom(props: Props) {
   const rpTickTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const rpTicking = useRef(false)
   const rpTickAgain = useRef(false)
-  const completeRp = useRef<(from?: { line: number; offset: number }) => void>(() => {})
+  const completeRp = useRef<() => void>(() => {})
   const hintAsk = useRef<() => void>(() => {})
   const rpPlaying = useRef(false)
+  /** a role-play's mistakes, collected while they play (no cards then): the helper's card for each of their lines */
+  const rpFixes = useRef(new Map<Line, { text: string; card: Promise<Card | null> }>())
+  /** the ones on the results screen (their cards don't pop up again when the tutor goes through them) */
+  const rpFixShown = useRef<{ was: string; now: string }[]>([])
+  const [rpFixList, setRpFixList] = useState<{ was: string; now: string }[]>([])
+  /** what the student had said in the play when its tasks were last checked (each line is checked once) */
+  const rpTickedSig = useRef('')
+  const rpStudentSig = () => {
+    const mine = lines.current.slice(rpFrom.current).filter((l) => l.from === 'student')
+    return `${rpToken.current}:${mine.length}:${mine.reduce((n, l) => n + l.text.length, 0)}`
+  }
   /** the play in progress or just ended (late ticks still count for it) */
   const rpCur = useRef<{ token: number; scene: Scene; role: RoleId; level: LevelIndex } | null>(null)
   const missionRef = useRef<Mission>(newMission())
@@ -442,6 +451,10 @@ export default function AiRoom(props: Props) {
     (c: ShownCard['card'], from?: number) => {
       // the welcome call's suggestion and tips: the tutor says phrases to say ("you can say …"), never cards
       if (wStepRef.current === 'suggest' || wStepRef.current === 'command') return 0
+      // a role-play: no cards while they play (its mistakes come on the results screen), and none for a mistake the
+      // results already show (the tutor goes through those in its feedback)
+      if (rpPlaying.current) return 0
+      if (c.kind === 'correction' && rpFixShown.current.some((f) => sameWords(f.now, c.now))) return 0
       // a card that was still up gets saved as it goes (it was going to be saved anyway)
       const prev = shownRef.current?.card
       if (prev) saveTerm(prev.kind === 'correction' ? prev.now : prev.options[0].text, prev.kind === 'correction' ? prev.ja : prev.heard)
@@ -471,6 +484,8 @@ export default function AiRoom(props: Props) {
     if (prep.current?.line === line && prep.current.text === text) return
     const recent = L.slice(Math.max(0, k - 3), k + 1).map((l) => ({ from: l.from, text: l.text }))
     prep.current = { line, text, card: aiAssist(info.bookingId, { sessionId: sid, lines: recent, mode: 'prepare' }) }
+    // in a role-play: kept for the results screen (a line that grew is prepared again and replaces its entry)
+    if (rpPlaying.current) rpFixes.current.set(line, prep.current)
   }, [info.bookingId])
   /**
    * The AI tutor has just said the corrected / English sentence. Show the card complete: at once when the
@@ -480,7 +495,7 @@ export default function AiRoom(props: Props) {
   const cueNow = useCallback(
     (line: Line) => {
       const sid = sessionId.current
-      if (!sid || closing.current || cardFor.current === line) return
+      if (!sid || closing.current || cardFor.current === line || rpPlaying.current) return
       const L = lines.current
       const i = L.lastIndexOf(line)
       const recent = L.slice(Math.max(0, i - 5), i + 1).map((l) => ({ from: l.from, text: l.text }))
@@ -515,7 +530,7 @@ export default function AiRoom(props: Props) {
   /** after the AI tutor's turn: ask the helper only when the turn looks like a correction or "How do I say…?" */
   const runAssist = useCallback(async () => {
     const sid = sessionId.current
-    if (!sid || closing.current) return
+    if (!sid || closing.current || rpPlaying.current) return
     const last = lines.current[lines.current.length - 1]
     if (last && last === cardFor.current) return // this turn already has its card
     const recent = lines.current.slice(-6).map((l) => ({ from: l.from, text: l.text }))
@@ -535,12 +550,10 @@ export default function AiRoom(props: Props) {
         if (prepTimer.current) clearTimeout(prepTimer.current)
         prepTimer.current = setTimeout(prepare, 700)
       }
+      // (the student's last line is prepared first, so the results screen has its mistake too)
+      if (from === 'tutor' && prepTimer.current) prepare()
       if (from === 'tutor' && rpPlaying.current && END_RP.test(runs.current.tutor.text)) {
-        // the feedback may follow in the same breath: it starts right after the end phrase
-        const L = lines.current
-        const last = L[L.length - 1]
-        const m = last ? END_RP.exec(last.text) : null
-        completeRp.current(m && last ? { line: L.length - 1, offset: m.index + m[0].length } : { line: L.length, offset: 0 })
+        completeRp.current()
       }
       if (from === 'tutor') {
         if (prepTimer.current) prepare()
@@ -744,19 +757,24 @@ export default function AiRoom(props: Props) {
       return
     }
     const shot = screenNow.current()
+    // role-play ticks only when the student has said something the quick check hasn't looked at (it checked each
+    // line twice before, which doubled the cost)
+    const rpSig = shot.roleplay ? rpStudentSig() : ''
+    const rp = shot.roleplay && rpSig !== rpTickedSig.current ? shot.roleplay : null
     // the welcome call: no slides and no action judge, only role-play ticks
-    if (welcome && !shot.roleplay) return
+    if (welcome && !rp) return
     const sig = `${L.length}:${L[L.length - 1]?.text.length ?? 0}:${ref?.slideId ?? '-'}:${shot.screen.view}:${shot.screen.board}`
     if (sig === checkedSig.current) return
     checkedSig.current = sig
     checking.current = true
+    if (rp) rpTickedSig.current = rpSig
     const asked = Date.now()
     const plain = (x: Line[]) => x.map((l) => ({ from: l.from, text: l.text }))
     const r = await aiTurn(info.bookingId, {
       sessionId: sid,
       ...(ref ? { ...ref, furthest: furthest.current + 1, reviewing: review.current, lines: plain(slideLines.slice(-16)) } : {}),
       ...(welcome ? {} : { screen: shot.screen, courses: shot.courses, scenes: shot.scenes, recent: plain(recent) }),
-      ...(shot.roleplay ? { roleplay: { ...shot.roleplay, lines: plain(L.slice(rpFrom.current).slice(-24)) } } : {}),
+      ...(rp ? { roleplay: { ...rp, lines: plain(L.slice(rpFrom.current).slice(-24)) } } : {}),
     })
     checking.current = false
     if (turnAgain.current) {
@@ -765,7 +783,7 @@ export default function AiRoom(props: Props) {
     }
     if (wrapUp.current || closing.current) return
     // role-play: the student's tasks done now (only for the play that was asked about)
-    if (r.ticks?.length && shot.roleplay) tickDo.current(r.ticks, shot.roleplay.token)
+    if (r.ticks?.length && rp) tickDo.current(r.ticks, rp.token)
     // the judge: a screen change (already checked on the server; checked again when applied)
     if (r.action && r.action.kind !== 'none') {
       judgeDo.current(r.action, r.quote ?? '', asked)
@@ -1246,7 +1264,21 @@ export default function AiRoom(props: Props) {
     }
     if (left <= 25) note('0')
     if (left <= 30) wrapUp.current = true
-    if (left <= 0 && !timeUp.current) {
+    // after the goodbye note, once both have said goodbye and the tutor has finished: end now. (It used to wait for
+    // 0:00, and the goodbyes were often over 5-10 s before that: the student sat looking at a silent tutor.)
+    const T0 = Date.now()
+    const L0 = lines.current
+    const lastLine = L0[L0.length - 1]
+    const byeDone =
+      noted.current.has('0') &&
+      lastLine?.from === 'tutor' &&
+      GOODBYE.test(lastLine.text) &&
+      !speakingRef.current &&
+      !responding.current &&
+      T0 - lastSaid.current.tutor >= 1200 &&
+      T0 - lastSaid.current.student >= 1500 &&
+      (L0.slice(-5).some((l) => l.from === 'student' && GOODBYE.test(l.text)) || T0 - lastSaid.current.tutor >= 3000)
+    if ((left <= 0 || byeDone) && !timeUp.current) {
       // 00:00 ends the lesson (the server's sweep also hangs up, as a backstop). If they're still saying goodbye, a
       // few more seconds so the tutor can answer (it felt cold to be cut off): only while one of them is actually
       // talking, and once the tutor has said its goodbye and finished, at once (a long wait felt awkward too).
@@ -1427,6 +1459,9 @@ export default function AiRoom(props: Props) {
       rpToken.current++
       rpCur.current = { token: rpToken.current, scene, role, level }
       rpFrom.current = lines.current.length
+      rpFixes.current = new Map()
+      rpFixShown.current = []
+      setRpFixList([])
       allDoneSent.current = false
       hintAskAt.current = 0
       setMission(newMission())
@@ -1620,7 +1655,7 @@ export default function AiRoom(props: Props) {
       })
     }
     // the scene is over (the AI tutor said "That's the end of the role-play!", or every task was done a while ago)
-    completeRp.current = (from) => {
+    completeRp.current = () => {
       const cur = rpCur.current
       if (!playing || !cur || cur.token !== rpToken.current) return
       const token = cur.token
@@ -1628,7 +1663,6 @@ export default function AiRoom(props: Props) {
       doneAt.current = finishedAt
       setPanel((p) => (p?.view === 'roleplay' && p.phase === 'play' ? { ...p, phase: 'done', finishedAt } : p))
       const L = lines.current
-      feedbackFrom.current = from ?? { line: L.length, offset: 0 }
       // one last look at the whole scene before the results: a task done in the last few seconds still counts
       // (before, a tick that came back a moment after the end was lost, and the feedback asked for what they'd said)
       const m0 = missionRef.current
@@ -1642,9 +1676,24 @@ export default function AiRoom(props: Props) {
         : Promise.resolve([])
       // a tick that comes back after the results were sent still shows on the screen
       void last.then((ticks) => ticks.length && tickDo.current(ticks, token))
-      void Promise.race([last, new Promise<{ id: string; said: string }[]>((r) => setTimeout(() => r([]), 8000))]).then((ticks) => {
+      // their mistakes in the scene: the helper's card for each of their lines, made while they played (usually ready)
+      const fixes = Promise.all(
+        [...rpFixes.current.entries()].map(([l, p]) =>
+          p.card.then((c) => (c && c.kind === 'correction' && !sameWords(c.now, l.text) ? { was: l.text.trim(), now: c.now, ja: c.ja } : null)).catch(() => null),
+        ),
+      ).then((xs) => {
+        const out: { was: string; now: string; ja: string }[] = []
+        for (const x of xs) if (x && !out.some((o) => sameWords(o.now, x.now))) out.push(x)
+        return out.slice(0, 3)
+      })
+      const within = <T,>(p: Promise<T>, empty: T) => Promise.race([p, new Promise<T>((r) => setTimeout(() => r(empty), 8000))])
+      void Promise.all([within(last, []), within(fixes, [])]).then(([ticks, found]) => {
         if (rpToken.current !== token) return
         if (ticks.length) tickDo.current(ticks, token)
+        // ✎ on the results screen, saved to their word list (as a card would have been), and told to the tutor
+        rpFixShown.current = found.map((f) => ({ was: f.was, now: f.now }))
+        setRpFixList(rpFixShown.current)
+        for (const f of found) saveTerm(f.now, f.ja)
         const lv = roleOf(cur.scene, cur.role).levels[cur.level]
         const doneMap = { ...missionRef.current.done }
         for (const x of ticks) if (!doneMap[x.id]) doneMap[x.id] = x.said
@@ -1666,6 +1715,7 @@ export default function AiRoom(props: Props) {
           missed: missed.map((x) => x.title.en),
           canSwap: !welcome && cur.role === cur.scene.studentRole,
           welcome,
+          fixes: rpFixShown.current,
         })
       })
     }
@@ -1678,6 +1728,7 @@ export default function AiRoom(props: Props) {
         return
       }
       rpTicking.current = true
+      rpTickedSig.current = rpStudentSig()
       const m = missionRef.current
       const plain = (x: Line[]) => x.map((l) => ({ from: l.from, text: l.text }))
       void aiTurn(info.bookingId, {
@@ -1895,7 +1946,8 @@ export default function AiRoom(props: Props) {
     // to a sentence with a mistake didn't correct it, the card the helper prepared goes up and the tutor is asked to say it
     welcomeCorrect.current = () => {
       const step = wStepRef.current
-      if (closing.current || step === 'suggest' || step === 'command' || speakingRef.current) return
+      // (not in the role-play: its mistakes are on the results screen, and the tutor goes through them there)
+      if (closing.current || step === 'suggest' || step === 'command' || step === 'roleplay' || step === 'done' || rpPlaying.current || speakingRef.current) return
       const L = lines.current
       let k = L.length - 1
       while (k >= 0 && L[k].from === 'tutor') k--
@@ -2412,17 +2464,7 @@ export default function AiRoom(props: Props) {
                   level={panel.level}
                   mission={mission}
                   took={(panel.finishedAt ?? now) - mission.startedAt}
-                  // the tutor's comments as it says them (after "That's the end of the role-play!"): not its questions or
-                  // "can you say…", and nothing from a correction card (those show as cards)
-                  feedback={lines.current
-                    .map((l, k) => ({ ...l, k }))
-                    .slice(feedbackFrom.current.line)
-                    .filter((l) => l.from === 'tutor')
-                    .map((l) => (l.k === feedbackFrom.current.line ? l.text.slice(feedbackFrom.current.offset) : l.text))
-                    .flatMap((x) => x.split(/(?<=[.!])\s+/))
-                    .map((x) => x.trim())
-                    .filter((x) => /[.!]$/.test(x) && wordsOf(x).length >= 4 && !/\?|\b(?:say|try|repeat|could you|can you|natural way|questions?)\b|end of the role/i.test(x))
-                    .slice(0, 3)}
+                  fixes={rpFixList}
                   onAgain={() => beginRoleplay(panel.scene, panel.role, panel.level)}
                   onSwap={panel.role === panel.scene.studentRole ? () => beginRoleplay(panel.scene, otherRole(panel.role), panel.level) : null}
                   onNext={() => openPicker('rp')}

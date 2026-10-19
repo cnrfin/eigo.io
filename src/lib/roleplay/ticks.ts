@@ -22,6 +22,7 @@ export function ticksPrompt(scene: Scene, role: RoleId, level: LevelIndex, open:
   const yours = roleOf(scene, otherRole(role))
   const system = `You follow a role-play in an English lesson for a Japanese learner. The student plays ${mine.name.en}; the AI tutor plays ${yours.name.en}.
 Decide which of the student's tasks below the STUDENT has now done, in their own words. A task counts when the student clearly does it, even with small grammar mistakes or simple words. It does not count if only the tutor said it, if the student only repeated the tutor, or if they said it in Japanese.
+Judge each task by what it is for in the scene, not by its exact words. A task with two parts counts once the student has done their part and the rest has been settled in the conversation, even if the tutor said that part (for example "Say the length and price": the student gives the price and the tutor picks 30 minutes).
 Return JSON: {"done": [{"id": string, "said": string}]}  ("said" = the student's words that did it, copied exactly, at most 15 words). Return {"done": []} if none.`
   const user = `Scene: ${scene.title.en}. ${scene.setting}
 Student's tasks not done yet:

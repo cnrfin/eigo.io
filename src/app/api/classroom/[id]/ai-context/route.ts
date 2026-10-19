@@ -37,7 +37,7 @@ type Action =
   /** every task on the student's list is ticked: the AI tutor brings the scene to an end */
   | { kind: 'roleplay_tasks_done' }
   /** the mission-complete screen is up: spoken feedback, then swap / again / another */
-  | { kind: 'roleplay_done'; sceneId: string; role: 'a' | 'b'; done: { task: string; said: string }[]; missed: string[]; canSwap: boolean; phrases?: string[]; welcome?: boolean }
+  | { kind: 'roleplay_done'; sceneId: string; role: 'a' | 'b'; done: { task: string; said: string }[]; missed: string[]; canSwap: boolean; phrases?: string[]; welcome?: boolean; fixes?: { was: string; now: string }[] }
   | { kind: 'panel'; what: 'picker' | 'closed' | 'course' }
   /** the welcome talk's time reminders (lib/classroom/welcome.ts); only in the student's welcome talk (checked here) */
   | { kind: 'welcome'; step: 'suggest' | 'wrap' | 'command' }
@@ -131,15 +131,21 @@ function instruction(a: Action, secondsLeft: number, welcome: boolean): string |
     case 'roleplay_done': {
       const scene = sceneById(a.sceneId)
       if (!scene) return null
+      // their mistakes in the scene, with the natural versions (also on their screen, with a pencil)
+      const fixes = (Array.isArray(a.fixes) ? a.fixes : [])
+        .map((f) => ({ was: q(f?.was, 160), now: q(f?.now, 160) }))
+        .filter((f) => f.was && f.now && !/[぀-ヿ一-鿿]/.test(f.now))
+        .slice(0, 3)
+      const fixList = fixes.map((f) => `- they said "${f.was}" → "${f.now}"`).join('\n')
       if (welcome) {
         const said = (Array.isArray(a.done) ? a.done : []).slice(0, 6).map((d) => `- ${q(d.task, 80)}: "${q(d.said, 160)}"`).join('\n')
         return `The role-play is over and the mission-complete screen is on the student's screen. Step out of character and give short spoken feedback, slowly and simply:
 1. One or two specific things they did well, quoting their own words. If they missed a task (listed below), don't say they did everything.
-2. Ask if they have any questions about the role-play (only about the role-play: questions about eigo.io come later, after the voice command), and answer briefly.
-No corrections here: their mistakes were corrected during the scene.
+${fixes.length ? `2. Their mistakes in the scene are on their screen (listed below; you didn't correct them during it). Go through ${fixes.length > 1 ? 'the first one or two' : 'it'}: say "A more natural way is: <the natural version>", ask them to say it, and react briefly. Don't correct anything else.
+3.` : '2. Nothing to correct: no corrections.\n3.'} Ask if they have any questions about the role-play (only about the role-play: questions about eigo.io come later, after the voice command), and answer briefly.
 Then carry on with your plan: the voice command next (step 5), then the questions about eigo.io (step 6). Don't offer to swap roles, play it again or try another scene.
 What they said for each task:
-${said || '(nothing recorded)'}${(Array.isArray(a.missed) ? a.missed : []).length ? `\nTasks they didn't do: ${(a.missed as string[]).slice(0, 6).map((m) => q(m, 80)).join('; ')}` : ''}`
+${said || '(nothing recorded)'}${fixes.length ? `\nTheir mistakes, with the natural versions:\n${fixList}` : ''}${(Array.isArray(a.missed) ? a.missed : []).length ? `\nTasks they didn't do: ${(a.missed as string[]).slice(0, 6).map((m) => q(m, 80)).join('; ')}` : ''}`
       }
       const mine = roleOf(scene, a.role === 'b' ? 'b' : 'a')
       const yours = roleOf(scene, otherRole(a.role === 'b' ? 'b' : 'a'))
@@ -150,7 +156,7 @@ ${said || '(nothing recorded)'}${(Array.isArray(a.missed) ? a.missed : []).lengt
         : 'try it again or try another scene'
       return `The role-play is over and the mission-complete screen is on the student's screen. Step out of character now and give short spoken feedback, in 3 short sentences (under 30 seconds in all), each one on its own:
 1. One specific thing they did well, quoting their own words.
-2. One thing to try next time: "A more natural way is: <a better version of one of their lines>". Pick a line that really had a mistake or sounded unnatural, never one they already said well, and never sounds like "mm" or "uh". If every line was fine, suggest one useful extra phrase for this situation instead.
+2. One thing to try next time: "A more natural way is: <a better version of one of their lines>". ${fixes.length ? 'Take the first of their mistakes listed below (they are on their screen): say the natural version given there.' : 'Pick a line that really had a mistake or sounded unnatural, never one they already said well, and never sounds like "mm" or "uh". If every line was fine, suggest one useful extra phrase for this situation instead.'}
 3. Ask if they'd like to ${offer}. Then stop and wait for their answer, however long it takes: don't start anything yourself, don't talk about slides (there are none), and don't fill the silence. Once they answer, say "Let's swap roles", "Let's try it again" or "Let's try another scene" to match what they chose (the screen changes then), or carry on with free talk if they'd rather chat.${missed.length ? `\nThey didn't get to: ${missed.join('; ')}. You can mention one of these as the thing to try.` : ''}${
         Array.isArray(a.phrases) && a.phrases.length
           ? `\nTheir screen also shows these phrases from the scene to save to their word list: ${a.phrases.slice(0, 3).map((x) => `"${q(x, 120)}"`).join('; ')}. If it fits, point them to one in a few words (don't read them all out).`
@@ -158,7 +164,7 @@ ${said || '(nothing recorded)'}${(Array.isArray(a.missed) ? a.missed : []).lengt
       }
 Only correct something they actually said in the list below; never suggest a line they already said.
 What they said for each task:
-${done || '(nothing recorded)'}`
+${done || '(nothing recorded)'}${fixes.length ? `\nTheir mistakes, with the natural versions:\n${fixList}` : ''}`
     }
     case 'panel':
       if (a.what === 'picker') return "The list of role-plays (and courses) is now on the student's screen. Briefly suggest one that fits their goals, or let them choose; they tap or say one. Don't start a role-play until it's on their screen."
@@ -183,7 +189,7 @@ ${done || '(nothing recorded)'}`
         // the welcome talk: a reminder to keep going (it had said goodbye with 90 s left), then the goodbye
         // (the welcome talk: only the goodbye; a mid-call reminder arrived mid-sentence and made it start over)
         if (secondsLeft > 28) return null
-        return 'Time note (the goodbye note): about 20 seconds left. Say a short, warm goodbye now: thank them, say you enjoyed meeting them, and invite them to come back for a full lesson. If they say goodbye back, answer warmly in a few words.'
+        return 'Time note (the goodbye note): about 20 seconds left. If they have just asked something, first answer it in one short sentence (never leave a question unanswered). Then say a short, warm goodbye: thank them, say you enjoyed meeting them, and invite them to come back for a full lesson. If they say goodbye back, answer with a word or two ("Bye!") and stop: the call ends by itself.'
       }
       if (secondsLeft > 330) return null
       if (secondsLeft > 125) return 'Time note: about 5 minutes left.'
