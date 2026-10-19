@@ -222,7 +222,7 @@ export type StudentAction =
   /** a card on the student's screen: its phrase was saved to the word list, or they picked a version */
   | { kind: 'card'; what: 'saved' | 'chose'; text: string; style?: string }
   /** a role-play starts on the AI panel (the server sends the AI tutor the scene, its character and the tasks) */
-  | { kind: 'roleplay'; sceneId: string; role: 'a' | 'b'; level: 0 | 1 | 2 }
+  | { kind: 'roleplay'; sceneId: string; role: 'a' | 'b'; level: 0 | 1 | 2; ready?: boolean }
   /** every task on the student's list is ticked: the AI tutor brings the scene to an end */
   | { kind: 'roleplay_tasks_done' }
   /** the mission-complete screen is up: spoken feedback, then swap / again / another */
@@ -236,6 +236,8 @@ export type WelcomeAction =
   /** the welcome talk's time reminders, only if a part runs late: suggest the role-play / wrap the scene up / move on
    *  to the voice command */
   | { kind: 'welcome'; step: 'suggest' | 'wrap' | 'command' }
+  /** they made a mistake the tutor let pass: the card is on their screen; the tutor says it and asks them to repeat */
+  | { kind: 'welcome'; step: 'correct'; now: string }
 
 /* ---------- the welcome call (lib/classroom/welcome.ts, /api/classroom/[id]/ai-welcome) ---------- */
 async function welcomeCall<T>(bookingId: string, body: Record<string, unknown>, fallback: T): Promise<T> {

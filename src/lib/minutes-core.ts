@@ -4,7 +4,7 @@ import { AI_LENGTHS, AI_MAX_LENGTH, AI_MIN_LENGTH, AI_MINUTE_RATIO } from './ai-
  * Minute pools and how an AI lesson is paid for (pure: shared by the server and the browser).
  *
  *   plan  – teacher-lesson minutes (Lite 120 / Standard 240 a month; yearly plans get the year's up front)
- *   ai    – AI minutes from the AI plan (150 a month / 1,800 a year)
+ *   ai    – AI minutes from the AI plan (AI_PLAN_MINUTES a month; yearly gets 12× up front)
  *   topup – AI minutes bought one-off (valid 3 months)
  *
  * An AI lesson uses AI minutes 1:1 — the plan's first, then top-ups (soonest-expiring first). Whatever is
@@ -13,6 +13,12 @@ import { AI_LENGTHS, AI_MAX_LENGTH, AI_MIN_LENGTH, AI_MINUTE_RATIO } from './ai-
  */
 
 export type Pool = 'plan' | 'ai' | 'topup'
+
+/** AI minutes a month on the AI plan (AI tutor lessons use them 1:1): ten 30-minute lessons. */
+export const AI_PLAN_MINUTES = 300
+/** One top-up: AI minutes, valid this many months (the price is set on the Stripe product: ¥980). */
+export const TOPUP_MINUTES = 90
+export const TOPUP_VALID_MONTHS = 3
 
 /** What a student can spend right now. `null` = no limit (admins, test accounts). */
 export type MinuteSnapshot = {

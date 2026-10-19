@@ -7,10 +7,10 @@ import { Squircle } from '@squircle-js/react'
 import { useAuth } from '@/context/AuthContext'
 import { useLanguage } from '@/context/LanguageContext'
 import SquircleCard from '@/components/ui/SquircleCard'
-import { aiMinutesLeft, type MinuteSnapshot } from '@/lib/minutes-core'
+import { TOPUP_MINUTES, TOPUP_VALID_MONTHS, aiMinutesLeft, type MinuteSnapshot } from '@/lib/minutes-core'
 
 /**
- * Add AI minutes (pilot): one card, +60分 · ¥980, valid 3 months → Stripe Checkout → back here.
+ * Add AI minutes (pilot): one card, +TOPUP_MINUTES分 · ¥980, valid 3 months → Stripe Checkout → back here.
  * Design: the plans page, reduced to what's needed to buy.
  */
 
@@ -102,10 +102,11 @@ function TopUp() {
           <div className="flex flex-col sm:flex-row sm:items-center gap-5">
             <div className="flex-1 min-w-0">
               <div className="text-3xl font-bold tracking-tight" style={{ color: 'var(--text)' }}>
-                +60{ja ? '分' : ' min'}
+                +{TOPUP_MINUTES}
+                {ja ? '分' : ' min'}
               </div>
               <div className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
-                {ja ? 'AIチューターとのレッスンに · 3か月有効' : 'For AI tutor lessons · valid for 3 months'}
+                {ja ? `AIチューターとのレッスンに · ${TOPUP_VALID_MONTHS}か月有効` : `For AI tutor lessons · valid for ${TOPUP_VALID_MONTHS} months`}
               </div>
             </div>
             <div className="flex items-center gap-5 shrink-0">

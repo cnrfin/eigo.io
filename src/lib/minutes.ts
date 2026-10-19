@@ -1,6 +1,6 @@
 import { getSupabaseAdmin } from './supabase-admin'
 import { getUserSubscription, type Subscription } from './subscription'
-import { splitAiCharge, type ChargePart, type MinuteSnapshot, type Pool } from './minutes-core'
+import { TOPUP_VALID_MONTHS, splitAiCharge, type ChargePart, type MinuteSnapshot, type Pool } from './minutes-core'
 
 /**
  * Minute balances and charges (server). The rules live in minutes-core.ts; this reads and writes the ledger.
@@ -10,9 +10,8 @@ import { splitAiCharge, type ChargePart, type MinuteSnapshot, type Pool } from '
  * count against their top-up (topup_id), whatever the period.
  */
 
-/** Top-ups last 3 months. */
-export const TOPUP_VALID_MONTHS = 3
-export const TOPUP_MINUTES = 60
+// how many minutes a top-up adds and how long it lasts (shared with the browser)
+export { TOPUP_MINUTES, TOPUP_VALID_MONTHS } from './minutes-core'
 
 type Row = { minutes_used: number; action: string; pool: Pool | null; topup_id: string | null; period_start: string }
 const net = (rows: Row[]) => rows.reduce((a, r) => a + (r.action === 'booked' ? r.minutes_used : r.action === 'cancelled_refund' ? -r.minutes_used : 0), 0)

@@ -62,7 +62,7 @@ import { panelIntent, type PanelIntent } from '@/lib/roleplay/intent'
 import type { SceneSummary } from '@/lib/roleplay/types'
 import { shrinkInto } from './save-fly'
 import { cueCard, fitDraft, lastExchange, mayHaveCard, mergeCard, mistakeFor, tutorItemId, type Card, type SayStyle } from '@/lib/ai-tutor/cards'
-import { hasJapanese, words as wordsOf } from '@/lib/ai-tutor/voice-match'
+import { hasJapanese, sameWords, words as wordsOf } from '@/lib/ai-tutor/voice-match'
 import { Ico } from './Icons'
 import SlideStage from './SlideStage'
 import Toolbar from './Toolbar'
@@ -240,6 +240,8 @@ export default function AiRoom(props: Props) {
   const welcome = !!info.aiWelcome
   const welcomeHear = useRef<(said: string) => void>(() => {})
   const welcomeTutor = useRef<(sentence: string) => void>(() => {})
+  /** after the tutor's reply: a mistake it let pass is corrected (the welcome talk; set up further down) */
+  const welcomeCorrect = useRef<() => void>(() => {})
   const wStepRef = useRef<WelcomeStep | null>(null)
 
   /* ---------- slides ---------- */
@@ -547,6 +549,11 @@ export default function AiRoom(props: Props) {
         if (last?.from === 'tutor') cueNow(last)
         if (assistTimer.current) clearTimeout(assistTimer.current)
         assistTimer.current = setTimeout(() => void runAssist(), 1300)
+        // the welcome talk: once its reply is over, a mistake it didn't correct is (the card, and a note to say it)
+        if (welcome) {
+          if (wCorrectTimer.current) clearTimeout(wCorrectTimer.current)
+          wCorrectTimer.current = setTimeout(() => welcomeCorrect.current(), 1800)
+        }
       }
       if (from === 'student') {
         // the student's own words act at once (each command once per sentence; the same command said again later,
@@ -1240,13 +1247,18 @@ export default function AiRoom(props: Props) {
     if (left <= 25) note('0')
     if (left <= 30) wrapUp.current = true
     if (left <= 0 && !timeUp.current) {
-      // 00:00 ends the lesson (the server's sweep also hangs up, as a backstop). If they're still saying goodbye,
-      // a few more seconds so the tutor can answer (it felt cold to be cut off): while either is talking, up to
-      // 12 s, and never past the server's end
+      // 00:00 ends the lesson (the server's sweep also hangs up, as a backstop). If they're still saying goodbye, a
+      // few more seconds so the tutor can answer (it felt cold to be cut off): only while one of them is actually
+      // talking, and once the tutor has said its goodbye and finished, at once (a long wait felt awkward too).
+      // At most 8 s, and never past the server's end
       const T = Date.now()
       if (!graceFrom.current) graceFrom.current = T
-      const talking = speakingRef.current || responding.current || T - lastSaid.current.tutor < 1500 || T - lastSaid.current.student < 3000
-      if (talking && T - graceFrom.current < 12_000 && endsAt.current - (T + clockOffset) > 2000) return
+      const L = lines.current
+      const lastTutor = [...L].reverse().find((l) => l.from === 'tutor')
+      const tutorBusy = speakingRef.current || responding.current || T - lastSaid.current.tutor < 800
+      const saidBye = !!lastTutor && GOODBYE.test(lastTutor.text) && L[L.length - 1] === lastTutor
+      const talking = tutorBusy || (!saidBye && T - lastSaid.current.student < 1500)
+      if (talking && T - graceFrom.current < 8000 && endsAt.current - (T + clockOffset) > 2000) return
       timeUp.current = true
       closing.current = true
       gen.current++ // ignore anything the session still sends
@@ -1411,7 +1423,7 @@ export default function AiRoom(props: Props) {
   }, [act])
   /** a play of a scene: the first time, again, or with the roles swapped */
   const beginRoleplay = useCallback(
-    (scene: Scene, role: RoleId, level: LevelIndex) => {
+    (scene: Scene, role: RoleId, level: LevelIndex, told = false) => {
       rpToken.current++
       rpCur.current = { token: rpToken.current, scene, role, level }
       rpFrom.current = lines.current.length
@@ -1419,8 +1431,10 @@ export default function AiRoom(props: Props) {
       hintAskAt.current = 0
       setMission(newMission())
       setPanel({ view: 'roleplay', scene, role, level, phase: 'play' })
-      // the tutor sets the scene first ("We're at a café… Ready?"): if it doesn't start talking, ask it to
-      void act({ kind: 'roleplay', sceneId: scene.id, role, level }).then((ok) => ok && speakIfSilent.current(Date.now()))
+      // the tutor sets the scene first ("We're at a café… Ready?"): if it doesn't start talking, ask it to. (The
+      // welcome talk told it the scene already, before it opened: it starts as soon as the student says the phrase.)
+      if (told) speakIfSilent.current(Date.now())
+      else void act({ kind: 'roleplay', sceneId: scene.id, role, level }).then((ok) => ok && speakIfSilent.current(Date.now()))
     },
     [act],
   )
@@ -1728,6 +1742,11 @@ export default function AiRoom(props: Props) {
   /** the role-play chosen for them (the helper, in the background), and whether its scene is being loaded */
   const wPick = useRef<WelcomePick | null>(null)
   const wLoading = useRef(false)
+  const wReadySent = useRef(false)
+  /** the student's lines already corrected (or checked), and the course preview loaded ahead */
+  const wCorrected = useRef(new Set<Line>())
+  const wCorrectTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const wPreviewNext = useRef<Promise<{ loaded: LoadedCourse; slide: Slide; title: string } | null> | null>(null)
   const wSuggestSent = useRef(false)
   const wWrapSent = useRef(false)
   const wOpening = useRef(false)
@@ -1808,6 +1827,10 @@ export default function AiRoom(props: Props) {
         setWPhrase(ROLEPLAY_PHRASE)
         setWLit([])
         wGo.current('suggest')
+        // the tutor gets the scene now (at its next pause), so when they say the phrase it starts the right one at
+        // once (it had started making one up while the scene note was still on its way)
+        wReadySent.current = true
+        void act({ kind: 'roleplay', sceneId: sc.id, role: sc.studentRole, level: 0, ready: true })
       })()
     }
     wOpen.current = () => {
@@ -1815,7 +1838,7 @@ export default function AiRoom(props: Props) {
       if (wOpening.current || wStepRef.current !== 'suggest' || !sc) return
       wOpening.current = true
       wGo.current('roleplay')
-      beginRoleplay(sc, sc.studentRole, 0)
+      beginRoleplay(sc, sc.studentRole, 0, wReadySent.current)
     }
     wGo.current = (to) => {
       if (wStepRef.current === to) return
@@ -1830,6 +1853,8 @@ export default function AiRoom(props: Props) {
         setShown(null)
       }
       if (to === 'command') setPanel(null)
+      // the course preview, loaded ahead (it lagged when it was only fetched once they'd said it)
+      if ((to === 'done' || to === 'command') && !wPreviewNext.current) wPreviewNext.current = loadPreview()
       if (to === 'qa') {
         setPanel(null)
         setWPreview(null)
@@ -1861,15 +1886,42 @@ export default function AiRoom(props: Props) {
         // "Open the course": the first slide of a course's first lesson, as a preview
         wSaidAt.current = Date.now()
         setWSaid(true)
-        void (async () => {
-          const list = await aiCourses()
-          const c = list[Math.floor(Math.random() * list.length)]
-          const loaded = c ? await fetchCourse(info.bookingId, c.id) : null
-          const sl = loaded?.course.units[0]?.lessons[0]?.slides[0]
-          if (!c || !loaded || !sl || wStepRef.current !== 'command') return
-          setWPreview({ loaded, slide: sl, title: lang === 'ja' ? c.titleJa : c.title })
-        })()
+        void (wPreviewNext.current ?? (wPreviewNext.current = loadPreview())).then((p) => {
+          if (p && wStepRef.current === 'command') setWPreview(p)
+        })
       }
+    }
+    // every grammar mistake gets corrected in the welcome talk (the tutor alone let most of them pass): when its reply
+    // to a sentence with a mistake didn't correct it, the card the helper prepared goes up and the tutor is asked to say it
+    welcomeCorrect.current = () => {
+      const step = wStepRef.current
+      if (closing.current || step === 'suggest' || step === 'command' || speakingRef.current) return
+      const L = lines.current
+      let k = L.length - 1
+      while (k >= 0 && L[k].from === 'tutor') k--
+      const st = L[k]
+      if (!st || k === L.length - 1 || wCorrected.current.has(st)) return
+      const reply = L.slice(k + 1).map((l) => l.text).join(' ')
+      const p = prep.current
+      if (!p || p.line !== st) return
+      wCorrected.current.add(st)
+      if (/\b(?:natural way|you can say|you could say|we (?:usually )?say)\b/i.test(reply)) return
+      void p.card.then((c) => {
+        if (!c || c.kind !== 'correction' || closing.current || sameWords(c.now, st.text)) return
+        if (wStepRef.current === 'suggest' || wStepRef.current === 'command') return
+        showCard(c)
+        void act({ kind: 'welcome', step: 'correct', now: c.now })
+      })
+    }
+    /** the first slide of a course's first lesson (a course picked at random), for the voice-command preview */
+    function loadPreview() {
+      return (async () => {
+        const list = await aiCourses()
+        const c = list[Math.floor(Math.random() * list.length)]
+        const loaded = c ? await fetchCourse(info.bookingId, c.id) : null
+        const sl = loaded?.course.units[0]?.lessons[0]?.slides[0]
+        return c && loaded && sl ? { loaded, slide: sl, title: lang === 'ja' ? c.titleJa : c.title } : null
+      })()
     }
     // the classroom follows the tutor's set sentences
     welcomeTutor.current = (sentence) => {
@@ -2360,6 +2412,17 @@ export default function AiRoom(props: Props) {
                   level={panel.level}
                   mission={mission}
                   took={(panel.finishedAt ?? now) - mission.startedAt}
+                  // the tutor's comments as it says them (after "That's the end of the role-play!"): not its questions or
+                  // "can you say…", and nothing from a correction card (those show as cards)
+                  feedback={lines.current
+                    .map((l, k) => ({ ...l, k }))
+                    .slice(feedbackFrom.current.line)
+                    .filter((l) => l.from === 'tutor')
+                    .map((l) => (l.k === feedbackFrom.current.line ? l.text.slice(feedbackFrom.current.offset) : l.text))
+                    .flatMap((x) => x.split(/(?<=[.!])\s+/))
+                    .map((x) => x.trim())
+                    .filter((x) => /[.!]$/.test(x) && wordsOf(x).length >= 4 && !/\?|\b(?:say|try|repeat|could you|can you|natural way|questions?)\b|end of the role/i.test(x))
+                    .slice(0, 3)}
                   onAgain={() => beginRoleplay(panel.scene, panel.role, panel.level)}
                   onSwap={panel.role === panel.scene.studentRole ? () => beginRoleplay(panel.scene, otherRole(panel.role), panel.level) : null}
                   onNext={() => openPicker('rp')}

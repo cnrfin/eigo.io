@@ -316,6 +316,7 @@ export function RoleplayDone({
   level,
   mission,
   took,
+  feedback,
   onAgain,
   onSwap,
   onNext,
@@ -329,6 +330,8 @@ export function RoleplayDone({
   level: LevelIndex
   mission: Mission
   took: number
+  /** what the AI tutor says about it, as it says it (its comments only: no questions or "say it again") */
+  feedback: string[]
   onAgain: () => void
   onSwap: (() => void) | null
   onNext: () => void
@@ -364,6 +367,13 @@ export function RoleplayDone({
         ))}
         <div className="apn-time">{mmss(took)}</div>
       </div>
+      {feedback.length > 0 && (
+        <div className="apn-fbx" aria-live="polite">
+          {feedback.map((line, i) => (
+            <p key={i}>{line}</p>
+          ))}
+        </div>
+      )}
       {welcome ? (
         <div className="apn-next" role="status">
           <i />

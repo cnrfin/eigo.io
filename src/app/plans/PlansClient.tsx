@@ -8,6 +8,7 @@ import { Squircle } from '@squircle-js/react'
 import SquircleBox from '@/components/ui/SquircleBox'
 import AuthModal from '@/components/AuthModal'
 import { motion, AnimatePresence, useSpring, useTransform } from 'framer-motion'
+import { AI_PLAN_MINUTES } from '@/lib/minutes-core'
 
 type BillingInterval = 'monthly' | 'yearly'
 
@@ -501,8 +502,8 @@ export default function PlansPage() {
                 </h2>
                 <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
                   {locale === 'ja'
-                    ? `AIチューターとのレッスンが${interval === 'yearly' ? '年1,800分' : '月150分'}。すべてのコースと模試も使えます。講師とのレッスンは含まれません。`
-                    : `${interval === 'yearly' ? '1,800' : '150'} minutes of AI tutor lessons a ${interval === 'yearly' ? 'year' : 'month'}, plus every course and mock exam. Lessons with teachers not included.`}
+                    ? `AIチューターとのレッスンが${interval === 'yearly' ? `年${(AI_PLAN_MINUTES * 12).toLocaleString('en-US')}分` : `月${AI_PLAN_MINUTES}分`}。すべてのコースと模試も使えます。講師とのレッスンは含まれません。`
+                    : `${(interval === 'yearly' ? AI_PLAN_MINUTES * 12 : AI_PLAN_MINUTES).toLocaleString('en-US')} minutes of AI tutor lessons a ${interval === 'yearly' ? 'year' : 'month'}, plus every course and mock exam. Lessons with teachers not included.`}
                 </p>
               </div>
               <div className="flex items-center gap-5 shrink-0 relative z-10">

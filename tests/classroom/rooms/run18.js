@@ -94,7 +94,7 @@ const emit = async (ev) => { await act(async () => { channel.dispatchEvent(new w
   await say('you', 'Okay, so two draft beers, and edamame, and two karaage', 13000); await T.tick(100)
   await say('ai', "Great! That sounds perfect. That's the end of the role-play! You did well asking how many people. Would you like to swap roles, try it again, or try another scene?", 14000); await T.tick(300)
   check('mission complete', !!T.$('.apn-done'))
-  check('the screen shows a summary of the scene, not the tutor\'s live speech', !!T.$('.apn-sum') && !txt('.apn-done').includes('You did well'), txt('.apn-done'))
+  check('the screen shows the summary, and the tutor\'s comments as it says them (not its questions)', !!T.$('.apn-sum') && txt('.apn-fbx').includes('You did well asking how many people') && !txt('.apn-fbx').includes('swap roles'), txt('.apn-done'))
   check('the tutor isn\'t given the results before the last check is back', posts('roleplay_done').length === 0)
   await T.tick(2500)
   const dn = posts('roleplay_done').pop() || ''

@@ -7,6 +7,7 @@ import { Squircle } from '@squircle-js/react'
 import SquircleBox from '@/components/ui/SquircleBox'
 import Header from '@/components/Header'
 import RatingsCard from '@/components/admin/RatingsCard'
+import { TOPUP_MINUTES, TOPUP_VALID_MONTHS } from '@/lib/minutes-core'
 import { motion, AnimatePresence } from 'framer-motion'
 
 const ADMIN_EMAILS = ['cnrfin93@gmail.com']
@@ -1706,10 +1707,10 @@ function AdminContent() {
                             className="px-3 py-1.5 text-xs font-medium transition-all hover:opacity-90 disabled:opacity-50"
                             style={{ background: 'var(--surface)', color: 'var(--text)' }}
                             onClick={async () => {
-                              if (!window.confirm(`Give ${s.display_name || s.email || 'this student'} 60 AI minutes (valid 3 months)?`)) return
+                              if (!window.confirm(`Give ${s.display_name || s.email || 'this student'} ${TOPUP_MINUTES} AI minutes (valid ${TOPUP_VALID_MONTHS} months)?`)) return
                               setGranting(true)
                               try {
-                                const r = await fetch('/api/admin/ai-minutes', { method: 'POST', headers: { ...headers(), 'Content-Type': 'application/json' }, body: JSON.stringify({ userId: s.id, minutes: 60 }) })
+                                const r = await fetch('/api/admin/ai-minutes', { method: 'POST', headers: { ...headers(), 'Content-Type': 'application/json' }, body: JSON.stringify({ userId: s.id, minutes: TOPUP_MINUTES }) })
                                 const d = await r.json().catch(() => ({}))
                                 if (r.ok) setStudentList((list) => list.map((x) => (x.id === s.id ? { ...x, aiMinutesLeft: d.aiMinutesLeft } : x)))
                               } finally {
@@ -1717,7 +1718,7 @@ function AdminContent() {
                               }
                             }}
                           >
-                            {granting ? 'Adding…' : '+60 AI minutes'}
+                            {granting ? 'Adding…' : `+${TOPUP_MINUTES} AI minutes`}
                           </button>
                         </Squircle>
                       </div>

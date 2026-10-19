@@ -33,7 +33,7 @@ type Action =
   | { kind: 'time'; left?: number }
   | { kind: 'view'; what: 'closed' | 'board_on' | 'board_off' | 'open_failed' }
   | { kind: 'card'; what: 'saved' | 'chose'; text: string; style?: string }
-  | { kind: 'roleplay'; sceneId: string; role: 'a' | 'b'; level: 0 | 1 | 2 }
+  | { kind: 'roleplay'; sceneId: string; role: 'a' | 'b'; level: 0 | 1 | 2; ready?: boolean }
   /** every task on the student's list is ticked: the AI tutor brings the scene to an end */
   | { kind: 'roleplay_tasks_done' }
   /** the mission-complete screen is up: spoken feedback, then swap / again / another */
@@ -41,6 +41,7 @@ type Action =
   | { kind: 'panel'; what: 'picker' | 'closed' | 'course' }
   /** the welcome talk's time reminders (lib/classroom/welcome.ts); only in the student's welcome talk (checked here) */
   | { kind: 'welcome'; step: 'suggest' | 'wrap' | 'command' }
+  | { kind: 'welcome'; step: 'correct'; now?: string }
 
 /**
  * The welcome talk's notes (lib/classroom/welcome.ts). The tutor leads the talk from its plan; these are only
@@ -50,6 +51,12 @@ function welcomeInstruction(a: Extract<Action, { kind: 'welcome' }>): string | n
   switch (a.step) {
     case 'suggest':
       return 'WELCOME TALK (time check): when you\'ve finished what you\'re saying, move on to the role-play, as your plan says (step 3): say you have a short role-play for them and teach the phrase "Let\'s do a role-play."'
+    case 'correct': {
+      // the natural version of what they just said (the helper's, checked: English, a short sentence)
+      const now = q(a.now, 160)
+      if (!now || /[぀-ヿ一-鿿]/.test(now) || now.split(/\s+/).length < 2) return null
+      return `WELCOME TALK: they just said a sentence with a mistake, and a card on their screen shows the natural version: "${now}". Say "A more natural way is: ${now}", ask them to say it, react briefly to how they said it, then carry on where you were (in the role-play, in character).`
+    }
     case 'wrap':
       return 'WELCOME TALK (time check): time is nearly up for the role-play. Bring the scene to a natural close in character within a line or two, then say "That\'s the end of the role-play!" and stop there: wait for the note with how they did.'
     case 'command':
@@ -127,12 +134,12 @@ function instruction(a: Action, secondsLeft: number, welcome: boolean): string |
       if (welcome) {
         const said = (Array.isArray(a.done) ? a.done : []).slice(0, 6).map((d) => `- ${q(d.task, 80)}: "${q(d.said, 160)}"`).join('\n')
         return `The role-play is over and the mission-complete screen is on the student's screen. Step out of character and give short spoken feedback, slowly and simply:
-1. One or two specific things they did well, quoting their own words.
+1. One or two specific things they did well, quoting their own words. If they missed a task (listed below), don't say they did everything.
 2. Ask if they have any questions about the role-play (only about the role-play: questions about eigo.io come later, after the voice command), and answer briefly.
 No corrections here: their mistakes were corrected during the scene.
 Then carry on with your plan: the voice command next (step 5), then the questions about eigo.io (step 6). Don't offer to swap roles, play it again or try another scene.
 What they said for each task:
-${said || '(nothing recorded)'}`
+${said || '(nothing recorded)'}${(Array.isArray(a.missed) ? a.missed : []).length ? `\nTasks they didn't do: ${(a.missed as string[]).slice(0, 6).map((m) => q(m, 80)).join('; ')}` : ''}`
       }
       const mine = roleOf(scene, a.role === 'b' ? 'b' : 'a')
       const yours = roleOf(scene, otherRole(a.role === 'b' ? 'b' : 'a'))
@@ -241,7 +248,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   const welcome = ['start', 'time', 'nudge', 'roleplay_done', 'welcome'].includes(action.kind) ? await isWelcomeCall(booking.user_id, booking.id) : false
   if (action.kind === 'roleplay') {
     const scene = sceneById(action.sceneId)
-    if (scene) texts.push(...roleplayInstructionParts(scene, action.role === 'b' ? 'b' : 'a', action.level === 1 || action.level === 2 ? action.level : 0))
+    if (scene) texts.push(...roleplayInstructionParts(scene, action.role === 'b' ? 'b' : 'a', action.level === 1 || action.level === 2 ? action.level : 0, action.ready === true))
   }
   const text = instruction(action, left, welcome)
   // (in the Vercel logs: when each note went in, to look into pauses)

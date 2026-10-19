@@ -146,9 +146,11 @@ export async function decideTicks(
     }
     // the least thinking the model takes: a tick is only "did they say this task?", and it's on the student's screen
     let c
+    let used: string | null = null
     for (const effort of ['minimal', 'low', null] as const) {
       try {
         c = await openai().chat.completions.create((effort ? { ...base, reasoning_effort: effort } : base) as never, { timeout: 10000, maxRetries: 0 })
+        used = effort
         break
       } catch (e) {
         // a model that doesn't take this setting: try the next one; anything else is a real failure
@@ -160,7 +162,7 @@ export async function decideTicks(
     if (!raw.trim()) return []
     const ticks = validateTicks(JSON.parse(raw), open.map((t) => t.id), lines)
     // (in the Vercel logs: how long each check took and what it ticked, to look into missed ticks)
-    console.info('ai-ticks', JSON.stringify({ scene: scene.id, ms: Date.now() - t0, open: open.map((t) => t.id), ticked: ticks.map((t) => t.id), raw: raw.slice(0, 300) }))
+    console.info('ai-ticks', JSON.stringify({ scene: scene.id, model: MODEL, effort: used, ms: Date.now() - t0, open: open.map((t) => t.id), ticked: ticks.map((t) => t.id), raw: raw.slice(0, 300) }))
     return ticks
   } catch (e) {
     console.error('ai-ticks failed', e instanceof Error ? e.message : e)

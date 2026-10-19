@@ -110,7 +110,7 @@ const emit = async (ev) => { await act(async () => { channel.dispatchEvent(new w
   check('the tutor gets the results and is asked for feedback (with swap)', dn.includes('"canSwap":true') && dn.includes('Regular please'), dn)
   check('the summary: each task with what they said', document.querySelectorAll('.apn-sr').length === 4 && txt('.apn-sr .apn-said').length > 3, txt('.apn-sum'))
   await say('ai', 'Great job! You asked about the Wi-Fi clearly. A more natural way is: Could I get a hot coffee? Would you like to swap roles?', 33000); await T.tick(300)
-  check('the tutor\'s spoken feedback isn\'t copied onto the screen', !txt('.apn-done').includes('You asked about the Wi-Fi clearly'), txt('.apn-done'))
+  check('the tutor\'s comments appear as it says them, without its corrections or questions', txt('.apn-fbx').includes('You asked about the Wi-Fi clearly') && !txt('.apn-fbx').includes('natural way') && !txt('.apn-fbx').includes('swap roles'), txt('.apn-fbx'))
   check('swap / again / next scene buttons', [...document.querySelectorAll('.apn-acts .apn-btn')].map((b) => b.textContent).join('|') === 'もう一度|役割を交代|次のシーン', [...document.querySelectorAll('.apn-acts .apn-btn')].map((b) => b.textContent))
   // 7) "let's swap roles": the student plays the barista
   g.TICK = [] // (the new play starts with nothing done)

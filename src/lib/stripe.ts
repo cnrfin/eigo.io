@@ -1,4 +1,5 @@
 import Stripe from 'stripe'
+import { AI_PLAN_MINUTES } from './minutes-core'
 
 let _stripe: Stripe | null = null
 
@@ -74,8 +75,8 @@ export const PLAN_MINUTES: Record<PlanName, number> = {
   ai: 0,         // AI plan: no teacher-lesson minutes, AI minutes instead (AI_PLAN_MINUTES)
 }
 
-/** AI minutes a month on the AI plan (AI tutor lessons use them 1:1). */
-export const AI_PLAN_MINUTES = 150
+/** AI minutes a month on the AI plan (AI tutor lessons use them 1:1): set in minutes-core, shared with the browser. */
+export { AI_PLAN_MINUTES }
 
 /** AI minutes for one billing period (subscriptions.ai_minutes_per_month): yearly gets the year's up front. */
 export function aiAllowance(plan: PlanName, interval: BillingInterval): number {

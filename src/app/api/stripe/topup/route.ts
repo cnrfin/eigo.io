@@ -8,7 +8,7 @@ import { TOPUP_MINUTES } from '@/lib/minutes'
 
 /**
  * POST /api/stripe/topup → { url }
- * One-off Stripe Checkout for +60 AI minutes (¥980, valid 3 months). Subscribers with AI access only.
+ * One-off Stripe Checkout for +TOPUP_MINUTES AI minutes (¥980, valid 3 months). Subscribers with AI access only.
  * The webhook (checkout.session.completed, metadata.kind = 'topup') adds the minutes.
  */
 export async function POST(request: NextRequest) {
