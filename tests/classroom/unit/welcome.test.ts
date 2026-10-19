@@ -101,4 +101,6 @@ ok('the rules always arrive whole (the last part)', SCENES.every((sc) => {
 const cmdNudge = welcomeNudge('command')
 ok('silence note in the command step: the voice command, never back to a done part', /voice command/.test(cmdNudge) && cmdNudge.includes('"Open the course"') && cmdNudge.includes('Never go back to a part that is already done'), cmdNudge)
 ok('silence note without a step: carry on, never back', welcomeNudge().includes('Carry on with your plan') && welcomeNudge().includes('Never go back to a part that is already done'))
+ok('silence note once they\'ve said "Open the course": don\'t ask again', welcomeNudge('command_said').includes("Don't ask for the voice command again"), welcomeNudge('command_said'))
+ok('silence note in the command step only asks for it (no questions about eigo yet)', !/questions about eigo/i.test(welcomeNudge('command')), welcomeNudge('command'))
 console.log(bad ? bad + ' FAILED' : 'all passed')

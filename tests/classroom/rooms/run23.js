@@ -113,10 +113,10 @@ const emit = async (ev) => { await act(async () => { channel.dispatchEvent(new w
   const c0 = creates()
   await say('you', 'Open the course', 40000); await T.tick(4200)
   check('D: the tutor silent after "Open the course": a response.create within about 4 s', creates() > c0, [c0, creates()])
-  // E. still nobody speaks: the silence note says where it is
+  // E. still nobody speaks: the silence note says where it is (they've said the command: "command_said")
   await T.tick(5000)
   const nudge = posts('nudge').pop() || ''
-  check('E: the silence note carries "step":"command"', nudge.includes('"step":"command"'), posts('nudge').join(' | '))
+  check('E: the silence note carries "step":"command_said"', nudge.includes('"step":"command_said"'), posts('nudge').join(' | '))
 
   // B. the tutor was cut off while teaching the phrase, then set the scene
   await call('salon-massage')
