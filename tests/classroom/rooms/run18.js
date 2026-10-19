@@ -67,7 +67,9 @@ const emit = async (ev) => { await act(async () => { channel.dispatchEvent(new w
   check('no panel yet', !T.$('.panelBox .apn'))
   check('nothing open: the tutor floats in the middle', T.$('.app').dataset.mode === 'float', T.$('.app').dataset.mode)
   const posts = (k) => ctx().filter((l) => l.includes(`"kind":"${k}"`))
-  const turns = () => g.log.filter((l) => l.includes('/ai-turn')).length
+  // the check after each pause (it sends the screen) and the quick tick check after each of the student's lines (it doesn't)
+  const turns = () => g.log.filter((l) => l.includes('/ai-turn') && l.includes('"screen"')).length
+  const quick = () => g.log.filter((l) => l.includes('/ai-turn') && !l.includes('"screen"')).length
   // the izakaya (初級: people, drinks, confirm). The tick check is slow (1.5 s) and only knows what's been said so far.
   g.turnDelay = 1500
   const ticksFor = (b) => {
@@ -84,11 +86,13 @@ const emit = async (ev) => { await act(async () => { channel.dispatchEvent(new w
   await T.tick(2600)
   await say('ai', "Hi! We'd like a table, please.", 4000); await T.tick(100)
   const t0 = turns()
+  const q0 = quick()
   await say('you', 'Okay, for how many people?', 5000); await T.tick(1100) // the check for this is now running (1.5 s)
   // the student keeps talking while a check is running: that turn is checked straight after (not dropped)
   await say('ai', 'Two people.', 6000); await T.tick(100)
   await say('you', 'There is a table here. Would you like anything to drink?', 7000); await T.tick(4500)
   check('a turn during a running check is checked right after', turns() === t0 + 2 && document.querySelectorAll('.apn-goal.done').length === 2, [turns() - t0, document.querySelectorAll('.apn-goal.done').length])
+  check('…and each of the student\'s lines gets its own quick tick check', quick() === q0 + 2, quick() - q0)
   // the confirm, then the tutor ends AND gives feedback in one breath, before that tick is back
   await say('ai', 'Two draft beers, edamame and two karaage, please.', 12000); await T.tick(100)
   await say('you', 'Okay, so two draft beers, and edamame, and two karaage', 13000); await T.tick(100)
