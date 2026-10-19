@@ -38,7 +38,7 @@ ok('cueCard correction', cc?.kind === 'correction' && cc.now === 'Yesterday I we
 ok('cueCard: Japanese student → say', cueCard('窓側の席がいいです', 'You can say: Could I sit by the window?')?.kind === 'say')
 ok('cueCard: tutor repeating the same sentence is not a correction', cueCard('I went to Osaka.', 'Yes! You could say: I went to Osaka.') === null)
 const merged = mergeCard(cc!, { kind: 'correction', was: 'I go', now: 'Yesterday I went to Osaka with my friend.', ja: '昨日友だちと大阪に行きました', why: '過去なので went' })
-ok('merge adds reason and Japanese', merged.kind === 'correction' && merged.why === '過去なので went' && merged.ja.startsWith('昨日') && merged.was === cc!.was)
+ok('merge adds reason and Japanese', merged.kind === 'correction' && merged.why === '過去なので went' && merged.ja.startsWith('昨日') && cc?.kind === 'correction' && merged.was === cc.was)
 ok('merge ignores a different sentence', mergeCard(cc!, { kind: 'correction', was: 'x', now: 'Something else entirely here.', ja: 'x', why: 'x' }) === cc)
 const sl = cueCard('窓側の席がいいです', 'In English you can say: Could I sit by the window?')!
 const sm = mergeCard(sl, { kind: 'say', heard: '窓側', options: [{ style: 'normal', text: 'Could I sit by the window?' }, { style: 'polite', text: 'Is it okay if I take the window seat?' }] })
