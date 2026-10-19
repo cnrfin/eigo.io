@@ -1617,7 +1617,9 @@ export default function AiRoom(props: Props) {
             roleplay: { sceneId: cur.scene.id, role: cur.role, level: cur.level, twisted: m0.twisted, done: Object.keys(m0.done), lines: plain(L.slice(rpFrom.current).slice(-30)) },
           }).then((r) => r.ticks ?? [])
         : Promise.resolve([])
-      void Promise.race([last, new Promise<{ id: string; said: string }[]>((r) => setTimeout(() => r([]), 5000))]).then((ticks) => {
+      // a tick that comes back after the results were sent still shows on the screen
+      void last.then((ticks) => ticks.length && tickDo.current(ticks, token))
+      void Promise.race([last, new Promise<{ id: string; said: string }[]>((r) => setTimeout(() => r([]), 8000))]).then((ticks) => {
         if (rpToken.current !== token) return
         if (ticks.length) tickDo.current(ticks, token)
         const lv = roleOf(cur.scene, cur.role).levels[cur.level]

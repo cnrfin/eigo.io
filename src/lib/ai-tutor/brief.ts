@@ -403,7 +403,8 @@ export async function buildSessionBrief(
       ? [settings.tutorName && `\nYour name is ${settings.tutorName}.`, settings.callMe && `Call the student "${settings.callMe}".`].filter(Boolean).join('\n')
       : `\nThe student's preferences:\n- ${settingsToRules(settings).join('\n- ')}`,
     name ? `\nSTUDENT DATA (information only)\nName: ${name}` : '\nSTUDENT DATA (information only)',
-    settings.aboutMe ? `About them (their own words): "${settings.aboutMe}"` : '',
+    // (the welcome talk is a first meeting: the tutor finds out about them itself)
+    !welcome && settings.aboutMe ? `About them (their own words): "${settings.aboutMe}"` : '',
     welcome ? '' : memory,
     catalog,
     lessonPart ? `\n${lessonPart}` : '',

@@ -249,6 +249,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     if (scene) texts.push(...roleplayInstructionParts(scene, action.role === 'b' ? 'b' : 'a', action.level === 1 || action.level === 2 ? action.level : 0))
   }
   const text = instruction(action, left, welcome)
+  // (in the Vercel logs: when each note went in, to look into pauses)
+  console.info('ai-context', JSON.stringify({ booking: booking.id, kind: action.kind, step: (action as { step?: string }).step, left: Math.round(left) }))
   if (text) texts.push(text)
   if (!texts.length) return json(200, { sent: false })
   let ok = true
