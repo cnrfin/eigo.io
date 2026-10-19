@@ -77,6 +77,7 @@ const emit = async (ev) => { await act(async () => { channel.dispatchEvent(new w
   check('the student\'s "could we close this… course" closes it at once', isFree(), T.$('.app').className)
   check('the close is saved (state: no course)', states().some((l) => l.includes('"courseId":null')), states())
   await T.tick(300) // (notes wait until the tutor has finished its sentence)
+  await T.tick(1300) // (notes to the tutor wait for a pause in its speech)
   check('the AI tutor is told it\'s closed (once)', closedNotes() === 1, closedNotes())
   await emit({ type: 'session.output_transcript.delta', delta: ' the course now.', start_ms: 5200, end_ms: 5700 })
   await T.tick(800)
@@ -98,9 +99,11 @@ const emit = async (ev) => { await act(async () => { channel.dispatchEvent(new w
   // 4) the ✕ button
   await say('ai', "I'll open the course now.", 32000); await T.tick(900)
   check('reopened', !isFree() && !!T.$('.snav .closeCourse'))
+  await T.tick(1300) // (the earlier close's note waits for a pause in the tutor's speech)
   const before = closedNotes()
   await T.click(T.$('.snav .closeCourse')); await T.tick(100)
-  check('✕ closes it and tells the AI tutor', isFree() && closedNotes() === before + 1 && !T.$('.snav .closeCourse'))
+  await T.tick(1300) // (notes to the tutor wait for a pause in its speech)
+  check('✕ closes it and tells the AI tutor', isFree() && closedNotes() === before + 1 && !T.$('.snav .closeCourse'), JSON.stringify([isFree(), before, closedNotes(), !!T.$('.snav .closeCourse')]))
   // 5) things that must NOT close it
   await say('ai', "I'll open the course now.", 40000); await T.tick(900)
   await T.tick(2600)

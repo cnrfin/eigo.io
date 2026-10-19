@@ -119,6 +119,7 @@ const emit = async (ev) => { await act(async () => { channel.dispatchEvent(new w
   await emit({ type: 'session.output_transcript.delta', delta: "Here it is. Okay, next slide!", start_ms: 9000, end_ms: 9600 })
   check('slip right after a new slide is held', nOf() === held, held + ' -> ' + nOf())
   await T.tick(500) // (notes wait until the tutor has finished its sentence)
+  await T.tick(1300) // (notes to the tutor wait for a pause in its speech)
   check('AI tutor asked to let the student try first', ctxPosts().some((l) => l.includes('"kind":"not_yet"')))
   // the student answers, then the AI tutor says it's moving on: instant
   await emit({ type: 'session.input_transcript.delta', delta: 'My landlady lives downstairs.', start_ms: 12000, end_ms: 13000 })
@@ -225,6 +226,7 @@ const emit = async (ev) => { await act(async () => { channel.dispatchEvent(new w
   await emit({ type: 'session.input_transcript.delta', delta: 'Yes please.', start_ms: 41000, end_ms: 41400 })
   await say("Sure, I'll open the whiteboard now.", 42000)
   check('"I\'ll open the whiteboard now" opens it', !!T.$('.app.ai-lesson.wb'))
+  await T.tick(1300) // (notes to the tutor wait for a pause in its speech)
   check('the AI tutor is told the board is up', ctxPosts().some((l) => l.includes('"what":"board_on"')))
   await emit({ type: 'session.input_transcript.delta', delta: 'Can we close it?', start_ms: 43000, end_ms: 43400 })
   await say("Of course. I'll close the whiteboard now.", 44000)
@@ -232,6 +234,7 @@ const emit = async (ev) => { await act(async () => { channel.dispatchEvent(new w
   await emit({ type: 'session.input_transcript.delta', delta: 'I just want to chat.', start_ms: 45000, end_ms: 45400 })
   await say("No problem. I'll close the course now.", 46000)
   await T.tick(100)
+  await T.tick(1300) // (notes to the tutor wait for a pause in its speech)
   check('"I\'ll close the course now" switches to free talk', !!T.$('.app.ai-lesson.no-course') && ctxPosts().some((l) => l.includes('"what":"closed"')))
   const opensBefore = g.log.filter((l) => l.includes('/ai-open')).length
   await emit({ type: 'session.input_transcript.delta', delta: 'Actually, the course again please.', start_ms: 47000, end_ms: 47400 })

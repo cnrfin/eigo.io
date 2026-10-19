@@ -113,7 +113,6 @@ export function AboutCard({
             <Ico name="check" />
             {t('wlSave')}
           </button>
-          <span className="wlc-hint">{t('wlSayYes')}</span>
         </div>
       )}
     </div>

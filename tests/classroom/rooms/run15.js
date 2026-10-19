@@ -105,14 +105,17 @@ const emit = async (ev) => { await act(async () => { channel.dispatchEvent(new w
   await say('ai', "Here you go, enjoy! That's the end of the role-play!", 30000); await T.tick(400)
   check('mission complete on screen', !!T.$('.apn-done') && txt('.apn-done .apn-k').includes('ミッションクリア'), T.$('.panelBox')?.innerHTML.slice(0, 120))
   check('progress recorded (POST /api/roleplay)', g.log.some((l) => l.startsWith('fetch POST') && l.includes('/api/roleplay ')), g.log.filter((l) => l.includes('/api/roleplay')))
+  await T.tick(1300) // (notes to the tutor wait for a pause in its speech)
   const dn = posts('roleplay_done').pop() || ''
   check('the tutor gets the results and is asked for feedback (with swap)', dn.includes('"canSwap":true') && dn.includes('Regular please'), dn)
-  check('the best line is shown', txt('.apn-bq').length > 3, txt('.apn-best'))
+  check('the summary: each task with what they said', document.querySelectorAll('.apn-sr').length === 4 && txt('.apn-sr .apn-said').length > 3, txt('.apn-sum'))
   await say('ai', 'Great job! You asked about the Wi-Fi clearly. A more natural way is: Could I get a hot coffee? Would you like to swap roles?', 33000); await T.tick(300)
-  check('the spoken feedback appears line by line', document.querySelectorAll('.apn-fbl').length === 4, txt('.apn-fb'))
+  check('the tutor\'s spoken feedback isn\'t copied onto the screen', !txt('.apn-done').includes('You asked about the Wi-Fi clearly'), txt('.apn-done'))
   check('swap / again / next scene buttons', [...document.querySelectorAll('.apn-acts .apn-btn')].map((b) => b.textContent).join('|') === 'もう一度|役割を交代|次のシーン', [...document.querySelectorAll('.apn-acts .apn-btn')].map((b) => b.textContent))
   // 7) "let's swap roles": the student plays the barista
+  g.TICK = [] // (the new play starts with nothing done)
   await say('you', "Yes, let's swap roles", 36000); await T.tick(500)
+  await T.tick(1300) // (notes to the tutor wait for a pause in its speech)
   const rp = posts('roleplay').pop() || ''
   check('swapped: the student is now the barista (role b)', !!T.$('.apn-mission') && txt('.apn-muted').startsWith('あなた：店員') && rp.includes('"role":"b"') && ticked() === 0, txt('.apn-muted'))
   // 8) the twist (上級): after "wifi" is done, a new task appears marked 予想外

@@ -94,12 +94,12 @@ const emit = async (ev) => { await act(async () => { channel.dispatchEvent(new w
   await say('you', 'Okay, so two draft beers, and edamame, and two karaage', 13000); await T.tick(100)
   await say('ai', "Great! That sounds perfect. That's the end of the role-play! You did well asking how many people. Would you like to swap roles, try it again, or try another scene?", 14000); await T.tick(300)
   check('mission complete', !!T.$('.apn-done'))
-  check('the feedback said in the same breath shows (from after the end phrase)', document.querySelectorAll('.apn-fbl').length === 2 && txt('.apn-fb').startsWith('You did well'), txt('.apn-fb'))
+  check('the screen shows a summary of the scene, not the tutor\'s live speech', !!T.$('.apn-sum') && !txt('.apn-done').includes('You did well'), txt('.apn-done'))
   check('the tutor isn\'t given the results before the last check is back', posts('roleplay_done').length === 0)
   await T.tick(2500)
   const dn = posts('roleplay_done').pop() || ''
   check('the last check ticks "confirm": the results include it, nothing missed', dn.includes('so two draft beers') && dn.includes('"missed":[]'), dn)
-  check('…and the screen shows all 3 ticked', document.querySelectorAll('.apn-ticks span.miss').length === 0 && document.querySelectorAll('.apn-ticks span').length === 3)
+  check('…and the summary shows all 3 done, with their words', document.querySelectorAll('.apn-sr.miss').length === 0 && document.querySelectorAll('.apn-sr').length === 3 && document.querySelectorAll('.apn-sr .apn-said').length === 3)
   check('progress recorded', g.log.some((l) => l.startsWith('fetch POST') && l.includes('/api/roleplay ')))
   // phrases to save
   const pr = [...document.querySelectorAll('.apn-pr')]

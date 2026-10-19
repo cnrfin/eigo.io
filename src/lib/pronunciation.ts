@@ -438,7 +438,7 @@ Sound to watch: ${targetLabel ?? '(whole word)'}`
     // and fall through to `null` (the caller renders the score without a tip).
     const r = await getOpenAI().chat.completions.create(
       {
-        model: process.env.OPENAI_COACH_MODEL || 'gpt-5.4-nano',
+        model: process.env.OPENAI_COACH_MODEL || 'gpt-6-luna',
         messages: [
           { role: 'system', content: sys },
           { role: 'user', content: user },

@@ -14,15 +14,15 @@ import { hasJapanese, inOrder, saidIt, share, words } from '@/lib/ai-tutor/voice
  *   roleplay  the scene at 初級 (the tutor sets it up first); near 3:15 it's asked to wrap up, at 3:45 it ends
  *   done      mission complete: feedback, "any questions?"
  *   command   one voice command, tried out: "Open the course" shows a preview of a course's first slide
- *   qa        an open Q&A about eigo until the goodbye; at 0:00 the welcome end screen (About me saved there)
+ *   qa        an open Q&A about eigo.io until the goodbye; at 0:00 the welcome end screen (About me saved there)
  */
 
 export type WelcomeStep = 'about' | 'suggest' | 'roleplay' | 'done' | 'command' | 'qa'
 
 /** seconds (on the call clock unless it says otherwise) */
 export const WELCOME_AT = {
-  /** the role-play note goes once the three facts are in, but not before this… */
-  pickMin: 50,
+  /** the role-play note goes once there's enough to choose it (so it's there when the questions end), not before… */
+  pickMin: 30,
   /** …and by now with whatever there is (the fallback scene if nothing) */
   pickBy: 100,
   /** the card shows by itself this long after the note, if the tutor hasn't taught the phrase yet */
@@ -179,7 +179,7 @@ export function suggestedPhrase(sentence: string): string | null {
 
 /** the tutor moves on to the voice command ("Now let's try a voice command. Say: Open the course.") */
 export const TUTOR_COMMAND = /\bvoice command|\bby voice\b|\bjust (?:say|ask)\b|\b(?:try|please) say(?:ing)?\s*:?\s*["“]?open the course/i
-/** the tutor opens the Q&A ("Do you have any questions about eigo?") */
+/** the tutor opens the Q&A ("Do you have any questions about eigo.io?", "…eigo dot I O?") */
 export const TUTOR_QA = /\bany (?:other )?questions? about (?:eigo|the (?:platform|lessons?|classroom|app|site)|how)\b|\bquestions? about eigo\b/i
 
 /** "Open the course" (or near it), said by the student; questions don't count */
@@ -213,7 +213,7 @@ export type WelcomeSnap = {
   /** the role-play chosen for them is ready; the note with it has gone (seconds ago, null = not yet) */
   pickReady: boolean
   pickAge: number | null
-  /** the three facts are in */
+  /** enough to choose the role-play: what they do and why they're studying English */
   factsIn: boolean
   wrapSent: boolean
   /** the voice command: how long ago they said it (null = not yet) */

@@ -4,7 +4,7 @@ import { getSupabaseAdmin } from '@/lib/supabase-admin'
 
 /**
  * Classroom AI: word / phrase lookups on slides and translation of the
- * teacher's chat messages. gpt-5.4-nano with JSON output, cached in
+ * teacher's chat messages. gpt-6-luna with JSON output, cached in
  * ai_lookup_cache so the same lookup is only ever paid for once.
  */
 
@@ -18,7 +18,7 @@ function openai() {
   return _openai
 }
 
-const MODEL = 'gpt-5.4-nano'
+const MODEL = 'gpt-6-luna'
 const LANG_NAMES: Record<string, string> = { ja: 'Japanese', en: 'English', ko: 'Korean', zh: 'Chinese (Simplified)' }
 const langName = (l: string) => LANG_NAMES[l] ?? 'Japanese'
 

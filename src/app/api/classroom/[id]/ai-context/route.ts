@@ -132,9 +132,9 @@ function instruction(a: Action, secondsLeft: number, welcome: boolean): string |
       if (welcome) {
         const said = (Array.isArray(a.done) ? a.done : []).slice(0, 6).map((d) => `- ${q(d.task, 80)}: "${q(d.said, 160)}"`).join('\n')
         return `The role-play is over and the mission-complete screen is on the student's screen. Step out of character and give short spoken feedback, slowly and simply:
-1. One specific thing they did well, quoting their own words.
-2. Only if one of their lines below really had a mistake (grammar or a wrong word): "A more natural way is: <that line, corrected>". If every line was right, say so instead: never give back a sentence they already said correctly.
-3. Ask if they have any questions about the role-play, and answer briefly.
+1. One or two specific things they did well, quoting their own words.
+2. Ask if they have any questions about the role-play, and answer briefly.
+No corrections here: their mistakes were corrected during the scene.
 Then carry on with your plan (the voice command). Don't offer to swap roles, play it again or try another scene.
 What they said for each task:
 ${said || '(nothing recorded)'}`
@@ -178,9 +178,10 @@ ${done || '(nothing recorded)'}`
       // go by whichever is sooner, or the goodbye note never comes
       if (typeof a.left === 'number' && Number.isFinite(a.left) && a.left >= 0) secondsLeft = Math.min(secondsLeft, a.left)
       if (welcome) {
-        // the welcome call has its own steps: only the goodbye
-        if (secondsLeft > 28) return null
-        return 'Time note: about 20 seconds left. Say a short, warm goodbye now: thank them, say you enjoyed meeting them, and invite them to come back for a full lesson.'
+        // the welcome talk: a reminder to keep going (it had said goodbye with 90 s left), then the goodbye
+        if (secondsLeft > 100) return null
+        if (secondsLeft > 28) return "Time note: about a minute and a half left. Keep the conversation going (their questions about eigo.io, or a light chat about them). Don't say goodbye or thank them for today yet: wait for the goodbye note."
+        return 'Time note (the goodbye note): about 20 seconds left. Say a short, warm goodbye now: thank them, say you enjoyed meeting them, and invite them to come back for a full lesson. If they say goodbye back, answer warmly in a few words.'
       }
       if (secondsLeft > 330) return null
       if (secondsLeft > 125) return 'Time note: about 5 minutes left.'

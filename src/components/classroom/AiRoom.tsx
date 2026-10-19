@@ -282,7 +282,8 @@ export default function AiRoom(props: Props) {
       // Not the first one: it's what the tutor waits for before saying anything.
       if (a.kind !== 'start' && a.kind !== 'resume') {
         const until = Date.now() + 6000
-        while (Date.now() < until && !closing.current && (speakingRef.current || responding.current || Date.now() - lastSaid.current.tutor < 350))
+        // (a real pause: 1.2 s without a word from it; shorter gaps come mid-sentence)
+        while (Date.now() < until && !closing.current && (speakingRef.current || responding.current || Date.now() - lastSaid.current.tutor < 1200))
           await new Promise((r) => setTimeout(r, 200))
       }
       const sid = sessionId.current
@@ -1212,6 +1213,7 @@ export default function AiRoom(props: Props) {
   const left = Math.min(info.durationMinutes * 60, Math.max(0, ((clockEnd ?? endsAt.current) - now) / 1000))
   const noted = useRef<Set<string>>(new Set())
   const timeUp = useRef(false)
+  const graceFrom = useRef(0)
   useEffect(() => {
     if (status !== 'live') return
     // the server picks the wording from the booked end; the AI tutor keeps teaching until ~20 s before
@@ -1220,16 +1222,22 @@ export default function AiRoom(props: Props) {
       noted.current.add(k)
       void act({ kind: 'time', left: Math.round(left) })
     }
-    // (the welcome call has its own steps instead: only the goodbye)
+    // (the welcome talk: a "keep going" reminder at 1:30 left, then the goodbye)
     if (!welcome) {
       if (left <= 300 && left > 120) note('5')
       if (left <= 120 && left > 60) note('2')
       if (left <= 60 && left > 25) note('1')
-    }
+    } else if (left <= 90 && left > 40) note('w')
     if (left <= 25) note('0')
     if (left <= 30) wrapUp.current = true
     if (left <= 0 && !timeUp.current) {
-      // 00:00 ends the lesson here and now (the server's sweep also hangs up, as a backstop)
+      // 00:00 ends the lesson (the server's sweep also hangs up, as a backstop). If they're still saying goodbye,
+      // a few more seconds so the tutor can answer (it felt cold to be cut off): while either is talking, up to
+      // 12 s, and never past the server's end
+      const T = Date.now()
+      if (!graceFrom.current) graceFrom.current = T
+      const talking = speakingRef.current || responding.current || T - lastSaid.current.tutor < 1500 || T - lastSaid.current.student < 3000
+      if (talking && T - graceFrom.current < 12_000 && endsAt.current - (T + clockOffset) > 2000) return
       timeUp.current = true
       closing.current = true
       gen.current++ // ignore anything the session still sends
@@ -1237,7 +1245,7 @@ export default function AiRoom(props: Props) {
       flush(true)
       setStatus('ended')
     }
-  }, [left, status, act, sendEvent, flush, welcome])
+  }, [left, now, status, act, sendEvent, flush, welcome, clockOffset])
 
   useEffect(() => {
     if (speaking) setTutorReady(true)
@@ -1867,7 +1875,7 @@ export default function AiRoom(props: Props) {
       stepAge: (T - wStepAt.current) / 1000,
       pickReady: !!wPick.current,
       pickAge: wPickAt.current === null ? null : (T - wPickAt.current) / 1000,
-      factsIn: factCount(wFactsRef.current) === FACT_KEYS.length,
+      factsIn: !!wFactsRef.current.job && !!wFactsRef.current.why,
       wrapSent: wWrapSent.current,
       commandAge: wSaidAt.current === null ? null : (T - wSaidAt.current) / 1000,
     })
@@ -2321,15 +2329,6 @@ export default function AiRoom(props: Props) {
                   level={panel.level}
                   mission={mission}
                   took={(panel.finishedAt ?? now) - mission.startedAt}
-                  feedback={lines.current
-                    .map((l, k) => ({ ...l, k }))
-                    .slice(feedbackFrom.current.line)
-                    .filter((l) => l.from === 'tutor')
-                    .map((l) => (l.k === feedbackFrom.current.line ? l.text.slice(feedbackFrom.current.offset) : l.text))
-                    .flatMap((t) => t.split(/(?<=[.!?])\s+/))
-                    .map((x) => x.trim())
-                    .filter((x) => x.length > 2)
-                    .slice(0, 5)}
                   phrases={phrasesToSave(panel.scene, panel.role, panel.level, mission.twisted, mission.done)}
                   isSaved={(term) => props.savedIds.has(tutorItemId(term))}
                   onSavePhrase={(term, ja) => {

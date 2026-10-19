@@ -851,6 +851,16 @@
 .cr .apn-btn .ico{width:16px;height:16px}
 .cr .apn-btn .ico.flip{transform:scaleX(-1)}
 .cr .apn-acts .apn-end{margin-left:auto}
+.cr .apn-sum{margin-top:14px;display:flex;flex-direction:column;gap:6px}
+.cr .apn-sr{display:flex;align-items:flex-start;gap:10px;padding:9px 12px;border-radius:12px;background:var(--inset)}
+.cr .apn-sic{width:22px;height:22px;border-radius:999px;display:grid;place-items:center;flex:none;background:var(--accent);color:#0d1a16;margin-top:1px}
+.cr .apn-sic .ico{width:12px;height:12px}
+.cr .apn-sr.miss .apn-sic{background:transparent;border:2px solid var(--edge)}
+.cr .apn-st{display:flex;flex-direction:column;min-width:0}
+.cr .apn-st b{font-size:13.5px;font-weight:600}
+.cr .apn-st span{font-size:12.5px;color:var(--text-muted)}
+.cr .apn-st .apn-said{color:var(--accent)}
+.cr .apn-time{align-self:flex-end;font-size:12px;color:var(--text-muted);font-variant-numeric:tabular-nums}
 .cr .apn-next{margin-top:auto;padding-top:14px;display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-muted)}
 .cr .apn-next i{width:6px;height:6px;border-radius:99px;background:var(--accent);animation:apn-blink 1.2s ease-in-out infinite}
 @keyframes apn-blink{50%{opacity:.3}}

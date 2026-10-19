@@ -71,6 +71,7 @@ const emit = async (ev) => { await act(async () => { channel.dispatchEvent(new w
   await say('ai', "Let's look at some role-plays.", 1000); await T.tick(800)
   check('"Let\'s look at some role-plays" opens the picker', !!T.$('.panelBox .apn-pick') && txt('.apn-seg .on') === 'ロールプレイ', T.$('.panelBox')?.innerHTML.slice(0, 200))
   check('panel open: tutor beside or under it', ['panel-side', 'panel-top'].includes(T.$('.app').dataset.mode), T.$('.app').dataset.mode)
+  await T.tick(1300) // (notes to the tutor wait for a pause in its speech)
   check('the AI tutor is told the list is up', ctx().some((l) => l.includes('"kind":"panel"') && l.includes('"what":"picker"')))
   await T.tick(100)
   check('first role-play in the hero, the others listed with dots', txt('.apn-info h2') === '海外のカフェで注文' && document.querySelectorAll('.apn-row').length === 3 && txt('.apn-row.on b') === '海外のカフェで注文' && txt('.apn-kick').includes('中級'), txt('.apn-pick'))

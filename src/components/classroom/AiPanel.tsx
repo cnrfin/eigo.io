@@ -316,7 +316,6 @@ export function RoleplayDone({
   level,
   mission,
   took,
-  feedback,
   phrases,
   isSaved,
   onSavePhrase,
@@ -333,8 +332,6 @@ export function RoleplayDone({
   level: LevelIndex
   mission: Mission
   took: number
-  /** the AI tutor's spoken feedback, sentence by sentence as it says them */
-  feedback: string[]
   /** model phrases from the scene worth saving (lib/roleplay/phrases.ts) */
   phrases: { term: string; ja: string }[]
   isSaved: (term: string) => boolean
@@ -347,9 +344,6 @@ export function RoleplayDone({
   welcome?: boolean
 }) {
   const tasks = tasksFor(roleOf(scene, role).levels[level], mission.twisted)
-  const said = Object.values(mission.done)
-  const best = said.reduce((a, b) => (b.split(/\s+/).length > a.split(/\s+/).length ? b : a), '')
-  const icon = (line: string) => (/\b(try|natural|next time|instead|remember)\b/i.test(line) ? 'pen' : /\b(swap|switch|roles?|again|another)\b/i.test(line) || /\?\s*$/.test(line) ? 'users' : 'check')
   return (
     <div className="apn apn-done">
       <div className="apn-dt">
@@ -363,21 +357,19 @@ export function RoleplayDone({
           <div className="apn-h">{scene.title[lang]}</div>
         </div>
       </div>
-      <div className="apn-ticks">
+      {/* a summary of the scene: each task, with what they said (not the tutor's live speech) */}
+      <div className="apn-sum">
         {tasks.map((x) => (
-          <span key={x.id} className={mission.done[x.id] ? '' : 'miss'}>
-            {mission.done[x.id] && <Ico name="check" />}
-            {x.title[lang]}
-          </span>
+          <div key={x.id} className={`apn-sr${mission.done[x.id] ? '' : ' miss'}`}>
+            <span className="apn-sic">{mission.done[x.id] ? <Ico name="check" /> : <i />}</span>
+            <span className="apn-st">
+              <b>{x.title[lang]}</b>
+              {mission.done[x.id] ? <span className="apn-said">“{mission.done[x.id]}”</span> : <span>{t('rpMissed')}</span>}
+            </span>
+          </div>
         ))}
+        <div className="apn-time">{mmss(took)}</div>
       </div>
-      {best && (
-        <div className="apn-best">
-          <span className="apn-bl">{t('rpBest')}</span>
-          <span className="apn-bm">{mmss(took)}</span>
-          <span className="apn-bq">“{best}”</span>
-        </div>
-      )}
       {phrases.length > 0 && (
         <div className="apn-phr">
           <span className="apn-bl">{t('rpPhrases')}</span>
@@ -397,16 +389,6 @@ export function RoleplayDone({
           })}
         </div>
       )}
-      <div className="apn-fb">
-        {feedback.map((line, i) => (
-          <div key={i} className={`apn-fbl ${icon(line)}`}>
-            <span className="apn-fic">
-              <Ico name={icon(line) as 'check' | 'pen' | 'users'} />
-            </span>
-            <span>{line}</span>
-          </div>
-        ))}
-      </div>
       {welcome ? (
         <div className="apn-next" role="status">
           <i />

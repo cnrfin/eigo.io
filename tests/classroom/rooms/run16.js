@@ -105,9 +105,10 @@ const emit = async (ev) => { await act(async () => { channel.dispatchEvent(new w
   await say('ai', "Here you go, enjoy! That's the end of the role-play!", 30000); await T.tick(400)
   check('mission complete on screen', !!T.$('.apn-done') && txt('.apn-done .apn-k').includes('ミッションクリア'), T.$('.panelBox')?.innerHTML.slice(0, 120))
   check('progress recorded (POST /api/roleplay)', g.log.some((l) => l.startsWith('fetch POST') && l.includes('/api/roleplay ')), g.log.filter((l) => l.includes('/api/roleplay')))
+  await T.tick(1300) // (notes to the tutor wait for a pause in its speech)
   const dn = posts('roleplay_done').pop() || ''
   check('the tutor gets the results and is asked for feedback (with swap)', dn.includes('"canSwap":true') && dn.includes('Regular please'), dn)
-  check('the best line is shown', txt('.apn-bq').length > 3, txt('.apn-best'))
+  check('the summary shows what they said', document.querySelectorAll('.apn-sr .apn-said').length > 0, txt('.apn-sum'))
   const onDone = () => !!T.$('.apn-done')
   // the live case: the question arrives in pieces, the "?" last
   await emit({ type: 'session.output_transcript.delta', delta: 'Great job! Would you like to swap roles', start_ms: 33000, end_ms: 33400 })

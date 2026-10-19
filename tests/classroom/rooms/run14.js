@@ -84,6 +84,7 @@ const emit = async (ev) => { await act(async () => { channel.dispatchEvent(new w
   // asking again while already on slide 1: the tutor is still told
   await T.tick(2600)
   await say('ai', "Okay, let's start this lesson again from the beginning.", 12000); await T.tick(800)
+  await T.tick(1300) // (notes to the tutor wait for a pause in its speech)
   check('a restart on slide 1 still tells the tutor', restarts() === 2 && nOf() === 1, restarts())
   console.log(fails ? `${fails} FAILED` : 'all passed')
   process.exit(fails ? 1 : 0)
