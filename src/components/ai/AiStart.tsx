@@ -61,6 +61,10 @@ export const rememberAiAccess = (uid: string | undefined, on: boolean) => uid &&
 /** Keep the cached profile in step when the student changes their AI tutor settings. */
 export const rememberAiProfile = (uid: string | undefined, p: AiProfile) => uid && store.set(profileKey(uid), p)
 
+/** /dashboard?welcome=1: admins and test accounts try the welcome call (the server ignores it for anyone else) */
+const welcomeTest = () => typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('welcome') === '1'
+const startUrl = () => (welcomeTest() ? '/api/ai-tutor/start?welcome=1' : '/api/ai-tutor/start')
+
 /** Fetch the start state and the course list ahead of time (dashboard load, hovering the button). */
 export function prefetchAiStart(token: string | undefined, uid: string | undefined): Promise<void> {
   if (!token) return Promise.resolve()
@@ -68,7 +72,7 @@ export function prefetchAiStart(token: string | undefined, uid: string | undefin
   if (mem.inflight) return mem.inflight
   const h = { headers: { Authorization: `Bearer ${token}` } }
   mem.inflight = Promise.all([
-    fetch('/api/ai-tutor/start', h).then((r) => (r.ok ? r.json() : null)).then((d) => d && (mem.state = d as AiStartState)),
+    fetch(startUrl(), h).then((r) => (r.ok ? r.json() : null)).then((d) => d && (mem.state = d as AiStartState)),
     fetch('/api/slide-courses/catalog', h).then((r) => (r.ok ? r.json() : null)).then((d) => Array.isArray(d?.courses) && (mem.catalog = d.courses)),
   ])
     .catch(() => {})
@@ -115,7 +119,7 @@ export function useAiStartState(enabled: boolean) {
   useEffect(() => {
     if (!enabled || !token) return
     let alive = true
-    fetch('/api/ai-tutor/start', { headers: { Authorization: `Bearer ${token}` } })
+    fetch(startUrl(), { headers: { Authorization: `Bearer ${token}` } })
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => {
         if (!d) return
@@ -272,13 +276,14 @@ export function AiStartCard({
       const r = await fetch('/api/ai-tutor/start', {
         method: 'POST',
         headers: { Authorization: `Bearer ${session.access_token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify(
-          pickCourse && roleplay && rpPick && !state?.trial
+        body: JSON.stringify({
+          ...(pickCourse && roleplay && rpPick && !state?.trial
             ? { duration, courseId: null, roleplay: rpPick }
             : pickCourse && choice !== undefined
               ? { duration, courseId: choice }
-              : { duration },
-        ),
+              : { duration }),
+          ...(welcomeTest() ? { welcome: true } : {}),
+        }),
       })
       const d = await r.json().catch(() => ({}))
       if (!r.ok || !d.bookingId) throw new Error(d.error || 'failed')

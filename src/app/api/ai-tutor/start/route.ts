@@ -22,7 +22,9 @@ export async function GET(request: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const access = await aiAccess(user)
   if (!access.ok) return NextResponse.json({ error: 'AI lessons are not available for this account' }, { status: 403 })
-  return NextResponse.json(await aiStartState(user.id, access.unlimited))
+  // ?welcome=1: admins and test accounts can try the welcome call (aiStartState)
+  const welcomeTest = access.unlimited && request.nextUrl.searchParams.get('welcome') === '1'
+  return NextResponse.json(await aiStartState(user.id, access.unlimited, Date.now(), welcomeTest))
 }
 
 export async function POST(request: NextRequest) {
@@ -33,19 +35,21 @@ export async function POST(request: NextRequest) {
   let duration = 0
   let courseId: string | null | undefined
   let rawRoleplay: unknown
+  let welcomeTest = false
   try {
     const body = await request.json()
     duration = Number(body.duration)
     // optional: a course id, or null for free talk; left out = carry on where they left off
     if (body.courseId === null || typeof body.courseId === 'string') courseId = body.courseId
     rawRoleplay = body.roleplay
+    welcomeTest = access.unlimited && body.welcome === true
   } catch {
     /* handled below */
   }
   if (!Number.isInteger(duration)) return NextResponse.json({ error: 'Invalid duration' }, { status: 400 })
   const roleplay = await checkRoleplayPick(user.id, rawRoleplay)
   if (roleplay === 'bad') return NextResponse.json({ error: 'bad_roleplay' }, { status: 400 })
-  const r = await startAiNow(user.id, access.unlimited, duration, courseId, roleplay)
+  const r = await startAiNow(user.id, access.unlimited, duration, courseId, roleplay, welcomeTest)
   if (!r.ok) return NextResponse.json({ error: r.reason, state: r.state ?? null }, { status: r.reason === 'error' ? 500 : 409 })
   return NextResponse.json({ bookingId: r.bookingId, resumed: r.resumed })
 }

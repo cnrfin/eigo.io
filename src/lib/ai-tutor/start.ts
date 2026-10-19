@@ -79,11 +79,15 @@ async function courseLesson(userId: string, courseId: string, lastWhenDone: bool
   return { courseId, title: course.title, titleJa: course.titleJa, lessonId, lessonNumber: course.lessonIds.indexOf(lessonId) + 1 }
 }
 
-export async function aiStartState(userId: string, unlimited: boolean, now = Date.now()): Promise<AiStartState> {
-  return (await startState(userId, unlimited, now)).state
+/**
+ * welcomeTest: admins and test accounts are never charged, so they never look plan-less and never get the
+ * welcome call. With /dashboard?welcome=1 they do (once, while profiles.ai_trial_booking_id is empty), to try it.
+ */
+export async function aiStartState(userId: string, unlimited: boolean, now = Date.now(), welcomeTest = false): Promise<AiStartState> {
+  return (await startState(userId, unlimited, now, welcomeTest)).state
 }
 
-async function startState(userId: string, unlimited: boolean, now = Date.now()): Promise<{ state: AiStartState; balance: Balance | null }> {
+async function startState(userId: string, unlimited: boolean, now = Date.now(), welcomeTest = false): Promise<{ state: AiStartState; balance: Balance | null }> {
   const db = getSupabaseAdmin()
   const today = jstNow(now - 24 * 3600e3).date // yesterday in JST, to catch lessons running over midnight
   const [{ data: rows }, balance, resume, { data: prof }] = await Promise.all([
@@ -118,7 +122,7 @@ async function startState(userId: string, unlimited: boolean, now = Date.now()):
   const minutes = balance ? balance.snapshot : null
   // no subscription and no top-ups: the free 5-minute welcome call, once
   const noPlan = !!balance && !balance.active && !balance.snapshot.topups.length
-  const trial = noPlan && !prof?.ai_trial_booking_id
+  const trial = (noPlan || (unlimited && welcomeTest)) && !prof?.ai_trial_booking_id
   const options = trial ? [AI_TRIAL_MINUTES] : aiLengthsFor(minutes)
   const blocked: AiStartState['blocked'] = teacher
     ? 'teacher_lesson'
@@ -145,8 +149,10 @@ export async function startAiNow(
   courseId?: string | null,
   /** a role-play instead of a course (checked by checkRoleplayPick); the lesson opens straight into it */
   roleplay?: RoleplayPick,
+  /** admins / test accounts: start the welcome call (see aiStartState) */
+  welcomeTest = false,
 ): Promise<{ ok: true; bookingId: string; resumed: boolean } | { ok: false; reason: string; state?: AiStartState }> {
-  const { state, balance } = await startState(userId, unlimited)
+  const { state, balance } = await startState(userId, unlimited, Date.now(), welcomeTest)
   if (state.liveId) return { ok: true, bookingId: state.liveId, resumed: true }
   if (state.blocked) return { ok: false, reason: state.blocked, state }
   if (!state.options.includes(duration)) return { ok: false, reason: 'bad_duration', state }
