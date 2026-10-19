@@ -1,7 +1,7 @@
 'use client'
 /* eslint-disable @next/next/no-img-element -- scene and course pictures, as in the AI panel */
 
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import AiAvatar from '@/components/ai/AiAvatar'
 import type { AvatarMood } from '@/lib/ai-tutor/avatar-mood'
 import { FACT_KEYS, FACT_LABELS, type FactKey, type Facts } from '@/lib/classroom/welcome'
@@ -213,6 +213,69 @@ export function CommandCard({ t, said, compact }: { t: ClassroomT; said: boolean
   )
 }
 
+/* ---------------- About me, on the end screen (saved already: each row can be edited in place) ---------------- */
+
+function AboutBox({ t, lang, facts, saved, onEdit }: { t: ClassroomT; lang: Lang; facts: Facts; saved: boolean; onEdit: (k: FactKey, v: string) => void }) {
+  const [editing, setEditing] = useState<FactKey | null>(null)
+  const [draft, setDraft] = useState('')
+  // the rows come in one by one with the screen; a row changed later just shows its new text
+  const [fresh, setFresh] = useState(true)
+  useEffect(() => {
+    const id = setTimeout(() => setFresh(false), 2000)
+    return () => clearTimeout(id)
+  }, [])
+  const keys = FACT_KEYS.filter((k) => facts[k])
+  const done = () => {
+    if (editing && draft.trim() && draft.trim() !== facts[editing]) onEdit(editing, draft.trim())
+    setEditing(null)
+  }
+  return (
+    <div className="wle-box">
+      <div className="l">{t('wlAboutTitle')}</div>
+      <div className="wlc-rows">
+        {keys.map((k, i) => (
+          <div key={k} className="wlc-row" style={fresh ? { animationDelay: `${0.5 + i * 0.3}s` } : undefined}>
+            <span className="wlc-k">{FACT_LABELS[k][lang]}</span>
+            {editing === k ? (
+              <input
+                className="wlc-in"
+                autoFocus
+                value={draft}
+                maxLength={80}
+                onChange={(e) => setDraft(e.target.value)}
+                onBlur={done}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') done()
+                  if (e.key === 'Escape') setEditing(null)
+                }}
+              />
+            ) : (
+              <span className="wlc-v">{facts[k]}</span>
+            )}
+            {editing !== k && (
+              <button
+                className="wlc-ed"
+                aria-label={t('wlEdit')}
+                title={t('wlEdit')}
+                onClick={() => {
+                  setDraft(facts[k] ?? '')
+                  setEditing(k)
+                }}
+              >
+                <Ico name="pen" />
+              </button>
+            )}
+          </div>
+        ))}
+      </div>
+      <div className={`wlc-done${saved ? '' : ' off'}`} role="status">
+        {saved && <Ico name="check" />}
+        {saved ? t('wlSaved') : t('wlSaving')}
+      </div>
+    </div>
+  )
+}
+
 /* ---------------- the end screen ---------------- */
 
 const mins = (ms: number) => {
@@ -230,10 +293,11 @@ export function WelcomeEnd({
   spokeMs,
   phrases,
   cleared,
-  about,
-  onCheckAbout,
+  lang,
+  facts,
+  aboutSaved,
+  onEditAbout,
   next,
-  children,
 }: {
   t: ClassroomT
   name: string
@@ -244,12 +308,12 @@ export function WelcomeEnd({
   phrases: string[]
   /** the role-play's levels cleared (null = no role-play) */
   cleared: number | null
-  /** About me: saved (with what), not saved yet (with facts to check), or nothing to save */
-  about: { state: 'saved'; what: string } | { state: 'unsaved' } | { state: 'none' }
-  onCheckAbout: () => void
+  /** About me: what they said about themselves (saved by itself; editable here) */
+  lang: Lang
+  facts: Facts
+  aboutSaved: boolean
+  onEditAbout: (k: FactKey, v: string) => void
   next: NextUp[]
-  /** the About-you card, when they tap 確認する */
-  children?: ReactNode
 }) {
   const mood = useRef<AvatarMood>({ face: 'delighted', until: Number.MAX_SAFE_INTEGER, listening: false, slideUntil: 0 })
   const box = useRef<HTMLDivElement | null>(null)
@@ -294,25 +358,7 @@ export function WelcomeEnd({
             ))}
           </div>
         )}
-        {about.state !== 'none' && (
-          <div className="wle-box">
-            <div className="wle-me">
-              {about.state === 'saved' ? (
-                <>
-                  <Ico name="check" />
-                  {t('wlSavedWhat', { what: about.what })}
-                </>
-              ) : (
-                <>
-                  <span className="grow">{t('wlNotSaved')}</span>
-                  <button className="wlc-b sec sm" onClick={onCheckAbout}>
-                    {t('wlCheck')}
-                  </button>
-                </>
-              )}
-            </div>
-          </div>
-        )}
+        {FACT_KEYS.some((k) => facts[k]) && <AboutBox t={t} lang={lang} facts={facts} saved={aboutSaved} onEdit={onEditAbout} />}
         {next.length > 0 && (
           <div className="wle-box">
             <div className="l">{t('wlRecommend')}</div>
@@ -345,7 +391,6 @@ export function WelcomeEnd({
           </a>
         </div>
       </div>
-      {children}
     </div>
   )
 }

@@ -37,7 +37,6 @@ import { PanelPicker, RoleplayDone, RoleplayMission, newMission, type Mission, t
 import { LEVEL_NAMES, otherRole, tasksFor, roleOf, type LevelIndex, type RoleId, type Scene } from '@/lib/roleplay/types'
 import {
   FACT_KEYS,
-  FACT_LABELS,
   TUTOR_COMMAND,
   TUTOR_QA,
   WELCOME_AT,
@@ -57,7 +56,7 @@ import {
   type WelcomePick,
   type WelcomeStep,
 } from '@/lib/classroom/welcome'
-import { AboutCard, CommandCard, SuggestCard, WelcomeEnd, type NextUp } from './WelcomeCards'
+import { CommandCard, SuggestCard, WelcomeEnd, type NextUp } from './WelcomeCards'
 import { normText } from '@/lib/ai-tutor/actions'
 import { panelIntent, type PanelIntent } from '@/lib/roleplay/intent'
 import type { SceneSummary } from '@/lib/roleplay/types'
@@ -1359,19 +1358,22 @@ export default function AiRoom(props: Props) {
     const L0 = lines.current
     const lastLine = L0[L0.length - 1]
     // (by the transcript's timing only: the "is its voice still playing" signal can stay on, and the call then waited)
+    const bye = (l: Line | undefined) => !!l && !END_RP.test(l.text) && GOODBYE.test(l.text)
+    const quiet = T0 - lastSaid.current.tutor >= 1500 && T0 - lastSaid.current.student >= 1500
+    const recent = L0.slice(-4)
     const byeDone =
       noted.current.has('0') &&
       // (never an in-character goodbye in a role-play: "See you! Take care!")
       !rpPlaying.current &&
-      lastLine?.from === 'tutor' &&
-      !END_RP.test(lastLine.text) &&
-      GOODBYE.test(lastLine.text) &&
-      T0 - lastSaid.current.tutor >= 1500 &&
-      T0 - lastSaid.current.student >= 1500 &&
-      (L0.slice(-5).some((l) => l.from === 'student' && GOODBYE.test(l.text)) || T0 - lastSaid.current.tutor >= 3000)
+      quiet &&
+      // the tutor's goodbye last (with theirs before it, or 3 s of quiet), or theirs last after the tutor's: once the
+      // student's "Bye bye" came last, and the call waited for 0:00
+      ((lastLine?.from === 'tutor' && bye(lastLine) && (recent.some((l) => l.from === 'student' && bye(l)) || T0 - lastSaid.current.tutor >= 3000)) ||
+        (lastLine?.from === 'student' && bye(lastLine) && recent.some((l) => l.from === 'tutor' && bye(l))))
     // 0:00 ends it at once: the end screen shows and the call closes quietly behind it (the server's sweep also hangs
     // up, as a backstop). The few seconds' grace for a goodbye still being said felt like a wait every time.
     if ((left <= 0 || byeDone) && !timeUp.current) {
+      logEv(`end:${byeDone ? 'goodbyes' : 'time'} left=${Math.round(left)}`)
       timeUp.current = true
       closing.current = true
       gen.current++ // ignore anything the session still sends
@@ -1379,7 +1381,7 @@ export default function AiRoom(props: Props) {
       flush(true)
       setStatus('ended')
     }
-  }, [left, now, status, act, sendEvent, flush, welcome, clockOffset])
+  }, [left, now, status, act, sendEvent, flush, welcome, clockOffset, logEv])
 
   useEffect(() => {
     if (speaking) setTutorReady(true)
@@ -1445,8 +1447,8 @@ export default function AiRoom(props: Props) {
   useEffect(() => {
     if (status === 'ended') {
       postEvent(info.bookingId, 'end')
-      // the welcome call ends on its own screen (below)
-      if (welcome) return
+      // the welcome call ends on its own screen (below); About me is saved (again, if anything changed)
+      if (welcome) return void wSave.current()
       const id = setTimeout(() => onLeave({ ended: true }), 1500)
       return () => clearTimeout(id)
     }
@@ -1522,7 +1524,6 @@ export default function AiRoom(props: Props) {
   const [wLit, setWLit] = useState<boolean[]>([])
   const [wHeard, setWHeard] = useState(false)
   const [wCleared, setWCleared] = useState<number | null>(null)
-  const [wCheck, setWCheck] = useState(false)
   const [wNext, setWNext] = useState<NextUp[]>([])
   /** the voice command, tried out: said, and the course preview on screen (lesson 1, slide 1) */
   const [wSaid, setWSaid] = useState(false)
@@ -1900,6 +1901,7 @@ export default function AiRoom(props: Props) {
   const wGo = useRef<(to: WelcomeStep) => void>(() => {})
   const wOpen = useRef<() => void>(() => {})
   const wSave = useRef<() => void>(() => {})
+  const wSavedJson = useRef('')
   const wAsk = useRef<() => void>(() => {})
   const wLoadPick = useRef<() => void>(() => {})
   const wPrepare = useRef<() => Promise<Scene | null>>(() => Promise.resolve(null))
@@ -1939,7 +1941,11 @@ export default function AiRoom(props: Props) {
       void welcomeAbout(info.bookingId, sid, recent).then((r) => {
         wAsking.current = false
         const next = { ...wFactsRef.current, ...r.facts }
-        if (FACT_KEYS.some((k) => next[k] !== wFactsRef.current[k])) setFacts(next)
+        if (FACT_KEYS.some((k) => next[k] !== wFactsRef.current[k])) {
+          setFacts(next)
+          // (an answer read after the questions were over: saved too)
+          if (wStepRef.current && wStepRef.current !== 'about') wSave.current()
+        }
         // the role-play for them (until it's on screen)
         if (r.pick && !wSceneRef.current) wPick.current = r.pick
         // once they've said what they do (the pick goes by their job first): the scene is fixed, and the tutor is told
@@ -1951,11 +1957,19 @@ export default function AiRoom(props: Props) {
         }
       })
     }
+    // About me is saved by itself (so the tutor knows them next time, even if they close the tab without looking at
+    // the end screen): once the questions are over, and again at the end if anything changed. They can check and edit
+    // it on the end screen (or in their AI tutor settings); an edit is saved the same way
     wSave.current = () => {
-      if (wAboutRef.current === 'saved' || !factCount(wFactsRef.current)) return
+      const f = wFactsRef.current
+      const j = JSON.stringify(f)
+      if (!factCount(f) || j === wSavedJson.current) return
+      wSavedJson.current = j
       setAbout('saved')
-      void welcomeSave(info.bookingId, wFactsRef.current).then((aboutMe) => {
+      logEv('welcome:about-saved')
+      void welcomeSave(info.bookingId, f).then((aboutMe) => {
         if (aboutMe !== null) return
+        wSavedJson.current = ''
         setAbout('ask')
         props.toast(t('wlSaveFailed'), 'bad')
       })
@@ -2001,6 +2015,8 @@ export default function AiRoom(props: Props) {
     wGo.current = (to) => {
       if (wStepRef.current === to) return
       logEv(`welcome:${to}`)
+      // the questions are over: what they said about themselves is saved now
+      if (wStepRef.current === 'about') wSave.current()
       wStepRef.current = to
       wStepAt.current = Date.now()
       wFrom.current = lines.current.length
@@ -2689,7 +2705,8 @@ export default function AiRoom(props: Props) {
       {wEnded && (
         <WelcomeEnd
           t={t}
-          name={info.me.name}
+          // their first name only ("Connor Finley" → Connor; "山田 太郎" → 山田, which is how さん is used)
+          name={info.me.name.trim().split(/[\s\u3000]+/)[0] || info.me.name}
           aiColor={info.aiColor}
           aiBlush={info.aiBlush}
           spokeMs={lines.current
@@ -2697,33 +2714,17 @@ export default function AiRoom(props: Props) {
             // each line: its audio timing, or about 0.4 s a word when the timing is missing (never over 30 s)
             .reduce((a, l) => a + Math.min(30_000, Math.max((l.end ?? l.t) - l.t, wordsOf(l.text).length * 400)), 0)}
           phrases={props.lessonWords.map((w) => w.term)}
-          cleared={wScene ? (wCleared ?? 0) : null}
-          about={
-            wAbout === 'saved'
-              ? { state: 'saved', what: FACT_KEYS.filter((k) => wFacts[k]).map((k) => FACT_LABELS[k][lang]).join(lang === 'ja' ? '、' : ', ') }
-              : factCount(wFacts)
-                ? { state: 'unsaved' }
-                : { state: 'none' }
-          }
-          onCheckAbout={() => setWCheck(true)}
+          // (no role-play level stat: "1/3" after one scene wasn't useful; the next level is under Try next)
+          cleared={null}
+          lang={lang}
+          facts={wFacts}
+          aboutSaved={wAbout === 'saved'}
+          onEditAbout={(k: FactKey, v: string) => {
+            setFacts({ ...wFactsRef.current, [k]: v })
+            wSave.current()
+          }}
           next={wNext}
-        >
-          {wCheck && (
-            <AboutCard
-              t={t}
-              lang={lang}
-              facts={wFacts}
-              state={wAbout === 'saved' ? 'saved' : 'ask'}
-              inline
-              onSave={() => {
-                wSave.current()
-                setTimeout(() => setWCheck(false), 1400)
-              }}
-              onClose={() => setWCheck(false)}
-              onEdit={(k: FactKey, v: string) => setFacts({ ...wFactsRef.current, [k]: v })}
-            />
-          )}
-        </WelcomeEnd>
+        />
       )}
     </div>
   )
