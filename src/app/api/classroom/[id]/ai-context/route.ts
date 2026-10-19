@@ -52,10 +52,9 @@ type Action =
 
 /** The welcome call's notes: each step on its rails (lib/classroom/welcome.ts, design: mockups/welcome-call.html). */
 const ASK_ABOUT: Record<string, string> = {
-  job: 'what they do (their work or studies)',
-  why: "why they're learning English",
-  goal: "one specific thing they'd like to be able to do in English",
-  likes: 'what they enjoy doing',
+  job: "where they're from and what they do",
+  likes: "what they're interested in",
+  why: "why they're studying English",
 }
 const factRows = (raw: unknown) => {
   const f = (raw ?? {}) as Record<string, unknown>
@@ -69,7 +68,7 @@ function welcomeInstruction(a: Extract<Action, { kind: 'welcome' }>): string | n
       const missing = keysOf(a.missing)
       const thin = keysOf(a.thin)
       if (!missing.length && !thin.length) return null
-      return `WELCOME CALL (background, for your next questions; don't mention this note): ${missing.length ? `still to find out: ${missing.map((k) => ASK_ABOUT[k]).join('; ')}. ` : ''}${thin.length ? `Ask a follow-up for more detail about ${thin.map((k) => ASK_ABOUT[k]).join(' and ')} (who, where, why, what kind). ` : ''}One question at a time, when they've finished what they're saying.`
+      return `WELCOME CALL (background, for your next questions; don't mention this note): ${missing.length ? `still to find out: ${missing.map((k) => ASK_ABOUT[k]).join('; ')}. ` : ''}${thin.length ? `If it fits, one short follow-up about ${thin.map((k) => ASK_ABOUT[k]).join(' and ')}; don't dig further. ` : ''}One question at a time, when they've finished what they're saying.`
     }
     case 'card': {
       const rows = factRows(a.facts)

@@ -11,8 +11,7 @@ const v = validateWelcome(
   {
     facts: {
       job: { value: 'Nurse at a hospital in Osaka', quote: "I'm a nurse at a hospital" },
-      why: { value: 'Helping patients from abroad', quote: 'help patients from abroad' },
-      goal: { value: 'Travel to Australia next year', quote: 'I would love to see kangaroos' },
+      why: { value: 'Helping patients from abroad', quote: 'I would love to see kangaroos' },
       likes: { value: 'Cafés, Korean dramas', quote: '韓国ドラマ' },
     },
     scene: { id: 'cafe-abroad', name: 'café', reason_ja: 'オーストラリア旅行の前に、カフェで注文してみよう', reason_en: 'Practise ordering before your trip to Australia' },
@@ -20,8 +19,8 @@ const v = validateWelcome(
   student,
   scenes,
 )
-ok('facts backed by their words are kept', v.facts.job === 'Nurse at a hospital in Osaka' && v.facts.why === 'Helping patients from abroad')
-ok('a fact whose quote they never said is dropped', v.facts.goal === undefined, v.facts)
+ok('facts backed by their words are kept', v.facts.job === 'Nurse at a hospital in Osaka')
+ok('a fact whose quote they never said is dropped', v.facts.why === undefined, v.facts)
 ok('a Japanese quote counts', v.facts.likes === 'Cafés, Korean dramas')
 ok('the role-play: from the list, its name from its title', v.pick?.sceneId === 'cafe-abroad' && v.pick.name === 'café' && v.pick.reasonJa.startsWith('オーストラリア'), v.pick)
 const v2 = validateWelcome({ facts: { job: { value: '看護師', quote: 'nurse' } }, scene: { id: 'no-such-scene', name: 'x' } }, student, scenes)
@@ -30,20 +29,22 @@ const v3 = validateWelcome({ scene: { id: 'izakaya-guests', name: 'pub', reason_
 ok('a name not in the title, or reasons in the wrong language, go', v3.pick?.sceneId === 'izakaya-guests' && v3.pick.name === '' && v3.pick.reasonJa === '' && v3.pick.reasonEn === '', v3.pick)
 ok('garbage in: nothing out', JSON.stringify(validateWelcome('nope', student, scenes)) === JSON.stringify({ facts: {}, thin: [], pick: null }))
 // the same thing twice counts once; a vague fact is flagged so the tutor digs deeper
-const said2 = "I'm an English teacher. I wanted to learn English to meet new people. My goal is to meet new people. I like guitar"
-const v4 = validateWelcome({ facts: { job: { value: 'English teacher', quote: "I'm an English teacher" }, why: { value: 'To meet new people', quote: 'to meet new people', vague: true }, goal: { value: 'Meet new people', quote: 'My goal is to meet new people' }, likes: { value: 'Guitar', quote: 'I like guitar' } } }, said2, scenes)
-ok('a fact that repeats another is dropped', v4.facts.why === 'To meet new people' && v4.facts.goal === undefined, v4.facts)
-ok('vague facts are flagged', JSON.stringify(v4.thin) === '["why"]', v4.thin)
-ok('what to ask next: the missing goal, more about the reason', JSON.stringify(stillToAsk(v4)) === JSON.stringify({ missing: ['goal'], thin: ['why'] }), stillToAsk(v4))
-ok('not ready for the card with a vague or missing fact', !factsReady(v4) && factsReady({ facts: { job: 'a', why: 'b c', goal: 'd e', likes: 'f' }, thin: [] }))
+const said2 = "I'm from Kobe. I like meeting new people. I want to learn English to meet new people."
+const v4 = validateWelcome({ facts: { job: { value: 'From Kobe', quote: "I'm from Kobe" }, likes: { value: 'Meeting new people', quote: 'I like meeting new people' }, why: { value: 'To meet new people', quote: 'to meet new people', vague: true } } }, said2, scenes)
+ok('a fact that repeats another is dropped', v4.facts.likes === 'Meeting new people' && v4.facts.why === undefined, v4.facts)
+const v5 = validateWelcome({ facts: { job: { value: 'From Kobe', quote: "I'm from Kobe", vague: true } } }, said2, scenes)
+ok('vague facts are flagged', JSON.stringify(v5.thin) === '["job"]', v5.thin)
+ok('what to ask next: what\'s missing, and the vague one', JSON.stringify(stillToAsk(v5)) === JSON.stringify({ missing: ['likes', 'why'], thin: ['job'] }), stillToAsk(v5))
+ok('not ready for the card with a vague or missing fact', !factsReady(v5) && factsReady({ facts: { job: 'a', why: 'b c', likes: 'f' }, thin: [] }))
 ok('same fact, different words', sameFact('To meet new people', 'meet new people') && !sameFact('Travel to Australia', 'Meet new people'))
 ok('a short quote has to be exact', !quoteIsTheirs('a doctor', student) && quoteIsTheirs('a nurse', student))
 ok('the fallback scene exists', SCENES.some((s) => s.id === FALLBACK_PICK.sceneId))
 
 /* ---- About me: added to what's there, never replacing it ---- */
-const f = { job: 'Nurse in Osaka', goal: 'Travel to Australia' }
-ok('About me from nothing', mergeAboutMe('', f) === 'Work: Nurse in Osaka. Goal: Travel to Australia.')
-ok('added after what they wrote', mergeAboutMe('I love dogs.', f) === 'I love dogs.\nWork: Nurse in Osaka. Goal: Travel to Australia.')
+const f = { job: 'Nurse in Osaka', why: 'Travel to Australia' }
+ok('About me from nothing', mergeAboutMe('', f) === 'From & work: Nurse in Osaka. Why English: Travel to Australia.')
+ok('added after what they wrote', mergeAboutMe('I love dogs.', f) === 'I love dogs.\nFrom & work: Nurse in Osaka. Why English: Travel to Australia.')
+ok('saving new facts replaces the old saved lines, keeps theirs', mergeAboutMe('I love dogs. Work: Teacher. Goal: Fun chats.', f) === 'I love dogs.\nFrom & work: Nurse in Osaka. Why English: Travel to Australia.', mergeAboutMe('I love dogs. Work: Teacher. Goal: Fun chats.', f))
 ok('saving twice adds nothing', mergeAboutMe(mergeAboutMe('I love dogs.', f), f) === mergeAboutMe('I love dogs.', f))
 const long = 'x'.repeat(590)
 ok('never over 600, never cuts theirs', mergeAboutMe(long, f).length <= 600 && mergeAboutMe(long, f).startsWith(long))
@@ -64,27 +65,27 @@ ok('a question does not', !heardPhrase('What is a role-play?', phrase).go)
 /* ---- the director ---- */
 const snap = (o: Partial<WelcomeSnap>): WelcomeSnap => ({ step: 'about', elapsed: 30, left: 270, stepAge: 10, facts: {}, thin: [], cardDone: false, cardDoneAge: 0, cardIdle: 0, wrapSent: false, answered: false, tutorQuiet: 0, ...o })
 const to = (o: Partial<WelcomeSnap>) => JSON.stringify(welcomeNext(snap(o)))
-const four = { job: 'a', why: 'b', goal: 'c', likes: 'd' }
+const four = { job: 'a', why: 'b', likes: 'd' }
 ok('about: waits while there is little to show', welcomeNext(snap({ facts: { job: 'x' } })) === null)
-ok('about: never before 1:15, even with everything', welcomeNext(snap({ elapsed: 50, facts: four })) === null)
-ok('about: all four, none vague, after 1:15 → the card', to({ elapsed: WELCOME_AT.cardMin, facts: four }) === '{"to":"card"}')
-ok('about: a vague fact keeps the tutor asking', welcomeNext(snap({ elapsed: 80, facts: four, thin: ['why'] })) === null)
-ok('about: by 1:50 the card with what there is', to({ elapsed: WELCOME_AT.cardBy, facts: { job: 'a' }, thin: ['job'] }) === '{"to":"card"}')
-ok('about: by 1:50 with nothing, straight to the role-play', to({ elapsed: WELCOME_AT.cardBy }) === '{"to":"suggest"}')
+ok('about: never before 0:45, even with everything', welcomeNext(snap({ elapsed: 40, facts: four })) === null)
+ok('about: all three, none vague, after 0:45 → the card', to({ elapsed: WELCOME_AT.cardMin, facts: four }) === '{"to":"card"}')
+ok('about: a vague fact keeps the tutor asking', welcomeNext(snap({ elapsed: 60, facts: four, thin: ['why'] })) === null)
+ok('about: by 1:25 the card with what there is', to({ elapsed: WELCOME_AT.cardBy, facts: { job: 'a' }, thin: ['job'] }) === '{"to":"card"}')
+ok('about: by 1:25 with nothing, straight to the role-play', to({ elapsed: WELCOME_AT.cardBy }) === '{"to":"suggest"}')
 ok('card: stays up while they talk (only idle time counts)', welcomeNext(snap({ step: 'card', stepAge: 40, cardIdle: 5 })) === null)
 ok('card: idle for 20 s → ends, not saved', to({ step: 'card', stepAge: 30, cardIdle: WELCOME_AT.cardIdle }) === '{"do":"skipCard"}')
 ok('card: never longer than 75 s', to({ step: 'card', stepAge: WELCOME_AT.cardMax, cardIdle: 1 }) === '{"do":"skipCard"}')
 ok('card: saved or not, it shows how it ended, then the role-play', welcomeNext(snap({ step: 'card', cardDone: true, cardDoneAge: 1 })) === null && to({ step: 'card', cardDone: true, cardDoneAge: WELCOME_AT.savedHold }) === '{"to":"suggest"}')
 ok('suggest: opens by itself after 25 s', to({ step: 'suggest', stepAge: WELCOME_AT.autoOpen }) === '{"do":"open"}' && welcomeNext(snap({ step: 'suggest', stepAge: 20 })) === null)
-ok('roleplay: asks the tutor to end it near 3:35, once', to({ step: 'roleplay', elapsed: WELCOME_AT.wrapScene }) === '{"do":"wrap"}' && welcomeNext(snap({ step: 'roleplay', elapsed: WELCOME_AT.wrapScene + 5, wrapSent: true })) === null)
-ok('roleplay: ends it at 4:00', to({ step: 'roleplay', elapsed: WELCOME_AT.endScene, wrapSent: true }) === '{"do":"endScene"}')
+ok('roleplay: asks the tutor to end it near 3:00, once', to({ step: 'roleplay', elapsed: WELCOME_AT.wrapScene }) === '{"do":"wrap"}' && welcomeNext(snap({ step: 'roleplay', elapsed: WELCOME_AT.wrapScene + 5, wrapSent: true })) === null)
+ok('roleplay: ends it at 3:20', to({ step: 'roleplay', elapsed: WELCOME_AT.endScene, wrapSent: true }) === '{"do":"endScene"}')
 ok('done: never quickly (at least 10 s), and not while the tutor is still answering', welcomeNext(snap({ step: 'done', stepAge: 8, answered: true, tutorQuiet: 4 })) === null && welcomeNext(snap({ step: 'done', stepAge: 12, answered: true, tutorQuiet: 1 })) === null)
-ok('done: waits for their answer to "any questions?"', welcomeNext(snap({ step: 'done', stepAge: 40, answered: false, tutorQuiet: 10 })) === null)
+ok('done: waits for their answer to "any questions?"', welcomeNext(snap({ step: 'done', stepAge: 30, answered: false, tutorQuiet: 10 })) === null)
 ok('done: answered, the tutor replied, a pause → the tips', to({ step: 'done', stepAge: 12, answered: true, tutorQuiet: 3 }) === '{"to":"tips"}')
-ok('done: at the latest after 60 s, or with 45 s left', to({ step: 'done', stepAge: 60 }) === '{"to":"tips"}' && to({ step: 'done', stepAge: 2, left: 40 }) === '{"to":"tips"}')
+ok('done: at the latest after 40 s, or with 45 s left', to({ step: 'done', stepAge: 40 }) === '{"to":"tips"}' && to({ step: 'done', stepAge: 2, left: 40 }) === '{"to":"tips"}')
 ok('tips: stays while they try the phrases', welcomeNext(snap({ step: 'tips', stepAge: 50, left: 60 })) === null)
 ok('tips: "Can we just chat?" → free talk', to({ step: 'tips', stepAge: 10, chatChosen: true }) === '{"to":"free"}')
-ok('tips: or with 35 s left', to({ step: 'tips', stepAge: 10, left: WELCOME_AT.tipsEndLeft }) === '{"to":"free"}')
+ok('tips: or with 25 s left', to({ step: 'tips', stepAge: 10, left: WELCOME_AT.tipsEndLeft }) === '{"to":"free"}')
 for (const [s2, want] of [['Open the course', 'course'], ["Let's do a course", 'course'], ['コースを開いて', 'course'], ["Let's do a role-play", 'rp'], ['ロールプレイ', 'rp'], ['Can we just chat?', 'chat'], ['フリートークがいい', 'chat'], ['What is a course?', null], ['Do you like role-plays?', null], ['I like coffee', null]] as const)
   ok(`tips: "${s2}" → ${want}`, tipSaid(s2) === want, tipSaid(s2))
 ok('tips: the next one to invite', nextTip([]) === 'course' && nextTip(['course']) === 'rp' && nextTip(['rp', 'course']) === 'chat' && nextTip(['course', 'rp', 'chat']) === null)

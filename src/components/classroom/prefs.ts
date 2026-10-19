@@ -15,6 +15,8 @@ export type Prefs = {
   lowData: boolean
   background: string // '' = none, else a Whereby camera-effect preset id
   fx: FxMode // frosted glass: auto (by device), full, reduced
+  /** AI lessons: what the AI tutor says, as a caption above it (null = on for beginners, by their English level) */
+  captions: boolean | null
 }
 
 export const DEFAULT_PREFS: Prefs = {
@@ -25,6 +27,7 @@ export const DEFAULT_PREFS: Prefs = {
   lowData: false,
   background: '',
   fx: 'auto',
+  captions: null,
 }
 
 const KEY = 'eigo-classroom-prefs'

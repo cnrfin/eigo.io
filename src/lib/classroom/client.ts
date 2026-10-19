@@ -59,6 +59,8 @@ export type JoinInfo = {
   aiBlush?: boolean
   /** the student's free 5-minute welcome call */
   aiWelcome?: boolean
+  /** AI lessons: the English level the student gave (ai-tutor/settings.ts ENGLISH_LEVELS; '' = not given) */
+  aiLevel?: string
   /** AI lessons: a role-play chosen when booking; it opens as the lesson starts (null on a rejoin) */
   roleplay?: { sceneId: string; level: 0 | 1 | 2 } | null
 }

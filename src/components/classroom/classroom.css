@@ -573,6 +573,8 @@
 @keyframes ai-breathe{to{transform:translate(-50%,-50%) scale(1.08)}}
 .cr .ai-float .vol{display:none}
 .cr .ai-float .name{position:absolute;left:50%;top:calc(100% + 8px);transform:translateX(-50%);white-space:nowrap;font-size:13.5px;font-weight:500;color:var(--text-secondary)}
+.cr .ai-float .ai-cap{position:absolute;left:50%;bottom:calc(100% + 10px);transform:translate(-50%,4px);width:max-content;max-width:min(380px,90vw);padding:7px 12px;border-radius:12px;background:var(--panel);box-shadow:0 6px 24px rgba(0,0,0,.25);font-size:14.5px;line-height:1.45;text-align:center;color:var(--text);opacity:0;pointer-events:none;transition:opacity .25s,transform .25s var(--ease);z-index:1}
+.cr .ai-float .ai-cap.on{opacity:1;transform:translate(-50%,0)}
 .cr .ai-float .ai-status{position:absolute;left:50%;bottom:calc(100% + 6px);transform:translateX(-50%);display:flex;align-items:center;gap:8px;padding:4px 10px;border-radius:999px;background:rgba(10,10,15,.6);color:#fff;font-size:12px;white-space:nowrap;z-index:1}
 .cr .ai-float .ai-status .spin{width:12px;height:12px;border-radius:50%;border:2px solid currentColor;border-top-color:transparent;animation:cr-spin .7s linear infinite}
 .cr .ai-float .ai-status .ebtn{padding:3px 10px;font-size:12px}

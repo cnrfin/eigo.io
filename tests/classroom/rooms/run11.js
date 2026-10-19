@@ -76,6 +76,7 @@ const emit = async (ev) => { await act(async () => { channel.dispatchEvent(new w
   await T.tick(300)
   check('the student\'s "could we close this… course" closes it at once', isFree(), T.$('.app').className)
   check('the close is saved (state: no course)', states().some((l) => l.includes('"courseId":null')), states())
+  await T.tick(300) // (notes wait until the tutor has finished its sentence)
   check('the AI tutor is told it\'s closed (once)', closedNotes() === 1, closedNotes())
   await emit({ type: 'session.output_transcript.delta', delta: ' the course now.', start_ms: 5200, end_ms: 5700 })
   await T.tick(800)

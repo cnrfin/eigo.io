@@ -236,6 +236,7 @@ const en = {
   rpSaved: 'Saved',
   // the welcome call (lib/classroom/welcome.ts)
   wlCrumb: 'Welcome call',
+  captions: 'Captions',
   wlAboutTitle: 'About you · Does this look right?',
   wlSave: 'Save',
   wlSayYes: 'Or just say "yes"',
@@ -533,6 +534,7 @@ const ja: Record<Keys, string> = {
   rpSave: '単語帳に保存',
   rpSaved: '保存済み',
   wlCrumb: 'ウェルカムトーク',
+  captions: '字幕',
   wlAboutTitle: 'あなたについて · 合っていますか？',
   wlSave: 'これで保存',
   wlSayYes: '「はい」と言ってもOK',

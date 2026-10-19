@@ -50,12 +50,12 @@ const emit = async (ev) => { await act(async () => { channel.dispatchEvent(new w
     window: { start: iso(30000), end: iso(-1 * 60000), studentOpensAt: iso(11 * 60000), closesAt: iso(-61 * 60000), noShowAt: iso(-14 * 60000) },
     durationMinutes: 1, session: { startedAt: null, endedAt: null, studentJoinedAt: null, recordingStoppedAt: null },
     me: { name: 'Aiko' }, other: { name: 'Emma' }, uiLang: 'ja', nativeLang: 'ja', lesson: null, whiteboard: false, ink: {},
-    open: null, chat: [], serverNow: new Date().toISOString() }
+    open: null, chat: [], serverNow: new Date().toISOString(), aiLevel: 'basic' }
   const txt = (sel) => (T.$(sel)?.textContent || '').trim()
   g.RP_SCENES = [require(REPO + '/src/lib/roleplay/scenes/travel/cafe-abroad.json')]
   g.CATALOG = [{ id: 'c_greatbritain', title: 'Haruka in the UK: Part 1', titleJa: 'イギリスでのハルカ 第1章', level: 'A2', description: 'x', descriptionJa: 'x', scenes: ['https://cdn/x.jpg'], lessonCount: 12, doneCount: 0 }]
   g.aiSessionResponse = { sessionId: 'live_1', sdp: 'v=0 answer', endsAt: new Date(Date.now() + 40_000).toISOString() }
-  g.welcomeAbout = { facts: { job: 'Nurse in Osaka', goal: 'Travel to Australia' }, pick: null }
+  g.welcomeAbout = { facts: { job: 'Nurse in Osaka', why: 'Travel to Australia' }, pick: null }
   await T.run(join)
   await T.click(T.$('#joinBtn')); await T.tick(150)
   await emit({ type: 'session.started', session: { id: 'live_1' } })
@@ -63,6 +63,10 @@ const emit = async (ev) => { await act(async () => { channel.dispatchEvent(new w
   const fetched = (part) => g.log.filter((l) => l.startsWith('fetch POST') && l.includes(part))
   const say = async (from, text, t0) => emit({ type: from === 'you' ? 'session.input_transcript.delta' : 'session.output_transcript.delta', delta: text, start_ms: t0, end_ms: t0 + 500 })
   await say('ai', "Hi Aiko! Welcome to eigo. What do you do?", 100); await T.tick(1500)
+  check('a beginner: captions on by default, showing what the tutor says', txt('.ai-cap') === 'Hi Aiko! Welcome to eigo. What do you do?' && !!T.$('.ai-cap.on'), txt('.ai-cap'))
+  await T.click([...document.querySelectorAll('.controls .cbtn')].find((b) => b.textContent.includes('字幕')))
+  check('字幕 turns them off', !T.$('.ai-cap'))
+  await T.click([...document.querySelectorAll('.controls .cbtn')].find((b) => b.textContent.includes('字幕')))
   await say('you', "I'm a nurse in Osaka and I'd like to travel to Australia.", 2000); await T.tick(2500)
   check('two facts: no card yet (it waits for more, or 1:30)', !T.$('.wlc-row') && fetched('"op":"about"').length >= 1)
   // the call runs out

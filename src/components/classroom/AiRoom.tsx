@@ -93,7 +93,7 @@ import type { RoomProps } from './Room'
  */
 
 type Props = RoomProps & { sendTutorMessage: (text: string) => Promise<boolean> }
-type Line = { from: 'student' | 'tutor'; text: string; t: number }
+type Line = { from: 'student' | 'tutor'; text: string; t: number; end?: number }
 type Status = 'connecting' | 'live' | 'dropped' | 'failed' | 'too_early' | 'ended'
 /** the welcome call's About-you card: waiting for an answer, saved, or ended without saving */
 type WAbout = 'ask' | 'saved' | 'skipped'
@@ -174,6 +174,22 @@ export default function AiRoom(props: Props) {
   const tutorSaid = useRef('')
   const listenTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   // the AI tutor's words, as they arrive: the sentence being spoken picks the face (held ~2.5 s)
+  /** captions: what the AI tutor is saying, above it (beginners by default; the 字幕 button) */
+  const capRef = useRef<HTMLDivElement | null>(null)
+  const capTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const showCaption = useCallback((text: string) => {
+    const el = capRef.current
+    if (!el) return
+    // the last sentence or two of what it's saying now
+    const parts = text.trim().split(/(?<=[.!?。？！])\s+/)
+    let cap = parts.pop() ?? ''
+    while (parts.length && cap.length < 70) cap = `${parts.pop()} ${cap}`
+    el.textContent = cap.length > 160 ? '…' + cap.slice(-159) : cap
+    el.classList.add('on')
+    if (capTimer.current) clearTimeout(capTimer.current)
+    capTimer.current = setTimeout(() => el.classList.remove('on'), 3500)
+  }, [])
+  useEffect(() => () => void (capTimer.current && clearTimeout(capTimer.current)), [])
   const feelTutor = useCallback((delta: string) => {
     tutorSaid.current = (tutorSaid.current + delta).slice(-240)
     const sentence = tutorSaid.current.split(/(?<=[.!?])\s+/).pop() ?? ''
@@ -228,8 +244,6 @@ export default function AiRoom(props: Props) {
   const welcomeHear = useRef<(said: string) => void>(() => {})
   const welcomeTutor = useRef<(sentence: string) => void>(() => {})
   const wStepRef = useRef<WelcomeStep | null>(null)
-  /** how long the student has spoken (the welcome end screen) */
-  const studentMs = useRef(0)
 
   /* ---------- slides ---------- */
   const lesson = findLesson(props)
@@ -265,6 +279,14 @@ export default function AiRoom(props: Props) {
   /** A student action the AI tutor should react to: our server sends it as an instruction. */
   const act = useCallback(
     async (a: StudentAction) => {
+      // A note that arrives while the AI tutor is talking makes it start its sentence again ("Hi Hi Connor",
+      // "That's the end of the role That's the end…"), so every note waits until it has finished (up to 6 s).
+      // Not the first one: it's what the tutor waits for before saying anything.
+      if (a.kind !== 'start' && a.kind !== 'resume') {
+        const until = Date.now() + 6000
+        while (Date.now() < until && !closing.current && (speakingRef.current || responding.current || Date.now() - lastSaid.current.tutor < 350))
+          await new Promise((r) => setTimeout(r, 200))
+      }
       const sid = sessionId.current
       if (!sid || closing.current) return false
       const ok = await sendAiAction(info.bookingId, sid, a)
@@ -286,8 +308,8 @@ export default function AiRoom(props: Props) {
     const last = L[L.length - 1]
     if (last && last.from === from && startMs - lastEnd.current[from] < 2500 && !breakLine.current) last.text += delta
     else L.push({ from, text: delta.replace(/^\s+/, ''), t: startMs })
+    L[L.length - 1].end = Math.max(L[L.length - 1].end ?? 0, endMs)
     breakLine.current = false
-    if (from === 'student') studentMs.current += Math.max(0, Math.min(10_000, endMs - Math.max(startMs, lastEnd.current.student)))
     const run = runs.current[from]
     // one stretch: the tutor's speech is continuous within a reply (a new reply starts after a pause), the student
     // may pause mid-sentence ("could we close this… course")
@@ -300,7 +322,8 @@ export default function AiRoom(props: Props) {
     lastEnd.current[from] = endMs
     speechHook.current(from, L[L.length - 1])
     cardHook.current(from)
-  }, [])
+    if (from === 'tutor') showCaption(run.text)
+  }, [showCaption])
   const flush = useCallback(
     (final: boolean) => {
       return sessionId.current ? saveAiTranscript(info.bookingId, sessionId.current, lines.current, final) : Promise.resolve()
@@ -2238,6 +2261,7 @@ export default function AiRoom(props: Props) {
                 ? t('aiSpeaking')
                 : t('aiListening')
 
+  const captionsOn = props.prefs.captions ?? (info.aiLevel === 'starter' || info.aiLevel === 'basic')
   const glowStyle = useMemo(() => {
     const p = orbColor(info.aiColor)
     const c = (v: readonly number[]) => v.map((x) => Math.round(x * 255)).join(' ')
@@ -2463,6 +2487,7 @@ export default function AiRoom(props: Props) {
                 </div>
               )}
               <span className="name">{info.other.name}</span>
+              {captionsOn && <div className="ai-cap" ref={capRef} aria-live="polite" />}
             </div>
             <AiCards t={t} shown={status === 'live' && !wCard ? shown : null} hearRef={cardHear} onSave={saveFromCard} onClose={() => setShown(null)} onChose={onChose} />
             {wCard === 'about' && (
@@ -2525,6 +2550,12 @@ export default function AiRoom(props: Props) {
               <span className={`badge${props.unread > 0 ? ' show' : ''}`}>{props.unread || ''}</span>
               <span className="lbl">{t('chat')}</span>
             </button>
+            <button className={`cbtn${captionsOn ? ' on' : ''}`} aria-pressed={captionsOn} onClick={() => props.setPrefs({ captions: !captionsOn })}>
+              <span className="cface">
+                <Ico name="text" />
+              </span>
+              <span className="lbl">{t('captions')}</span>
+            </button>
             <WordsButton t={t} on={props.side === 'words'} count={props.lessonWords.length} onClick={() => props.setSide(props.side === 'words' ? null : 'words')} />
           </nav>
         </section>
@@ -2559,7 +2590,10 @@ export default function AiRoom(props: Props) {
           name={info.me.name}
           aiColor={info.aiColor}
           aiBlush={info.aiBlush}
-          spokeMs={studentMs.current}
+          spokeMs={lines.current
+            .filter((l) => l.from === 'student')
+            // each line: its audio timing, or about 0.4 s a word when the timing is missing (never over 30 s)
+            .reduce((a, l) => a + Math.min(30_000, Math.max((l.end ?? l.t) - l.t, wordsOf(l.text).length * 400)), 0)}
           phrases={props.lessonWords.map((w) => w.term)}
           cleared={wScene ? (wCleared ?? 0) : null}
           about={

@@ -15,12 +15,13 @@ async function aiTutor(userId: string, bookingId: string) {
     db.from('ai_tutor_profiles').select('settings').eq('user_id', userId).maybeSingle(),
     db.from('profiles').select('ai_trial_booking_id').eq('id', userId).maybeSingle(),
   ])
-  const st = data?.settings as { tutorName?: string; orbColor?: string; blush?: boolean } | null
+  const st = data?.settings as { tutorName?: string; orbColor?: string; blush?: boolean; level?: string } | null
   return {
     name: st?.tutorName?.trim() || 'AI tutor',
     color: typeof st?.orbColor === 'string' ? st.orbColor : null,
     blush: st?.blush !== false,
     welcome: prof?.ai_trial_booking_id === bookingId,
+    level: typeof st?.level === 'string' ? st.level : '',
   }
 }
 
@@ -82,6 +83,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     aiColor: tutorInfo?.color ?? null,
     aiBlush: tutorInfo?.blush ?? true,
     aiWelcome: tutorInfo?.welcome ?? false,
+    aiLevel: tutorInfo?.level ?? '',
     roleplay,
     uiLang: role === 'teacher' ? 'en' : student?.preferred_language === 'en' ? 'en' : 'ja',
     nativeLang: student?.native_language || 'ja',

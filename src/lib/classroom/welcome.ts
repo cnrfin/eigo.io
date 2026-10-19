@@ -23,10 +23,10 @@ export type WelcomeStep = 'about' | 'card' | 'suggest' | 'roleplay' | 'done' | '
 
 /** seconds (on the call clock unless it says otherwise) */
 export const WELCOME_AT = {
-  /** the About-you card not before this (getting to know them takes a while)… */
-  cardMin: 75,
+  /** the About-you card not before this (three easy questions take a while)… */
+  cardMin: 45,
   /** …and by now, with whatever facts there are (none: straight to the role-play) */
-  cardBy: 110,
+  cardBy: 85,
   /** the card waits this long after the last thing said or changed on it (then it goes, not saved) */
   cardIdle: 20,
   /** and never stays longer than this */
@@ -38,31 +38,31 @@ export const WELCOME_AT = {
   /** the suggestion opens by itself after this long */
   autoOpen: 25,
   /** the AI tutor is asked to end the scene… */
-  wrapScene: 215,
+  wrapScene: 180,
   /** …and the classroom ends it */
-  endScene: 240,
+  endScene: 200,
   /** steps before the role-play that are this late skip to the tips */
-  late: 205,
+  late: 170,
   /** mission complete → tips: once they've answered "any questions?" and the tutor has replied (at least tipsMin,
    *  then tipsQuiet of quiet), or after tipsMax */
   tipsMin: 10,
   tipsQuiet: 2.5,
-  tipsMax: 60,
-  /** with this little time left, the tips come at once */
-  tipsLeft: 45,
+  tipsMax: 40,
+  /** with this little time left, the tips come at once (they need about a minute) */
+  tipsLeft: 75,
   /** the tips step ends when they say "Can we just chat?", or with this little time left */
-  tipsEndLeft: 35,
+  tipsEndLeft: 25,
   goodbyeLeft: 22,
 } as const
 
-export type FactKey = 'job' | 'why' | 'goal' | 'likes'
-export const FACT_KEYS: FactKey[] = ['job', 'why', 'goal', 'likes']
+/** the three things the tutor finds out: where they're from and what they do, their interests, why English */
+export type FactKey = 'job' | 'likes' | 'why'
+export const FACT_KEYS: FactKey[] = ['job', 'likes', 'why']
 /** what the About-you card shows (and what goes in About me, in English, for the AI tutor) */
 export const FACT_LABELS: Record<FactKey, { ja: string; en: string }> = {
-  job: { ja: 'お仕事', en: 'Work' },
+  job: { ja: '出身・お仕事', en: 'From & work' },
+  likes: { ja: '好きなこと', en: 'Interests' },
   why: { ja: '英語を学ぶ理由', en: 'Why English' },
-  goal: { ja: '目標', en: 'Goal' },
-  likes: { ja: '好きなこと', en: 'Likes' },
 }
 export type Facts = Partial<Record<FactKey, string>>
 export const factCount = (f: Facts) => FACT_KEYS.filter((k) => !!f[k]).length
@@ -72,7 +72,7 @@ export type FactsRead = { facts: Facts; thin: FactKey[] }
 export function stillToAsk(r: FactsRead): { missing: FactKey[]; thin: FactKey[] } {
   return { missing: FACT_KEYS.filter((k) => !r.facts[k]), thin: r.thin.filter((k) => !!r.facts[k]) }
 }
-/** enough for the About-you card: all four, none vague */
+/** enough for the About-you card: all three, none vague */
 export const factsReady = (r: FactsRead) => factCount(r.facts) === FACT_KEYS.length && !r.thin.some((k) => r.facts[k])
 
 /** One role-play chosen for them: the phrase to open it is "Let's do the <name> role-play". */
@@ -138,7 +138,9 @@ export function validateWelcome(raw: unknown, studentText: string, scenes: { id:
 }
 
 const STOP = new Set(['to', 'a', 'an', 'the', 'and', 'or', 'with', 'in', 'at', 'for', 'of', 'my', 'i', 'more', 'some'])
-const factWords = (v: string) => fold(v).split(/[^a-z0-9]+/).filter((w) => w && !STOP.has(w))
+// (a rough stem, so "meeting" and "meet" are the same word)
+const stem = (w: string) => (w.length > 4 ? w.replace(/(?:ing|ed|es|s)$/, '') : w)
+const factWords = (v: string) => fold(v).split(/[^a-z0-9]+/).filter((w) => w && !STOP.has(w)).map(stem)
 /** two facts that say the same thing */
 export function sameFact(a: string, b: string): boolean {
   const x = factWords(a)
@@ -154,9 +156,12 @@ export function aboutMeText(facts: Facts): string {
     .map((k) => `${FACT_LABELS[k].en}: ${facts[k]!.replace(/[.\s]+$/, '')}.`)
     .join(' ')
 }
+/** the "Label: …." lines this saves (and older ones), so saving again replaces them rather than repeating them */
+const SAVED_LINE = /\b(?:From & work|Work|Interests|Likes|Why English|Goal): [^.]*\./g
 export function mergeAboutMe(existing: string, facts: Facts, max = 600): string {
   const add = aboutMeText(facts)
-  const old = existing.trim()
+  // what they wrote themselves stays; our earlier lines for the same things are replaced
+  const old = add ? existing.replace(SAVED_LINE, '').replace(/[ \t]+/g, ' ').replace(/\s*\n\s*/g, '\n').trim() : existing.trim()
   if (!add || old.includes(add)) return old
   if (!old) return add.slice(0, max)
   const room = max - old.length - 1

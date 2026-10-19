@@ -56,9 +56,9 @@ const emit = async (ev) => { await act(async () => { channel.dispatchEvent(new w
   g.CATALOG = [{ id: 'c_greatbritain', title: 'Haruka in the UK: Part 1', titleJa: 'イギリスでのハルカ 第1章', level: 'A2', description: 'x', descriptionJa: 'x', scenes: ['https://cdn/x.jpg'], lessonCount: 12, doneCount: 0 }]
   g.TICK = []
   g.turnResponse = (b) => ({ move: 'stay', slide: null, action: b.screen ? { kind: 'open_course', courseId: 'c_greatbritain' } : { kind: 'none' }, quote: 'open the course', ticks: b.roleplay ? g.TICK.filter((t) => !b.roleplay.done.includes(t.id)) : [] })
-  // the call joined 70 s in (so the About-you card, never before 1:15, comes within the run)
-  g.aiSessionResponse = { sessionId: 'live_1', sdp: 'v=0 answer', endsAt: new Date(Date.now() + 230_000).toISOString() }
-  const facts = { job: 'Nurse at a hospital in Osaka', why: 'Helping patients from abroad', goal: 'Travel to Australia next year', likes: 'Cafés, Korean dramas' }
+  // the call joined 40 s in (so the About-you card, never before 0:45, comes within the run)
+  g.aiSessionResponse = { sessionId: 'live_1', sdp: 'v=0 answer', endsAt: new Date(Date.now() + 260_000).toISOString() }
+  const facts = { job: 'Nurse at a hospital in Osaka', likes: 'Cafés, Korean dramas', why: 'Helping patients from abroad' }
   const pick = { sceneId: 'cafe-abroad', name: 'café', reasonJa: 'オーストラリア旅行の前に、カフェで注文してみよう', reasonEn: 'Practise ordering before your trip' }
   g.welcomeAbout = (b) =>
     b.lines.some((l) => /marketing/.test(l.text))
@@ -89,12 +89,12 @@ const emit = async (ev) => { await act(async () => { channel.dispatchEvent(new w
   check('the helper is asked about them', fetched('/ai-welcome').some((l) => l.includes('"op":"about"')), fetched('/ai-welcome'))
   await T.tick(1200)
   const askNote = welcomeNotes('ask')
-  check('two facts, one vague: no card yet; the tutor hears what to ask next', !T.$('.wlc-row') && askNote.length === 1 && askNote[0].includes('"missing":["goal","likes"]') && askNote[0].includes('"thin":["why"]'), askNote)
+  check('two facts, one vague: no card yet; the tutor hears what to ask next', !T.$('.wlc-row') && askNote.length === 1 && askNote[0].includes('"missing":["likes"]') && askNote[0].includes('"thin":["why"]'), askNote)
   await say('ai', 'Which patients would you like to help?', 10000); await T.tick(200)
   await say('you', 'Patients from abroad. And next year I want to travel to Australia. I like cafés and Korean dramas.', 11000); await T.tick(2400)
   await T.tick(1500)
-  // 3) all four, none vague, after 1:15: the About-you card, and the tutor is told
-  check('the About-you card, one row per fact', document.querySelectorAll('.wlc-row').length === 4 && txt('.wlc-row .wlc-v') === 'Nurse at a hospital in Osaka', txt('.wlc-rows'))
+  // 3) all three, none vague, after 0:45: the About-you card, and the tutor is told
+  check('the About-you card, one row per fact', document.querySelectorAll('.wlc-row').length === 3 && txt('.wlc-row .wlc-v') === 'Nurse at a hospital in Osaka', txt('.wlc-rows'))
   check('the tutor gets the card note, with the facts', welcomeNotes('card').length === 1 && welcomeNotes('card')[0].includes('Nurse at a hospital'), welcomeNotes('card'))
   check('the tutor floats above the card (float mode)', T.$('.app').dataset.mode === 'float')
   // a spoken correction changes the line

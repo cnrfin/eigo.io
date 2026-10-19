@@ -118,6 +118,7 @@ const emit = async (ev) => { await act(async () => { channel.dispatchEvent(new w
   await T.tick(2700)
   await emit({ type: 'session.output_transcript.delta', delta: "Here it is. Okay, next slide!", start_ms: 9000, end_ms: 9600 })
   check('slip right after a new slide is held', nOf() === held, held + ' -> ' + nOf())
+  await T.tick(500) // (notes wait until the tutor has finished its sentence)
   check('AI tutor asked to let the student try first', ctxPosts().some((l) => l.includes('"kind":"not_yet"')))
   // the student answers, then the AI tutor says it's moving on: instant
   await emit({ type: 'session.input_transcript.delta', delta: 'My landlady lives downstairs.', start_ms: 12000, end_ms: 13000 })
