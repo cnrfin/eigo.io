@@ -87,7 +87,12 @@ export async function aiStartState(userId: string, unlimited: boolean, now = Dat
   return (await startState(userId, unlimited, now, welcomeTest)).state
 }
 
-async function startState(userId: string, unlimited: boolean, now = Date.now(), welcomeTest = false): Promise<{ state: AiStartState; balance: Balance | null }> {
+async function startState(
+  userId: string,
+  unlimited: boolean,
+  now = Date.now(),
+  welcomeTest = false,
+): Promise<{ state: AiStartState; balance: Balance | null; missedTrial: string | null }> {
   const db = getSupabaseAdmin()
   const today = jstNow(now - 24 * 3600e3).date // yesterday in JST, to catch lessons running over midnight
   const [{ data: rows }, balance, resume, { data: prof }] = await Promise.all([
@@ -122,7 +127,15 @@ async function startState(userId: string, unlimited: boolean, now = Date.now(), 
   const minutes = balance ? balance.snapshot : null
   // no subscription and no top-ups: the free 5-minute welcome call, once
   const noPlan = !!balance && !balance.active && !balance.snapshot.topups.length
-  const trial = (noPlan || (unlimited && welcomeTest)) && !prof?.ai_trial_booking_id
+  // a welcome call that never happened (the AI tutor couldn't connect, e.g. OpenAI was down or out of credit:
+  // nothing was said) doesn't count: they get it again. Not while it's still on (they can rejoin it).
+  const trialId = (prof?.ai_trial_booking_id as string | null) ?? null
+  let missedTrial: string | null = null
+  if (trialId && trialId !== liveId && (noPlan || (unlimited && welcomeTest))) {
+    const { data: tb } = await db.from('bookings').select('transcript_text').eq('id', trialId).maybeSingle()
+    if (!((tb?.transcript_text as string | null) ?? '').replace(/\[session [^\]]*\]/g, '').trim()) missedTrial = trialId
+  }
+  const trial = (noPlan || (unlimited && welcomeTest)) && (!trialId || !!missedTrial)
   const options = trial ? [AI_TRIAL_MINUTES] : aiLengthsFor(minutes)
   const blocked: AiStartState['blocked'] = teacher
     ? 'teacher_lesson'
@@ -133,6 +146,7 @@ async function startState(userId: string, unlimited: boolean, now = Date.now(), 
         : null
   return {
     state: { minutes, options, blocked, teacherAt: teacher ? new Date(startOf(teacher)).toISOString() : null, liveId, trial, resume: trial ? null : resume },
+    missedTrial,
     balance,
   }
 }
@@ -152,7 +166,7 @@ export async function startAiNow(
   /** admins / test accounts: start the welcome call (see aiStartState) */
   welcomeTest = false,
 ): Promise<{ ok: true; bookingId: string; resumed: boolean } | { ok: false; reason: string; state?: AiStartState }> {
-  const { state, balance } = await startState(userId, unlimited, Date.now(), welcomeTest)
+  const { state, balance, missedTrial } = await startState(userId, unlimited, Date.now(), welcomeTest)
   if (state.liveId) return { ok: true, bookingId: state.liveId, resumed: true }
   if (state.blocked) return { ok: false, reason: state.blocked, state }
   if (!state.options.includes(duration)) return { ok: false, reason: 'bad_duration', state }
@@ -185,13 +199,9 @@ export async function startAiNow(
     return { ok: false, reason: 'error' }
   }
   if (state.trial) {
-    // claim the welcome call (only if still unused, so two tabs can't both get one)
-    const { data: claimed } = await getSupabaseAdmin()
-      .from('profiles')
-      .update({ ai_trial_booking_id: row.id })
-      .eq('id', userId)
-      .is('ai_trial_booking_id', null)
-      .select('id')
+    // claim the welcome call (only if still unused, or it never happened, so two tabs can't both get one)
+    const claim = getSupabaseAdmin().from('profiles').update({ ai_trial_booking_id: row.id }).eq('id', userId)
+    const { data: claimed } = await (missedTrial ? claim.eq('ai_trial_booking_id', missedTrial) : claim.is('ai_trial_booking_id', null)).select('id')
     if (!claimed?.length) {
       await getSupabaseAdmin().from('bookings').update({ status: 'cancelled' }).eq('id', row.id)
       return { ok: false, reason: 'no_subscription' }
