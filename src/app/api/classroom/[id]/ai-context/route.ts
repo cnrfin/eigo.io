@@ -40,7 +40,8 @@ type Action =
   | { kind: 'roleplay_done'; sceneId: string; role: 'a' | 'b'; done: { task: string; said: string }[]; missed: string[]; canSwap: boolean; phrases?: string[]; welcome?: boolean }
   | { kind: 'panel'; what: 'picker' | 'closed' | 'course' }
   /** the welcome talk's time reminders (lib/classroom/welcome.ts); only in the student's welcome talk (checked here) */
-  | { kind: 'welcome'; step: 'suggest' | 'wrap' | 'command' }
+  | { kind: 'welcome'; step: 'wrap' | 'command' }
+  | { kind: 'welcome'; step: 'pick'; sceneId?: string }
 
 /**
  * The welcome talk's notes (lib/classroom/welcome.ts). The tutor leads the talk from its plan; these are only
@@ -48,8 +49,12 @@ type Action =
  */
 function welcomeInstruction(a: Extract<Action, { kind: 'welcome' }>): string | null {
   switch (a.step) {
-    case 'suggest':
-      return 'WELCOME TALK (time check): when you\'ve finished what you\'re saying, move on to the role-play: suggest one that fits them and teach the phrase to open it, as your plan says (step 3).'
+    case 'pick': {
+      const scene = sceneById(a.sceneId)
+      if (!scene) return null
+      const you = roleOf(scene, scene.studentRole)
+      return `WELCOME TALK: the role-play for them is ready (you don't need to choose one): "${scene.title.en}". ${scene.summary.en} They play: ${you.name.en}. When you've finished the three questions (not before), suggest it in one short sentence, saying why it suits them, then teach the phrase, in exactly these words: In the classroom, you can open things just by asking. Please say: "Let's do a role-play." When they've said it, reply only "Great!" and stop. Never start a scene, a situation or a character yourself: the role-play opens on their screen and you get a note with your character.`
+    }
     case 'wrap':
       return 'WELCOME TALK (time check): time is nearly up for the role-play. Bring the scene to a natural close in character within a line or two, then say "That\'s the end of the role-play!" and stop there: wait for the note with how they did.'
     case 'command':

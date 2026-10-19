@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import { getUsableCameraEffectPresets, isAudioDenoiserSupported, type UseLocalMediaResult } from '@whereby.com/browser-sdk/react'
-import { useTheme } from '@/context/ThemeContext'
 import type { ClassroomT } from '@/lib/classroom/i18n'
 import { Ico } from './Icons'
 import type { FxMode, Prefs } from './prefs'
@@ -10,7 +9,7 @@ import type { FxMode, Prefs } from './prefs'
 /**
  * Settings: Audio & video (devices, background, noise reduction, mirror, HD,
  * low data), Classroom (cursors; the teacher also decides whether the
- * student can draw) and Appearance (visual effects, theme).
+ * student can draw) and Appearance (visual effects; the classroom is always dark).
  */
 
 // Background presets we offer, in this order, when the device can run them.
@@ -69,7 +68,6 @@ export default function Settings({
   const [pane, setPane] = useState<'av' | 'cls' | 'look'>('av')
   const [bgs, setBgs] = useState<string[] | null>(null)
   const [denoiseOk, setDenoiseOk] = useState(false)
-  const { theme, toggleTheme } = useTheme()
   const { state, actions } = localMedia
 
   useEffect(() => {
@@ -262,19 +260,7 @@ export default function Settings({
               ))}
             </div>
           </div>
-          <div className="row">
-            <div className="l">
-              <b>{t('theme')}</b>
-            </div>
-            <div style={{ display: 'flex', gap: 6 }}>
-              <button className={`pill${theme !== 'light' ? ' on' : ''}`} onClick={() => theme === 'light' && toggleTheme()}>
-                {t('themeDark')}
-              </button>
-              <button className={`pill${theme === 'light' ? ' on' : ''}`} onClick={() => theme !== 'light' && toggleTheme()}>
-                {t('themeLight')}
-              </button>
-            </div>
-          </div>
+          {/* (no theme choice: the classroom is always dark) */}
         </div>
       </div>
     </div>

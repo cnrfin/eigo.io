@@ -20,7 +20,6 @@ import {
   welcomeRecord,
   welcomeSave,
   welcomeScene,
-  welcomeScenes,
   type LoadedCourse,
   type PanelCourse,
   type SlideRef,
@@ -42,21 +41,24 @@ import {
   TUTOR_COMMAND,
   TUTOR_QA,
   WELCOME_AT,
+  FALLBACK_PICK,
+  ROLEPLAY_PHRASE,
+  SAYS_ROLEPLAY,
   commandSaid,
   factCount,
   heardPhrase,
-  suggestedPhrase,
   waitsForGap,
   welcomeNext,
   welcomeStartStep,
   type FactKey,
   type Facts,
   type WelcomeMove,
+  type WelcomePick,
   type WelcomeStep,
 } from '@/lib/classroom/welcome'
 import { AboutCard, CommandCard, SuggestCard, WelcomeEnd, type NextUp } from './WelcomeCards'
 import { normText } from '@/lib/ai-tutor/actions'
-import { findItem, panelIntent, type PanelIntent } from '@/lib/roleplay/intent'
+import { panelIntent, type PanelIntent } from '@/lib/roleplay/intent'
 import type { SceneSummary } from '@/lib/roleplay/types'
 import { flashSaved, shrinkInto } from './save-fly'
 import { phrasesToSave } from '@/lib/roleplay/phrases'
@@ -1682,19 +1684,19 @@ export default function AiRoom(props: Props) {
   const wAsking = useRef(false)
   const wAskAgain = useRef(false)
   const wAskTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const wSuggestSent = useRef(false)
+  /** the role-play chosen for them (the helper, in the background), and when the tutor was told (null = not yet) */
+  const wPick = useRef<WelcomePick | null>(null)
+  const wPickAt = useRef<number | null>(null)
   const wWrapSent = useRef(false)
   const wOpening = useRef(false)
-  const wSuggesting = useRef(false)
   /** when they said the voice command (null = not yet) */
   const wSaidAt = useRef<number | null>(null)
   const wWaitAt = useRef(0)
-  const wScenes = useRef<{ id: string; en: string; ja: string }[] | null>(null)
   const wGo = useRef<(to: WelcomeStep) => void>(() => {})
   const wOpen = useRef<() => void>(() => {})
   const wSave = useRef<() => void>(() => {})
   const wAsk = useRef<() => void>(() => {})
-  const wSuggest = useRef<(sentence: string) => void>(() => {})
+  const wSendPick = useRef<() => void>(() => {})
   const setFacts = useCallback((f: Facts) => {
     wFactsRef.current = f
     setWFacts(f)
@@ -1731,6 +1733,8 @@ export default function AiRoom(props: Props) {
         wAsking.current = false
         const next = { ...wFactsRef.current, ...r.facts }
         if (FACT_KEYS.some((k) => next[k] !== wFactsRef.current[k])) setFacts(next)
+        // the role-play for them (until the tutor has been told about it)
+        if (r.pick && wPickAt.current === null) wPick.current = r.pick
         if (wAskAgain.current) {
           wAskAgain.current = false
           wAsk.current()
@@ -1746,31 +1750,24 @@ export default function AiRoom(props: Props) {
         props.toast(t('wlSaveFailed'), 'bad')
       })
     }
-    // the tutor suggested a role-play ("…Please say: 'Let's do the massage salon role-play.'"): its card appears
-    wSuggest.current = (sentence) => {
-      const step = wStepRef.current
-      if ((step !== 'about' && step !== 'suggest') || wSuggesting.current) return
-      const phrase = suggestedPhrase(sentence)
-      if (!phrase) return
-      wSuggesting.current = true
+    // the role-play chosen for them: loaded, and the tutor told (it suggests it and teaches "Let's do a role-play")
+    wSendPick.current = () => {
+      if (wPickAt.current !== null) return
+      wPickAt.current = Date.now()
+      const pick = wPick.current ?? FALLBACK_PICK
       void (async () => {
-        try {
-          const list = wScenes.current ?? (wScenes.current = await welcomeScenes(info.bookingId))
-          const item = findItem(sentence, list, false) ?? findItem(phrase, list, false)
-          if (!item || item.id === wSceneRef.current?.id) return
-          const sc = await welcomeScene(info.bookingId, item.id)
-          if (!sc || (wStepRef.current !== 'about' && wStepRef.current !== 'suggest')) return
-          wSceneRef.current = sc
-          wPhraseRef.current = phrase
-          wHeardAt.current = 0
-          setWScene(sc)
-          setWPhrase(phrase)
-          setWLit([])
-          setWHeard(false)
-          wGo.current('suggest')
-        } finally {
-          wSuggesting.current = false
-        }
+        let sc = await welcomeScene(info.bookingId, pick.sceneId)
+        if (!sc && pick.sceneId !== FALLBACK_PICK.sceneId) sc = await welcomeScene(info.bookingId, FALLBACK_PICK.sceneId)
+        if (!sc) return
+        wSceneRef.current = sc
+        wPhraseRef.current = ROLEPLAY_PHRASE
+        setWScene(sc)
+        setWPhrase(ROLEPLAY_PHRASE)
+        setWLit([])
+        setWHeard(false)
+        // they asked for a role-play before it was ready: it opens now (no need to tell the tutor to suggest it)
+        if (wHeardAt.current && wStepRef.current === 'about') wGo.current('suggest')
+        else void act({ kind: 'welcome', step: 'pick', sceneId: sc.id })
       })()
     }
     wOpen.current = () => {
@@ -1805,13 +1802,21 @@ export default function AiRoom(props: Props) {
         if (wAskTimer.current) clearTimeout(wAskTimer.current)
         wAskTimer.current = setTimeout(() => wAsk.current(), 1500)
       }
-      if (step === 'suggest' && wSceneRef.current && !wHeardAt.current) {
-        // only the whole phrase opens it, once they've stopped (never on "let's do the…")
-        const h = heardPhrase(studentSince(wFrom.current), wPhraseRef.current)
-        setWLit(h.lit)
-        if (h.whole) {
+      // they ask for a role-play before the tutor has suggested one: the one for them is loaded and opens
+      if (step === 'about' && wPickAt.current === null && SAYS_ROLEPLAY.test(said)) {
+        wHeardAt.current = Date.now()
+        setWHeard(true)
+        wSendPick.current()
+      }
+      if ((step === 'suggest' || step === 'about') && wSceneRef.current && wPickAt.current !== null && !wHeardAt.current) {
+        // "Let's do a role-play" (the whole phrase; never "let's do…"): it opens once they've stopped
+        const text = studentSince(step === 'suggest' ? wFrom.current : 0)
+        const h = heardPhrase(text, wPhraseRef.current)
+        if (step === 'suggest') setWLit(h.lit)
+        if (h.whole || SAYS_ROLEPLAY.test(said)) {
           wHeardAt.current = Date.now()
           setWHeard(true)
+          if (step === 'about') wGo.current('suggest')
         }
       }
       if (step === 'command' && wSaidAt.current === null && commandSaid(said)) {
@@ -1831,7 +1836,8 @@ export default function AiRoom(props: Props) {
     // the classroom follows the tutor's set sentences
     welcomeTutor.current = (sentence) => {
       const step = wStepRef.current
-      if ((step === 'about' || step === 'suggest') && suggestedPhrase(sentence)) wSuggest.current(sentence)
+      // it teaches "Let's do a role-play": the card (with the role-play chosen for them)
+      if (step === 'about' && wSceneRef.current && SAYS_ROLEPLAY.test(sentence)) wGo.current('suggest')
       else if (step === 'done' && TUTOR_COMMAND.test(sentence)) wGo.current('command')
       else if ((step === 'command' || step === 'done') && TUTOR_QA.test(sentence)) wGo.current('qa')
     }
@@ -1859,7 +1865,9 @@ export default function AiRoom(props: Props) {
       elapsed,
       left,
       stepAge: (T - wStepAt.current) / 1000,
-      suggestSent: wSuggestSent.current,
+      pickReady: !!wPick.current,
+      pickAge: wPickAt.current === null ? null : (T - wPickAt.current) / 1000,
+      factsIn: factCount(wFactsRef.current) === FACT_KEYS.length,
       wrapSent: wWrapSent.current,
       commandAge: wSaidAt.current === null ? null : (T - wSaidAt.current) / 1000,
     })
@@ -1876,10 +1884,8 @@ export default function AiRoom(props: Props) {
       wGo.current(m.to)
       // (the tutor hadn't moved on itself: a reminder)
       if (m.prompt && m.to === 'command') void act({ kind: 'welcome', step: 'command' })
-    } else if (m.do === 'promptSuggest') {
-      wSuggestSent.current = true
-      void act({ kind: 'welcome', step: 'suggest' })
-    } else if (m.do === 'open') wOpen.current()
+    } else if (m.do === 'sendPick') wSendPick.current()
+    else if (m.do === 'open') wOpen.current()
     else if (m.do === 'wrap') {
       wWrapSent.current = true
       void act({ kind: 'welcome', step: 'wrap' })

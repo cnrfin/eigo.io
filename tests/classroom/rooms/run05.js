@@ -97,8 +97,9 @@ const stroke = async (pts) => { const cv = T.$('#ink'); await ptr(cv, 'pointerdo
   await T.click([...document.querySelectorAll('.smodal .pill')].find((b) => b.textContent === 'Appearance'))
   await T.click([...document.querySelectorAll('.smodal .pill')].find((b) => b.textContent === 'Reduced'))
   check('reduced effects', !!T.$('.cr.fx-lite'))
-  await T.click([...document.querySelectorAll('.smodal .pill')].find((b) => b.textContent === 'Light'))
-  check('theme toggled', g.log.includes('toggleTheme'))
+  check('no theme choice: the classroom is always dark', ![...document.querySelectorAll('.smodal .pill')].some((b) => b.textContent === 'Light') && document.documentElement.getAttribute('data-theme') === 'dark')
+  document.documentElement.setAttribute('data-theme', 'light'); await T.tick(30)
+  check('…even if the site theme is switched to light meanwhile', document.documentElement.getAttribute('data-theme') === 'dark')
 
   /* student */
   localStorage.clear(); sessionStorage.clear()

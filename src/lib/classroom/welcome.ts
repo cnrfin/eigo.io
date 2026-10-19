@@ -8,8 +8,9 @@ import { hasJapanese, inOrder, saidIt, share, words } from '@/lib/ai-tutor/voice
  *
  *   about     hello and three easy questions (where they're from and what they do, interests, why English); a
  *             helper quietly picks out the facts for the end screen (no card during the call)
- *   suggest   the tutor suggests a role-play from its list and says the phrase to open it; the card appears when
- *             it names one. The scene opens once the student has said the whole phrase and stopped (or a tap)
+ *   suggest   the role-play is chosen for them in the background (the helper, from their job first) and the tutor
+ *             gets one note with it; it suggests it and teaches the phrase, always "Let's do a role-play". The card
+ *             appears when it says the phrase; the scene opens when the student says it and stops (or a tap)
  *   roleplay  the scene at 初級 (the tutor sets it up first); near 3:15 it's asked to wrap up, at 3:45 it ends
  *   done      mission complete: feedback, "any questions?"
  *   command   one voice command, tried out: "Open the course" shows a preview of a course's first slide
@@ -20,10 +21,14 @@ export type WelcomeStep = 'about' | 'suggest' | 'roleplay' | 'done' | 'command' 
 
 /** seconds (on the call clock unless it says otherwise) */
 export const WELCOME_AT = {
-  /** no role-play suggested by now: the tutor is reminded (once) */
-  suggestBy: 105,
+  /** the role-play note goes once the three facts are in, but not before this… */
+  pickMin: 50,
+  /** …and by now with whatever there is (the fallback scene if nothing) */
+  pickBy: 100,
+  /** the card shows by itself this long after the note, if the tutor hasn't taught the phrase yet */
+  cardAfter: 30,
   /** the student said the phrase: it opens once they've been quiet this long */
-  phraseQuiet: 1.5,
+  phraseQuiet: 1,
   /** the suggestion opens by itself after this long */
   autoOpen: 30,
   /** the AI tutor is asked to wrap the scene up… */
@@ -158,6 +163,11 @@ export function mergeAboutMe(existing: string, facts: Facts, max = 600): string 
 
 /* ---------------- what the tutor says: the classroom follows it ---------------- */
 
+/** the one phrase that opens the role-play chosen for them (always this, whatever the scene) */
+export const ROLEPLAY_PHRASE = "Let's do a role-play"
+/** the tutor teaching it ("…Please say: Let's do a role-play.") or the student saying it: "role play", "roleplay" too */
+export const SAYS_ROLEPLAY = /\b(?:let'?s|let us|can we|could we|i'?d like to|i want to|i wanna)\s+(?:do|try|start|have)\s+(?:a|the|our|that|this)\s+(?:[a-z-]+\s+){0,4}?role[\s-]?play\b|ロールプレイ(?:を)?(?:やり|し|はじめ|始め)/i
+
 /** the phrase the tutor asks them to say to open the role-play (…say: "Let's do the massage salon role-play.") */
 export function suggestedPhrase(sentence: string): string | null {
   // in quotes, or straight after "say": the transcript doesn't always have the quotes
@@ -200,13 +210,16 @@ export type WelcomeSnap = {
   left: number
   /** seconds in this step */
   stepAge: number
-  /** the tutor was reminded to suggest a role-play / to wrap the scene up */
-  suggestSent: boolean
+  /** the role-play chosen for them is ready; the note with it has gone (seconds ago, null = not yet) */
+  pickReady: boolean
+  pickAge: number | null
+  /** the three facts are in */
+  factsIn: boolean
   wrapSent: boolean
   /** the voice command: how long ago they said it (null = not yet) */
   commandAge: number | null
 }
-export type WelcomeMove = { to: WelcomeStep; prompt?: boolean } | { do: 'promptSuggest' | 'open' | 'wrap' | 'endScene' } | null
+export type WelcomeMove = { to: WelcomeStep; prompt?: boolean } | { do: 'sendPick' | 'open' | 'wrap' | 'endScene' } | null
 
 /** moves that tell the tutor something or change the screen wait for a gap between turns (not ending a scene) */
 export const waitsForGap = (m: NonNullable<WelcomeMove>) => !('do' in m && m.do === 'endScene')
@@ -216,7 +229,8 @@ export function welcomeNext(s: WelcomeSnap): WelcomeMove {
   const A = WELCOME_AT
   switch (s.step) {
     case 'about':
-      return s.elapsed >= A.suggestBy && !s.suggestSent ? { do: 'promptSuggest' } : null
+      if (s.pickAge === null) return (s.pickReady && s.factsIn && s.elapsed >= A.pickMin) || s.elapsed >= A.pickBy ? { do: 'sendPick' } : null
+      return s.pickAge >= A.cardAfter ? { to: 'suggest' } : null
     case 'suggest':
       return s.stepAge >= A.autoOpen ? { do: 'open' } : null
     case 'roleplay':

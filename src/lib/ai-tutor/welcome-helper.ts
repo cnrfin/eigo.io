@@ -18,14 +18,17 @@ function openai() {
 }
 const MODEL = process.env.AI_TUTOR_ASSIST_MODEL || process.env.AI_TUTOR_TURN_MODEL || 'gpt-5.4-nano'
 
-const SYSTEM = `You read the start of a friendly welcome call between an AI English tutor and a Japanese adult learner. Pick out what the STUDENT has said about themselves (for their profile; the tutor doesn't see this).
-Return JSON: {"facts": {"job": {"value": "...", "quote": "...", "vague": false}, "likes": {...}, "why": {...}}}
-- Only what the student said themselves, never the tutor's guesses or questions. Leave a key out if they haven't said it. If they corrected something, use the corrected version.
-- job = where they're from and what they do (work or studies); likes = what they're interested in or enjoy; why = why they're studying English (including anything they'd like to be able to do in English).
-- "value": a short note in English, no subject, max 8 words, e.g. "From Osaka, a nurse at a hospital", "Cafés, Korean dramas", "Helping patients from abroad".
-- "quote": the student's own words it comes from, copied exactly as they said them (a few words, in the language they used).
-- "vague": true only when it says almost nothing ("for work", "I like many things"); otherwise false.
-- Each key is a different fact: never give the same thing for two keys.`
+const SYSTEM = `You read the start of a friendly welcome call between an AI English tutor and a Japanese adult learner. Pick out what the STUDENT has said about themselves (for their profile), and choose the one role-play from the list that will be most useful to them.
+Return JSON: {"facts": {"job": {"value": "...", "quote": "...", "vague": false}, "likes": {...}, "why": {...}}, "scene": {"id": "..."}}
+- facts: only what the student said themselves, never the tutor's guesses or questions. Leave a key out if they haven't said it. If they corrected something, use the corrected version.
+  job = where they're from and what they do (work or studies); likes = what they're interested in or enjoy; why = why they're studying English (including anything they'd like to be able to do in English).
+  "value": a short note in English, no subject, max 8 words, e.g. "From Osaka, a nurse at a hospital", "Cafés, Korean dramas", "Helping patients from abroad".
+  "quote": the student's own words it comes from, copied exactly as they said them (a few words, in the language they used).
+  "vague": true only when it says almost nothing ("for work", "I like many things"); otherwise false.
+  Each key is a different fact: never give the same thing for two keys.
+- scene: the id of the role-play closest to THEIR OWN life, where the student plays someone like them ("you play" below). First their job: an aromatherapist or massage therapist → salon-massage; station staff → station-transfer or ticket-machine; restaurant or bar staff → izakaya-guests, ramen-shop or snack-bar; hotel staff → hotel-front-desk; a shop assistant → clothes-shop or convenience-store; a taxi driver → taxi-driver; office work with overseas colleagues → a business scene. Otherwise their reason for English or their interests: travelling abroad → a travel scene; making foreign friends → a friends scene; helping visitors in Japan → a help scene. With nothing to go on, cafe-abroad. Only ids from the list.
+Role-plays (id: title. what it is. you play):
+${SCENES.map((s) => `${s.id}: ${s.title.en}. ${s.summary.en} You play: ${(s.roles.find((r) => r.id === s.studentRole) ?? s.roles[0]).name.en}`).join('\n')}`
 
 export async function welcomeFacts(lines: { from: 'student' | 'tutor'; text: string }[]): Promise<FactsRead & { pick: WelcomePick | null }> {
   const none = { facts: {}, thin: [], pick: null }

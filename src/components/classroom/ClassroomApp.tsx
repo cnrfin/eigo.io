@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useState } from 'react'
 import { WherebyProvider } from '@whereby.com/browser-sdk/react'
 import { useAuth } from '@/context/AuthContext'
 import { fetchJoin, type JoinDenied, type JoinInfo } from '@/lib/classroom/client'
@@ -29,6 +29,20 @@ function isLowPower() {
 
 export function Shell({ lang, children }: { lang: ClassroomLang; children: React.ReactNode }) {
   const [lite] = useState(isLowPower)
+  // the classroom is always dark, whatever their site theme (the theme provider may set it again after loading
+  // their profile: it's put back at once); their theme comes back when they leave
+  useLayoutEffect(() => {
+    const html = document.documentElement
+    const before = html.getAttribute('data-theme')
+    const dark = () => html.getAttribute('data-theme') !== 'dark' && html.setAttribute('data-theme', 'dark')
+    dark()
+    const mo = new MutationObserver(dark)
+    mo.observe(html, { attributes: true, attributeFilter: ['data-theme'] })
+    return () => {
+      mo.disconnect()
+      if (before) html.setAttribute('data-theme', before)
+    }
+  }, [])
   return (
     <div className={`cr${lite ? ' fx-lite' : ''}${lang === 'ja' ? ' jp' : ''}`} lang={lang}>
       <ClassroomIcons />

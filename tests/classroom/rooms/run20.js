@@ -55,10 +55,11 @@ const emit = async (ev) => { await act(async () => { channel.dispatchEvent(new w
   const base = REPO + '/src/lib/roleplay/scenes/'
   g.RP_SCENES = [require(base + 'travel/cafe-abroad.json'), require(base + 'service/salon-massage.json'), require(base + 'business/work-intro.json')]
   g.CATALOG = [{ id: 'c_greatbritain', title: 'Haruka in the UK: Part 1', titleJa: 'イギリスでのハルカ 第1章', level: 'A2', description: 'x', descriptionJa: 'x', scenes: ['https://cdn/x.jpg'], lessonCount: 12, doneCount: 0 }]
-  g.aiSessionResponse = { sessionId: 'live_1', sdp: 'v=0 answer', endsAt: new Date(Date.now() + 300_000).toISOString() }
+  // (joined 55 s in, so the role-play note, never before 0:50, comes within the run)
+  g.aiSessionResponse = { sessionId: 'live_1', sdp: 'v=0 answer', endsAt: new Date(Date.now() + 245_000).toISOString() }
   g.TICK = []
   g.turnResponse = (b) => ({ move: 'stay', slide: null, action: b.screen ? { kind: 'open_course', courseId: 'c_greatbritain' } : { kind: 'none' }, quote: 'open the course', ticks: b.roleplay ? g.TICK.filter((t) => !b.roleplay.done.includes(t.id)) : [] })
-  g.welcomeAbout = { facts: { job: 'Aromatherapist in Tokyo', likes: 'Netflix, cafés', why: 'Talking with customers' }, thin: [] }
+  g.welcomeAbout = { facts: { job: 'Aromatherapist in Tokyo', likes: 'Netflix, cafés', why: 'Talking with customers' }, thin: [], pick: { sceneId: 'salon-massage', name: '', reasonJa: '', reasonEn: '' } }
   await T.run(join)
   await T.click(T.$('#joinBtn')); await T.tick(150)
   await emit({ type: 'session.started', session: { id: 'live_1' } })
@@ -76,15 +77,18 @@ const emit = async (ev) => { await act(async () => { channel.dispatchEvent(new w
   // 2) getting to know them: the helper reads it quietly; nothing appears, the tutor isn't interrupted
   await say('you', "I'm from Tokyo. I'm an aromatherapist. I like Netflix and cafés, and I study English to talk with customers.", 7000); await T.tick(2400)
   check('the helper picks out the facts, quietly (for the end screen)', fetched('"op":"about"').length >= 1 && !T.$('.wlc-row'))
-  check('no notes to the tutor while it leads', posts('welcome').length === 0, posts('welcome'))
-  // 3) the tutor suggests a role-play: its card appears
-  await say('ai', 'Thanks! Since you work with customers, here is a role-play for you. In the classroom, you can open things just by asking. Please say: "Let\'s do the massage salon role-play."', 12000); await T.tick(1200)
-  check('the card shows the scene the tutor named, with the phrase', txt('.wlc-st b').startsWith('マッサージ') && txt('.wlc-p') === "Let's do the massage salon role-play", txt('.aic'))
-  await say('you', "Let's do the massage", 15000); await T.tick(2500)
-  check('half the phrase opens nothing', !T.$('.apn-mission') && document.querySelectorAll('.wlc-p span.on').length >= 4, txt('.wlc-p'))
-  await say('you', ' salon role-play', 17600); await T.tick(800)
+  await T.tick(1500)
+  // 3) the role-play is chosen for them in the background, and the tutor gets one note with it
+  const pk = posts('welcome')
+  check('the tutor is told the role-play chosen for them (from their job)', pk.length === 1 && pk[0].includes('"step":"pick"') && pk[0].includes('"sceneId":"salon-massage"'), pk)
+  check('no card until the tutor teaches the phrase', !T.$('.wlc-say'))
+  await say('ai', 'Since you work with customers, a salon role-play suits you. In the classroom, you can open things just by asking. Please say, Let\'s do a role-play.', 12000); await T.tick(1200)
+  check('the card: the scene chosen for them, and always "Let\'s do a role-play"', txt('.wlc-st b').startsWith('マッサージ') && txt('.wlc-p') === "Let's do a role-play", txt('.aic'))
+  await say('you', "Let's do a", 15000); await T.tick(2500)
+  check('half the phrase opens nothing', !T.$('.apn-mission') && document.querySelectorAll('.wlc-p span.on').length >= 3, txt('.wlc-p'))
+  await say('you', ' role play', 17600); await T.tick(500)
   check('the whole phrase: not while they might still be talking…', !T.$('.apn-mission'))
-  await say('ai', 'Great!', 18600); await T.tick(2000)
+  await say('ai', 'Great!', 18200); await T.tick(2200)
   check('…then it opens, at 初級', !!T.$('.apn-mission') && txt('.apn-lvl') === '初級', txt('.panelBox'))
   check('the tutor gets the scene', posts('roleplay').length === 1 && posts('roleplay')[0].includes('"sceneId":"salon-massage"') && posts('roleplay')[0].includes('"level":0'))
   // 4) the scene, then mission complete (welcome version)
@@ -109,7 +113,7 @@ const emit = async (ev) => { await act(async () => { channel.dispatchEvent(new w
   // 6) the Q&A: the preview goes
   await say('ai', 'That is what a course lesson looks like. Do you have any questions about eigo?', 45000); await T.tick(800)
   check('the Q&A: the preview and the card go', !T.$('.app.wl-preview') && !T.$('.wlc-tip'))
-  check('the tutor led it all: no reminders were needed', posts('welcome').length === 0, posts('welcome'))
+  check('the tutor led it all: no reminders were needed (only the role-play note)', posts('welcome').length === 1, posts('welcome'))
   check('no time notes but the goodbye', posts('time').length === 0)
   console.log(fails ? `${fails} FAILED` : 'all passed')
   process.exit(fails ? 1 : 0)
