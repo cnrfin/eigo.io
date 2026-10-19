@@ -1335,7 +1335,6 @@ export default function AiRoom(props: Props) {
   const left = Math.min(info.durationMinutes * 60, Math.max(0, ((clockEnd ?? endsAt.current) - now) / 1000))
   const noted = useRef<Set<string>>(new Set())
   const timeUp = useRef(false)
-  const graceFrom = useRef(0)
   useEffect(() => {
     if (status !== 'live') return
     // the server picks the wording from the booked end; the AI tutor keeps teaching until ~20 s before
@@ -1357,28 +1356,20 @@ export default function AiRoom(props: Props) {
     const T0 = Date.now()
     const L0 = lines.current
     const lastLine = L0[L0.length - 1]
+    // (by the transcript's timing only: the "is its voice still playing" signal can stay on, and the call then waited)
     const byeDone =
       noted.current.has('0') &&
+      // (never an in-character goodbye in a role-play: "See you! Take care!")
+      !rpPlaying.current &&
       lastLine?.from === 'tutor' &&
+      !END_RP.test(lastLine.text) &&
       GOODBYE.test(lastLine.text) &&
-      !speakingRef.current &&
-      !responding.current &&
-      T0 - lastSaid.current.tutor >= 1200 &&
+      T0 - lastSaid.current.tutor >= 1500 &&
       T0 - lastSaid.current.student >= 1500 &&
       (L0.slice(-5).some((l) => l.from === 'student' && GOODBYE.test(l.text)) || T0 - lastSaid.current.tutor >= 3000)
+    // 0:00 ends it at once: the end screen shows and the call closes quietly behind it (the server's sweep also hangs
+    // up, as a backstop). The few seconds' grace for a goodbye still being said felt like a wait every time.
     if ((left <= 0 || byeDone) && !timeUp.current) {
-      // 00:00 ends the lesson (the server's sweep also hangs up, as a backstop). If they're still saying goodbye, a
-      // few more seconds so the tutor can answer (it felt cold to be cut off): only while one of them is actually
-      // talking, and once the tutor has said its goodbye and finished, at once (a long wait felt awkward too).
-      // At most 8 s, and never past the server's end
-      const T = Date.now()
-      if (!graceFrom.current) graceFrom.current = T
-      const L = lines.current
-      const lastTutor = [...L].reverse().find((l) => l.from === 'tutor')
-      const tutorBusy = speakingRef.current || responding.current || T - lastSaid.current.tutor < 800
-      const saidBye = !!lastTutor && GOODBYE.test(lastTutor.text) && L[L.length - 1] === lastTutor
-      const talking = tutorBusy || (!saidBye && T - lastSaid.current.student < 1500)
-      if (talking && T - graceFrom.current < 8000 && endsAt.current - (T + clockOffset) > 2000) return
       timeUp.current = true
       closing.current = true
       gen.current++ // ignore anything the session still sends
