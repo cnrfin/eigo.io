@@ -8,12 +8,13 @@ import { Ico } from './Icons'
 
 /**
  * AI lessons: the correction / "How do I say…?" card (design: mockups/ai-panel.html). It slides up over
- * whatever is on screen. The phrase is saved to the word list on its own a few seconds after it appears,
- * straight away when the student says it (ticked first) or says "save it", or with the button. Closing it
- * saves nothing. The student answers by voice or by tap; there's no listening badge.
+ * whatever is on screen and stays until the student has had their try: it's saved to the word list when they
+ * say it (ticked first), when their try is over (the tutor has reacted), when they say "save it", or with the
+ * button. (It used to go after 7 s, often before they'd read it.) Closing it saves nothing.
  */
 
-const AUTO_SAVE_MS = 7000
+/** nothing at all from them: saved after this long anyway */
+const IDLE_SAVE_MS = 30000
 const SAVE_WORDS = /\bsave\b|保存/i
 const STYLE_WORDS: [RegExp, SayStyle][] = [
   [/\bpolite\b|ていねい|丁寧/i, 'polite'],
@@ -29,6 +30,7 @@ export default function AiCards({
   t,
   shown,
   hearRef,
+  triedRef,
   onSave,
   onClose,
   onChose,
@@ -37,18 +39,21 @@ export default function AiCards({
   shown: ShownCard | null
   /** set by the card: the classroom passes it the student's words as they come in */
   hearRef: { current: HearFn | null }
+  /** set by the card: the classroom calls it when the student's try is over (the tutor is reacting to it) */
+  triedRef: { current: (() => void) | null }
   onSave: (el: HTMLElement, term: string, ja: string) => void
   onClose: () => void
   onChose: (style: SayStyle, text: string) => void
 }) {
   if (!shown) return null
-  return <OneCard key={shown.id} t={t} card={shown.card} hearRef={hearRef} onSave={onSave} onClose={onClose} onChose={onChose} />
+  return <OneCard key={shown.id} t={t} card={shown.card} hearRef={hearRef} triedRef={triedRef} onSave={onSave} onClose={onClose} onChose={onChose} />
 }
 
 function OneCard({
   t,
   card,
   hearRef,
+  triedRef,
   onSave,
   onClose,
   onChose,
@@ -56,6 +61,7 @@ function OneCard({
   t: ClassroomT
   card: Card
   hearRef: { current: HearFn | null }
+  triedRef: { current: (() => void) | null }
   onSave: (el: HTMLElement, term: string, ja: string) => void
   onClose: () => void
   onChose: (style: SayStyle, text: string) => void
@@ -82,11 +88,21 @@ function OneCard({
     saveRef.current = save
   })
 
-  // saves on its own after a while; switching version (tap or voice) starts the wait again, so there's time to read it
+  // stays until their try is over (a moment, so a tick can show); only if nothing happens at all, it goes by itself.
+  // Switching version (tap or voice) starts again: they try the new one
   useEffect(() => {
-    const id = window.setTimeout(() => saveRef.current(), AUTO_SAVE_MS)
-    return () => window.clearTimeout(id)
-  }, [pick])
+    let after: number | undefined
+    triedRef.current = () => {
+      window.clearTimeout(after)
+      after = window.setTimeout(() => saveRef.current(), 1200)
+    }
+    const idle = window.setTimeout(() => saveRef.current(), IDLE_SAVE_MS)
+    return () => {
+      triedRef.current = null
+      window.clearTimeout(after)
+      window.clearTimeout(idle)
+    }
+  }, [pick, triedRef])
 
   // voice: "save it", "the polite one", or saying the phrase (ticked, then saved)
   const state = useRef({ pick, said, term })

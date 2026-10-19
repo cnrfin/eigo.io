@@ -61,6 +61,8 @@ export type JoinInfo = {
   aiWelcome?: boolean
   /** AI lessons: the English level the student gave (ai-tutor/settings.ts ENGLISH_LEVELS; '' = not given) */
   aiLevel?: string
+  /** AI lessons: the student's correction setting (ai-tutor/settings.ts): when the classroom brings up a correction */
+  aiCorrections?: 'relaxed' | 'end_of_activity' | 'immediate'
   /** AI lessons: a role-play chosen when booking; it opens as the lesson starts (null on a rejoin) */
   roleplay?: { sceneId: string; level: 0 | 1 | 2 } | null
 }
@@ -210,7 +212,7 @@ export type StudentAction =
   | { kind: 'media'; text: string }
   | { kind: 'start'; slide?: SlideRef | null; roleplay?: string }
   | { kind: 'resume'; slide?: SlideRef | null }
-  | ({ kind: 'slide'; review?: { returnTo: number } } & SlideRef)
+  | ({ kind: 'slide'; review?: { returnTo: number }; fix?: { was: string; now: string } } & SlideRef)
   | { kind: 'lesson'; courseId: string; lessonId: string }
   | { kind: 'not_yet'; missing: string[] }
   | { kind: 'nudge'; where?: 'slides' | 'free' | 'roleplay' | 'welcome' }

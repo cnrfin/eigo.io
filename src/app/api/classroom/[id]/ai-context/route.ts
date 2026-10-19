@@ -25,7 +25,7 @@ type Action =
   | { kind: 'media'; text: string }
   | { kind: 'start'; slide?: SlideRef | null; roleplay?: string }
   | { kind: 'resume'; slide?: SlideRef | null }
-  | ({ kind: 'slide'; review?: { returnTo: number } } & SlideRef)
+  | ({ kind: 'slide'; review?: { returnTo: number }; fix?: { was: string; now: string } } & SlideRef)
   | { kind: 'lesson'; courseId: string; lessonId: string }
   | { kind: 'not_yet'; missing: string[] }
   | { kind: 'nudge'; where?: 'slides' | 'free' | 'roleplay' | 'welcome' }
@@ -141,7 +141,7 @@ function instruction(a: Action, secondsLeft: number, welcome: boolean): string |
         const said = (Array.isArray(a.done) ? a.done : []).slice(0, 6).map((d) => `- ${q(d.task, 80)}: "${q(d.said, 160)}"`).join('\n')
         return `The role-play is over and the mission-complete screen is on the student's screen. Step out of character and give short spoken feedback, slowly and simply:
 1. One or two specific things they did well, quoting their own words. If they missed a task (listed below), don't say they did everything.
-${fixes.length ? `2. Their mistakes in the scene are on their screen (listed below; you didn't correct them during it). Go through ${fixes.length > 1 ? 'the first one or two' : 'it'}: say "A more natural way is: <the natural version>", ask them to say it, and react briefly. Don't correct anything else.
+${fixes.length ? `2. Their mistakes in the scene are on their screen (listed below; you didn't correct them during it). Go through only the first one: say "A more natural way is: <the natural version>", ask them to say it, and react briefly. Don't correct anything else.
 3.` : '2. Nothing to correct: no corrections.\n3.'} Ask if they have any questions about the role-play (only about the role-play: questions about eigo.io come later, after the voice command), and answer briefly.
 Then carry on with your plan: the voice command next (step 5), then the questions about eigo.io (step 6). Don't offer to swap roles, play it again or try another scene.
 What they said for each task:
@@ -244,6 +244,12 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const found = c ? findLesson(c.course, String(ref.lessonId)) : null
     const rv = action.kind === 'slide' && action.review && Number(action.review.returnTo) > 0 ? { returnTo: Math.round(Number(action.review.returnTo)) } : undefined
     if (found) texts.push(...slideInstructionParts(found.lesson, String(ref.slideId), rv))
+    // the correction moment (corrections "after each activity"): one mistake from the last slide, gone through now
+    const fx = action.kind === 'slide' && action.fix ? { was: q(action.fix.was, 160), now: q(action.fix.now, 160) } : null
+    if (found && fx?.was && fx.now && !/[぀-ヿ一-鿿]/.test(fx.now))
+      texts.push(
+        `Before you teach this new slide, one thing from the last one: they said "${fx.was}". Say "A more natural way is: ${fx.now}" (it appears on their screen as a card), ask them to say it, react briefly to their try, then teach this slide. Only this one: don't go through any other mistakes.`,
+      )
   }
   if (action.kind === 'lesson') {
     const c = await loadCourse(String(action.courseId))

@@ -61,7 +61,7 @@ import { normText } from '@/lib/ai-tutor/actions'
 import { panelIntent, type PanelIntent } from '@/lib/roleplay/intent'
 import type { SceneSummary } from '@/lib/roleplay/types'
 import { shrinkInto } from './save-fly'
-import { cueCard, fitDraft, lastExchange, mayHaveCard, mergeCard, mistakeFor, tutorItemId, type Card, type SayStyle } from '@/lib/ai-tutor/cards'
+import { cueCard, fitDraft, lastExchange, mergeCard, mistakeFor, tutorItemId, type Card, type SayStyle } from '@/lib/ai-tutor/cards'
 import { hasJapanese, sameWords, words as wordsOf } from '@/lib/ai-tutor/voice-match'
 import { Ico } from './Icons'
 import SlideStage from './SlideStage'
@@ -240,8 +240,6 @@ export default function AiRoom(props: Props) {
   const welcome = !!info.aiWelcome
   const welcomeHear = useRef<(said: string) => void>(() => {})
   const welcomeTutor = useRef<(sentence: string) => void>(() => {})
-  /** after the tutor's reply: a mistake it let pass is corrected (the welcome talk; set up further down) */
-  const welcomeCorrect = useRef<() => void>(() => {})
   const wStepRef = useRef<WelcomeStep | null>(null)
 
   /* ---------- slides ---------- */
@@ -335,6 +333,8 @@ export default function AiRoom(props: Props) {
   const [shown, setShown] = useState<ShownCard | null>(null)
   /** the card listens to what the student says from when it appears ("save it", the phrase…) */
   const cardHear = useRef<HearFn | null>(null)
+  /** the card stays until the student's try is over: the classroom tells it then */
+  const cardTried = useRef<(() => void) | null>(null)
   /** the AI panel listens too: "show me the role-plays", "let's do the café one", "close it" (lib/roleplay/intent.ts) */
   const panelSaid = useRef<(who: 'student' | 'tutor', text: string) => PanelIntent | null>(() => null)
   const panelDo = useRef<(i: PanelIntent) => void>(() => {})
@@ -404,8 +404,23 @@ export default function AiRoom(props: Props) {
   const cardFrom = useRef(0)
   const cardSeq = useRef(0)
   const shownRef = useRef<ShownCard | null>(null)
-  const assistTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const assistSig = useRef('')
+  /*
+   * Corrections (one card from one place: the AI tutor saying the sentence). The tutor corrects in its reply (free
+   * talk, the welcome talk's questions, slide tasks); a mistake it lets pass is saved quietly, or, in course lessons
+   * with corrections "after each activity", kept for a correction moment when the slide changes (at most one, every
+   * 2 minutes). Role-plays: at the end. Their try at a card is never checked again.
+   */
+  const missedTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const settleMissed = useRef<() => void>(() => {})
+  /** the student's lines already dealt with: a card was made for them, or their mistake was saved or kept */
+  const handled = useRef(new Set<Line>())
+  /** course lessons: the current slide's mistakes, for the moment at the next slide */
+  const slideFixes = useRef<Extract<Card, { kind: 'correction' }>[]>([])
+  /** the moment's card: it appears when the tutor says it */
+  const momentCard = useRef<Extract<Card, { kind: 'correction' }> | null>(null)
+  const lastMoment = useRef(0)
+  /** phrases already shown as a card in this lesson: never the same card twice */
+  const cardTerms = useRef(new Set<string>())
   const { onSaveWord, onRemoveWord, savedIds } = props
   const savedRef = useRef(savedIds)
   const sideRef = useRef(props.side)
@@ -450,11 +465,15 @@ export default function AiRoom(props: Props) {
   const showCard = useCallback(
     (c: ShownCard['card'], from?: number) => {
       // the welcome call's suggestion and tips: the tutor says phrases to say ("you can say …"), never cards
-      if (wStepRef.current === 'suggest' || wStepRef.current === 'command') return 0
+      if (wStepRef.current === 'suggest' || wStepRef.current === 'command' || wStepRef.current === 'qa') return 0
       // a role-play: no cards while they play (its mistakes come on the results screen), and none for a mistake the
       // results already show (the tutor goes through those in its feedback)
       if (rpPlaying.current) return 0
       if (c.kind === 'correction' && rpFixShown.current.some((f) => sameWords(f.now, c.now))) return 0
+      // never the same phrase twice (the tutor saying it again, or a second way of reaching it)
+      const term = normText(c.kind === 'correction' ? c.now : (c.options[0]?.text ?? ''))
+      if (term && cardTerms.current.has(term)) return 0
+      if (term) cardTerms.current.add(term)
       // a card that was still up gets saved as it goes (it was going to be saved anyway)
       const prev = shownRef.current?.card
       if (prev) saveTerm(prev.kind === 'correction' ? prev.now : prev.options[0].text, prev.kind === 'correction' ? prev.ja : prev.heard)
@@ -481,12 +500,19 @@ export default function AiRoom(props: Props) {
     if (!sid || closing.current || !line) return
     const text = line.text.trim()
     if (!(hasJapanese(text) || wordsOf(text).length >= 3)) return
+    // their try at a card's sentence: never checked (correcting the try again broke the flow)
+    if (shownRef.current && k >= cardFrom.current) {
+      handled.current.add(line)
+      return
+    }
+    // the welcome talk: corrections only in its questions (and the role-play's, for its results)
+    if (welcome && wStepRef.current !== 'about' && !rpPlaying.current) return
     if (prep.current?.line === line && prep.current.text === text) return
     const recent = L.slice(Math.max(0, k - 3), k + 1).map((l) => ({ from: l.from, text: l.text }))
     prep.current = { line, text, card: aiAssist(info.bookingId, { sessionId: sid, lines: recent, mode: 'prepare' }) }
     // in a role-play: kept for the results screen (a line that grew is prepared again and replaces its entry)
     if (rpPlaying.current) rpFixes.current.set(line, prep.current)
-  }, [info.bookingId])
+  }, [info.bookingId, welcome])
   /**
    * The AI tutor has just said the corrected / English sentence. Show the card complete: at once when the
    * prepared card is about that sentence; otherwise as soon as the helper has the details (it's asked now),
@@ -497,6 +523,14 @@ export default function AiRoom(props: Props) {
       const sid = sessionId.current
       if (!sid || closing.current || cardFor.current === line || rpPlaying.current) return
       const L = lines.current
+      // the correction moment at a slide change: its card is ready
+      const mc = momentCard.current
+      if (mc && normText(line.text).includes(normText(mc.now).split(' ').slice(0, 5).join(' '))) {
+        momentCard.current = null
+        cardFor.current = line
+        showCard(mc, L.length)
+        return
+      }
       const i = L.lastIndexOf(line)
       const recent = L.slice(Math.max(0, i - 5), i + 1).map((l) => ({ from: l.from, text: l.text }))
       const ex = lastExchange(recent)
@@ -507,6 +541,7 @@ export default function AiRoom(props: Props) {
       cardFor.current = line
       const from = L.length // the student's attempt starts after this
       const studentLine = i > 0 && L[i - 1].from === 'student' ? L[i - 1] : null
+      if (studentLine) handled.current.add(studentLine)
       const prepared = prep.current && prep.current.line === studentLine ? prep.current.card : Promise.resolve(null)
       const fromPrep = prepared.then((c) => fitDraft(local, c))
       let late: Promise<Card | null> | null = null
@@ -527,21 +562,6 @@ export default function AiRoom(props: Props) {
     },
     [info.bookingId, showCard],
   )
-  /** after the AI tutor's turn: ask the helper only when the turn looks like a correction or "How do I say…?" */
-  const runAssist = useCallback(async () => {
-    const sid = sessionId.current
-    if (!sid || closing.current || rpPlaying.current) return
-    const last = lines.current[lines.current.length - 1]
-    if (last && last === cardFor.current) return // this turn already has its card
-    const recent = lines.current.slice(-6).map((l) => ({ from: l.from, text: l.text }))
-    const ex = lastExchange(recent)
-    if (!mayHaveCard(ex.student, ex.tutor)) return
-    const sig = `${lines.current.length}:${ex.tutor.length}`
-    if (sig === assistSig.current) return
-    assistSig.current = sig
-    const c = await aiAssist(info.bookingId, { sessionId: sid, lines: recent })
-    if (c && !closing.current) showCard(c)
-  }, [info.bookingId, showCard])
   const cardHook = useRef<(from: Line['from']) => void>(() => {})
   useEffect(() => {
     cardHook.current = (from) => {
@@ -560,13 +580,11 @@ export default function AiRoom(props: Props) {
         // the card appears as soon as the AI tutor has said the sentence; otherwise the helper looks after the turn
         const last = lines.current[lines.current.length - 1]
         if (last?.from === 'tutor') cueNow(last)
-        if (assistTimer.current) clearTimeout(assistTimer.current)
-        assistTimer.current = setTimeout(() => void runAssist(), 1300)
-        // the welcome talk: once its reply is over, a mistake it didn't correct is (the card, and a note to say it)
-        if (welcome) {
-          if (wCorrectTimer.current) clearTimeout(wCorrectTimer.current)
-          wCorrectTimer.current = setTimeout(() => welcomeCorrect.current(), 1800)
-        }
+        // once its reply is over: a mistake it didn't correct is saved quietly, or kept for the slide's moment
+        if (missedTimer.current) clearTimeout(missedTimer.current)
+        missedTimer.current = setTimeout(() => settleMissed.current(), 1800)
+        // the student has had their try at the card and the tutor is reacting: the card can go now
+        if (shownRef.current && lines.current.slice(cardFrom.current).some((l) => l.from === 'student')) cardTried.current?.()
       }
       if (from === 'student') {
         // the student's own words act at once (each command once per sentence; the same command said again later,
@@ -616,11 +634,27 @@ export default function AiRoom(props: Props) {
         )
       }
     }
+    settleMissed.current = () => {
+      if (closing.current || rpPlaying.current) return
+      const L = lines.current
+      let k = L.length - 1
+      while (k >= 0 && L[k].from === 'tutor') k--
+      const st = L[k]
+      const p = prep.current
+      if (!st || k === L.length - 1 || handled.current.has(st) || !p || p.line !== st) return
+      handled.current.add(st)
+      const keep = !welcome && live.current.slides.length > 0 && (info.aiCorrections ?? 'end_of_activity') === 'end_of_activity'
+      void p.card.then((c) => {
+        if (!c || c.kind !== 'correction' || sameWords(c.now, st.text) || closing.current) return
+        if (keep) slideFixes.current.push({ ...c, was: st.text.trim() })
+        else saveTerm(c.now, c.ja)
+      })
+    }
     return () => {
-      if (assistTimer.current) clearTimeout(assistTimer.current)
+      if (missedTimer.current) clearTimeout(missedTimer.current)
       if (prepTimer.current) clearTimeout(prepTimer.current)
     }
-  }, [runAssist, cueNow, prepare, welcome])
+  }, [cueNow, prepare, welcome, saveTerm, info.aiCorrections])
   useEffect(() => {
     if (!undo) return
     const id = setTimeout(() => setUndo((u) => (u?.id === undo.id ? null : u)), 4000)
@@ -1138,13 +1172,31 @@ export default function AiRoom(props: Props) {
     const looking = review.current && idx < furthest.current
     if (!ref) return
     const id = slide.id
+    // the correction moment: one mistake from the slide before (the latest, so they still remember it), at most one
+    // every 2 minutes; the others are saved quietly
+    const pend = slideFixes.current
+    slideFixes.current = []
+    const pick = pend.length && !looking && Date.now() - lastMoment.current > 120_000 ? pend[pend.length - 1] : null
+    for (const f of pend) if (f !== pick) saveTerm(f.now, f.ja)
+    if (pick) {
+      lastMoment.current = Date.now()
+      momentCard.current = pick
+    }
     void lessonNote.current
-      .then(() => act({ kind: 'slide', ...ref, slideId: id, ...(looking ? { review: { returnTo: furthest.current + 1 } } : {}) }))
+      .then(() =>
+        act({
+          kind: 'slide',
+          ...ref,
+          slideId: id,
+          ...(looking ? { review: { returnTo: furthest.current + 1 } } : {}),
+          ...(pick ? { fix: { was: pick.was, now: pick.now } } : {}),
+        }),
+      )
       .then((ok) => {
         // GPT-Live sometimes just waits after "let's move on to the next slide" (the note itself doesn't make it speak)
         if (ok) speakIfSilent.current(Date.now(), () => lastSent.current === id)
       })
-  }, [status, slide, idx, slideRef, act])
+  }, [status, slide, idx, slideRef, act, saveTerm])
   // After a note that should make the AI tutor speak (the greeting, a new slide): if it hasn't started shortly
   // after, ask it to. Never over the student or while its voice is playing; at most twice.
   useEffect(() => {
@@ -1795,8 +1847,6 @@ export default function AiRoom(props: Props) {
   const wLoading = useRef(false)
   const wReadySent = useRef(false)
   /** the student's lines already corrected (or checked), and the course preview loaded ahead */
-  const wCorrected = useRef(new Set<Line>())
-  const wCorrectTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const wPreviewNext = useRef<Promise<{ loaded: LoadedCourse; slide: Slide; title: string } | null> | null>(null)
   const wSuggestSent = useRef(false)
   const wWrapSent = useRef(false)
@@ -1941,29 +1991,6 @@ export default function AiRoom(props: Props) {
           if (p && wStepRef.current === 'command') setWPreview(p)
         })
       }
-    }
-    // every grammar mistake gets corrected in the welcome talk (the tutor alone let most of them pass): when its reply
-    // to a sentence with a mistake didn't correct it, the card the helper prepared goes up and the tutor is asked to say it
-    welcomeCorrect.current = () => {
-      const step = wStepRef.current
-      // (not in the role-play: its mistakes are on the results screen, and the tutor goes through them there)
-      if (closing.current || step === 'suggest' || step === 'command' || step === 'roleplay' || step === 'done' || rpPlaying.current || speakingRef.current) return
-      const L = lines.current
-      let k = L.length - 1
-      while (k >= 0 && L[k].from === 'tutor') k--
-      const st = L[k]
-      if (!st || k === L.length - 1 || wCorrected.current.has(st)) return
-      const reply = L.slice(k + 1).map((l) => l.text).join(' ')
-      const p = prep.current
-      if (!p || p.line !== st) return
-      wCorrected.current.add(st)
-      if (/\b(?:natural way|you can say|you could say|we (?:usually )?say)\b/i.test(reply)) return
-      void p.card.then((c) => {
-        if (!c || c.kind !== 'correction' || closing.current || sameWords(c.now, st.text)) return
-        if (wStepRef.current === 'suggest' || wStepRef.current === 'command') return
-        showCard(c)
-        void act({ kind: 'welcome', step: 'correct', now: c.now })
-      })
     }
     /** the first slide of a course's first lesson (a course picked at random), for the voice-command preview */
     function loadPreview() {
@@ -2493,7 +2520,7 @@ export default function AiRoom(props: Props) {
               <span className="name">{info.other.name}</span>
               {captionsOn && <div className="ai-cap" ref={capRef} aria-live="polite" />}
             </div>
-            <AiCards t={t} shown={status === 'live' && !wCard ? shown : null} hearRef={cardHear} onSave={saveFromCard} onClose={() => setShown(null)} onChose={onChose} />
+            <AiCards t={t} shown={status === 'live' && !wCard ? shown : null} hearRef={cardHear} triedRef={cardTried} onSave={saveFromCard} onClose={() => setShown(null)} onChose={onChose} />
             {wCard === 'suggest' && wScene && (
               <SuggestCard
                 t={t}

@@ -164,9 +164,10 @@ export function settingsToRules(s: TutorSettings): string[] {
   )
   rules.push(
     {
-      relaxed: 'Let small mistakes go; only correct mistakes that change the meaning.',
-      end_of_activity: 'Note mistakes and correct them briefly at the end of each activity, not mid-sentence.',
-      immediate: 'Correct important mistakes straight away: give the correct form and have the student say it again.',
+      relaxed: 'Correction setting: relaxed. Let small mistakes go; only correct a mistake that changes the meaning, in your reply.',
+      end_of_activity:
+        "Correction setting: after each activity. In free talk, correct a clear mistake in your reply to it. On slides, give feedback on their answers to the slide's tasks as usual, but let other slips go: at slide changes the note may give you one to go through. Role-plays: in the feedback after the scene.",
+      immediate: 'Correction setting: straight away. Correct each clear mistake in your reply to it, in free talk and on slides (role-plays: in the feedback after the scene).',
     }[s.corrections],
   )
   rules.push(

@@ -78,7 +78,7 @@ const CHOICES: Record<ChoiceKey, { title: L; opts: Opt[] }> = {
     title: { ja: '間違いの直し方', en: 'Correcting mistakes' },
     opts: [
       { v: 'relaxed', label: { ja: '大事な間違いだけ', en: 'Only big mistakes' }, hint: { ja: '意味が変わってしまう間違いだけ直します。', en: 'Only mistakes that change the meaning.' } },
-      { v: 'end_of_activity', label: { ja: 'アクティビティの後', en: 'After each activity' }, hint: { ja: '話している途中では止めず、アクティビティの後にまとめて直します。', en: 'Doesn’t interrupt you; goes over mistakes after each activity.' } },
+      { v: 'end_of_activity', label: { ja: 'アクティビティの後', en: 'After each activity' }, hint: { ja: 'フリートークではその場で一言。スライドやロールプレイの途中では止めず、区切りで直します。', en: 'A quick fix in free talk; on slides and in role-plays, at the end of each part.' } },
       { v: 'immediate', label: { ja: 'その場で', en: 'Right away' }, hint: { ja: 'その場で正しい言い方を伝えて、もう一度言ってもらいます。', en: 'Corrects straight away and has you say it again.' } },
     ],
   },
