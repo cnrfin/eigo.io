@@ -23,7 +23,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   const { booking } = ctx
   if (booking.lesson_kind !== 'ai' || booking.user_id !== ctx.user.id) return json(403, { error: 'Not allowed' })
 
-  let body: { sessionId?: string; lines?: Line[]; final?: boolean }
+  let body: { sessionId?: string; lines?: Line[]; final?: boolean; events?: unknown }
   try {
     body = await request.json()
   } catch {
@@ -37,6 +37,10 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     .join('\n')
     .slice(0, 200_000)
 
+  // the live session's events since the last save (responses, errors, the welcome talk's steps): in the Vercel logs
+  const events = (Array.isArray(body.events) ? body.events : []).filter((e): e is string => typeof e === 'string').slice(0, 300).map((e) => e.slice(0, 200))
+  if (events.length) console.info('ai-events', JSON.stringify({ booking: booking.id, session: body.sessionId, events }))
+
   const db = getSupabaseAdmin()
   const { data: sess } = body.sessionId
     ? await db.from('ai_sessions').select('session_id, started_at, ended_at').eq('session_id', body.sessionId).eq('booking_id', booking.id).maybeSingle()
@@ -46,7 +50,10 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   const { data: cur } = await db.from('bookings').select('transcript_text').eq('id', booking.id).maybeSingle()
   const marker = sess ? `\n[session ${sess.session_id}]\n` : '\n'
   const prev = (cur?.transcript_text as string | null) ?? ''
-  const before = sess && prev.includes(marker) ? prev.slice(0, prev.indexOf(marker)) : prev
+  // (the first session's marker is at the very start, without the newline before it: it wasn't found, and every
+  // save added the whole transcript again)
+  const at = sess ? prev.indexOf(marker.trim()) : -1
+  const before = at >= 0 ? prev.slice(0, at) : prev
   const merged = text ? `${before}${marker}${text}`.trim() : prev
   if (merged !== prev) await db.from('bookings').update({ transcript_text: merged, cleaned_transcript: merged }).eq('id', booking.id)
 

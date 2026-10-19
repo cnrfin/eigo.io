@@ -28,7 +28,7 @@ type Action =
   | ({ kind: 'slide'; review?: { returnTo: number }; fix?: { was: string; now: string } } & SlideRef)
   | { kind: 'lesson'; courseId: string; lessonId: string }
   | { kind: 'not_yet'; missing: string[] }
-  | { kind: 'nudge'; where?: 'slides' | 'free' | 'roleplay' | 'welcome' }
+  | { kind: 'nudge'; where?: 'slides' | 'free' | 'roleplay' | 'welcome'; step?: string }
   | { kind: 'restarted' }
   | { kind: 'time'; left?: number }
   | { kind: 'view'; what: 'closed' | 'board_on' | 'board_off' | 'open_failed' }
@@ -174,8 +174,18 @@ ${done || '(nothing recorded)'}${fixes.length ? `\nTheir mistakes, with the natu
       return "The lesson has started again from the beginning (slide 1), as the student asked. Teach it again from the start, slide by slide, as if it were new: begin with slide 1 now. Don't ask what they want to look at, and don't jump back to where you were."
     case 'nudge':
       if (secondsLeft < 30) return null
-      if (welcome && a.where !== 'roleplay')
-        return "Nobody has spoken for a few seconds. This is the welcome talk: carry on with your plan (the next question, or the next part), gently and simply."
+      if (welcome && a.where !== 'roleplay') {
+        // where it is in its plan, from the classroom: once, a vague "carry on" let it go back to an earlier part
+        const at: Record<string, string> = {
+          about: 'You are in the three questions (step 2): ask the next one, or, if you have asked all three, go on to the role-play (step 3).',
+          suggest: 'You have just taught "Let\'s do a role-play" (step 3): gently ask them to say it.',
+          done: 'The role-play is over and you have given your feedback. Next is the voice command (step 5).',
+          command:
+            'The role-play is done, and this is the voice command (step 5). If they have said "Open the course", say this is what a course lesson looks like, then ask if they have any questions about eigo dot I O (step 6). If not, ask them to say "Open the course".',
+          qa: 'The role-play and the voice command are done: this is the questions about eigo dot I O (step 6). Ask if they have any other questions, or chat about what they told you.',
+        }
+        return `Nobody has spoken for a few seconds. This is the welcome talk. ${at[String(a.step)] ?? 'Carry on with your plan, gently and simply.'} Never go back to a part that is already done.`
+      }
 
       if (a.where === 'roleplay') return 'The student has been quiet for a while in the role-play. In character, give a short, friendly prompt that helps them with their next task (a simple question they can answer). Do not end the scene.'
       if (a.where === 'free')

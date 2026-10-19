@@ -323,9 +323,17 @@ export default function AiRoom(props: Props) {
     cardHook.current(from)
     if (from === 'tutor') showCaption(run.text)
   }, [showCaption])
+  /** what happened in the live session (responses, errors, the welcome talk's steps), sent with each save for the logs */
+  const evLog = useRef<string[]>([])
+  const evAt = useRef(Date.now())
+  const logEv = useCallback((e: string) => {
+    if (evLog.current.length < 300) evLog.current.push(`${Math.round((Date.now() - evAt.current) / 100) / 10} ${e}`)
+  }, [])
   const flush = useCallback(
     (final: boolean) => {
-      return sessionId.current ? saveAiTranscript(info.bookingId, sessionId.current, lines.current, final) : Promise.resolve()
+      const events = evLog.current
+      evLog.current = []
+      return sessionId.current ? saveAiTranscript(info.bookingId, sessionId.current, lines.current, final, events) : Promise.resolve()
     },
     [info.bookingId],
   )
@@ -970,6 +978,15 @@ export default function AiRoom(props: Props) {
   /* ---------- connect ---------- */
   const handleEvent = useCallback(
     async (ev: { type: string; [k: string]: unknown }) => {
+      // (the logs: every event but the transcript and audio deltas, with the response's status or the error)
+      if (!/delta$/.test(ev.type)) {
+        const inner = ev.event as { type?: string; response?: { status?: string; status_details?: unknown } } | undefined
+        const err = ev.error as { message?: string; code?: string } | undefined
+        const st = inner?.response?.status
+        logEv(
+          `${ev.type}${inner?.type ? ':' + inner.type : ''}${st ? ' ' + st : ''}${st && st !== 'completed' && inner?.response?.status_details ? ' ' + JSON.stringify(inner.response.status_details).slice(0, 120) : ''}${err ? ' ' + (err.code ?? '') + ' ' + (err.message ?? '').slice(0, 120) : ''}`,
+        )
+      }
       switch (ev.type) {
         case 'session.started': {
           setStatus('live')
@@ -1038,7 +1055,7 @@ export default function AiRoom(props: Props) {
         }
       }
     },
-    [info.bookingId, info.roleplay, setSession, act, slideRef, addText, runTool, sendEvent, flush, clockOffset, feelTutor, feelStudent],
+    [info.bookingId, info.roleplay, setSession, act, slideRef, addText, runTool, sendEvent, flush, clockOffset, feelTutor, feelStudent, logEv],
   )
   const handleRef = useRef(handleEvent)
   useEffect(() => {
@@ -1421,7 +1438,11 @@ export default function AiRoom(props: Props) {
     // (the welcome call keeps the conversation going sooner: a first call shouldn't have long silences)
     if (Date.now() - lastSpeech.current < (rpPlaying.current ? 25_000 : welcome ? 7000 : 9000)) return
     nudged.current = true
-    void act({ kind: 'nudge', where: rpPlaying.current ? 'roleplay' : welcome ? 'welcome' : live.current.slides.length ? 'slides' : 'free' })
+    void act({
+      kind: 'nudge',
+      where: rpPlaying.current ? 'roleplay' : welcome ? 'welcome' : live.current.slides.length ? 'slides' : 'free',
+      ...(welcome && wStepRef.current ? { step: wStepRef.current } : {}),
+    })
   }, [now, left, status, tutorReady, act, welcome])
 
   useEffect(() => {
@@ -1861,6 +1882,8 @@ export default function AiRoom(props: Props) {
   const wPick = useRef<WelcomePick | null>(null)
   const wLoading = useRef(false)
   const wReadySent = useRef(false)
+  /** the transcript line where the tutor taught "Let's do a role-play" */
+  const wTaughtLine = useRef(-1)
   /** the student's lines already corrected (or checked), and the course preview loaded ahead */
   const wPreviewNext = useRef<Promise<{ loaded: LoadedCourse; slide: Slide; title: string } | null> | null>(null)
   const wSuggestSent = useRef(false)
@@ -1951,13 +1974,14 @@ export default function AiRoom(props: Props) {
     }
     wOpen.current = () => {
       const sc = wSceneRef.current
-      if (wOpening.current || wStepRef.current !== 'suggest' || !sc) return
+      if (wOpening.current || (wStepRef.current !== 'suggest' && wStepRef.current !== 'about') || !sc) return
       wOpening.current = true
       wGo.current('roleplay')
       beginRoleplay(sc, sc.studentRole, 0, wReadySent.current)
     }
     wGo.current = (to) => {
       if (wStepRef.current === to) return
+      logEv(`welcome:${to}`)
       wStepRef.current = to
       wStepAt.current = Date.now()
       wFrom.current = lines.current.length
@@ -2002,6 +2026,8 @@ export default function AiRoom(props: Props) {
         // "Open the course": the first slide of a course's first lesson, as a preview
         wSaidAt.current = Date.now()
         setWSaid(true)
+        // it once said nothing after it (15 s, until the silence note): ask it to answer if it hasn't started
+        speakIfSilent.current(Date.now(), () => wStepRef.current === 'command', 2500)
         void (wPreviewNext.current ?? (wPreviewNext.current = loadPreview())).then((p) => {
           if (p && wStepRef.current === 'command') setWPreview(p)
         })
@@ -2021,9 +2047,22 @@ export default function AiRoom(props: Props) {
     welcomeTutor.current = (sentence) => {
       const step = wStepRef.current
       // it teaches "Let's do a role-play": the card, with the role-play chosen for them
-      if (step === 'about' && SAYS_ROLEPLAY.test(sentence)) wLoadPick.current()
-      // it's setting the scene: it heard them say the phrase, so open it (the transcript can miss their words)
-      else if (step === 'suggest' && wReadySent.current && TUTOR_SETS_SCENE.test(sentence)) wOpen.current()
+      const k = lines.current.length - 1
+      if (step === 'about' && SAYS_ROLEPLAY.test(sentence)) {
+        wTaughtLine.current = k
+        wLoadPick.current()
+      }
+      // its next turn after teaching the phrase (not more of the teaching, or "go ahead, say it"): it's answering
+      // them saying it, so the scene opens. Twice the transcript lost their words (said over the tutor's), and the
+      // tutor went ahead with the panel shut. Also when it starts setting the scene
+      else if (
+        (step === 'suggest' || step === 'about') &&
+        wReadySent.current &&
+        ((k > wTaughtLine.current && wTaughtLine.current >= 0 && !SAYS_ROLEPLAY.test(sentence) && !/\b(?:say|try)\b/i.test(sentence)) || TUTOR_SETS_SCENE.test(sentence))
+      ) {
+        logEv(`welcome:open-from-tutor "${sentence.slice(0, 60)}"`)
+        wOpen.current()
+      }
       // the voice command (also if it comes late, after it opened the questions); the Q&A only after it
       else if ((step === 'done' || step === 'qa') && TUTOR_COMMAND.test(sentence) && wSaidAt.current === null) wGo.current('command')
       else if (step === 'command' && TUTOR_QA.test(sentence)) wGo.current('qa')

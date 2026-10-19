@@ -130,9 +130,16 @@ export async function startAiSession(
 }
 
 /** AI lesson: save the transcript (and close the session record). Uses keepalive so it survives page unload. */
-export async function saveAiTranscript(bookingId: string, sessionId: string, lines: { from: 'student' | 'tutor'; text: string; t: number }[], final: boolean) {
+export async function saveAiTranscript(
+  bookingId: string,
+  sessionId: string,
+  lines: { from: 'student' | 'tutor'; text: string; t: number }[],
+  final: boolean,
+  /** what happened in the live session since the last save (for the Vercel logs, to look into problems) */
+  events: string[] = [],
+) {
   try {
-    await call(`/api/classroom/${bookingId}/ai-transcript`, { method: 'POST', body: JSON.stringify({ sessionId, lines, final }), keepalive: true })
+    await call(`/api/classroom/${bookingId}/ai-transcript`, { method: 'POST', body: JSON.stringify({ sessionId, lines, final, events }), keepalive: true })
   } catch {
     /* best effort */
   }
@@ -215,7 +222,7 @@ export type StudentAction =
   | ({ kind: 'slide'; review?: { returnTo: number }; fix?: { was: string; now: string } } & SlideRef)
   | { kind: 'lesson'; courseId: string; lessonId: string }
   | { kind: 'not_yet'; missing: string[] }
-  | { kind: 'nudge'; where?: 'slides' | 'free' | 'roleplay' | 'welcome' }
+  | { kind: 'nudge'; where?: 'slides' | 'free' | 'roleplay' | 'welcome'; step?: string }
   /** the lesson was started again from slide 1 */
   | { kind: 'restarted' }
   /** left: seconds on the classroom clock (it can end a little before the server's end) */
