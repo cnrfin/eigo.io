@@ -165,6 +165,12 @@ export const ROLEPLAY_PHRASE = "Let's do a role-play"
 /** the tutor teaching it ("…Please say: Let's do a role-play.") or the student saying it: "role play", "roleplay" too */
 export const SAYS_ROLEPLAY = /\b(?:let'?s|let us|can we|could we|i'?d like to|i want to|i wanna)\s+(?:do|try|start|have)\s+(?:a|the|our|that|this)\s+(?:[a-z-]+\s+){0,4}?role[\s-]?play\b|ロールプレイ(?:を)?(?:やり|し|はじめ|始め)/i
 
+/**
+ * The tutor setting the scene ("We're in a relaxation salon… Your tasks are on the screen. Ready?"): it heard them say
+ * the phrase, so the scene opens even if the transcript missed their words (it once did: they said it over the tutor)
+ */
+export const TUTOR_SETS_SCENE = /\b(?:your )?tasks are on (?:the|your) screen\b|\bwe'?re (?:in|at) (?:a|an|the)\b[^.?!]*\.\s*you'?re\b/i
+
 /** the phrase the tutor asks them to say to open the role-play (…say: "Let's do the massage salon role-play.") */
 export function suggestedPhrase(sentence: string): string | null {
   // in quotes, or straight after "say": the transcript doesn't always have the quotes

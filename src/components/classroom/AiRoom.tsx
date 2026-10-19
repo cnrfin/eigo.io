@@ -44,6 +44,7 @@ import {
   FALLBACK_PICK,
   ROLEPLAY_PHRASE,
   SAYS_ROLEPLAY,
+  TUTOR_SETS_SCENE,
   commandSaid,
   factCount,
   heardPhrase,
@@ -2021,6 +2022,8 @@ export default function AiRoom(props: Props) {
       const step = wStepRef.current
       // it teaches "Let's do a role-play": the card, with the role-play chosen for them
       if (step === 'about' && SAYS_ROLEPLAY.test(sentence)) wLoadPick.current()
+      // it's setting the scene: it heard them say the phrase, so open it (the transcript can miss their words)
+      else if (step === 'suggest' && wReadySent.current && TUTOR_SETS_SCENE.test(sentence)) wOpen.current()
       // the voice command (also if it comes late, after it opened the questions); the Q&A only after it
       else if ((step === 'done' || step === 'qa') && TUTOR_COMMAND.test(sentence) && wSaidAt.current === null) wGo.current('command')
       else if (step === 'command' && TUTOR_QA.test(sentence)) wGo.current('qa')
