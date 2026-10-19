@@ -133,6 +133,7 @@ export async function decideTicks(
   const open = openTasks(scene, role, level, twisted, done)
   if (!open.length || !lines.some((l) => l.from === 'student')) return []
   const { system, user } = ticksPrompt(scene, role, level, open, lines)
+  const t0 = Date.now()
   try {
     const base = {
       model: MODEL,
@@ -147,7 +148,7 @@ export async function decideTicks(
     let c
     for (const effort of ['minimal', 'low', null] as const) {
       try {
-        c = await openai().chat.completions.create((effort ? { ...base, reasoning_effort: effort } : base) as never, { timeout: 7000, maxRetries: 0 })
+        c = await openai().chat.completions.create((effort ? { ...base, reasoning_effort: effort } : base) as never, { timeout: 10000, maxRetries: 0 })
         break
       } catch (e) {
         // a model that doesn't take this setting: try the next one; anything else is a real failure
@@ -157,7 +158,10 @@ export async function decideTicks(
     if (!c) return []
     const raw = c.choices[0]?.message?.content ?? ''
     if (!raw.trim()) return []
-    return validateTicks(JSON.parse(raw), open.map((t) => t.id), lines)
+    const ticks = validateTicks(JSON.parse(raw), open.map((t) => t.id), lines)
+    // (in the Vercel logs: how long each check took and what it ticked, to look into missed ticks)
+    console.info('ai-ticks', JSON.stringify({ scene: scene.id, ms: Date.now() - t0, open: open.map((t) => t.id), ticked: ticks.map((t) => t.id), raw: raw.slice(0, 300) }))
+    return ticks
   } catch (e) {
     console.error('ai-ticks failed', e instanceof Error ? e.message : e)
     return []

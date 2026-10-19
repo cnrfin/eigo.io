@@ -60,8 +60,7 @@ import { AboutCard, CommandCard, SuggestCard, WelcomeEnd, type NextUp } from './
 import { normText } from '@/lib/ai-tutor/actions'
 import { panelIntent, type PanelIntent } from '@/lib/roleplay/intent'
 import type { SceneSummary } from '@/lib/roleplay/types'
-import { flashSaved, shrinkInto } from './save-fly'
-import { phrasesToSave } from '@/lib/roleplay/phrases'
+import { shrinkInto } from './save-fly'
 import { cueCard, fitDraft, lastExchange, mayHaveCard, mergeCard, mistakeFor, tutorItemId, type Card, type SayStyle } from '@/lib/ai-tutor/cards'
 import { hasJapanese, words as wordsOf } from '@/lib/ai-tutor/voice-match'
 import { Ico } from './Icons'
@@ -362,6 +361,11 @@ export default function AiRoom(props: Props) {
   const feedbackFrom = useRef({ line: 0, offset: 0 })
   const hintAskAt = useRef(0)
   const tickDo = useRef<(ticks: { id: string; said: string }[], token: number) => void>(() => {})
+  /** the quick tick check, right after each of the student's lines in a role-play (one at a time) */
+  const quickTicks = useRef<() => void>(() => {})
+  const rpTickTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const rpTicking = useRef(false)
+  const rpTickAgain = useRef(false)
   const completeRp = useRef<(from?: { line: number; offset: number }) => void>(() => {})
   const hintAsk = useRef<() => void>(() => {})
   const rpPlaying = useRef(false)
@@ -552,6 +556,11 @@ export default function AiRoom(props: Props) {
         const said = parts[parts.length - 1] ?? ''
         const at = `${run.n}:${parts.length}`
         const freeNow = !live.current.slides.length
+        // a role-play: their tasks are checked as soon as they've finished their line (not after the tutor's reply)
+        if (rpPlaying.current) {
+          if (rpTickTimer.current) clearTimeout(rpTickTimer.current)
+          rpTickTimer.current = setTimeout(() => quickTicks.current(), 700)
+        }
         // a role-play: "ヒント" / "hint" brings the next hint at once
         if (rpPlaying.current && /ヒント|\bhints?\b/i.test(said) && heardHint.current !== at) {
           heardHint.current = at
@@ -1227,7 +1236,7 @@ export default function AiRoom(props: Props) {
       if (left <= 300 && left > 120) note('5')
       if (left <= 120 && left > 60) note('2')
       if (left <= 60 && left > 25) note('1')
-    } else if (left <= 90 && left > 40) note('w')
+    }
     if (left <= 25) note('0')
     if (left <= 30) wrapUp.current = true
     if (left <= 0 && !timeUp.current) {
@@ -1617,7 +1626,9 @@ export default function AiRoom(props: Props) {
             roleplay: { sceneId: cur.scene.id, role: cur.role, level: cur.level, twisted: m0.twisted, done: Object.keys(m0.done), lines: plain(L.slice(rpFrom.current).slice(-30)) },
           }).then((r) => r.ticks ?? [])
         : Promise.resolve([])
-      void Promise.race([last, new Promise<{ id: string; said: string }[]>((r) => setTimeout(() => r([]), 5000))]).then((ticks) => {
+      // a tick that comes back after the results were sent still shows on the screen
+      void last.then((ticks) => ticks.length && tickDo.current(ticks, token))
+      void Promise.race([last, new Promise<{ id: string; said: string }[]>((r) => setTimeout(() => r([]), 8000))]).then((ticks) => {
         if (rpToken.current !== token) return
         if (ticks.length) tickDo.current(ticks, token)
         const lv = roleOf(cur.scene, cur.role).levels[cur.level]
@@ -1641,8 +1652,30 @@ export default function AiRoom(props: Props) {
           missed: missed.map((x) => x.title.en),
           canSwap: !welcome && cur.role === cur.scene.studentRole,
           welcome,
-          phrases: phrasesToSave(cur.scene, cur.role, cur.level, twisted, doneMap).map((p) => p.term),
         })
+      })
+    }
+    quickTicks.current = () => {
+      const cur = rpCur.current
+      const sid = sessionId.current
+      if (!cur || !rpPlaying.current || !sid || closing.current || cur.token !== rpToken.current) return
+      if (rpTicking.current) {
+        rpTickAgain.current = true
+        return
+      }
+      rpTicking.current = true
+      const m = missionRef.current
+      const plain = (x: Line[]) => x.map((l) => ({ from: l.from, text: l.text }))
+      void aiTurn(info.bookingId, {
+        sessionId: sid,
+        roleplay: { sceneId: cur.scene.id, role: cur.role, level: cur.level, twisted: m.twisted, done: Object.keys(m.done), lines: plain(lines.current.slice(rpFrom.current).slice(-24)) },
+      }).then((r) => {
+        rpTicking.current = false
+        if (r.ticks?.length) tickDo.current(r.ticks, cur.token)
+        if (rpTickAgain.current) {
+          rpTickAgain.current = false
+          quickTicks.current()
+        }
       })
     }
     hintAsk.current = () => {
@@ -1692,9 +1725,10 @@ export default function AiRoom(props: Props) {
   const wAsking = useRef(false)
   const wAskAgain = useRef(false)
   const wAskTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
-  /** the role-play chosen for them (the helper, in the background), and when the tutor was told (null = not yet) */
+  /** the role-play chosen for them (the helper, in the background), and whether its scene is being loaded */
   const wPick = useRef<WelcomePick | null>(null)
-  const wPickAt = useRef<number | null>(null)
+  const wLoading = useRef(false)
+  const wSuggestSent = useRef(false)
   const wWrapSent = useRef(false)
   const wOpening = useRef(false)
   /** when they said the voice command (null = not yet) */
@@ -1704,7 +1738,7 @@ export default function AiRoom(props: Props) {
   const wOpen = useRef<() => void>(() => {})
   const wSave = useRef<() => void>(() => {})
   const wAsk = useRef<() => void>(() => {})
-  const wSendPick = useRef<() => void>(() => {})
+  const wLoadPick = useRef<() => void>(() => {})
   const setFacts = useCallback((f: Facts) => {
     wFactsRef.current = f
     setWFacts(f)
@@ -1741,8 +1775,8 @@ export default function AiRoom(props: Props) {
         wAsking.current = false
         const next = { ...wFactsRef.current, ...r.facts }
         if (FACT_KEYS.some((k) => next[k] !== wFactsRef.current[k])) setFacts(next)
-        // the role-play for them (until the tutor has been told about it)
-        if (r.pick && wPickAt.current === null) wPick.current = r.pick
+        // the role-play for them (until it's on screen)
+        if (r.pick && !wSceneRef.current) wPick.current = r.pick
         if (wAskAgain.current) {
           wAskAgain.current = false
           wAsk.current()
@@ -1758,24 +1792,22 @@ export default function AiRoom(props: Props) {
         props.toast(t('wlSaveFailed'), 'bad')
       })
     }
-    // the role-play chosen for them: loaded, and the tutor told (it suggests it and teaches "Let's do a role-play")
-    wSendPick.current = () => {
-      if (wPickAt.current !== null) return
-      wPickAt.current = Date.now()
+    // the role-play chosen for them, loaded when the phrase is said (by the tutor teaching it, or the student): its card
+    wLoadPick.current = () => {
+      if (wSceneRef.current || wLoading.current) return
+      wLoading.current = true
       const pick = wPick.current ?? FALLBACK_PICK
       void (async () => {
         let sc = await welcomeScene(info.bookingId, pick.sceneId)
         if (!sc && pick.sceneId !== FALLBACK_PICK.sceneId) sc = await welcomeScene(info.bookingId, FALLBACK_PICK.sceneId)
-        if (!sc) return
+        wLoading.current = false
+        if (!sc || wStepRef.current !== 'about') return
         wSceneRef.current = sc
         wPhraseRef.current = ROLEPLAY_PHRASE
         setWScene(sc)
         setWPhrase(ROLEPLAY_PHRASE)
         setWLit([])
-        setWHeard(false)
-        // they asked for a role-play before it was ready: it opens now (no need to tell the tutor to suggest it)
-        if (wHeardAt.current && wStepRef.current === 'about') wGo.current('suggest')
-        else void act({ kind: 'welcome', step: 'pick', sceneId: sc.id })
+        wGo.current('suggest')
       })()
     }
     wOpen.current = () => {
@@ -1810,21 +1842,19 @@ export default function AiRoom(props: Props) {
         if (wAskTimer.current) clearTimeout(wAskTimer.current)
         wAskTimer.current = setTimeout(() => wAsk.current(), 1500)
       }
-      // they ask for a role-play before the tutor has suggested one: the one for them is loaded and opens
-      if (step === 'about' && wPickAt.current === null && SAYS_ROLEPLAY.test(said)) {
+      // they say it before the tutor has taught it: the one for them is loaded and opens
+      if (step === 'about' && SAYS_ROLEPLAY.test(said)) {
         wHeardAt.current = Date.now()
         setWHeard(true)
-        wSendPick.current()
+        wLoadPick.current()
       }
-      if ((step === 'suggest' || step === 'about') && wSceneRef.current && wPickAt.current !== null && !wHeardAt.current) {
+      if (step === 'suggest' && wSceneRef.current && !wHeardAt.current) {
         // "Let's do a role-play" (the whole phrase; never "let's do…"): it opens once they've stopped
-        const text = studentSince(step === 'suggest' ? wFrom.current : 0)
-        const h = heardPhrase(text, wPhraseRef.current)
-        if (step === 'suggest') setWLit(h.lit)
+        const h = heardPhrase(studentSince(wFrom.current), wPhraseRef.current)
+        setWLit(h.lit)
         if (h.whole || SAYS_ROLEPLAY.test(said)) {
           wHeardAt.current = Date.now()
           setWHeard(true)
-          if (step === 'about') wGo.current('suggest')
         }
       }
       if (step === 'command' && wSaidAt.current === null && commandSaid(said)) {
@@ -1844,10 +1874,11 @@ export default function AiRoom(props: Props) {
     // the classroom follows the tutor's set sentences
     welcomeTutor.current = (sentence) => {
       const step = wStepRef.current
-      // it teaches "Let's do a role-play": the card (with the role-play chosen for them)
-      if (step === 'about' && wSceneRef.current && SAYS_ROLEPLAY.test(sentence)) wGo.current('suggest')
-      else if (step === 'done' && TUTOR_COMMAND.test(sentence)) wGo.current('command')
-      else if ((step === 'command' || step === 'done') && TUTOR_QA.test(sentence)) wGo.current('qa')
+      // it teaches "Let's do a role-play": the card, with the role-play chosen for them
+      if (step === 'about' && SAYS_ROLEPLAY.test(sentence)) wLoadPick.current()
+      // the voice command (also if it comes late, after it opened the questions); the Q&A only after it
+      else if ((step === 'done' || step === 'qa') && TUTOR_COMMAND.test(sentence) && wSaidAt.current === null) wGo.current('command')
+      else if (step === 'command' && TUTOR_QA.test(sentence)) wGo.current('qa')
     }
   })
   // mission complete: feedback and "any questions?" (the tutor moves on to the voice command itself)
@@ -1873,9 +1904,7 @@ export default function AiRoom(props: Props) {
       elapsed,
       left,
       stepAge: (T - wStepAt.current) / 1000,
-      pickReady: !!wPick.current,
-      pickAge: wPickAt.current === null ? null : (T - wPickAt.current) / 1000,
-      factsIn: !!wFactsRef.current.job && !!wFactsRef.current.why,
+      suggestSent: wSuggestSent.current,
       wrapSent: wWrapSent.current,
       commandAge: wSaidAt.current === null ? null : (T - wSaidAt.current) / 1000,
     })
@@ -1892,8 +1921,10 @@ export default function AiRoom(props: Props) {
       wGo.current(m.to)
       // (the tutor hadn't moved on itself: a reminder)
       if (m.prompt && m.to === 'command') void act({ kind: 'welcome', step: 'command' })
-    } else if (m.do === 'sendPick') wSendPick.current()
-    else if (m.do === 'open') wOpen.current()
+    } else if (m.do === 'promptSuggest') {
+      wSuggestSent.current = true
+      void act({ kind: 'welcome', step: 'suggest' })
+    } else if (m.do === 'open') wOpen.current()
     else if (m.do === 'wrap') {
       wWrapSent.current = true
       void act({ kind: 'welcome', step: 'wrap' })
@@ -2329,12 +2360,6 @@ export default function AiRoom(props: Props) {
                   level={panel.level}
                   mission={mission}
                   took={(panel.finishedAt ?? now) - mission.startedAt}
-                  phrases={phrasesToSave(panel.scene, panel.role, panel.level, mission.twisted, mission.done)}
-                  isSaved={(term) => props.savedIds.has(tutorItemId(term))}
-                  onSavePhrase={(term, ja) => {
-                    saveTerm(term, ja)
-                    flashSaved(document.querySelector<HTMLElement>('[data-words-btn] .cface'))
-                  }}
                   onAgain={() => beginRoleplay(panel.scene, panel.role, panel.level)}
                   onSwap={panel.role === panel.scene.studentRole ? () => beginRoleplay(panel.scene, otherRole(panel.role), panel.level) : null}
                   onNext={() => openPicker('rp')}

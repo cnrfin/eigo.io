@@ -40,8 +40,7 @@ type Action =
   | { kind: 'roleplay_done'; sceneId: string; role: 'a' | 'b'; done: { task: string; said: string }[]; missed: string[]; canSwap: boolean; phrases?: string[]; welcome?: boolean }
   | { kind: 'panel'; what: 'picker' | 'closed' | 'course' }
   /** the welcome talk's time reminders (lib/classroom/welcome.ts); only in the student's welcome talk (checked here) */
-  | { kind: 'welcome'; step: 'wrap' | 'command' }
-  | { kind: 'welcome'; step: 'pick'; sceneId?: string }
+  | { kind: 'welcome'; step: 'suggest' | 'wrap' | 'command' }
 
 /**
  * The welcome talk's notes (lib/classroom/welcome.ts). The tutor leads the talk from its plan; these are only
@@ -49,12 +48,8 @@ type Action =
  */
 function welcomeInstruction(a: Extract<Action, { kind: 'welcome' }>): string | null {
   switch (a.step) {
-    case 'pick': {
-      const scene = sceneById(a.sceneId)
-      if (!scene) return null
-      const you = roleOf(scene, scene.studentRole)
-      return `WELCOME TALK: the role-play for them is ready (you don't need to choose one): "${scene.title.en}". ${scene.summary.en} They play: ${you.name.en}. When you've finished the three questions (not before), suggest it in one short sentence, saying why it suits them, then teach the phrase, in exactly these words: In the classroom, you can open things just by asking. Please say: "Let's do a role-play." When they've said it, reply only "Great!" and stop. Never start a scene, a situation or a character yourself: the role-play opens on their screen and you get a note with your character.`
-    }
+    case 'suggest':
+      return 'WELCOME TALK (time check): when you\'ve finished what you\'re saying, move on to the role-play, as your plan says (step 3): say you have a short role-play for them and teach the phrase "Let\'s do a role-play."'
     case 'wrap':
       return 'WELCOME TALK (time check): time is nearly up for the role-play. Bring the scene to a natural close in character within a line or two, then say "That\'s the end of the role-play!" and stop there: wait for the note with how they did.'
     case 'command':
@@ -133,9 +128,9 @@ function instruction(a: Action, secondsLeft: number, welcome: boolean): string |
         const said = (Array.isArray(a.done) ? a.done : []).slice(0, 6).map((d) => `- ${q(d.task, 80)}: "${q(d.said, 160)}"`).join('\n')
         return `The role-play is over and the mission-complete screen is on the student's screen. Step out of character and give short spoken feedback, slowly and simply:
 1. One or two specific things they did well, quoting their own words.
-2. Ask if they have any questions about the role-play, and answer briefly.
+2. Ask if they have any questions about the role-play (only about the role-play: questions about eigo.io come later, after the voice command), and answer briefly.
 No corrections here: their mistakes were corrected during the scene.
-Then carry on with your plan (the voice command). Don't offer to swap roles, play it again or try another scene.
+Then carry on with your plan: the voice command next (step 5), then the questions about eigo.io (step 6). Don't offer to swap roles, play it again or try another scene.
 What they said for each task:
 ${said || '(nothing recorded)'}`
       }
@@ -179,8 +174,8 @@ ${done || '(nothing recorded)'}`
       if (typeof a.left === 'number' && Number.isFinite(a.left) && a.left >= 0) secondsLeft = Math.min(secondsLeft, a.left)
       if (welcome) {
         // the welcome talk: a reminder to keep going (it had said goodbye with 90 s left), then the goodbye
-        if (secondsLeft > 100) return null
-        if (secondsLeft > 28) return "Time note: about a minute and a half left. Keep the conversation going (their questions about eigo.io, or a light chat about them). Don't say goodbye or thank them for today yet: wait for the goodbye note."
+        // (the welcome talk: only the goodbye; a mid-call reminder arrived mid-sentence and made it start over)
+        if (secondsLeft > 28) return null
         return 'Time note (the goodbye note): about 20 seconds left. Say a short, warm goodbye now: thank them, say you enjoyed meeting them, and invite them to come back for a full lesson. If they say goodbye back, answer warmly in a few words.'
       }
       if (secondsLeft > 330) return null
@@ -249,6 +244,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     if (scene) texts.push(...roleplayInstructionParts(scene, action.role === 'b' ? 'b' : 'a', action.level === 1 || action.level === 2 ? action.level : 0))
   }
   const text = instruction(action, left, welcome)
+  // (in the Vercel logs: when each note went in, to look into pauses)
+  console.info('ai-context', JSON.stringify({ booking: booking.id, kind: action.kind, step: (action as { step?: string }).step, left: Math.round(left) }))
   if (text) texts.push(text)
   if (!texts.length) return json(200, { sent: false })
   let ok = true

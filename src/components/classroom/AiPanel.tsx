@@ -316,9 +316,6 @@ export function RoleplayDone({
   level,
   mission,
   took,
-  phrases,
-  isSaved,
-  onSavePhrase,
   onAgain,
   onSwap,
   onNext,
@@ -332,10 +329,6 @@ export function RoleplayDone({
   level: LevelIndex
   mission: Mission
   took: number
-  /** model phrases from the scene worth saving (lib/roleplay/phrases.ts) */
-  phrases: { term: string; ja: string }[]
-  isSaved: (term: string) => boolean
-  onSavePhrase: (term: string, ja: string) => void
   onAgain: () => void
   onSwap: (() => void) | null
   onNext: () => void
@@ -359,8 +352,9 @@ export function RoleplayDone({
       </div>
       {/* a summary of the scene: each task, with what they said (not the tutor's live speech) */}
       <div className="apn-sum">
-        {tasks.map((x) => (
-          <div key={x.id} className={`apn-sr${mission.done[x.id] ? '' : ' miss'}`}>
+        {tasks.map((x, i) => (
+          // (the rows come in one by one, as a short summary of the scene)
+          <div key={x.id} className={`apn-sr${mission.done[x.id] ? '' : ' miss'}`} style={{ animationDelay: `${0.15 + i * 0.25}s` }}>
             <span className="apn-sic">{mission.done[x.id] ? <Ico name="check" /> : <i />}</span>
             <span className="apn-st">
               <b>{x.title[lang]}</b>
@@ -370,25 +364,6 @@ export function RoleplayDone({
         ))}
         <div className="apn-time">{mmss(took)}</div>
       </div>
-      {phrases.length > 0 && (
-        <div className="apn-phr">
-          <span className="apn-bl">{t('rpPhrases')}</span>
-          {phrases.map((p) => {
-            const saved = isSaved(p.term)
-            return (
-              <div key={p.term} className={`apn-pr${saved ? ' saved' : ''}`}>
-                <span className="apn-prt">
-                  <b>{p.term}</b>
-                  {lang === 'ja' && <span>{p.ja}</span>}
-                </span>
-                <button className="apn-prs" disabled={saved} aria-label={saved ? t('rpSaved') : t('rpSave')} title={saved ? t('rpSaved') : t('rpSave')} onClick={() => onSavePhrase(p.term, p.ja)}>
-                  <Ico name={saved ? 'check' : 'words'} />
-                </button>
-              </div>
-            )
-          })}
-        </div>
-      )}
       {welcome ? (
         <div className="apn-next" role="status">
           <i />
