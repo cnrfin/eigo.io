@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef } from 'react'
 import type { Card } from '@/lib/ai-tutor/cards'
 import type { ScreenAction } from '@/lib/ai-tutor/actions'
 import type { Scene } from '@/lib/roleplay/types'
-import type { Facts, WelcomePick } from '@/lib/classroom/welcome'
+import type { FactKey, Facts, FactsRead, WelcomePick } from '@/lib/classroom/welcome'
 import type { SceneSummary } from '@/lib/roleplay/types'
 import type { RealtimeChannel } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
@@ -231,10 +231,15 @@ export type StudentAction =
   | WelcomeAction
 
 export type WelcomeAction =
+  /** getting to know them: what's still missing or too vague (the server words the note) */
+  | { kind: 'welcome'; step: 'ask'; missing: FactKey[]; thin: FactKey[] }
   | { kind: 'welcome'; step: 'card'; facts: Facts }
-  | { kind: 'welcome'; step: 'suggest'; sceneId: string; phrase: string; reason: string; saved: boolean | null }
+  /** the card's lines changed after what they said */
+  | { kind: 'welcome'; step: 'card_changed'; facts: Facts; changed: FactKey[] }
+  | { kind: 'welcome'; step: 'suggest'; sceneId: string; phrase: string; reason: string; saved: boolean }
   | { kind: 'welcome'; step: 'wrap' }
-  | { kind: 'welcome'; step: 'tips' }
+  /** the tips, then practise one phrase from the role-play (one of its hint-3 sentences, checked on the server) */
+  | { kind: 'welcome'; step: 'tips'; sceneId?: string; phrase?: string }
 
 /* ---------- the welcome call (lib/classroom/welcome.ts, /api/classroom/[id]/ai-welcome) ---------- */
 async function welcomeCall<T>(bookingId: string, body: Record<string, unknown>, fallback: T): Promise<T> {
@@ -247,7 +252,7 @@ async function welcomeCall<T>(bookingId: string, body: Record<string, unknown>, 
 }
 /** what the student has said about themselves so far, and a role-play for them */
 export const welcomeAbout = (bookingId: string, sessionId: string, lines: { from: 'student' | 'tutor'; text: string }[]) =>
-  welcomeCall<{ facts: Facts; pick: WelcomePick | null }>(bookingId, { op: 'about', sessionId, lines }, { facts: {}, pick: null })
+  welcomeCall<FactsRead & { pick: WelcomePick | null }>(bookingId, { op: 'about', sessionId, lines }, { facts: {}, thin: [], pick: null }).then((r) => ({ ...r, thin: Array.isArray(r.thin) ? r.thin : [] }))
 /** confirmed: added to About me (null = not saved) */
 export const welcomeSave = (bookingId: string, facts: Facts) =>
   welcomeCall<{ aboutMe?: string } | null>(bookingId, { op: 'save', facts }, null).then((r) => (r && typeof r.aboutMe === 'string' ? r.aboutMe : null))

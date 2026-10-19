@@ -657,6 +657,7 @@
 .cr .wlc-hint{font-size:12px;color:var(--text-muted)}
 .cr .wlc-done{display:flex;align-items:center;gap:6px;height:40px;margin-top:12px;font-size:13px;font-weight:600;color:var(--accent)}
 .cr .wlc-done .ico{width:16px;height:16px}
+.cr .wlc-done.off{color:var(--text-muted);font-weight:500}
 .cr .wlc-sg{display:flex;gap:14px;align-items:center}
 .cr .wlc-pic{width:92px;height:64px;border-radius:12px;flex:none;object-fit:cover;background:var(--inset)}
 .cr .wlc-pic.ph{background:linear-gradient(150deg,var(--inset),var(--bg))}

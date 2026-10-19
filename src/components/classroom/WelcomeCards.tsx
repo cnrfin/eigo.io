@@ -21,7 +21,7 @@ export function AboutCard({
   t,
   lang,
   facts,
-  saved,
+  state,
   onSave,
   onClose,
   onEdit,
@@ -30,7 +30,8 @@ export function AboutCard({
   t: ClassroomT
   lang: Lang
   facts: Facts
-  saved: boolean
+  /** waiting for an answer, saved, or ended without saving (it says so, so they always know) */
+  state: 'ask' | 'saved' | 'skipped'
   onSave: () => void
   onClose: () => void
   onEdit: (k: FactKey, v: string) => void
@@ -46,6 +47,7 @@ export function AboutCard({
     return () => clearTimeout(id)
   }, [])
   const keys = FACT_KEYS.filter((k) => facts[k])
+  const saved = state !== 'ask'
   const done = () => {
     if (editing && draft.trim()) onEdit(editing, draft.trim())
     setEditing(null)
@@ -96,10 +98,14 @@ export function AboutCard({
           </div>
         ))}
       </div>
-      {saved ? (
+      {state === 'saved' ? (
         <div className="wlc-done" role="status">
           <Ico name="check" />
           {t('wlSaved')}
+        </div>
+      ) : state === 'skipped' ? (
+        <div className="wlc-done off" role="status">
+          {t('wlNotSavedYet')}
         </div>
       ) : (
         <div className="wlc-acts">

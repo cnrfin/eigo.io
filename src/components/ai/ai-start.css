@@ -67,3 +67,9 @@
 @keyframes ais-fade { from { opacity: 0 } }
 @keyframes ais-in { from { opacity: 0; filter: blur(6px); transform: scale(.98) } }
 @media (prefers-reduced-motion: reduce) { .ais-scrim, .ais-modal { animation: none; } }
+/* the welcome call: their English, asked before it starts */
+.ais-level { margin-top: 12px; }
+.ais-lq { font-size: .78rem; font-weight: 600; color: var(--text); margin-bottom: 8px; }
+.ais-lvs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.ais-lvs .ais-pill { padding: 8px 6px; white-space: nowrap; }
+@media (max-width: 420px) { .ais-lvs { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

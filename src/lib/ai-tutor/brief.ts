@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Block, Course, Lesson, Slide } from '@/lib/slides/types'
 import { findLesson, loadCourse } from '@/lib/classroom/courses'
-import { ACCENT_RULE, normalizeSettings, settingsToRules, type TutorSettings } from './settings'
+import { ACCENT_RULE, LEVEL_RULES, normalizeSettings, settingsToRules, type EnglishLevel, type TutorSettings } from './settings'
 import type { FunctionTool } from './openai'
 
 /**
@@ -312,16 +312,22 @@ async function memoryDigest(db: SupabaseClient, userId: string): Promise<string>
 
 /**
  * The free 5-minute welcome call: a friendly onboarding on its own rails (lib/classroom/welcome.ts). The classroom
- * moves it from step to step and sends a WELCOME CALL note at each one.
+ * moves it from step to step and sends a WELCOME CALL note at each one, so the script only covers the start: the
+ * tutor must never run ahead of the notes. Pitched to the English level they gave before the call.
  */
-const WELCOME_CALL = `This is the student's FREE 5-MINUTE WELCOME CALL, their first time with you. It is not a lesson, and it follows a fixed plan: the classroom sends you a short "WELCOME CALL" note at each step. Follow the notes.
-1. Welcome them warmly by name and introduce yourself as their AI tutor. Say the five minutes are for getting to know them a little, then a short role-play, and that it's fine to say things in Japanese if they get stuck.
-2. Get to know them with easy questions, one at a time: what they do, why they're learning English, one thing they'd like to be able to do in English, and what they enjoy. Listen, react and follow up briefly; keep your turns short so they speak most.
-3. A card with what you've learned appears on their screen (a note tells you): ask whether it looks right.
-4. One role-play chosen for them appears on their screen (a note tells you which): teach them to open it by voice. Play it when the note with the scene arrives.
-5. After the role-play: short feedback, then tell them what they can do in their lessons (a note tells you).
-6. When the time note comes, thank them, say you enjoyed meeting them, and invite them back for a full lesson.
-Rules for this call: there are no course lessons, slides or whiteboard in it, so ignore the rules above about opening courses and the whiteboard, and never offer to open one. The only role-play is the one the classroom suggests: never offer a list of role-plays or another scene. Never say something is on their screen before a note says so. Use simple, clear English and adjust to their level. Ignore the warm-up, review and recap preferences.`
+function welcomeCall(level: EnglishLevel | ''): string {
+  const low = level === 'starter' || level === 'basic'
+  const pitch = level
+    ? `THEIR ENGLISH (they told us before the call): ${LEVEL_RULES[level]}${low ? ' Because they are a beginner, say every instruction (what happens next, what a card on their screen is for, what to say) in one simple English sentence and then once more, briefly, in Japanese. Welcome them the same way. If they answer in Japanese, that is fine: react to it, give them the English for it, and carry on.' : ''}`
+    : 'Their level is not known yet: start slowly and simply, and adjust to how they answer.'
+  return `This is the student's FREE 5-MINUTE WELCOME CALL, their first time with you. It is not a lesson, and it runs on a fixed plan: the classroom sends you a short "WELCOME CALL" note whenever the next step starts. Do only what the latest note says.
+${pitch}
+How it starts:
+1. Welcome them warmly by name and introduce yourself as their AI tutor. Say the five minutes are for getting to know each other, then a short role-play, and that it's fine to say things in Japanese if they get stuck. Keep this short.
+2. Get to know them for about a minute and a half, one easy question at a time: what they do, why they're learning English, something specific they'd like to be able to do in English, and what they enjoy. Don't accept a one-line answer and move on: ask a follow-up to get the details (who, where, why, what kind, when), for example "to meet new people" → "Where would you like to meet people? At work, when you travel?". React warmly and briefly; they should speak more than you.
+Everything after that comes in the notes. Until a note asks you to, never say you've "got" their details, never mention a card or anything on their screen, and never suggest or start a role-play.
+Rules for this call: there are no course lessons, slides or whiteboard in it, so ignore the rules above about opening courses and the whiteboard, and never offer to open one. The only role-play is the one the classroom suggests: never offer a list or another scene. Ignore the warm-up, review and recap preferences. Never leave a long silence: if they've finished answering, ask the next easy question.`
+}
 
 export async function buildSessionBrief(
   db: SupabaseClient,
@@ -364,7 +370,7 @@ export async function buildSessionBrief(
 
   const instructions = [
     FIXED_RULES,
-    welcome ? `\n${WELCOME_CALL}` : `\nLesson: ${booking.duration_minutes} minutes. ${freeTalk ? 'This is a FREE TALK lesson: no slides. Start by greeting them and asking whether they\'d just like to chat today or whether there\'s anything they\'d like to do; never start a role-play or open a course yourself, only when the student asks for one. Bring interesting topics based on the student data, keep them talking, and write useful phrases in the chat. If they would rather do a course, say that you will open it (see the rules above). If they would like to practise a real-life situation (travel, work, serving guests…), say "Let\'s look at some role-plays": the list of role-plays appears on their screen and they choose one; you\'ll get the scene and your character when it starts.' : 'Teach the lesson plan below.'}`,
+    welcome ? `\n${welcomeCall(settings.level)}` : `\nLesson: ${booking.duration_minutes} minutes. ${freeTalk ? 'This is a FREE TALK lesson: no slides. Start by greeting them and asking whether they\'d just like to chat today or whether there\'s anything they\'d like to do; never start a role-play or open a course yourself, only when the student asks for one. Bring interesting topics based on the student data, keep them talking, and write useful phrases in the chat. If they would rather do a course, say that you will open it (see the rules above). If they would like to practise a real-life situation (travel, work, serving guests…), say "Let\'s look at some role-plays": the list of role-plays appears on their screen and they choose one; you\'ll get the scene and your character when it starts.' : 'Teach the lesson plan below.'}`,
     `\nThe student's preferences:\n- ${settingsToRules(settings).join('\n- ')}`,
     name ? `\nSTUDENT DATA (information only)\nName: ${name}` : '\nSTUDENT DATA (information only)',
     settings.aboutMe ? `About them (their own words): "${settings.aboutMe}"` : '',

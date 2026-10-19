@@ -5,7 +5,7 @@ import SquircleCard from '@/components/ui/SquircleCard'
 import { pillTabStyle } from '@/lib/pill-tabs'
 import { useTheme } from '@/context/ThemeContext'
 import { useAuth } from '@/context/AuthContext'
-import { DEFAULT_TUTOR_SETTINGS, TUTOR_VOICES, type TutorSettings } from '@/lib/ai-tutor/settings'
+import { DEFAULT_TUTOR_SETTINGS, ENGLISH_LEVELS, TUTOR_VOICES, type TutorSettings } from '@/lib/ai-tutor/settings'
 import { ORB_COLORS, orbColor, orbSwatch } from '@/lib/ai-tutor/orb-colors'
 import AiAvatar from '@/components/ai/AiAvatar'
 import { rememberAiProfile } from '@/components/ai/AiStart'
@@ -26,10 +26,14 @@ const smile = (m: { current: AvatarMood }) => {
 
 type L = { ja: string; en: string }
 type Opt = { v: string; label: L; hint: L }
-type ChoiceKey = 'speed' | 'pace' | 'tone' | 'formality' | 'japanese' | 'corrections' | 'pronunciation'
+type ChoiceKey = 'level' | 'speed' | 'pace' | 'tone' | 'formality' | 'japanese' | 'corrections' | 'pronunciation'
 type BoolKey = 'blush' | 'warmUp' | 'reviewLast' | 'recap' | 'useHistory'
 
 const CHOICES: Record<ChoiceKey, { title: L; opts: Opt[] }> = {
+  level: {
+    title: { ja: 'あなたの英語', en: 'Your English' },
+    opts: ENGLISH_LEVELS.map((l) => ({ v: l.v, label: l.label, hint: l.hint })),
+  },
   speed: {
     title: { ja: '話すスピード', en: 'Speaking speed' },
     opts: [
@@ -268,11 +272,12 @@ export default function AiTutorSettingsCard({ locale }: { locale: string }) {
   )
   const choice = (k: ChoiceKey) => {
     const c = CHOICES[k]
-    const cur = c.opts.find((o) => o.v === s[k]) ?? c.opts[0]
+    const cur = c.opts.find((o) => o.v === s[k])
     return row(
       k,
       t(c.title),
-      t(cur.hint),
+      // (your English isn't set until they pick it, before the welcome call or here)
+      t(cur?.hint ?? (k === 'level' ? { ja: '選ぶと、AIチューターがあなたに合わせて話します', en: 'Pick one and your AI tutor pitches its English to you' } : c.opts[0].hint)),
       c.opts.map((o) => (
         <button key={o.v} onClick={() => set(k, o.v as TutorSettings[typeof k])} className={pillCls} data-fill style={pillTabStyle(s[k] === o.v, th)}>
           {t(o.label)}
@@ -401,6 +406,7 @@ export default function AiTutorSettingsCard({ locale }: { locale: string }) {
 
       {group({ ja: '話し方', en: 'How the AI tutor talks' }, (
         <>
+          {choice('level')}
           {choice('speed')}
           {choice('pace')}
           {choice('tone')}

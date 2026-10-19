@@ -18,24 +18,31 @@ export const sceneById = (id: string | null | undefined): Scene | null => SCENES
 
 /**
  * The instruction that starts a role-play on the AI tutor's side: the scene, the character it plays, how it
- * plays it at this level, and the student's tasks (so it gives them the chance to do each one).
+ * plays it at this level, and the student's tasks (so it gives them the chance to do each one). Sent as up to
+ * three notes (each note carries at most 1800 characters): the scene and tasks, the prop, then how to run it.
  */
-export function roleplayInstruction(scene: Scene, studentRole: RoleId, level: LevelIndex): string {
+export function roleplayInstructionParts(scene: Scene, studentRole: RoleId, level: LevelIndex): string[] {
   const mine = roleOf(scene, studentRole)
   const yours = roleOf(scene, otherRole(studentRole))
   const L = mine.levels[level]
   const tasks = L.tasks.map((t, i) => `${i + 1}. ${t.title.en}`).join('\n')
   const twist = L.twist ? `\nTwist: after the student has done "${L.tasks.find((t) => t.id === L.twist!.after)?.title.en ?? L.twist.after}", ${L.twist.tutor}` : ''
-  const prop = scene.prop
-    ? `\nThe student can see this ${scene.prop.label.en.toLowerCase()} on their screen (you know it too):\n${scene.prop.title}\n${scene.prop.sections
-        .map((s) => `${s.heading}: ${s.items.map((i) => (i.value ? `${i.name} ${i.value}` : i.name)).join(', ')}`)
-        .join('\n')}${scene.prop.foot ? `\n${scene.prop.foot}` : ''}`
-    : ''
-  return `ROLE-PLAY STARTS NOW (${LEVEL_NAMES[level].en} level). The student sees the scene and their task list on screen.
+  const head = `ROLE-PLAY STARTS NOW (${LEVEL_NAMES[level].en} level). The student sees the scene and their task list on screen.
 Scene: ${scene.title.en}. ${scene.setting}
 The student plays: ${mine.name.en} (${mine.persona}).
 You play: ${yours.name.en} (${yours.persona}). ${L.tutor}
 The student's tasks, in order:
-${tasks}${twist}${prop}
-Rules: stay in character and speak first to start the scene. Steer the conversation so the student gets the chance to do each task, one at a time, but let them say it themselves (never say their line for them). If they make a mistake, you may give the natural version briefly ("A more natural way is: …") and carry on in character. When every task is done, end the scene naturally, then say "That's the end of the role-play!" and stop there: you'll get a short note with how they did, and only then give your feedback.`
+${tasks}${twist}`
+  const prop = scene.prop
+    ? `(ROLE-PLAY, continued) The student can see this ${scene.prop.label.en.toLowerCase()} on their screen (you know it too):\n${scene.prop.title}\n${scene.prop.sections
+        .map((s) => `${s.heading}: ${s.items.map((i) => (i.value ? `${i.name} ${i.value}` : i.name)).join(', ')}`)
+        .join('\n')}${scene.prop.foot ? `\n${scene.prop.foot}` : ''}`
+    : ''
+  const rules = `(ROLE-PLAY, how to run it) How to start: first, out of character, set the scene in one or two short, simple sentences: where you are and who you each are (for example "We're at a language exchange in Tokyo. You're a participant, and I'm Mia, from New Zealand."), and say their tasks are on the screen. Then ask if they're ready, and wait. When they say yes (or anything like it), start the scene in character with your first line.
+Rules: stay in character from then on. Steer the conversation so the student gets the chance to do each task, one at a time, but let them say it themselves (never say their line for them). If they make a mistake, you may give the natural version briefly ("A more natural way is: …") and carry on in character. When every task is done, end the scene naturally, then say "That's the end of the role-play!" and stop there: you'll get a short note with how they did, and only then give your feedback.`
+  const fit = (t: string) => (t.length > 1800 ? t.slice(0, 1799) + '…' : t)
+  return [head, prop, rules].filter(Boolean).map(fit)
 }
+
+/** The whole start instruction as one text (tests, and anything that doesn't need it in parts). */
+export const roleplayInstruction = (scene: Scene, studentRole: RoleId, level: LevelIndex): string => roleplayInstructionParts(scene, studentRole, level).join('\n')

@@ -5,8 +5,11 @@ import { hasJapanese, inOrder, share, words } from '@/lib/ai-tutor/voice-match'
  * It runs on its own rails: the classroom moves it from step to step on the call clock and tells the AI tutor
  * each step in a note. Pure functions, shared by the browser, the server and the tests.
  *
- *   about     getting to know them; the helper picks out the facts (each backed by their own words)
- *   card      the About-you card: tap これで保存 or say "yes"; a spoken correction updates a line
+ *   about     getting to know them (about 1:15 at least); the helper picks out the facts (each backed by their own
+ *             words), and tells the tutor what's still missing or too vague, so it asks follow-ups
+ *   card      the About-you card, as a conversation: "yes" or これで保存 saves it; anything else corrects a line
+ *             and the card stays up while they talk; it always ends saved, or clearly not saved
+ * Steps change, and notes go to the tutor, only between turns (never while either of them is talking).
  *   suggest   one role-play chosen for them, opened by saying the phrase on the card (tap or 25 s: opens anyway)
  *   roleplay  the scene at 初級 (ended by the AI tutor, or by the classroom when time runs short)
  *   done      mission complete, welcome version: feedback only, it moves on by itself
@@ -18,12 +21,18 @@ export type WelcomeStep = 'about' | 'card' | 'suggest' | 'roleplay' | 'done' | '
 
 /** seconds (on the call clock unless it says otherwise) */
 export const WELCOME_AT = {
-  /** the About-you card by now, with whatever facts there are (none: straight to the role-play) */
-  cardBy: 90,
-  /** the card waits this long for an answer (then it goes, unsaved: the end screen offers it again) */
-  cardWait: 25,
-  /** after saving, the "saved" line shows this long */
-  savedHold: 1.4,
+  /** the About-you card not before this (getting to know them takes a while)… */
+  cardMin: 75,
+  /** …and by now, with whatever facts there are (none: straight to the role-play) */
+  cardBy: 110,
+  /** the card waits this long after the last thing said or changed on it (then it goes, not saved) */
+  cardIdle: 20,
+  /** and never stays longer than this */
+  cardMax: 75,
+  /** after saving (or not), the card shows how it ended this long */
+  savedHold: 2.2,
+  /** a step waiting for a gap between turns goes ahead anyway after this long */
+  quietMax: 8,
   /** the suggestion opens by itself after this long */
   autoOpen: 25,
   /** the AI tutor is asked to end the scene… */
@@ -31,7 +40,7 @@ export const WELCOME_AT = {
   /** …and the classroom ends it */
   endScene: 240,
   /** steps before the role-play that are this late skip to the tips */
-  late: 200,
+  late: 205,
   /** mission complete → tips: at least this long, the tutor quiet for tipsQuiet after its feedback, or tipsMax */
   tipsMin: 8,
   tipsQuiet: 3,
@@ -54,6 +63,14 @@ export const FACT_LABELS: Record<FactKey, { ja: string; en: string }> = {
 }
 export type Facts = Partial<Record<FactKey, string>>
 export const factCount = (f: Facts) => FACT_KEYS.filter((k) => !!f[k]).length
+/** the facts and which of them are too vague to be useful yet ("to meet new people": where? why?) */
+export type FactsRead = { facts: Facts; thin: FactKey[] }
+/** what the tutor should still ask about: missing facts and vague ones */
+export function stillToAsk(r: FactsRead): { missing: FactKey[]; thin: FactKey[] } {
+  return { missing: FACT_KEYS.filter((k) => !r.facts[k]), thin: r.thin.filter((k) => !!r.facts[k]) }
+}
+/** enough for the About-you card: all four, none vague */
+export const factsReady = (r: FactsRead) => factCount(r.facts) === FACT_KEYS.length && !r.thin.some((k) => r.facts[k])
 
 /** One role-play chosen for them: the phrase to open it is "Let's do the <name> role-play". */
 export type WelcomePick = { sceneId: string; name: string; reasonJa: string; reasonEn: string }
@@ -79,16 +96,23 @@ const cleanValue = (v: unknown, max: number) => (typeof v === 'string' ? v.repla
  * The helper's answer, checked: each fact only with the student's own words behind it, in short English;
  * the role-play one from the list, its name words from its English title.
  */
-export function validateWelcome(raw: unknown, studentText: string, scenes: { id: string; titleEn: string }[]): { facts: Facts; pick: WelcomePick | null } {
-  const r = (raw && typeof raw === 'object' ? raw : {}) as { facts?: Record<string, { value?: unknown; quote?: unknown } | undefined>; scene?: Record<string, unknown> }
+export function validateWelcome(raw: unknown, studentText: string, scenes: { id: string; titleEn: string }[]): FactsRead & { pick: WelcomePick | null } {
+  const r = (raw && typeof raw === 'object' ? raw : {}) as {
+    facts?: Record<string, { value?: unknown; quote?: unknown; vague?: unknown } | undefined>
+    scene?: Record<string, unknown>
+  }
   const facts: Facts = {}
+  const thin: FactKey[] = []
   for (const k of FACT_KEYS) {
     const f = r.facts?.[k]
     const value = cleanValue(f?.value, 70)
     const quote = cleanValue(f?.quote, 200)
     if (value.length < 2 || hasJapanese(value) || words(value).length > 10) continue
     if (!quoteIsTheirs(quote, studentText)) continue
+    // the same thing twice ("to meet new people" as the reason and the goal) only counts once
+    if (FACT_KEYS.some((o) => facts[o] && sameFact(facts[o]!, value))) continue
     facts[k] = value
+    if (f?.vague === true) thin.push(k)
   }
   let pick: WelcomePick | null = null
   const s = r.scene
@@ -107,7 +131,18 @@ export function validateWelcome(raw: unknown, studentText: string, scenes: { id:
       reasonEn: reasonEn && !hasJapanese(reasonEn) ? reasonEn : '',
     }
   }
-  return { facts, pick }
+  return { facts, thin, pick }
+}
+
+const STOP = new Set(['to', 'a', 'an', 'the', 'and', 'or', 'with', 'in', 'at', 'for', 'of', 'my', 'i', 'more', 'some'])
+const factWords = (v: string) => fold(v).split(/[^a-z0-9]+/).filter((w) => w && !STOP.has(w))
+/** two facts that say the same thing */
+export function sameFact(a: string, b: string): boolean {
+  const x = factWords(a)
+  const y = new Set(factWords(b))
+  if (!x.length || !y.size) return false
+  const shared = x.filter((w) => y.has(w)).length
+  return shared / Math.min(x.length, y.size) >= 0.75
 }
 
 /** About me (ai_tutor_profiles.settings.aboutMe, max 600): the confirmed facts added to what's there, never replacing it */
@@ -132,13 +167,17 @@ const CORRECTION = /\b(?:actually|not (?:a |an |really )?|no,|nope|wrong|instead
 const LEAD = '^[\\s、。.!,…-]*'
 const YES = new RegExp(`${LEAD}(?:yes|yeah|yep|yup|ok(?:ay)?|sure|right|correct|perfect|exactly|great|good|fine|that'?s (?:right|correct|fine|good|perfect|it)|(?:it )?looks? (?:good|right|fine|great|perfect)|sounds (?:good|right)|save it|all good|はい|ええ|うん|そうです|合ってます|あってます|合っています|大丈夫|オッケー|お願いします|保存)(?![a-z])`, 'i')
 
-/** the About-you card: a correction (ask the helper again) / a yes (save) / nothing */
+/**
+ * The About-you card is a conversation: "yes" saves it; a correction, or anything else they tell the tutor about
+ * themselves, means the helper reads it again (and the line changes). Fillers ("um", "mm") are nothing.
+ */
 export function cardReply(said: string): 'fix' | 'yes' | null {
   const s = said.trim()
   if (!s) return null
   if (CORRECTION.test(s)) return 'fix'
   if (YES.test(s)) return 'yes'
-  return null
+  const n = words(s).filter((w) => !/^(?:u+h*|u+m+|m+|h+m+|e+r+|a+h+|oh|ok|well|so|like)$/.test(w)).length
+  return n >= 3 || (hasJapanese(s) && s.length >= 4) ? 'fix' : null
 }
 
 const START = /\b(?:let'?s (?:do|try|start|play|go)|(?:can|could|shall) we (?:do|try|start)|i'?d like to (?:do|try)|i want to (?:do|try)|start (?:it|the role[- ]?play))\b|はじめ|始め|やりたい|やります|やってみ/i
@@ -166,16 +205,23 @@ export type WelcomeSnap = {
   /** seconds in this step */
   stepAge: number
   facts: Facts
+  /** facts too vague to be useful yet */
+  thin: FactKey[]
   /** the About-you card was answered (saved or closed), and how long ago */
   cardDone: boolean
   cardDoneAge: number
+  /** seconds since the last thing said or changed while the card is up */
+  cardIdle: number
   /** the "bring the scene to an end" note was sent */
   wrapSent: boolean
   /** mission complete: the AI tutor has given feedback, and has been quiet this long (s) */
   feedback: boolean
   tutorQuiet: number
 }
-export type WelcomeMove = { to: WelcomeStep } | { do: 'wrap' | 'endScene' | 'open' } | null
+export type WelcomeMove = { to: WelcomeStep } | { do: 'wrap' | 'endScene' | 'open' | 'skipCard' } | null
+
+/** moves that tell the tutor something or change the screen wait for a gap between turns (not ending a scene) */
+export const waitsForGap = (m: NonNullable<WelcomeMove>) => !('do' in m && m.do === 'endScene')
 
 /** Where the call goes next (null = stay). The classroom calls it every second. */
 export function welcomeNext(s: WelcomeSnap): WelcomeMove {
@@ -184,12 +230,14 @@ export function welcomeNext(s: WelcomeSnap): WelcomeMove {
   switch (s.step) {
     case 'about':
       if (s.elapsed >= A.late) return { to: 'tips' }
-      if (n >= 3) return { to: 'card' }
+      if (s.elapsed >= A.cardMin && factsReady({ facts: s.facts, thin: s.thin })) return { to: 'card' }
       if (s.elapsed >= A.cardBy) return { to: n ? 'card' : 'suggest' }
       return null
     case 'card':
       if (s.elapsed >= A.late) return { to: 'tips' }
-      if (s.cardDone ? s.cardDoneAge >= A.savedHold : s.stepAge >= A.cardWait) return { to: 'suggest' }
+      if (s.cardDone) return s.cardDoneAge >= A.savedHold ? { to: 'suggest' } : null
+      // no answer for a while (or far too long): it ends, clearly not saved
+      if (s.cardIdle >= A.cardIdle || s.stepAge >= A.cardMax) return { do: 'skipCard' }
       return null
     case 'suggest':
       if (s.elapsed >= A.late) return { to: 'tips' }

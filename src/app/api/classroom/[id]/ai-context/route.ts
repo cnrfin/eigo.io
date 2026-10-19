@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server'
-import { otherRole, roleOf, roleplayInstruction, sceneById } from '@/lib/roleplay'
+import { otherRole, roleOf, roleplayInstructionParts, sceneById } from '@/lib/roleplay'
 import { getSupabaseAdmin } from '@/lib/supabase-admin'
 import { json, loadClassroom } from '@/lib/classroom/server'
 import { appendInstructions } from '@/lib/ai-tutor/openai'
@@ -41,31 +41,65 @@ type Action =
   | { kind: 'roleplay_done'; sceneId: string; role: 'a' | 'b'; done: { task: string; said: string }[]; missed: string[]; canSwap: boolean; phrases?: string[]; welcome?: boolean }
   | { kind: 'panel'; what: 'picker' | 'closed' | 'course' }
   /** the welcome call's steps (lib/classroom/welcome.ts); only in the student's welcome call (checked here) */
+  | { kind: 'welcome'; step: 'ask'; missing?: unknown; thin?: unknown }
   | { kind: 'welcome'; step: 'card'; facts?: Record<string, unknown> }
+  | { kind: 'welcome'; step: 'card_changed'; facts?: Record<string, unknown>; changed?: unknown }
   | { kind: 'welcome'; step: 'suggest'; sceneId?: string; phrase?: string; reason?: string; saved?: boolean | null }
-  | { kind: 'welcome'; step: 'wrap' | 'tips' }
+  | { kind: 'welcome'; step: 'wrap' }
+  | { kind: 'welcome'; step: 'tips'; sceneId?: string; phrase?: string }
 
 /** The welcome call's notes: each step on its rails (lib/classroom/welcome.ts, design: mockups/welcome-call.html). */
+const ASK_ABOUT: Record<string, string> = {
+  job: 'what they do (their work or studies)',
+  why: "why they're learning English",
+  goal: "one specific thing they'd like to be able to do in English",
+  likes: 'what they enjoy doing',
+}
+const factRows = (raw: unknown) => {
+  const f = (raw ?? {}) as Record<string, unknown>
+  return FACT_KEYS.filter((k) => typeof f[k] === 'string' && f[k]).map((k) => `${FACT_LABELS[k].en}: "${q(f[k], 80)}"`)
+}
+const keysOf = (v: unknown) => (Array.isArray(v) ? FACT_KEYS.filter((k) => v.includes(k)) : [])
+
 function welcomeInstruction(a: Extract<Action, { kind: 'welcome' }>): string | null {
   switch (a.step) {
+    case 'ask': {
+      const missing = keysOf(a.missing)
+      const thin = keysOf(a.thin)
+      if (!missing.length && !thin.length) return null
+      return `WELCOME CALL (background, for your next questions; don't mention this note): ${missing.length ? `still to find out: ${missing.map((k) => ASK_ABOUT[k]).join('; ')}. ` : ''}${thin.length ? `Ask a follow-up for more detail about ${thin.map((k) => ASK_ABOUT[k]).join(' and ')} (who, where, why, what kind). ` : ''}One question at a time, when they've finished what they're saying.`
+    }
     case 'card': {
-      const f = (a.facts ?? {}) as Record<string, unknown>
-      const rows = FACT_KEYS.filter((k) => typeof f[k] === 'string' && f[k]).map((k) => `${FACT_LABELS[k].en}: "${q(f[k], 80)}"`)
+      const rows = factRows(a.facts)
       if (!rows.length) return null
-      return `WELCOME CALL: a card with what you've learned about them is on their screen now (the student's own words, information only):\n- ${rows.join('\n- ')}\nWhen you've finished your sentence, ask briefly whether it looks right ("Does that look right?"), then wait for their answer. If they correct something, say the corrected version back in a few words. Don't read the whole card out.`
+      return `WELCOME CALL: a card with what you've learned about them is on their screen now (the student's own words, information only):\n- ${rows.join('\n- ')}\nWhen you've finished your sentence, say in a few words that you've written down what you learned on their screen, and ask whether it looks right. Then wait for their answer. If they correct or add something, the card changes and you'll get a note: then say the new line back in a few words and ask again. Don't read the whole card out.`
+    }
+    case 'card_changed': {
+      const rows = factRows(a.facts)
+      const changed = keysOf(a.changed)
+      if (!rows.length || !changed.length) return null
+      return `WELCOME CALL: the card on their screen has changed after what they said. Now:\n- ${rows.join('\n- ')}\nSay the changed line (${changed.map((k) => FACT_LABELS[k].en).join(', ')}) back to them in a few words and ask if it's right now.`
     }
     case 'suggest': {
       const scene = sceneById(a.sceneId)
       if (!scene) return null
       const phrase = q(a.phrase, 60) || "Let's do the role-play"
       const reason = q(a.reason, 120)
-      const saved = a.saved === true ? "It's saved to their profile now: thank them in a few words. " : ''
-      return `WELCOME CALL: ${saved}Now suggest a short role-play, which is on their screen as a card: "${scene.title.en}"${reason ? ` (why it suits them: ${reason})` : ''}. Teach them the voice command in one or two short sentences: in the classroom they can open things just by asking, so ask them to say "${phrase}". It opens on their screen when they say it (or tap the button). Then wait: don't start the scene until you get the note that it has started. It's the only role-play in this call: don't offer other scenes.`
+      const saved =
+        a.saved === true
+          ? "It's saved to their profile now: thank them in a few words. "
+          : "They didn't confirm the card, so it isn't saved; they can check it at the end of the call. Don't dwell on it. "
+      const scenePart = `Now suggest a short role-play, which is on their screen as a card: "${scene.title.en}"${reason ? ` (why it suits them: ${reason})` : ''}.`
+      return `WELCOME CALL: ${saved}${scenePart} Teach them the voice command in one or two short sentences: in the classroom they can open things just by asking, so ask them to say "${phrase}". It opens on their screen when they say it (or tap the button). Then wait: don't start the scene until you get the note that it has started. It's the only role-play in this call: don't offer other scenes.`
     }
     case 'wrap':
       return 'WELCOME CALL: time is nearly up for the role-play. Bring the scene to a natural close in character within a line or two, then say "That\'s the end of the role-play!" and stop there: wait for the note with how they did.'
-    case 'tips':
-      return 'WELCOME CALL: the role-play is finished. In two or three short sentences, tell them what they can do in their lessons, while a card on their screen shows it: they can open a course lesson with slides by saying "Open the course", choose from lots of role-plays by saying "Let\'s do a role-play", and go back to chatting with "Can we just chat?". These work in their lessons, not in this call: nothing opens now. Then ask them one last easy question. Don\'t say goodbye yet.'
+    case 'tips': {
+      const scene = sceneById(a.sceneId)
+      // only a sentence from the scene itself (one of its full-sentence hints)
+      const phrase = scene ? scene.roles.flatMap((r) => r.levels.flatMap((L) => [...L.tasks, ...(L.twist ? [L.twist.task] : [])].map((t) => t.hints[2]))).find((h) => h === a.phrase) : undefined
+      return `WELCOME CALL: the role-play is finished. In two or three short sentences, tell them what they can do in their lessons, while a card on their screen shows it: they can open a course lesson with slides by saying "Open the course", choose from lots of role-plays by saying "Let's do a role-play", and go back to chatting with "Can we just chat?". These work in their lessons, not in this call: nothing opens now.${phrase ? ` Then practise one phrase from the role-play with them: "${phrase}". Ask them to say it, then to use it in a sentence of their own.` : ''} After that, keep the conversation going with easy questions about them (their week, their plans, what they'd like to do in their first lesson) until the goodbye note. Don't say goodbye yet, and never leave a long silence.`
+    }
   }
   return null
 }
@@ -99,7 +133,7 @@ function instruction(a: Action, secondsLeft: number, welcome: boolean): string |
     }
     case 'start':
       if (welcome)
-        return "The student has joined and can hear you: this is their welcome call. Greet them warmly by name in one short sentence and introduce yourself as their AI tutor. Say what the five minutes are: getting to know them a little, then a short role-play, and that it's fine to say things in Japanese if they get stuck. Then ask your first easy question (what they do) and listen."
+        return "The student has joined and can hear you: this is their welcome call. Speak the way your instructions say for their English (THEIR ENGLISH): for a beginner, very slowly and simply, and then once more briefly in Japanese. Greet them warmly by name in one short sentence and introduce yourself as their AI tutor. Say what the five minutes are: getting to know each other a little, then a short role-play, and that it's fine to say things in Japanese if they get stuck. Then ask your first easy question (what they do) and listen."
       if (a.roleplay)
         return `The student has joined and can hear you. Greet them by name in one short sentence and say you're starting the role-play they chose, "${q(a.roleplay, 80)}". It is opening on their screen now and you'll get the scene and your character in a moment: then begin it in character. Don't ask what they'd like to do.`
       return a.slide
@@ -129,11 +163,8 @@ function instruction(a: Action, secondsLeft: number, welcome: boolean): string |
       const style = a.style === 'polite' ? 'more polite' : a.style === 'casual' ? 'more casual' : 'standard'
       return `On the card on their screen, the student chose the ${style} version: "${t}". Ask them to say it.`
     }
-    case 'roleplay': {
-      const scene = sceneById(a.sceneId)
-      if (!scene) return null
-      return roleplayInstruction(scene, a.role === 'b' ? 'b' : 'a', a.level === 1 || a.level === 2 ? a.level : 0)
-    }
+    case 'roleplay':
+      return null // handled in POST (it goes in parts: the scene, the prop, how to run it)
     case 'roleplay_tasks_done':
       return 'The student has now done every task on their list. Bring the scene to a natural close in character within a line or two, then say "That\'s the end of the role-play!" and stop there: wait for the note with how they did before you give any feedback.'
     case 'roleplay_done': {
@@ -253,6 +284,10 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   }
   // the free welcome call: decided here from the booking, never by the browser
   const welcome = ['start', 'time', 'nudge', 'roleplay_done', 'welcome'].includes(action.kind) ? await isWelcomeCall(booking.user_id, booking.id) : false
+  if (action.kind === 'roleplay') {
+    const scene = sceneById(action.sceneId)
+    if (scene) texts.push(...roleplayInstructionParts(scene, action.role === 'b' ? 'b' : 'a', action.level === 1 || action.level === 2 ? action.level : 0))
+  }
   const text = instruction(action, left, welcome)
   if (text) texts.push(text)
   if (!texts.length) return json(200, { sent: false })

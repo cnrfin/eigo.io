@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 import { useTheme } from '@/context/ThemeContext'
 import { pillTabStyle } from '@/lib/pill-tabs'
-import { AI_LENGTHS } from '@/lib/ai-tutor/settings'
+import { AI_LENGTHS, ENGLISH_LEVELS, type EnglishLevel } from '@/lib/ai-tutor/settings'
 import { aiMinutesLeft, splitAiCharge } from '@/lib/minutes-core'
 import { newMood } from '@/lib/ai-tutor/avatar-mood'
 import type { AiStartState } from '@/lib/ai-tutor/start'
@@ -164,6 +164,8 @@ const tx = (ja: boolean) => ({
   settings: ja ? 'AIチューターの設定' : 'AI tutor settings',
   close: ja ? '閉じる' : 'Close',
   welcomeTalk: ja ? '5分のウェルカムトーク' : '5-minute welcome talk',
+  levelQ: ja ? '英語はどのくらい話せますか？' : 'How much English do you speak?',
+  levelWhy: ja ? 'AIチューターが、あなたに合わせた話し方をします' : 'Your AI tutor will speak to suit you',
   pickCourse: ja ? 'コースを選ぶか、空欄のままでフリートーク' : 'Select a course or leave blank for free talk',
   pickAny: ja ? 'コース・ロールプレイを選ぶ' : 'Choose a course or role-play',
   pickAnySub: ja ? '空欄のままならフリートーク' : 'Leave blank for free talk',
@@ -210,6 +212,8 @@ export function AiStartCard({
   const { session } = useAuth()
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState(false)
+  // the welcome call: their English, asked first, so the tutor's very first sentence suits them
+  const [level, setLevel] = useState<EnglishLevel | null>(null)
   const mood = useRef(newMood())
   const smile = () => {
     mood.current.face = 'happy'
@@ -267,7 +271,7 @@ export function AiStartCard({
   const options = state?.options ?? [...AI_LENGTHS]
   // the free welcome call is always 5 minutes
   const duration = state?.trial ? state.options[0] : chosen
-  const canStart = !!state && !busy && (!!state.liveId || (!state.blocked && options.includes(duration)))
+  const canStart = !!state && !busy && (!!state.liveId || (!state.blocked && options.includes(duration) && (!state.trial || !!level)))
   const start = async () => {
     if (!canStart || !session) return
     setBusy(true)
@@ -283,6 +287,7 @@ export function AiStartCard({
               ? { duration, courseId: choice }
               : { duration }),
           ...(welcomeTest() ? { welcome: true } : {}),
+          ...(state?.trial && level ? { level } : {}),
         }),
       })
       const d = await r.json().catch(() => ({}))
@@ -387,6 +392,19 @@ export function AiStartCard({
         )
       ) : (
         state && !state.liveId && !state.blocked && !state.trial && <div className="ais-resume">{state.resume ? t.resume(state.resume) : t.freeTalk}</div>
+      )}
+      {state?.trial && !state.liveId && !state.blocked && (
+        <div className="ais-level" role="radiogroup" aria-label={t.levelQ}>
+          <div className="ais-lq">{t.levelQ}</div>
+          <div className="ais-lvs">
+            {ENGLISH_LEVELS.map((l) => (
+              <button key={l.v} type="button" role="radio" aria-checked={level === l.v} className="ais-pill" style={pillTabStyle(level === l.v, th)} onClick={() => setLevel(l.v)}>
+                {l.label[locale]}
+              </button>
+            ))}
+          </div>
+          <div className="ais-note">{level ? ENGLISH_LEVELS.find((l) => l.v === level)!.hint[locale] : t.levelWhy}</div>
+        </div>
       )}
       {sheet && (catalog.length > 0 || !!rpList?.length) && (
         <CourseSheet

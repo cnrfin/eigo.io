@@ -38,6 +38,18 @@ export const VOICE_SAMPLE_LINE = "Hi! I'm your AI tutor. Let's practise some Eng
 
 export type TutorVoice = (typeof TUTOR_VOICES)[number]['id']
 
+/**
+ * How much English the student speaks, in their own words (asked before the welcome call, changeable in the
+ * settings). The AI tutor adapts its English to it from the very first sentence.
+ */
+export const ENGLISH_LEVELS = [
+  { v: 'starter', label: { ja: 'ほぼ初めて', en: 'Just starting' }, hint: { ja: '英語はほとんど話せません', en: 'I hardly speak any English' } },
+  { v: 'basic', label: { ja: '簡単な会話', en: 'Simple phrases' }, hint: { ja: 'あいさつや簡単なことなら話せます', en: 'I can say hello and simple things' } },
+  { v: 'everyday', label: { ja: '日常会話', en: 'Everyday chat' }, hint: { ja: '身近な話題なら会話できます', en: 'I can chat about everyday things' } },
+  { v: 'confident', label: { ja: 'スラスラ', en: 'Confident' }, hint: { ja: 'たいていのことは英語で話せます', en: 'I can talk about most things' } },
+] as const
+export type EnglishLevel = (typeof ENGLISH_LEVELS)[number]['v']
+
 export type TutorSettings = {
   voice: TutorVoice
   /** the AI tutor avatar's colour pair (ORB_COLORS) */
@@ -55,6 +67,8 @@ export type TutorSettings = {
   tutorName: string
   callMe: string
   aboutMe: string
+  /** '' = not asked yet */
+  level: EnglishLevel | ''
   warmUp: boolean
   reviewLast: boolean
   recap: boolean
@@ -76,6 +90,7 @@ export const DEFAULT_TUTOR_SETTINGS: TutorSettings = {
   tutorName: '',
   callMe: '',
   aboutMe: '',
+  level: '',
   warmUp: true,
   reviewLast: true,
   recap: true,
@@ -106,6 +121,7 @@ export function normalizeSettings(raw: unknown): TutorSettings {
     tutorName: str(r.tutorName, 30),
     callMe: str(r.callMe, 30),
     aboutMe: str(r.aboutMe, 600),
+    level: pick(r.level, ['', ...ENGLISH_LEVELS.map((l) => l.v)] as const, d.level),
     warmUp: typeof r.warmUp === 'boolean' ? r.warmUp : d.warmUp,
     reviewLast: typeof r.reviewLast === 'boolean' ? r.reviewLast : d.reviewLast,
     recap: typeof r.recap === 'boolean' ? r.recap : d.recap,
@@ -114,8 +130,19 @@ export function normalizeSettings(raw: unknown): TutorSettings {
 }
 
 /** The settings as short rule lines for the tutor's instructions. */
+/** How to pitch your English for their level (also used for the welcome call's first sentence). */
+export const LEVEL_RULES: Record<EnglishLevel, string> = {
+  starter:
+    'The student is a complete beginner (they said they hardly speak any English). Speak very slowly, in very short, simple sentences (5 to 8 words) with only the most common words, one idea at a time. Ask one simple question at a time, often with two choices ("Do you work, or are you a student?"). If they don\'t understand, say it again more simply. Praise every try.',
+  basic:
+    'The student is a beginner who can say simple things. Speak slowly, in short, simple sentences with common words. Ask one simple question at a time and give them time to answer. If they don\'t understand, say it again more simply.',
+  everyday: 'The student can manage everyday conversation. Speak clearly at a relaxed pace, with everyday words, and help with new or harder words.',
+  confident: 'The student is fairly confident in English. Speak naturally and ask for details and reasons, so they stretch themselves.',
+}
+
 export function settingsToRules(s: TutorSettings): string[] {
   const rules: string[] = []
+  if (s.level) rules.push(LEVEL_RULES[s.level])
   rules.push(
     {
       slow: 'Speak slowly and clearly, with short sentences and a pause between ideas.',

@@ -44,8 +44,12 @@ import {
   voicePhrase,
   welcomeNext,
   welcomeStartStep,
+  WELCOME_AT,
+  stillToAsk,
+  waitsForGap,
   type FactKey,
   type Facts,
+  type WelcomeMove,
   type WelcomePick,
   type WelcomeStep,
 } from '@/lib/classroom/welcome'
@@ -86,6 +90,8 @@ import type { RoomProps } from './Room'
 type Props = RoomProps & { sendTutorMessage: (text: string) => Promise<boolean> }
 type Line = { from: 'student' | 'tutor'; text: string; t: number }
 type Status = 'connecting' | 'live' | 'dropped' | 'failed' | 'too_early' | 'ended'
+/** the welcome call's About-you card: waiting for an answer, saved, or ended without saving */
+type WAbout = 'ask' | 'saved' | 'skipped'
 
 function findLesson(p: Props): Lesson | null {
   if (!p.loaded || !p.open) return null
@@ -1251,7 +1257,8 @@ export default function AiRoom(props: Props) {
     // the welcome call: its cards wait for an answer, and mission complete moves on by itself
     if (welcome && (wStepRef.current === 'card' || wStepRef.current === 'suggest' || wStepRef.current === 'done')) return
     // during a role-play the hints come first (6, 12, 18 s): the AI tutor is only reminded after 25 s
-    if (Date.now() - lastSpeech.current < (rpPlaying.current ? 25_000 : 9000)) return
+    // (the welcome call keeps the conversation going sooner: a first call shouldn't have long silences)
+    if (Date.now() - lastSpeech.current < (rpPlaying.current ? 25_000 : welcome ? 7000 : 9000)) return
     nudged.current = true
     void act({ kind: 'nudge', where: rpPlaying.current ? 'roleplay' : welcome ? 'welcome' : live.current.slides.length ? 'slides' : 'free' })
   }, [now, left, status, tutorReady, act, welcome])
@@ -1323,7 +1330,7 @@ export default function AiRoom(props: Props) {
   /* the welcome call's screen state (its rails are further down) */
   const [wStep, setWStep] = useState<WelcomeStep | null>(null)
   const [wFacts, setWFacts] = useState<Facts>({})
-  const [wAbout, setWAbout] = useState<'ask' | 'saved' | 'closed'>('ask')
+  const [wAbout, setWAbout] = useState<WAbout>('ask')
   const [wScene, setWScene] = useState<Scene | null>(null)
   const [wPhrase, setWPhrase] = useState('')
   const [wReason, setWReason] = useState({ ja: '', en: '' })
@@ -1336,7 +1343,7 @@ export default function AiRoom(props: Props) {
   const wCard: 'about' | 'suggest' | 'tips' | null =
     !welcome || status !== 'live'
       ? null
-      : wStep === 'card' && wAbout !== 'closed' && factCount(wFacts) > 0
+      : wStep === 'card' && factCount(wFacts) > 0
         ? 'about'
         : wStep === 'suggest' && wScene
           ? 'suggest'
@@ -1369,7 +1376,8 @@ export default function AiRoom(props: Props) {
       hintAskAt.current = 0
       setMission(newMission())
       setPanel({ view: 'roleplay', scene, role, level, phase: 'play' })
-      void act({ kind: 'roleplay', sceneId: scene.id, role, level })
+      // the tutor sets the scene first ("We're at a café… Ready?"): if it doesn't start talking, ask it to
+      void act({ kind: 'roleplay', sceneId: scene.id, role, level }).then((ok) => ok && speakIfSilent.current(Date.now()))
     },
     [act],
   )
@@ -1639,31 +1647,48 @@ export default function AiRoom(props: Props) {
   /** the transcript line the current step (or card) began at */
   const wFrom = useRef(0)
   const wFactsRef = useRef<Facts>({})
-  const wAboutRef = useRef<'ask' | 'saved' | 'closed'>('ask')
+  /** facts the helper found too vague yet (the tutor asks a follow-up) */
+  const wThin = useRef<FactKey[]>([])
+  const wAboutRef = useRef<WAbout>('ask')
   const wAboutAt = useRef(0)
+  /** when the card's lines last changed (the card waits while they're talking or it's changing) */
+  const wCardTouched = useRef(0)
   const wPick = useRef<WelcomePick | null>(null)
   const wSceneRef = useRef<Scene | null>(null)
   const wPhraseRef = useRef('')
   const wHeardRef = useRef(false)
+  /** the student said the phrase (or the tutor started it after they answered): it opens at the next gap */
+  const wOpenWanted = useRef(false)
   const wAsking = useRef(false)
   const wAskAgain = useRef(false)
   const wAskTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const wWrapSent = useRef(false)
   const wOpening = useRef(false)
+  /** notes that wait for a gap between turns (the latest of each kind), and when a move started waiting for one */
+  const wPending = useRef<Map<string, StudentAction>>(new Map())
+  const wWaitAt = useRef(0)
+  const wLastAsk = useRef({ key: '', at: 0 })
   const wGo = useRef<(to: WelcomeStep) => void>(() => {})
   const wOpen = useRef<() => void>(() => {})
   const wSave = useRef<() => void>(() => {})
   const wAsk = useRef<() => void>(() => {})
   const setFacts = useCallback((f: Facts) => {
     wFactsRef.current = f
+    wCardTouched.current = Date.now()
     setWFacts(f)
   }, [])
-  const closeAbout = useCallback(() => {
-    wAboutRef.current = 'closed'
+  const setAbout = useCallback((a: WAbout) => {
+    wAboutRef.current = a
     wAboutAt.current = Date.now()
-    setWAbout('closed')
+    setWAbout(a)
   }, [])
+  const closeAbout = useCallback(() => setAbout('skipped'), [setAbout])
   useEffect(() => () => void (wAskTimer.current && clearTimeout(wAskTimer.current)), [])
+  /** a gap between turns: neither of them is talking (notes and screen changes never cut into speech) */
+  const wGap = () => {
+    const T = Date.now()
+    return !speakingRef.current && T - lastSaid.current.tutor > 1000 && T - lastSaid.current.student > 1000
+  }
   useEffect(() => {
     if (!welcome) return
     /** the student's answer to a card counts from the AI tutor's first line after it appeared */
@@ -1680,7 +1705,7 @@ export default function AiRoom(props: Props) {
         .map((l) => l.text)
         .join(' ')
     const spoken = (ok: boolean) => void (ok && speakIfSilent.current(Date.now()))
-    // the helper: the About-you facts (each backed by their own words) and the role-play that suits them
+    // the helper: the About-you facts (each backed by their own words), what's still vague, and the role-play
     wAsk.current = () => {
       const sid = sessionId.current
       if (!sid || closing.current) return
@@ -1694,9 +1719,21 @@ export default function AiRoom(props: Props) {
         wAsking.current = false
         const step = wStepRef.current
         if (step === 'about' || (step === 'card' && wAboutRef.current === 'ask')) {
-          const next = { ...wFactsRef.current, ...r.facts }
-          if (FACT_KEYS.some((k) => next[k] !== wFactsRef.current[k])) setFacts(next)
+          const before = wFactsRef.current
+          const next = { ...before, ...r.facts }
+          const changed = FACT_KEYS.filter((k) => next[k] !== before[k])
+          wThin.current = r.thin
+          if (changed.length) setFacts(next)
           if (r.pick) wPick.current = r.pick
+          if (step === 'about') {
+            // what the tutor should still ask about (a quiet note, at most every 15 s, only when it changes)
+            const s = stillToAsk({ facts: next, thin: r.thin })
+            const key = `${s.missing.join()}|${s.thin.join()}`
+            if ((s.missing.length || s.thin.length) && key !== wLastAsk.current.key && Date.now() - wLastAsk.current.at > 15_000) {
+              wLastAsk.current = { key, at: Date.now() }
+              wPending.current.set('ask', { kind: 'welcome', step: 'ask', missing: s.missing, thin: s.thin })
+            }
+          } else if (changed.length) wPending.current.set('card_changed', { kind: 'welcome', step: 'card_changed', facts: next, changed })
         }
         if (wAskAgain.current) {
           wAskAgain.current = false
@@ -1706,13 +1743,10 @@ export default function AiRoom(props: Props) {
     }
     wSave.current = () => {
       if (wAboutRef.current === 'saved' || !factCount(wFactsRef.current)) return
-      wAboutRef.current = 'saved'
-      wAboutAt.current = Date.now()
-      setWAbout('saved')
+      setAbout('saved')
       void welcomeSave(info.bookingId, wFactsRef.current).then((aboutMe) => {
         if (aboutMe !== null) return
-        wAboutRef.current = 'ask'
-        setWAbout('ask')
+        setAbout('ask')
         props.toast(t('wlSaveFailed'), 'bad')
       })
     }
@@ -1728,10 +1762,14 @@ export default function AiRoom(props: Props) {
       wStepRef.current = to
       wStepAt.current = Date.now()
       wFrom.current = lines.current.length
+      wPending.current.clear()
       setWStep(to)
       // a welcome card takes the card's place: an older correction card doesn't come back after it
       if (to === 'card' || to === 'suggest' || to === 'tips') setShown(null)
-      if (to === 'card') void act({ kind: 'welcome', step: 'card', facts: wFactsRef.current }).then(spoken)
+      if (to === 'card') {
+        wCardTouched.current = Date.now()
+        void act({ kind: 'welcome', step: 'card', facts: wFactsRef.current }).then(spoken)
+      }
       if (to === 'suggest') {
         const pick = wPick.current ?? FALLBACK_PICK
         void (async () => {
@@ -1747,6 +1785,7 @@ export default function AiRoom(props: Props) {
           wSceneRef.current = sc
           wPhraseRef.current = phrase
           wHeardRef.current = false
+          wOpenWanted.current = false
           setWScene(sc)
           setWPhrase(phrase)
           setWReason({ ja: p.reasonJa || sc.summary.ja, en: p.reasonEn || sc.summary.en })
@@ -1755,12 +1794,21 @@ export default function AiRoom(props: Props) {
           // the 25 s, and what the student says, count from when the card is on screen
           wStepAt.current = Date.now()
           wFrom.current = lines.current.length
-          spoken(await act({ kind: 'welcome', step: 'suggest', sceneId: sc.id, phrase, reason: p.reasonEn, saved: wAboutRef.current === 'saved' ? true : null }))
+          spoken(await act({ kind: 'welcome', step: 'suggest', sceneId: sc.id, phrase, reason: p.reasonEn, saved: wAboutRef.current === 'saved' }))
         })()
       }
       if (to === 'tips') {
         setPanel(null)
-        void act({ kind: 'welcome', step: 'tips' }).then(spoken)
+        // then practise one phrase from the scene (one of its full sentences: checked on the server)
+        const cur = rpCur.current
+        // (the one most worth keeping; if they said them all well, the longest of the scene's sentences)
+        const phrase = cur
+          ? (phrasesToSave(cur.scene, cur.role, cur.level, missionRef.current.twisted, missionRef.current.done)[0]?.term ??
+            tasksFor(roleOf(cur.scene, cur.role).levels[cur.level], missionRef.current.twisted)
+              .map((x) => x.hints[2])
+              .sort((a, b) => b.length - a.length)[0])
+          : undefined
+        void act({ kind: 'welcome', step: 'tips', ...(cur && phrase ? { sceneId: cur.scene.id, phrase } : {}) }).then(spoken)
       }
     }
     welcomeHear.current = (said) => {
@@ -1774,10 +1822,11 @@ export default function AiRoom(props: Props) {
       const k = answerFrom()
       if (lines.current.length - 1 < k) return // the AI tutor hasn't asked yet
       if (step === 'card' && wAboutRef.current === 'ask') {
+        // the card is a conversation: "yes" saves it; a correction or anything they add is read again
+        wCardTouched.current = Date.now()
         const r = cardReply(said)
         if (r === 'yes') wSave.current()
         else if (r === 'fix') {
-          // "Actually, I work in marketing": the helper reads it again and the line changes
           if (wAskTimer.current) clearTimeout(wAskTimer.current)
           wAskTimer.current = setTimeout(() => wAsk.current(), 1200)
         }
@@ -1788,23 +1837,23 @@ export default function AiRoom(props: Props) {
         setWLit(h.lit)
         if (h.go) {
           wHeardRef.current = true
+          wOpenWanted.current = true
           setWHeard(true)
-          setTimeout(() => wOpen.current(), 600)
         }
       }
     }
     // the AI tutor may start the suggested scene once the student has answered ("Great, let's start the role-play.")
     welcomeTutor.current = (sentence) => {
       if (wStepRef.current !== 'suggest' || !TUTOR_STARTS.test(sentence)) return
-      if (!studentSince(answerFrom()).trim()) return
-      setTimeout(() => wOpen.current(), 500)
+      if (studentSince(answerFrom()).trim()) wOpenWanted.current = true
     }
   })
   // mission complete → the welcome version, and on to the tips
   useEffect(() => {
     if (welcome && wStep === 'roleplay' && panel?.view === 'roleplay' && panel.phase === 'done') wGo.current('done')
   }, [welcome, wStep, panel])
-  // the director: every second, where the call goes next (lib/classroom/welcome.ts welcomeNext)
+  // the director: every second, where the call goes next (lib/classroom/welcome.ts welcomeNext). Anything that
+  // tells the tutor something or changes the screen waits for a gap between turns (at most a few seconds).
   useEffect(() => {
     if (!welcome || status !== 'live' || !tutorReady || clockEnd === null || closing.current) return
     const elapsed = info.durationMinutes * 60 - left
@@ -1814,26 +1863,46 @@ export default function AiRoom(props: Props) {
       return
     }
     const T = Date.now()
-    const m = welcomeNext({
-      step,
-      elapsed,
-      left,
-      stepAge: (T - wStepAt.current) / 1000,
-      facts: wFactsRef.current,
-      cardDone: wAboutRef.current !== 'ask',
-      cardDoneAge: (T - wAboutAt.current) / 1000,
-      wrapSent: wWrapSent.current,
-      feedback: lastSaid.current.tutor > doneAt.current,
-      tutorQuiet: speakingRef.current ? 0 : (T - lastSaid.current.tutor) / 1000,
-    })
-    if (!m) return
+    const gap = wGap()
+    // quiet notes waiting for a gap (follow-up hints, the card's changed lines)
+    if (gap && wPending.current.size) {
+      for (const a of wPending.current.values()) void act(a)
+      wPending.current.clear()
+    }
+    const m: WelcomeMove =
+      step === 'suggest' && wOpenWanted.current
+        ? { do: 'open' }
+        : welcomeNext({
+            step,
+            elapsed,
+            left,
+            stepAge: (T - wStepAt.current) / 1000,
+            facts: wFactsRef.current,
+            thin: wThin.current,
+            cardDone: wAboutRef.current !== 'ask',
+            cardDoneAge: (T - wAboutAt.current) / 1000,
+            cardIdle: (T - Math.max(wStepAt.current, wCardTouched.current, lastSaid.current.student, speakingRef.current ? T : lastSaid.current.tutor)) / 1000,
+            wrapSent: wWrapSent.current,
+            feedback: lastSaid.current.tutor > doneAt.current,
+            tutorQuiet: speakingRef.current ? 0 : (T - lastSaid.current.tutor) / 1000,
+          })
+    if (!m) {
+      wWaitAt.current = 0
+      return
+    }
+    if (waitsForGap(m) && !gap) {
+      if (!wWaitAt.current) wWaitAt.current = T
+      if (T - wWaitAt.current < WELCOME_AT.quietMax * 1000) return
+    }
+    wWaitAt.current = 0
     if ('to' in m) wGo.current(m.to)
     else if (m.do === 'open') wOpen.current()
+    else if (m.do === 'skipCard') setAbout('skipped')
     else if (m.do === 'wrap') {
       wWrapSent.current = true
       void act({ kind: 'welcome', step: 'wrap' })
     } else if (m.do === 'endScene') completeRp.current()
-  }, [now, welcome, status, tutorReady, clockEnd, left, info.durationMinutes, act])
+  }, [now, welcome, status, tutorReady, clockEnd, left, info.durationMinutes, act, setAbout])
   // the end screen: what to try next (a course, and the next level of their role-play)
   const wEnded = welcome && status === 'ended'
   useEffect(() => {
@@ -2310,7 +2379,7 @@ export default function AiRoom(props: Props) {
                 t={t}
                 lang={lang}
                 facts={wFacts}
-                saved={wAbout === 'saved'}
+                state={wAbout}
                 onSave={() => wSave.current()}
                 onClose={closeAbout}
                 onEdit={(k: FactKey, v: string) => setFacts({ ...wFactsRef.current, [k]: v })}
@@ -2417,7 +2486,7 @@ export default function AiRoom(props: Props) {
               t={t}
               lang={lang}
               facts={wFacts}
-              saved={wAbout === 'saved'}
+              state={wAbout === 'saved' ? 'saved' : 'ask'}
               inline
               onSave={() => {
                 wSave.current()

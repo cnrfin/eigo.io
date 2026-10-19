@@ -9,7 +9,7 @@ import { FACT_KEYS, mergeAboutMe, type Facts } from '@/lib/classroom/welcome'
 
 /**
  * POST /api/classroom/[id]/ai-welcome   the free 5-minute welcome call (lib/classroom/welcome.ts)
- *   { op: 'about', sessionId, lines: [{ from, text }] } → { facts, pick }   the About-you facts and a role-play for them
+ *   { op: 'about', sessionId, lines: [{ from, text }] } → { facts, thin, pick }   the About-you facts (thin = too vague yet) and a role-play
  *   { op: 'save', facts }                               → { aboutMe }       confirmed: added to About me
  *   { op: 'scene', sceneId }                            → { scene }         the suggested role-play in full
  *   { op: 'record', sceneId }                           → { cleared }       its mission completed (初級, their own role)
@@ -39,7 +39,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
   if (b.op === 'about') {
     const { data: sess } = await db.from('ai_sessions').select('ended_at').eq('session_id', String(b.sessionId ?? '')).eq('booking_id', booking.id).maybeSingle()
-    if (!sess || sess.ended_at) return json(409, { facts: {}, pick: null })
+    if (!sess || sess.ended_at) return json(409, { facts: {}, thin: [], pick: null })
     const lines = (Array.isArray(b.lines) ? (b.lines as In[]) : [])
       .filter((l) => l && (l.from === 'student' || l.from === 'tutor') && typeof l.text === 'string' && l.text.trim())
       .slice(-24)

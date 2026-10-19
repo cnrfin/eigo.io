@@ -56,8 +56,16 @@ const emit = async (ev) => { await act(async () => { channel.dispatchEvent(new w
   g.CATALOG = [{ id: 'c_greatbritain', title: 'Haruka in the UK: Part 1', titleJa: 'イギリスでのハルカ 第1章', level: 'A2', description: 'x', descriptionJa: 'x', scenes: ['https://cdn/x.jpg'], lessonCount: 12, doneCount: 0 }]
   g.TICK = []
   g.turnResponse = (b) => ({ move: 'stay', slide: null, action: b.screen ? { kind: 'open_course', courseId: 'c_greatbritain' } : { kind: 'none' }, quote: 'open the course', ticks: b.roleplay ? g.TICK.filter((t) => !b.roleplay.done.includes(t.id)) : [] })
-  const facts = { job: 'Nurse at a hospital in Osaka', why: 'Helping patients from abroad', likes: 'Cafés, Korean dramas' }
-  g.welcomeAbout = (b) => ({ facts: b.lines.some((l) => /marketing/.test(l.text)) ? { ...facts, job: 'Marketing at a travel company' } : facts, pick: { sceneId: 'cafe-abroad', name: 'café', reasonJa: 'オーストラリア旅行の前に、カフェで注文してみよう', reasonEn: 'Practise ordering before your trip' } })
+  // the call joined 70 s in (so the About-you card, never before 1:15, comes within the run)
+  g.aiSessionResponse = { sessionId: 'live_1', sdp: 'v=0 answer', endsAt: new Date(Date.now() + 230_000).toISOString() }
+  const facts = { job: 'Nurse at a hospital in Osaka', why: 'Helping patients from abroad', goal: 'Travel to Australia next year', likes: 'Cafés, Korean dramas' }
+  const pick = { sceneId: 'cafe-abroad', name: 'café', reasonJa: 'オーストラリア旅行の前に、カフェで注文してみよう', reasonEn: 'Practise ordering before your trip' }
+  g.welcomeAbout = (b) =>
+    b.lines.some((l) => /marketing/.test(l.text))
+      ? { facts: { ...facts, job: 'Marketing at a travel company' }, thin: [], pick }
+      : b.lines.some((l) => /Australia/.test(l.text))
+        ? { facts, thin: [], pick }
+        : { facts: { job: facts.job, why: 'Helping patients' }, thin: ['why'], pick }
   await T.run(join)
   await T.click(T.$('#joinBtn')); await T.tick(150)
   await emit({ type: 'session.started', session: { id: 'live_1' } })
@@ -77,57 +85,68 @@ const emit = async (ev) => { await act(async () => { channel.dispatchEvent(new w
   check('the action judge isn\'t asked (no screen sent)', !g.log.some((l) => l.includes('/ai-turn') && l.includes('"screen"')))
   // 2) getting to know them: the helper reads what they say
   await say('ai', 'So, what do you do, Aiko?', 6000); await T.tick(200)
-  await say('you', "I'm a nurse at a hospital in Osaka. I want to help patients from abroad. I like cafés and Korean dramas.", 7000); await T.tick(2400)
+  await say('you', "I'm a nurse at a hospital in Osaka. I want to help patients.", 7000); await T.tick(2400)
   check('the helper is asked about them', fetched('/ai-welcome').some((l) => l.includes('"op":"about"')), fetched('/ai-welcome'))
   await T.tick(1200)
-  // 3) three facts: the About-you card, and the tutor is told
-  check('the About-you card, one row per fact', document.querySelectorAll('.wlc-row').length === 3 && txt('.wlc-row .wlc-v') === 'Nurse at a hospital in Osaka', txt('.wlc-rows'))
+  const askNote = welcomeNotes('ask')
+  check('two facts, one vague: no card yet; the tutor hears what to ask next', !T.$('.wlc-row') && askNote.length === 1 && askNote[0].includes('"missing":["goal","likes"]') && askNote[0].includes('"thin":["why"]'), askNote)
+  await say('ai', 'Which patients would you like to help?', 10000); await T.tick(200)
+  await say('you', 'Patients from abroad. And next year I want to travel to Australia. I like cafés and Korean dramas.', 11000); await T.tick(2400)
+  await T.tick(1500)
+  // 3) all four, none vague, after 1:15: the About-you card, and the tutor is told
+  check('the About-you card, one row per fact', document.querySelectorAll('.wlc-row').length === 4 && txt('.wlc-row .wlc-v') === 'Nurse at a hospital in Osaka', txt('.wlc-rows'))
   check('the tutor gets the card note, with the facts', welcomeNotes('card').length === 1 && welcomeNotes('card')[0].includes('Nurse at a hospital'), welcomeNotes('card'))
   check('the tutor floats above the card (float mode)', T.$('.app').dataset.mode === 'float')
   // a spoken correction changes the line
-  await say('ai', 'Does that look right?', 12000); await T.tick(200)
-  await say('you', 'Actually, I work in marketing at a travel company.', 13000); await T.tick(2400)
+  await say('ai', "I've written what I learned on your screen. Does that look right?", 16000); await T.tick(200)
+  await say('you', 'Actually, I work in marketing at a travel company.', 17000); await T.tick(2400)
   check('a correction: the helper reads it again and the line changes', txt('.wlc-row .wlc-v') === 'Marketing at a travel company', txt('.wlc-rows'))
-  check('not saved by a correction', fetched('"op":"save"').length === 0)
-  await say('ai', 'Got it, marketing. Is that right now?', 16000); await T.tick(200)
-  await say('you', "Yes, that's right.", 17000); await T.tick(300)
+  check('not saved by a correction; the card stays', fetched('"op":"save"').length === 0 && !!T.$('.wlc-acts'))
+  await T.tick(1200)
+  const ch = welcomeNotes('card_changed')
+  check('the tutor is told which line changed', ch.length === 1 && ch[0].includes('"changed":["job"]'), ch)
+  await say('ai', 'Got it, marketing. Is that right now?', 22000); await T.tick(200)
+  await say('you', "Yes, that's right.", 23000); await T.tick(300)
   const sv = fetched('"op":"save"')
   check('"yes" saves it to About me, with the corrected line', sv.length === 1 && sv[0].includes('Marketing at a travel company'), sv)
   check('the card says it is saved', txt('.wlc-done') === '「About me」に保存しました')
   // 4) the role-play for them, opened by voice
-  await T.tick(2600)
+  await T.tick(3600)
   check('the suggestion card: the scene, why, and the phrase to say', !!T.$('.wlc-say') && txt('.wlc-st b').startsWith('海外のカフェで注文') && txt('.wlc-st > span').startsWith('オーストラリア') && txt('.wlc-p') === "Let's do the café role-play", txt('.aic'))
   const sg = welcomeNotes('suggest')
   check('the tutor is told to teach the phrase (and that it was saved)', sg.length === 1 && sg[0].includes("Let's do the café role-play") && sg[0].includes('"saved":true'), sg)
-  await say('you', 'OK', 22000); await T.tick(300)
+  await say('you', 'OK', 30000); await T.tick(1500)
   check('an "OK" before the tutor has spoken doesn\'t count', !T.$('.apn-mission'))
-  await say('ai', "You can open things just by asking. Say: Let's do the café role-play.", 23000); await T.tick(200)
-  await say('you', "Let's do the café", 24000); await T.tick(100)
+  await say('ai', "You can open things just by asking. Say: Let's do the café role-play.", 31000); await T.tick(200)
+  await say('you', "Let's do the café", 32000); await T.tick(100)
   check('the words light up as they are heard', document.querySelectorAll('.wlc-p span.on').length >= 4, txt('.wlc-p'))
-  await T.tick(900)
-  check('…and the role-play opens at 初級', !!T.$('.apn-mission') && txt('.apn-lvl') === '初級' && document.querySelectorAll('.apn-goal').length === 3, txt('.panelBox'))
+  await say('ai', 'Great!', 32700); await T.tick(300)
+  check('…it waits for the tutor to finish before opening (nothing cuts into its speech)', !T.$('.apn-mission'))
+  await T.tick(2000)
+  check('…then the role-play opens at 初級', !!T.$('.apn-mission') && txt('.apn-lvl') === '初級' && document.querySelectorAll('.apn-goal').length === 3, txt('.panelBox'))
   check('the tutor gets the scene', posts('roleplay').length === 1 && posts('roleplay')[0].includes('"level":0'))
   // 5) the scene; then mission complete, welcome version
   g.TICK = [{ id: 'order', said: 'A coffee please' }, { id: 'size', said: 'Regular please' }, { id: 'pay', said: 'Card please' }]
-  await say('ai', 'Hi! What can I get you?', 27000); await T.tick(200)
-  await say('you', 'A coffee please. Regular please. Card please.', 28000); await T.tick(3800)
+  await say('ai', 'Hi! What can I get you?', 37000); await T.tick(200)
+  await say('you', 'A coffee please. Regular please. Card please.', 38000); await T.tick(3800)
   check('ticks come from the turn check (role-play only)', document.querySelectorAll('.apn-goal.done').length === 3 && g.log.some((l) => l.includes('/ai-turn') && l.includes('"roleplay"')))
-  await say('ai', "Here you go! That's the end of the role-play!", 31000); await T.tick(800)
+  await say('ai', "Here you go! That's the end of the role-play!", 41000); await T.tick(800)
   check('mission complete, without swap / again / next', !!T.$('.apn-done') && !T.$('.apn-acts') && txt('.apn-next') === 'まもなく次へ', T.$('.panelBox')?.innerHTML.slice(0, 200))
   const dn = posts('roleplay_done').pop() || ''
   check('the results go to the tutor (no swap offered)', dn.includes('"canSwap":false') && dn.includes('"welcome":true'), dn)
   check('progress recorded through the welcome route', fetched('"op":"record"').length === 1)
-  await say('you', "Let's swap roles", 33000); await T.tick(400)
+  await say('you', "Let's swap roles", 43000); await T.tick(400)
   check('"swap roles" does nothing in the welcome call', posts('roleplay').length === 1 && !!T.$('.apn-done'))
-  await say('ai', 'Great job! A more natural way is: Could I get a regular coffee, please?', 34000); await T.tick(300)
+  await say('ai', 'Great job! A more natural way is: Could I get a regular coffee, please?', 44000); await T.tick(300)
   check('the feedback appears on the screen', document.querySelectorAll('.apn-fbl').length === 2, txt('.apn-fb'))
   // 6) after the feedback and a pause: the tips (where courses come up); the panel goes
   await T.tick(3000)
   check('not before 8 s on mission complete', !T.$('.wlc-tip'))
   await T.tick(3500)
   check('then the tips card: three things to say in lessons', document.querySelectorAll('.wlc-tip').length === 3 && txt('.wlc-tip .wlc-q') === '“Open the course”' && !T.$('.panelBox .apn'), txt('.aic'))
-  check('the tutor is told to mention them', welcomeNotes('tips').length === 1)
-  await say('you', 'Open the course', 41000); await T.tick(1500)
+  const tp = welcomeNotes('tips')
+  check('the tutor is told to mention them, then practise a phrase from the scene', tp.length === 1 && tp[0].includes('"sceneId":"cafe-abroad"') && /"phrase":"[^"]+\./.test(tp[0]), tp)
+  await say('you', 'Open the course', 51000); await T.tick(1500)
   check('saying one now still opens nothing', fetched('/ai-open').length === 0 && !T.$('.slideBox .slide'))
   console.log(fails ? `${fails} FAILED` : 'all passed')
   process.exit(fails ? 1 : 0)
