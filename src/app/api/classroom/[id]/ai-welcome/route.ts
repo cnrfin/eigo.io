@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-admin'
 import { json, loadClassroom } from '@/lib/classroom/server'
-import { sceneById } from '@/lib/roleplay'
+import { SCENES, sceneById } from '@/lib/roleplay'
 import { recordMission } from '@/lib/roleplay/progress'
 import { normalizeSettings } from '@/lib/ai-tutor/settings'
 import { welcomeFacts } from '@/lib/ai-tutor/welcome-helper'
@@ -9,7 +9,8 @@ import { FACT_KEYS, mergeAboutMe, type Facts } from '@/lib/classroom/welcome'
 
 /**
  * POST /api/classroom/[id]/ai-welcome   the free 5-minute welcome call (lib/classroom/welcome.ts)
- *   { op: 'about', sessionId, lines: [{ from, text }] } → { facts, thin, pick }   the About-you facts (thin = too vague yet) and a role-play
+ *   { op: 'about', sessionId, lines: [{ from, text }] } → { facts, thin }  the About-you facts, for the end screen
+ *   { op: 'scenes' }                                    → { scenes }        the role-plays' ids and titles (to spot the one the tutor suggests)
  *   { op: 'save', facts }                               → { aboutMe }       confirmed: added to About me
  *   { op: 'scene', sceneId }                            → { scene }         the suggested role-play in full
  *   { op: 'record', sceneId }                           → { cleared }       its mission completed (初級, their own role)
@@ -64,6 +65,10 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       .upsert({ user_id: ctx.user.id, settings: normalizeSettings({ ...settings, aboutMe }), updated_at: new Date().toISOString() }, { onConflict: 'user_id' })
     if (error) return json(500, { error: 'Could not save' })
     return json(200, { aboutMe })
+  }
+
+  if (b.op === 'scenes') {
+    return json(200, { scenes: SCENES.map((s) => ({ id: s.id, en: s.title.en, ja: s.title.ja })) })
   }
 
   if (b.op === 'scene') {

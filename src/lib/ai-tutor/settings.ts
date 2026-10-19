@@ -141,7 +141,7 @@ export const LEVEL_RULES: Record<EnglishLevel, string> = {
 }
 /** beginners: Japanese help, as its own short sentence after the English (never mixed into an English sentence) */
 export const BEGINNER_JA =
-  'Japanese only when they\'re stuck: speak simple English, and only if they don\'t answer, say they don\'t understand, or answer in Japanese, say it again as a separate short sentence in natural Japanese, then go back to English. Never say everything twice, never mix Japanese words into an English sentence, and never use romaji.'
+  'Speak English. Use Japanese only if they ask for it ("in Japanese, please", "日本語で") or clearly can\'t understand even after you\'ve said it more simply: then one short Japanese sentence, and back to English. Never say things twice in two languages, never mix Japanese words into an English sentence, and never use romaji.'
 const isBeginner = (l: EnglishLevel | '') => l === 'starter' || l === 'basic'
 
 export function settingsToRules(s: TutorSettings): string[] {

@@ -36,7 +36,7 @@ It exits with 1 if anything fails, and lists the failing checks. Run it after an
 | `phrases.test.ts` | Phrases to save after a role-play (`lib/roleplay/phrases.ts`) |
 | `roleplay.test.ts` | Every scene in `SCENES` is well formed, levels, progress, the tutor's start instruction |
 | `ticks.test.ts` | Ticking role-play tasks (`lib/roleplay/ticks.ts`): only the student's own words count |
-| `welcome.test.ts` | The welcome call (`lib/classroom/welcome.ts`): the helper's facts need the student's own words, About me is added to, never replaced, the card and phrase replies, the director's steps and timings |
+| `welcome.test.ts` | The welcome talk (`lib/classroom/welcome.ts`): the helper's facts need the student's own words, About me, the tutor's set sentences the classroom follows, the whole phrase, the time limits, English only, role-play notes that fit |
 
 ## Classroom runs
 
@@ -60,7 +60,7 @@ It exits with 1 if anything fails, and lists the failing checks. Run it after an
 | `run17` | Start of an AI lesson: greeting prompt, reveal, the tutor can't start role-plays or courses by itself, patient silence handling |
 | `run18` | Role-play ticks: no dropped or late ticks, feedback in the same breath, phrases to save |
 | `run19` | A lesson booked with a role-play: it opens as the lesson starts, at the booked level |
-| `run20` | The welcome call's rails: no courses or whiteboard, follow-up hints while getting to know them, the About-you card as a conversation (a correction changes a line, "yes" saves), the suggested role-play opened by voice only between turns, mission complete that waits for their answer, the voice commands tried out (course and role-play previews, nothing can start), "Can we just chat?" into free talk |
+| `run20` | The welcome talk, led by the tutor: no courses or whiteboard, the facts picked out quietly, the role-play card when the tutor names one, opening only on the whole phrase once they've stopped, mission complete, the voice command and its course preview, the Q&A, and no reminders needed |
 | `run21` | The welcome call's end screen: replaces the classroom at 0:00, About me saved from there, what to try next |
 
 ## Writing a new run

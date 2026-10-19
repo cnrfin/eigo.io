@@ -1,58 +1,44 @@
-import { hasJapanese, inOrder, share, words } from '@/lib/ai-tutor/voice-match'
+import { hasJapanese, inOrder, saidIt, share, words } from '@/lib/ai-tutor/voice-match'
 
 /**
- * The free 5-minute welcome call (ai-panel-implementation-plan.md, phase 3d; design: mockups/welcome-call.html).
- * It runs on its own rails: the classroom moves it from step to step on the call clock and tells the AI tutor
- * each step in a note. Pure functions, shared by the browser, the server and the tests.
+ * The free 5-minute welcome talk (ai-panel-implementation-plan.md, phase 3d). The AI TUTOR LEADS it: the whole
+ * plan is in its instructions (lib/ai-tutor/brief.ts welcomeCall), and the classroom follows what it says, the way
+ * slides follow "let's move on to the next slide". Notes into the live session are kept to the few the tutor can't
+ * do without (each one, arriving mid-sentence, made it start over), and they go only between turns.
  *
- *   about     getting to know them (about 1:15 at least); the helper picks out the facts (each backed by their own
- *             words), and tells the tutor what's still missing or too vague, so it asks follow-ups
- *   card      the About-you card, as a conversation: "yes" or これで保存 saves it; anything else corrects a line
- *             and the card stays up while they talk; it always ends saved, or clearly not saved
- * Steps change, and notes go to the tutor, only between turns (never while either of them is talking).
- *   suggest   one role-play chosen for them, opened by saying the phrase on the card (tap or 25 s: opens anyway)
- *   roleplay  the scene at 初級 (ended by the AI tutor, or by the classroom when time runs short)
- *   done      mission complete, welcome version: feedback, then "any questions?"; it moves on once they've answered
- *   tips      what they can say in lessons, tried out: "Open the course" shows a preview of a course's first slide,
- *             "Let's do a role-play" the role-play list (a preview: nothing can be started in this call), and
- *             "Can we just chat?" moves on to free talk
- *   free      chat until the goodbye; at 0:00 the welcome end screen replaces the classroom
+ *   about     hello and three easy questions (where they're from and what they do, interests, why English); a
+ *             helper quietly picks out the facts for the end screen (no card during the call)
+ *   suggest   the tutor suggests a role-play from its list and says the phrase to open it; the card appears when
+ *             it names one. The scene opens once the student has said the whole phrase and stopped (or a tap)
+ *   roleplay  the scene at 初級 (the tutor sets it up first); near 3:15 it's asked to wrap up, at 3:45 it ends
+ *   done      mission complete: feedback, "any questions?"
+ *   command   one voice command, tried out: "Open the course" shows a preview of a course's first slide
+ *   qa        an open Q&A about eigo until the goodbye; at 0:00 the welcome end screen (About me saved there)
  */
 
-export type WelcomeStep = 'about' | 'card' | 'suggest' | 'roleplay' | 'done' | 'tips' | 'free'
+export type WelcomeStep = 'about' | 'suggest' | 'roleplay' | 'done' | 'command' | 'qa'
 
 /** seconds (on the call clock unless it says otherwise) */
 export const WELCOME_AT = {
-  /** the About-you card not before this (three easy questions take a while)… */
-  cardMin: 45,
-  /** …and by now, with whatever facts there are (none: straight to the role-play) */
-  cardBy: 85,
-  /** the card waits this long after the last thing said or changed on it (then it goes, not saved) */
-  cardIdle: 20,
-  /** and never stays longer than this */
-  cardMax: 75,
-  /** after saving (or not), the card shows how it ended this long */
-  savedHold: 2.2,
-  /** a step waiting for a gap between turns goes ahead anyway after this long */
-  quietMax: 8,
+  /** no role-play suggested by now: the tutor is reminded (once) */
+  suggestBy: 105,
+  /** the student said the phrase: it opens once they've been quiet this long */
+  phraseQuiet: 1.5,
   /** the suggestion opens by itself after this long */
-  autoOpen: 25,
-  /** the AI tutor is asked to end the scene… */
-  wrapScene: 180,
+  autoOpen: 30,
+  /** the AI tutor is asked to wrap the scene up… */
+  wrapScene: 195,
   /** …and the classroom ends it */
-  endScene: 200,
-  /** steps before the role-play that are this late skip to the tips */
-  late: 170,
-  /** mission complete → tips: once they've answered "any questions?" and the tutor has replied (at least tipsMin,
-   *  then tipsQuiet of quiet), or after tipsMax */
-  tipsMin: 10,
-  tipsQuiet: 2.5,
-  tipsMax: 40,
-  /** with this little time left, the tips come at once (they need about a minute) */
-  tipsLeft: 75,
-  /** the tips step ends when they say "Can we just chat?", or with this little time left */
-  tipsEndLeft: 25,
-  goodbyeLeft: 22,
+  endScene: 225,
+  /** mission complete → the voice command, if the tutor hasn't moved on itself: after this long, or with this left */
+  commandAfter: 45,
+  commandLeft: 70,
+  /** the voice command → the Q&A: this long after they said it, at the latest after commandMax, or with this left */
+  qaAfter: 20,
+  commandMax: 50,
+  qaLeft: 40,
+  /** a move waiting for a gap between turns goes ahead anyway after this long */
+  quietMax: 8,
 } as const
 
 /** the three things the tutor finds out: where they're from and what they do, their interests, why English */
@@ -169,41 +155,43 @@ export function mergeAboutMe(existing: string, facts: Facts, max = 600): string 
   return `${old}\n${add.length > room ? add.slice(0, room - 1).trimEnd() + '…' : add}`
 }
 
-/* ---------------- what the student says to the cards ---------------- */
 
-const CORRECTION = /\b(?:actually|not (?:a |an |really )?|no,|nope|wrong|instead|but i|i don'?t|i'?m not|i work as|i'?m a|i work (?:at|in|for))\b|違|ちが|じゃなく|ではなく|ではありません|じゃないです/i
-const LEAD = '^[\\s、。.!,…-]*'
-const YES = new RegExp(`${LEAD}(?:yes|yeah|yep|yup|ok(?:ay)?|sure|right|correct|perfect|exactly|great|good|fine|that'?s (?:right|correct|fine|good|perfect|it)|(?:it )?looks? (?:good|right|fine|great|perfect)|sounds (?:good|right)|save it|all good|はい|ええ|うん|そうです|合ってます|あってます|合っています|大丈夫|オッケー|お願いします|保存)(?![a-z])`, 'i')
+/* ---------------- what the tutor says: the classroom follows it ---------------- */
+
+/** the phrase the tutor asks them to say to open the role-play (…say: "Let's do the massage salon role-play.") */
+export function suggestedPhrase(sentence: string): string | null {
+  // in quotes, or straight after "say": the transcript doesn't always have the quotes
+  const m = /["“「]([^"”」]*\brole[- ]?play\b[^"”」]*)["”」]/i.exec(sentence) ?? /\bsay(?:ing)?\s*:?\s*(let'?s do the [^.!?"”]{1,40}?\brole[- ]?play)\b/i.exec(sentence)
+  if (!m) return null
+  const p = m[1].replace(/[.!?。！]+$/, '').trim()
+  return /\blet'?s\b|\bcan we\b|\bi'?d like\b/i.test(p) && words(p).length <= 10 ? p : null
+}
+
+/** the tutor moves on to the voice command ("Now let's try a voice command. Say: Open the course.") */
+export const TUTOR_COMMAND = /\bvoice command|\bby voice\b|\bjust (?:say|ask)\b|\b(?:try|please) say(?:ing)?\s*:?\s*["“]?open the course/i
+/** the tutor opens the Q&A ("Do you have any questions about eigo?") */
+export const TUTOR_QA = /\bany (?:other )?questions? about (?:eigo|the (?:platform|lessons?|classroom|app|site)|how)\b|\bquestions? about eigo\b/i
+
+/** "Open the course" (or near it), said by the student; questions don't count */
+export function commandSaid(said: string): boolean {
+  const s = said.trim()
+  if (!s || /\?\s*$/.test(s) || /\b(?:what|how|why)\b/i.test(s)) return false
+  return saidIt(s, 'open the course') || /\b(?:open|start|show)\b[^.!?]{0,15}\bcourses?\b|コースを開/i.test(s)
+}
 
 /**
- * The About-you card is a conversation: "yes" saves it; a correction, or anything else they tell the tutor about
- * themselves, means the helper reads it again (and the line changes). Fillers ("um", "mm") are nothing.
+ * The role-play phrase: which of its words they've said, and whether they've said all of it (one word may be
+ * missed in a longer phrase; "role play" and "roleplay" count as "role-play"). Only the whole phrase opens it.
  */
-export function cardReply(said: string): 'fix' | 'yes' | null {
-  const s = said.trim()
-  if (!s) return null
-  if (CORRECTION.test(s)) return 'fix'
-  if (YES.test(s)) return 'yes'
-  const n = words(s).filter((w) => !/^(?:u+h*|u+m+|m+|h+m+|e+r+|a+h+|oh|ok|well|so|like)$/.test(w)).length
-  return n >= 3 || (hasJapanese(s) && s.length >= 4) ? 'fix' : null
+export function heardPhrase(said: string, phrase: string): { lit: boolean[]; whole: boolean } {
+  const norm = (x: string) => fold(x).replace(/\brole[\s-]?play\b/g, 'roleplay')
+  const lit = inOrder(norm(said), norm(phrase))
+  const n = lit.length
+  const hit = lit.filter(Boolean).length
+  return { lit, whole: n > 0 && hit >= n - (n >= 6 ? 1 : 0) && /\broleplay\b/.test(norm(said)) }
 }
 
-const START = /\b(?:let'?s (?:do|try|start|play|go)|(?:can|could|shall) we (?:do|try|start)|i'?d like to (?:do|try)|i want to (?:do|try)|start (?:it|the role[- ]?play))\b|はじめ|始め|やりたい|やります|やってみ/i
-const GO_YES = new RegExp(`${LEAD}(?:ok(?:ay)?|yes|yeah|sure|ready|alright|all right|great|はい|ええ|うん|お願いします|オッケー)(?![a-z])`, 'i')
-
-/** the suggestion card: which of the phrase's words they've said, and whether that opens the role-play */
-export function heardPhrase(said: string, phrase: string): { lit: boolean[]; go: boolean } {
-  const lit = inOrder(fold(said), fold(phrase))
-  const s = said.trim()
-  const question = /\?\s*$|\b(?:what|how|which)\b/i.test(s)
-  const go = !!s && !question && (lit.filter(Boolean).length / Math.max(1, lit.length) >= 0.6 || START.test(s) || GO_YES.test(s) || /role[- ]?play|ロールプレイ/i.test(s))
-  return { lit, go }
-}
-
-/** the AI tutor starting the suggested scene ("Great, let's start the role-play."), statements only */
-export const TUTOR_STARTS = /\b(?:let'?s|let us|we'?ll|I'?ll)\s+(?:start|begin|do|get started with|jump into)\b[^.?!]*\b(?:role[- ]?play|scene)\b|\blet'?s (?:get started|begin)\b/i
-
-/* ---------------- the director ---------------- */
+/* ---------------- the director: only the time limits and fallbacks ---------------- */
 
 export type WelcomeSnap = {
   step: WelcomeStep
@@ -212,80 +200,37 @@ export type WelcomeSnap = {
   left: number
   /** seconds in this step */
   stepAge: number
-  facts: Facts
-  /** facts too vague to be useful yet */
-  thin: FactKey[]
-  /** the About-you card was answered (saved or closed), and how long ago */
-  cardDone: boolean
-  cardDoneAge: number
-  /** seconds since the last thing said or changed while the card is up */
-  cardIdle: number
-  /** the "bring the scene to an end" note was sent */
+  /** the tutor was reminded to suggest a role-play / to wrap the scene up */
+  suggestSent: boolean
   wrapSent: boolean
-  /** mission complete: the student has answered the tutor's "any questions?" and the tutor has replied */
-  answered: boolean
-  /** how long the tutor has been quiet (s) */
-  tutorQuiet: number
-  /** the tips: they've said "Can we just chat?" (free talk next) */
-  chatChosen?: boolean
+  /** the voice command: how long ago they said it (null = not yet) */
+  commandAge: number | null
 }
-export type WelcomeMove = { to: WelcomeStep } | { do: 'wrap' | 'endScene' | 'open' | 'skipCard' } | null
+export type WelcomeMove = { to: WelcomeStep; prompt?: boolean } | { do: 'promptSuggest' | 'open' | 'wrap' | 'endScene' } | null
 
 /** moves that tell the tutor something or change the screen wait for a gap between turns (not ending a scene) */
 export const waitsForGap = (m: NonNullable<WelcomeMove>) => !('do' in m && m.do === 'endScene')
 
-/** Where the call goes next (null = stay). The classroom calls it every second. */
+/** Where the call goes next when the tutor hasn't moved it on itself (null = stay). Called every second. */
 export function welcomeNext(s: WelcomeSnap): WelcomeMove {
   const A = WELCOME_AT
-  const n = factCount(s.facts)
   switch (s.step) {
     case 'about':
-      if (s.elapsed >= A.late) return { to: 'tips' }
-      if (s.elapsed >= A.cardMin && factsReady({ facts: s.facts, thin: s.thin })) return { to: 'card' }
-      if (s.elapsed >= A.cardBy) return { to: n ? 'card' : 'suggest' }
-      return null
-    case 'card':
-      if (s.elapsed >= A.late) return { to: 'tips' }
-      if (s.cardDone) return s.cardDoneAge >= A.savedHold ? { to: 'suggest' } : null
-      // no answer for a while (or far too long): it ends, clearly not saved
-      if (s.cardIdle >= A.cardIdle || s.stepAge >= A.cardMax) return { do: 'skipCard' }
-      return null
+      return s.elapsed >= A.suggestBy && !s.suggestSent ? { do: 'promptSuggest' } : null
     case 'suggest':
-      if (s.elapsed >= A.late) return { to: 'tips' }
       return s.stepAge >= A.autoOpen ? { do: 'open' } : null
     case 'roleplay':
       if (s.elapsed >= A.endScene) return { do: 'endScene' }
       if (s.elapsed >= A.wrapScene && !s.wrapSent) return { do: 'wrap' }
       return null
     case 'done':
-      if (s.left <= A.tipsLeft || s.stepAge >= A.tipsMax || (s.stepAge >= A.tipsMin && s.answered && s.tutorQuiet >= A.tipsQuiet)) return { to: 'tips' }
-      return null
-    case 'tips':
-      return s.chatChosen || s.left <= A.tipsEndLeft ? { to: 'free' } : null
-    case 'free':
+      return s.stepAge >= A.commandAfter || s.left <= A.commandLeft ? { to: 'command', prompt: true } : null
+    case 'command':
+      return (s.commandAge !== null && s.commandAge >= A.qaAfter) || s.stepAge >= A.commandMax || s.left <= A.qaLeft ? { to: 'qa' } : null
+    case 'qa':
       return null
   }
 }
 
 /** Joining (or rejoining after a refresh) part-way through: where to start. */
-export const welcomeStartStep = (elapsed: number): WelcomeStep => (elapsed < 80 ? 'about' : elapsed < 180 ? 'suggest' : 'free')
-
-/* ---------------- the tips, tried out ---------------- */
-
-export type Tip = 'course' | 'rp' | 'chat'
-/** the three things to say, in the order the tutor invites them */
-export const TIP_ORDER: Tip[] = ['course', 'rp', 'chat']
-export const TIP_PHRASES: Record<Tip, string> = { course: 'Open the course', rp: "Let's do a role-play", chat: 'Can we just chat?' }
-
-/** which of the three they just said (questions about them, "what's a course?", don't count) */
-export function tipSaid(said: string): Tip | null {
-  const s = said.trim()
-  if (!s || /\?\s*$/.test(s) && !/\b(?:can|could) we (?:just )?(?:chat|talk)\b/i.test(s)) return null
-  if (/\b(?:what|how|why)\b/i.test(s)) return null
-  if (/\bjust (?:chat|talk)\b|\bfree ?talk\b|\bchat (?:instead|freely)\b|フリートーク|雑談|話(?:そう|したい)/i.test(s)) return 'chat'
-  if (/\brole[- ]?plays?\b|ロールプレイ/i.test(s)) return 'rp'
-  if (/\b(?:open|start|do|try|see|show)\b[^.!?]{0,20}\b(?:courses?|lessons?)\b|\bcourses?\b|コース/i.test(s)) return 'course'
-  return null
-}
-/** the next one to invite them to try (null: all done) */
-export const nextTip = (tried: Tip[]): Tip | null => TIP_ORDER.find((x) => !tried.includes(x)) ?? null
+export const welcomeStartStep = (elapsed: number): WelcomeStep => (elapsed < 150 ? 'about' : elapsed < 240 ? 'command' : 'qa')

@@ -1,6 +1,6 @@
-import { FALLBACK_PICK, WELCOME_AT, nextTip, tipSaid, cardReply, factsReady, heardPhrase, mergeAboutMe, quoteIsTheirs, sameFact, stillToAsk, validateWelcome, voicePhrase, waitsForGap, welcomeNext, welcomeStartStep, type WelcomeSnap } from '@/lib/classroom/welcome'
+import { FALLBACK_PICK, TUTOR_COMMAND, TUTOR_QA, WELCOME_AT, commandSaid, factsReady, heardPhrase, mergeAboutMe, quoteIsTheirs, sameFact, stillToAsk, suggestedPhrase, validateWelcome, voicePhrase, waitsForGap, welcomeNext, welcomeStartStep, type WelcomeSnap } from '@/lib/classroom/welcome'
 import { SCENES, roleplayInstruction, roleplayInstructionParts } from '@/lib/roleplay'
-import { LEVEL_RULES, normalizeSettings, settingsToRules } from '@/lib/ai-tutor/settings'
+import { BEGINNER_JA, LEVEL_RULES, normalizeSettings, settingsToRules } from '@/lib/ai-tutor/settings'
 let bad = 0
 const ok = (n: string, c: boolean, x: unknown = '') => { console.log((c ? 'ok   ' : 'FAIL ') + n + (c ? '' : '  -> ' + JSON.stringify(x))); if (!c) bad++ }
 
@@ -49,53 +49,38 @@ ok('saving twice adds nothing', mergeAboutMe(mergeAboutMe('I love dogs.', f), f)
 const long = 'x'.repeat(590)
 ok('never over 600, never cuts theirs', mergeAboutMe(long, f).length <= 600 && mergeAboutMe(long, f).startsWith(long))
 
-/* ---- what they say to the cards ---- */
-for (const s of ["Yes, that's right", 'yeah', 'はい、合ってます', 'Looks good!', 'OK']) ok(`card: "${s}" saves`, cardReply(s) === 'yes')
-for (const s of ['Actually, I work in marketing', "No, I'm not a nurse", '仕事は違います', 'I learn English to talk to new people. And my goal is to make friends']) ok(`card: "${s}" corrects`, cardReply(s) === 'fix')
-for (const s of ['Hmm', 'uh, mm', '']) ok(`card: "${s}" does nothing`, cardReply(s) === null)
-const phrase = voicePhrase('café')
-ok('the phrase', phrase === "Let's do the café role-play" && voicePhrase('') === "Let's do the role-play")
-const h1 = heardPhrase("let's do the cafe", phrase)
-ok('words light up as they are said (accents ignored)', h1.lit.slice(0, 4).every(Boolean) && !h1.lit[4] && h1.go, h1)
-ok('the whole phrase opens it', heardPhrase("Let's do the café role-play", phrase).go)
-ok('"OK" / "はい" opens it', heardPhrase('OK!', phrase).go && heardPhrase('はい、お願いします', phrase).go)
-ok('"I\'m not sure" does not', !heardPhrase("I'm not sure", phrase).go)
-ok('a question does not', !heardPhrase('What is a role-play?', phrase).go)
+/* ---- what the tutor says: the classroom follows it ---- */
+ok('the phrase the tutor teaches, in quotes', suggestedPhrase('It matches your work. Please say: "Let\'s do the massage salon role-play."') === "Let's do the massage salon role-play")
+ok('…or without quotes', suggestedPhrase("So please say: Let's do the hotel role-play.") === "Let's do the hotel role-play")
+ok('no phrase, no card', suggestedPhrase('Do you like role-plays?') === null && suggestedPhrase('We did a "role-play" last time.') === null)
+ok('the tutor moving on to the voice command', TUTOR_COMMAND.test('Now let\'s try a voice command. In your lessons, just say "Open the course".'))
+ok('the tutor opening the Q&A', TUTOR_QA.test('Do you have any questions about eigo?') && !TUTOR_QA.test('Any questions about the role-play?'))
+for (const s2 of ['Open the course', 'open the course please', 'コースを開いて']) ok(`command: "${s2}"`, commandSaid(s2))
+for (const s2 of ['What is a course?', 'I like coffee', '']) ok(`not a command: "${s2}"`, !commandSaid(s2))
+const phrase = "Let's do the massage salon role-play"
+ok('the phrase: words light up as they are said, but half of it opens nothing', heardPhrase("let's do the massage", phrase).lit.slice(0, 4).every(Boolean) && !heardPhrase("let's do the massage", phrase).whole)
+ok('the whole phrase opens it ("role play" / "roleplay" both count)', heardPhrase("Let's do the massage salon role play", phrase).whole && heardPhrase("let's do the massage salon roleplay", phrase).whole)
+ok('one word missed in a long phrase is fine', heardPhrase("Let's do massage salon role-play", phrase).whole)
+ok('"OK" or "let\'s do it" no longer opens it', !heardPhrase('OK', phrase).whole && !heardPhrase("let's do it", phrase).whole)
 
-/* ---- the director ---- */
-const snap = (o: Partial<WelcomeSnap>): WelcomeSnap => ({ step: 'about', elapsed: 30, left: 270, stepAge: 10, facts: {}, thin: [], cardDone: false, cardDoneAge: 0, cardIdle: 0, wrapSent: false, answered: false, tutorQuiet: 0, ...o })
+/* ---- the director: only time limits and fallbacks (the tutor moves it on) ---- */
+const snap = (o: Partial<WelcomeSnap>): WelcomeSnap => ({ step: 'about', elapsed: 30, left: 270, stepAge: 10, suggestSent: false, wrapSent: false, commandAge: null, ...o })
 const to = (o: Partial<WelcomeSnap>) => JSON.stringify(welcomeNext(snap(o)))
-const four = { job: 'a', why: 'b', likes: 'd' }
-ok('about: waits while there is little to show', welcomeNext(snap({ facts: { job: 'x' } })) === null)
-ok('about: never before 0:45, even with everything', welcomeNext(snap({ elapsed: 40, facts: four })) === null)
-ok('about: all three, none vague, after 0:45 → the card', to({ elapsed: WELCOME_AT.cardMin, facts: four }) === '{"to":"card"}')
-ok('about: a vague fact keeps the tutor asking', welcomeNext(snap({ elapsed: 60, facts: four, thin: ['why'] })) === null)
-ok('about: by 1:25 the card with what there is', to({ elapsed: WELCOME_AT.cardBy, facts: { job: 'a' }, thin: ['job'] }) === '{"to":"card"}')
-ok('about: by 1:25 with nothing, straight to the role-play', to({ elapsed: WELCOME_AT.cardBy }) === '{"to":"suggest"}')
-ok('card: stays up while they talk (only idle time counts)', welcomeNext(snap({ step: 'card', stepAge: 40, cardIdle: 5 })) === null)
-ok('card: idle for 20 s → ends, not saved', to({ step: 'card', stepAge: 30, cardIdle: WELCOME_AT.cardIdle }) === '{"do":"skipCard"}')
-ok('card: never longer than 75 s', to({ step: 'card', stepAge: WELCOME_AT.cardMax, cardIdle: 1 }) === '{"do":"skipCard"}')
-ok('card: saved or not, it shows how it ended, then the role-play', welcomeNext(snap({ step: 'card', cardDone: true, cardDoneAge: 1 })) === null && to({ step: 'card', cardDone: true, cardDoneAge: WELCOME_AT.savedHold }) === '{"to":"suggest"}')
-ok('suggest: opens by itself after 25 s', to({ step: 'suggest', stepAge: WELCOME_AT.autoOpen }) === '{"do":"open"}' && welcomeNext(snap({ step: 'suggest', stepAge: 20 })) === null)
-ok('roleplay: asks the tutor to end it near 3:00, once', to({ step: 'roleplay', elapsed: WELCOME_AT.wrapScene }) === '{"do":"wrap"}' && welcomeNext(snap({ step: 'roleplay', elapsed: WELCOME_AT.wrapScene + 5, wrapSent: true })) === null)
-ok('roleplay: ends it at 3:20', to({ step: 'roleplay', elapsed: WELCOME_AT.endScene, wrapSent: true }) === '{"do":"endScene"}')
-ok('done: never quickly (at least 10 s), and not while the tutor is still answering', welcomeNext(snap({ step: 'done', stepAge: 8, answered: true, tutorQuiet: 4 })) === null && welcomeNext(snap({ step: 'done', stepAge: 12, answered: true, tutorQuiet: 1 })) === null)
-ok('done: waits for their answer to "any questions?"', welcomeNext(snap({ step: 'done', stepAge: 30, answered: false, tutorQuiet: 10 })) === null)
-ok('done: answered, the tutor replied, a pause → the tips', to({ step: 'done', stepAge: 12, answered: true, tutorQuiet: 3 }) === '{"to":"tips"}')
-ok('done: at the latest after 40 s, or with 45 s left', to({ step: 'done', stepAge: 40 }) === '{"to":"tips"}' && to({ step: 'done', stepAge: 2, left: 40 }) === '{"to":"tips"}')
-ok('tips: stays while they try the phrases', welcomeNext(snap({ step: 'tips', stepAge: 50, left: 60 })) === null)
-ok('tips: "Can we just chat?" → free talk', to({ step: 'tips', stepAge: 10, chatChosen: true }) === '{"to":"free"}')
-ok('tips: or with 25 s left', to({ step: 'tips', stepAge: 10, left: WELCOME_AT.tipsEndLeft }) === '{"to":"free"}')
-for (const [s2, want] of [['Open the course', 'course'], ["Let's do a course", 'course'], ['コースを開いて', 'course'], ["Let's do a role-play", 'rp'], ['ロールプレイ', 'rp'], ['Can we just chat?', 'chat'], ['フリートークがいい', 'chat'], ['What is a course?', null], ['Do you like role-plays?', null], ['I like coffee', null]] as const)
-  ok(`tips: "${s2}" → ${want}`, tipSaid(s2) === want, tipSaid(s2))
-ok('tips: the next one to invite', nextTip([]) === 'course' && nextTip(['course']) === 'rp' && nextTip(['rp', 'course']) === 'chat' && nextTip(['course', 'rp', 'chat']) === null)
-ok('very late: skip to the tips', to({ step: 'suggest', elapsed: WELCOME_AT.late }) === '{"to":"tips"}' && to({ step: 'about', elapsed: WELCOME_AT.late }) === '{"to":"tips"}')
-ok('free: stays', welcomeNext(snap({ step: 'free' })) === null)
-ok('everything waits for a gap between turns, except ending a scene', waitsForGap({ to: 'card' }) && waitsForGap({ do: 'open' }) && !waitsForGap({ do: 'endScene' }))
-ok('joining part-way through', welcomeStartStep(0) === 'about' && welcomeStartStep(120) === 'suggest' && welcomeStartStep(230) === 'free')
+ok('about: the tutor leads; nothing from the classroom', welcomeNext(snap({ elapsed: 90 })) === null)
+ok('about: no role-play by 1:45 → one reminder', to({ elapsed: WELCOME_AT.suggestBy }) === '{"do":"promptSuggest"}' && welcomeNext(snap({ elapsed: 120, suggestSent: true })) === null)
+ok('suggest: opens by itself after 30 s', to({ step: 'suggest', stepAge: WELCOME_AT.autoOpen }) === '{"do":"open"}' && welcomeNext(snap({ step: 'suggest', stepAge: 20 })) === null)
+ok('roleplay: asked to wrap up at 3:15, once; ended at 3:45', to({ step: 'roleplay', elapsed: WELCOME_AT.wrapScene }) === '{"do":"wrap"}' && welcomeNext(snap({ step: 'roleplay', elapsed: 200, wrapSent: true })) === null && to({ step: 'roleplay', elapsed: WELCOME_AT.endScene, wrapSent: true }) === '{"do":"endScene"}')
+ok('done: the tutor moves on itself; a reminder only after 45 s or with 70 s left', welcomeNext(snap({ step: 'done', stepAge: 30 })) === null && to({ step: 'done', stepAge: 45 }) === '{"to":"command","prompt":true}' && to({ step: 'done', stepAge: 5, left: 70 }) === '{"to":"command","prompt":true}')
+ok('command: Q&A 20 s after they said it, or at the latest', welcomeNext(snap({ step: 'command', stepAge: 15, commandAge: 10 })) === null && to({ step: 'command', commandAge: 20 }) === '{"to":"qa"}' && to({ step: 'command', stepAge: 50 }) === '{"to":"qa"}' && to({ step: 'command', left: 40 }) === '{"to":"qa"}')
+ok('qa: until the goodbye', welcomeNext(snap({ step: 'qa', left: 10 })) === null)
+ok('everything waits for a gap between turns, except ending a scene', waitsForGap({ to: 'command' }) && waitsForGap({ do: 'open' }) && !waitsForGap({ do: 'endScene' }))
+ok('joining part-way through', welcomeStartStep(0) === 'about' && welcomeStartStep(200) === 'command' && welcomeStartStep(260) === 'qa')
+
+/* ---- the welcome brief: English only, the plan, real corrections ---- */
 
 /* ---- their English level ---- */
 ok('level: kept when valid, empty otherwise', normalizeSettings({ level: 'starter' }).level === 'starter' && normalizeSettings({ level: 'genius' }).level === '' && normalizeSettings({}).level === '')
+ok('beginners: English, Japanese only if they ask', /only if they ask/.test(BEGINNER_JA) && /Never say things twice in two languages/.test(BEGINNER_JA))
 ok('level: the first rule for the tutor', settingsToRules(normalizeSettings({ level: 'starter' }))[0] === LEVEL_RULES.starter && !settingsToRules(normalizeSettings({})).some((r) => Object.values(LEVEL_RULES).includes(r)))
 
 /* ---- role-plays: the tutor sets the scene first; every start note fits GPT-Live's 500-token limit ---- */

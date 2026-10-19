@@ -36,6 +36,7 @@ export async function run(join: any) {
     if (url.endsWith('/ai-welcome')) {
       const b = JSON.parse(init.body)
       if (b.op === 'about') return new Response(JSON.stringify((typeof g.welcomeAbout === 'function' ? g.welcomeAbout(b) : g.welcomeAbout) ?? { facts: {}, pick: null }))
+      if (b.op === 'scenes') return new Response(JSON.stringify({ scenes: (g.RP_SCENES ?? []).map((x: any) => ({ id: x.id, en: x.title.en, ja: x.title.ja })) }))
       if (b.op === 'scene') { const sc = (g.RP_SCENES ?? []).find((x: any) => x.id === b.sceneId); return new Response(JSON.stringify(sc ? { scene: sc } : { error: 'x' }), { status: sc ? 200 : 404 }) }
       if (b.op === 'save') return new Response(JSON.stringify({ aboutMe: 'saved' }), { status: g.welcomeSaveStatus ?? 200 })
       if (b.op === 'record') return new Response(JSON.stringify({ cleared: 1 }))

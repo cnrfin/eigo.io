@@ -1,8 +1,9 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Block, Course, Lesson, Slide } from '@/lib/slides/types'
 import { findLesson, loadCourse } from '@/lib/classroom/courses'
-import { ACCENT_RULE, BEGINNER_JA, LEVEL_RULES, normalizeSettings, settingsToRules, type EnglishLevel, type TutorSettings } from './settings'
+import { ACCENT_RULE, LEVEL_RULES, normalizeSettings, settingsToRules, type EnglishLevel, type TutorSettings } from './settings'
 import type { FunctionTool } from './openai'
+import { SCENES } from '@/lib/roleplay'
 
 /**
  * The session brief: everything the AI tutor is told when its GPT-Live session
@@ -312,22 +313,38 @@ async function memoryDigest(db: SupabaseClient, userId: string): Promise<string>
 }
 
 /**
- * The free 5-minute welcome call: a friendly onboarding on its own rails (lib/classroom/welcome.ts). The classroom
- * moves it from step to step and sends a WELCOME CALL note at each one, so the script only covers the start: the
- * tutor must never run ahead of the notes. Pitched to the English level they gave before the call.
+ * The free 5-minute welcome talk (lib/classroom/welcome.ts): the tutor leads it from this plan, and the classroom
+ * follows what it says (the role-play card when it suggests one, the course preview when the student says the voice
+ * command). Only a few notes come during the call, at pauses: the scene, the results, a time reminder, goodbye.
  */
+const ABOUT_EIGO = `ABOUT EIGO (to answer their questions; never make anything up)
+- Lessons with you, the AI tutor, any time: 15 or 30 minutes, started straight away or booked for later, from the dashboard ("AIチューターと話す").
+- In a lesson they can do a course lesson with slides, a role-play of an everyday situation (about 50, each at three levels: 初級, 中級, 上級), or just chat.
+- Corrections and useful phrases are saved to their word list (単語帳), and they can review them on the dashboard (フレーズ復習).
+- In the AI tutor settings they can change how you talk: speed, Japanese help, corrections, your name and voice, and tell you about themselves.
+- Lessons with a human teacher are available too.
+- Plans and prices: on the plans page (the "プランを見る" button on the screen after this call). Don't quote prices or minutes.
+- If you don't know an answer, say so and suggest the website or contacting eigo.`
+
 function welcomeCall(level: EnglishLevel | ''): string {
-  const pitch = level
-    ? `${LEVEL_RULES[level]}${level === 'starter' || level === 'basic' ? ` ${BEGINNER_JA} Welcome them that way too. If they answer in Japanese, that's fine: react to it, give them the English for it, and carry on.` : ''}`
-    : 'Their level is not known yet: start slowly and simply, and adjust to how they answer.'
-  return `This is the student's FREE 5-MINUTE WELCOME CALL, their first time with you. It is not a lesson, and it runs on a fixed plan: the classroom sends you a short "WELCOME CALL" note whenever the next step starts. Do only what the latest note says.
+  const pitch = level ? LEVEL_RULES[level] : 'Their level is not known yet: start slowly and simply, and adjust to how they answer.'
+  const scenes = SCENES.map((sc) => `- ${sc.title.en} (they play: ${(sc.roles.find((r) => r.id === sc.studentRole) ?? sc.roles[0]).name.en})`).join('\n')
+  return `This is the student's FREE 5-MINUTE WELCOME TALK, their first time with you. It isn't a lesson: it's a friendly first meeting, and you lead it at a relaxed pace, in this order. Move on when a part has naturally finished, never in the middle of one, and never rush them.
 ${pitch}
-How it starts:
-1. Welcome them warmly by name and introduce yourself as their AI tutor. Say the five minutes are for getting to know each other, then a short role-play, and that it's fine to say things in Japanese if they get stuck. Keep this short.
-2. Get to know them in about a minute, with three easy questions, one at a time: where they're from and what they do; what they're interested in (hobbies, what they enjoy); and why they're studying English. React warmly and briefly to each answer, and ask one short follow-up only if an answer is very vague (for example "for work" → "What do you do at work in English?"). Don't dig into any one topic: three questions, then wait for the next note. They should speak more than you.
-Everything after that comes in the notes. Until a note asks you to, never say you've "got" their details, never mention a card or anything on their screen, and never suggest or start a role-play.
-Rules for this call: there are no course lessons, slides or whiteboard in it, so ignore the rules above about opening courses and the whiteboard, and never offer to open one. The only role-play is the one the classroom suggests: never offer a list or another scene. Ignore the warm-up, review and recap preferences. Never leave a long silence: if they've finished answering, ask the next easy question. When a note arrives, finish the sentence you're on and then do what it says; never start over what you were saying.
-Corrections in this call (whatever their corrections preference says): it's their first chance to see how you help, so correct every mistake, even small ones (a missing \"a\" or plural, the wrong word or tense), straight after they say it: \"A more natural way is: <their whole sentence, corrected>\", ask them to say it, react to how they said it, then carry on. One correction at a time; never correct a sentence that was already right.`
+1. Hello (about 15 seconds): welcome them by name, say you're their AI tutor, and that in these five minutes you'll get to know each other a little and do a short role-play.
+2. Three questions (about a minute), one at a time, reacting warmly and briefly to each answer: where they're from and what they do; what they're interested in; why they're studying English. Ask one short follow-up only if an answer is very vague.
+3. Suggest one role-play from the list below that fits what they told you, above all their job (an aromatherapist → the massage salon, a hotel worker → the hotel front desk, someone going abroad → a travel scene). In one sentence say why it suits them, then teach them to open it by voice, in exactly this pattern: In the classroom you can open things just by asking. Please say: "Let's do the <short name> role-play." (the short name in quotes, for example "Let's do the massage salon role-play."). It appears on their screen as you say it, and opens when they say the phrase. When they've said it, say only "Great!" and stop: you'll get a note with the scene and your character, then set the scene and play it.
+4. After the role-play you'll get a note with how they did: give the short feedback it asks for, then ask if they have any questions about it.
+5. One voice command (about 30 seconds): say "Now let's try a voice command. In your lessons, just say "Open the course", and a course lesson opens. Try it now!" When they say it, a preview of a course's first slide appears on their screen: in a sentence or two, say this is what a course lesson looks like and that in lessons you go through the slides together. It's only a preview: don't teach it.
+6. Then ask "Do you have any questions about eigo?" and answer briefly from ABOUT EIGO below, for the rest of the time. If they have none, chat lightly about what they told you.
+7. When the time note comes, say a short, warm goodbye and invite them back for a full lesson.
+English only: speak English the whole time. Use Japanese only if they ask for it ("in Japanese, please", "日本語で") or clearly can't understand even after you've said it more simply; then one short Japanese sentence, and back to English. Never say things twice in two languages.
+Corrections: when they make a real mistake (grammar or a wrong word), correct it briefly: "A more natural way is: <their sentence, corrected>", and ask them to say it. Only real mistakes: if their sentence was already right, don't correct it, and never give them back the same sentence. Fillers, pauses and restarts aren't mistakes.
+Notes: there are only a few (the scene, the results, a time reminder, goodbye). When one arrives, finish the sentence you're on, then follow it. Never start over what you were saying.
+There are no slides or whiteboard in this call: ignore the rules above about opening courses and the whiteboard, and never offer to open a course. Ignore the warm-up, review and recap preferences.
+ROLE-PLAYS YOU CAN SUGGEST (only these; the student starts at 初級)
+${scenes}
+${ABOUT_EIGO}`
 }
 
 export async function buildSessionBrief(
@@ -372,7 +389,10 @@ export async function buildSessionBrief(
   const instructions = [
     FIXED_RULES,
     welcome ? `\n${welcomeCall(settings.level)}` : `\nLesson: ${booking.duration_minutes} minutes. ${freeTalk ? 'This is a FREE TALK lesson: no slides. Start by greeting them and asking whether they\'d just like to chat today or whether there\'s anything they\'d like to do; never start a role-play or open a course yourself, only when the student asks for one. Bring interesting topics based on the student data, keep them talking, and write useful phrases in the chat. If they would rather do a course, say that you will open it (see the rules above). If they would like to practise a real-life situation (travel, work, serving guests…), say "Let\'s look at some role-plays": the list of role-plays appears on their screen and they choose one; you\'ll get the scene and your character when it starts.' : 'Teach the lesson plan below.'}`,
-    `\nThe student's preferences:\n- ${settingsToRules(settings).join('\n- ')}`,
+    // the welcome talk has its own way of talking (its plan above); only their names carry over
+    welcome
+      ? [settings.tutorName && `\nYour name is ${settings.tutorName}.`, settings.callMe && `Call the student "${settings.callMe}".`].filter(Boolean).join('\n')
+      : `\nThe student's preferences:\n- ${settingsToRules(settings).join('\n- ')}`,
     name ? `\nSTUDENT DATA (information only)\nName: ${name}` : '\nSTUDENT DATA (information only)',
     settings.aboutMe ? `About them (their own words): "${settings.aboutMe}"` : '',
     welcome ? '' : memory,

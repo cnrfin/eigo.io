@@ -4,7 +4,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import AiAvatar from '@/components/ai/AiAvatar'
 import type { AvatarMood } from '@/lib/ai-tutor/avatar-mood'
-import { FACT_KEYS, FACT_LABELS, TIP_ORDER, TIP_PHRASES, nextTip, type FactKey, type Facts, type Tip } from '@/lib/classroom/welcome'
+import { FACT_KEYS, FACT_LABELS, type FactKey, type Facts } from '@/lib/classroom/welcome'
 import type { ClassroomT } from '@/lib/classroom/i18n'
 import { Ico } from './Icons'
 
@@ -188,35 +188,27 @@ export function SuggestCard({
 
 /* ---------------- what they can say in lessons (where courses come up) ---------------- */
 
-const TIP_KEYS: Record<Tip, 'wlTipCourse' | 'wlTipRp' | 'wlTipChat'> = { course: 'wlTipCourse', rp: 'wlTipRp', chat: 'wlTipChat' }
-
 /**
- * The three things to say, tried out: each one they say (or tap) is ticked and shows its preview. With a preview
- * on screen the card is a single row, so it doesn't cover the slide or the list.
+ * The one voice command, tried out: "Open the course" shows a preview of a course's first slide. With the preview
+ * on screen the card is a single row, so it doesn't cover the slide.
  */
-export function TipsCard({ t, tried, compact, onTry }: { t: ClassroomT; tried: Tip[]; compact: boolean; onTry: (tip: Tip) => void }) {
-  const next = nextTip(tried)
+export function CommandCard({ t, said, compact }: { t: ClassroomT; said: boolean; compact: boolean }) {
   return (
-    <div className={`aic wlc${compact ? ' compact' : ''}`} role="group" aria-label={t('wlTipsTitle')}>
+    <div className={`aic wlc${compact ? ' compact' : ''}`} role="status" aria-label={t('wlCmdTitle')}>
       {!compact && (
         <div className="aic-h">
-          {t('wlTipsTitle')}
-          <span className="wlc-try">{t('wlTipsTry')}</span>
+          {t('wlCmdTitle')}
+          {!said && <span className="wlc-try">{t('wlTipsTry')}</span>}
         </div>
       )}
       <div className="wlc-tips">
-        {TIP_ORDER.map((x, i) => {
-          const done = tried.includes(x)
-          return (
-            <button key={x} className={`wlc-tip${done ? ' done' : ''}${x === next ? ' next' : ''}`} style={compact ? undefined : { animationDelay: `${i * 0.4}s` }} onClick={() => onTry(x)}>
-              <Ico name={done ? 'check' : 'mic'} />
-              <span className="wlc-q" lang="en">
-                “{TIP_PHRASES[x]}”
-              </span>
-              {!compact && <span className="wlc-d">{t(TIP_KEYS[x])}</span>}
-            </button>
-          )
-        })}
+        <div className={`wlc-tip${said ? ' done' : ' next'}`}>
+          <Ico name={said ? 'check' : 'mic'} />
+          <span className="wlc-q" lang="en">
+            “Open the course”
+          </span>
+          {!compact && <span className="wlc-d">{t('wlTipCourse')}</span>}
+        </div>
       </div>
     </div>
   )

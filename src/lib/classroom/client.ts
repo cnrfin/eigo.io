@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef } from 'react'
 import type { Card } from '@/lib/ai-tutor/cards'
 import type { ScreenAction } from '@/lib/ai-tutor/actions'
 import type { Scene } from '@/lib/roleplay/types'
-import type { FactKey, Facts, FactsRead, WelcomePick } from '@/lib/classroom/welcome'
+import type { Facts, FactsRead, WelcomePick } from '@/lib/classroom/welcome'
 import type { SceneSummary } from '@/lib/roleplay/types'
 import type { RealtimeChannel } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
@@ -233,20 +233,8 @@ export type StudentAction =
   | WelcomeAction
 
 export type WelcomeAction =
-  /** getting to know them: what's still missing or too vague (the server words the note) */
-  | { kind: 'welcome'; step: 'ask'; missing: FactKey[]; thin: FactKey[] }
-  | { kind: 'welcome'; step: 'card'; facts: Facts }
-  /** the card's lines changed after what they said */
-  | { kind: 'welcome'; step: 'card_changed'; facts: Facts; changed: FactKey[] }
-  | { kind: 'welcome'; step: 'suggest'; sceneId: string; phrase: string; reason: string; saved: boolean }
-  | { kind: 'welcome'; step: 'wrap' }
-  /** the voice commands, tried out: the card is up */
-  | { kind: 'welcome'; step: 'tips' }
-  /** they said one: its preview is on screen; next = the one to invite next */
-  | { kind: 'welcome'; step: 'tip'; what: 'course' | 'rp'; next: 'course' | 'rp' | 'chat' | null; courseTitle?: string }
-  /** free talk until the goodbye (chose = they said "Can we just chat?"); first practise one phrase from the scene
-   *  (one of its hint-3 sentences, checked on the server) */
-  | { kind: 'welcome'; step: 'free'; chose: boolean; sceneId?: string; phrase?: string }
+  /** the welcome talk's time reminders: suggest the role-play now / wrap the scene up / move on to the voice command */
+  { kind: 'welcome'; step: 'suggest' | 'wrap' | 'command' }
 
 /* ---------- the welcome call (lib/classroom/welcome.ts, /api/classroom/[id]/ai-welcome) ---------- */
 async function welcomeCall<T>(bookingId: string, body: Record<string, unknown>, fallback: T): Promise<T> {
@@ -263,6 +251,8 @@ export const welcomeAbout = (bookingId: string, sessionId: string, lines: { from
 /** confirmed: added to About me (null = not saved) */
 export const welcomeSave = (bookingId: string, facts: Facts) =>
   welcomeCall<{ aboutMe?: string } | null>(bookingId, { op: 'save', facts }, null).then((r) => (r && typeof r.aboutMe === 'string' ? r.aboutMe : null))
+export const welcomeScenes = (bookingId: string) =>
+  welcomeCall<{ scenes?: { id: string; en: string; ja: string }[] }>(bookingId, { op: 'scenes' }, {}).then((r) => r.scenes ?? [])
 export const welcomeScene = (bookingId: string, sceneId: string) =>
   welcomeCall<{ scene?: Scene }>(bookingId, { op: 'scene', sceneId }, {}).then((r) => r.scene ?? null)
 export const welcomeRecord = (bookingId: string, sceneId: string) =>
