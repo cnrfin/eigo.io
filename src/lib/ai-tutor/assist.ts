@@ -20,7 +20,7 @@ function openai() {
   }
   return _openai
 }
-const MODEL = process.env.AI_TUTOR_ASSIST_MODEL || process.env.AI_TUTOR_TURN_MODEL || 'gpt-5.4-nano'
+const MODEL = process.env.AI_TUTOR_ASSIST_MODEL || process.env.AI_TUTOR_TURN_MODEL || 'gpt-6-luna'
 
 const SYSTEM = `You watch a live one-to-one English lesson between an AI tutor and a Japanese adult learner. Look only at the tutor's LAST turn and the student's turn just before it.
 Return JSON: {"card": null} or one card:

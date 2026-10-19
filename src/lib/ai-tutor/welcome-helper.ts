@@ -16,7 +16,7 @@ function openai() {
   }
   return _openai
 }
-const MODEL = process.env.AI_TUTOR_ASSIST_MODEL || process.env.AI_TUTOR_TURN_MODEL || 'gpt-5.4-nano'
+const MODEL = process.env.AI_TUTOR_ASSIST_MODEL || process.env.AI_TUTOR_TURN_MODEL || 'gpt-6-luna'
 
 const SYSTEM = `You read the start of a friendly welcome call between an AI English tutor and a Japanese adult learner. Pick out what the STUDENT has said about themselves (for their profile), and choose the one role-play from the list that will be most useful to them.
 Return JSON: {"facts": {"job": {"value": "...", "quote": "...", "vague": false}, "likes": {...}, "why": {...}}, "scene": {"id": "..."}}

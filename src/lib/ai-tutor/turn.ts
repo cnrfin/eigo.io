@@ -22,7 +22,7 @@ function openai() {
   }
   return _openai
 }
-const MODEL = process.env.AI_TUTOR_TURN_MODEL || 'gpt-5.4-nano'
+const MODEL = process.env.AI_TUTOR_TURN_MODEL || 'gpt-6-luna'
 
 export type SlideMove = { move: 'stay' | 'next' | 'back' | 'return'; slide: number | null }
 
@@ -143,13 +143,18 @@ export async function decideTicks(
       response_format: { type: 'json_object' as const },
       max_completion_tokens: 1200,
     }
+    // the least thinking the model takes: a tick is only "did they say this task?", and it's on the student's screen
     let c
-    try {
-      c = await openai().chat.completions.create({ ...base, reasoning_effort: 'low' } as never, { timeout: 7000, maxRetries: 0 })
-    } catch (e) {
-      if (!/reasoning|effort/i.test(e instanceof Error ? e.message : String(e))) throw e
-      c = await openai().chat.completions.create(base, { timeout: 7000, maxRetries: 0 })
+    for (const effort of ['minimal', 'low', null] as const) {
+      try {
+        c = await openai().chat.completions.create((effort ? { ...base, reasoning_effort: effort } : base) as never, { timeout: 7000, maxRetries: 0 })
+        break
+      } catch (e) {
+        // a model that doesn't take this setting: try the next one; anything else is a real failure
+        if (!/reasoning|effort/i.test(e instanceof Error ? e.message : String(e))) throw e
+      }
     }
+    if (!c) return []
     const raw = c.choices[0]?.message?.content ?? ''
     if (!raw.trim()) return []
     return validateTicks(JSON.parse(raw), open.map((t) => t.id), lines)
