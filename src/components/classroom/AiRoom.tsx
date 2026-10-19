@@ -15,15 +15,17 @@ import {
   saveAiTranscript,
   sendAiAction,
   startAiSession,
+  fetchCourse,
   welcomeAbout,
   welcomeRecord,
   welcomeSave,
   welcomeScene,
+  type LoadedCourse,
   type PanelCourse,
   type SlideRef,
   type StudentAction,
 } from '@/lib/classroom/client'
-import type { Lesson } from '@/lib/slides/types'
+import type { Lesson, Slide } from '@/lib/slides/types'
 import { useAudioLevel, useVolDot } from './audio'
 import AiAvatar from '@/components/ai/AiAvatar'
 import { faceForText, newMood } from '@/lib/ai-tutor/avatar-mood'
@@ -45,10 +47,13 @@ import {
   welcomeNext,
   welcomeStartStep,
   WELCOME_AT,
+  nextTip,
   stillToAsk,
+  tipSaid,
   waitsForGap,
   type FactKey,
   type Facts,
+  type Tip,
   type WelcomeMove,
   type WelcomePick,
   type WelcomeStep,
@@ -200,7 +205,9 @@ export default function AiRoom(props: Props) {
   const breakLine = useRef(false)
   /** when each side last said something (wall clock) */
   const lastSaid = useRef({ student: 0, tutor: 0 })
-  const speakIfSilent = useRef<(noteAt: number, still?: () => boolean) => void>(() => {})
+  const speakIfSilent = useRef<(noteAt: number, still?: () => boolean, wait?: number) => void>(() => {})
+  /** the AI tutor is putting a reply together (response.created … response.done): never ask it to speak then */
+  const responding = useRef(false)
   /** starts a role-play (set further down, once the panel exists) */
   const beginRoleplayRef = useRef<(scene: Scene, role: RoleId, level: LevelIndex) => void>(() => {})
   /**
@@ -405,6 +412,8 @@ export default function AiRoom(props: Props) {
   const cardFor = useRef<Line | null>(null)
   const showCard = useCallback(
     (c: ShownCard['card'], from?: number) => {
+      // the welcome call's suggestion and tips: the tutor says phrases to say ("you can say …"), never cards
+      if (wStepRef.current === 'suggest' || wStepRef.current === 'tips') return 0
       // a card that was still up gets saved as it goes (it was going to be saved anyway)
       const prev = shownRef.current?.card
       if (prev) saveTerm(prev.kind === 'correction' ? prev.now : prev.options[0].text, prev.kind === 'correction' ? prev.ja : prev.heard)
@@ -873,7 +882,8 @@ export default function AiRoom(props: Props) {
             void (booked ? aiRoleplayScene(booked.sceneId) : Promise.resolve(null)).then((scene) => {
               // the note asks it to greet (or carry on); if it then says nothing, ask it to speak
               void act({ kind: first ? 'start' : 'resume', slide: ref, ...(scene ? { roleplay: scene.title.en } : {}) }).then((ok) => {
-                if (ok && first) speakIfSilent.current(Date.now(), () => lastSaid.current.tutor === 0)
+                // the greeting: give it time to start by itself (asking too soon restarted it: "Hel- Hi Connor…")
+                if (ok && first) speakIfSilent.current(Date.now(), () => lastSaid.current.tutor === 0, 4000)
                 if (scene && booked) beginRoleplayRef.current(scene, scene.studentRole, booked.level)
               })
             })
@@ -893,6 +903,8 @@ export default function AiRoom(props: Props) {
           break
         case 'response.event': {
           const inner = ev.event as { type?: string; item?: { type?: string; name?: string; arguments?: string; call_id?: string } }
+          if (inner?.type === 'response.created') responding.current = true
+          if (inner?.type === 'response.done' || inner?.type === 'response.cancelled') responding.current = false
           if (inner?.type === 'response.output_item.done' && inner.item?.type === 'function_call' && inner.item.call_id) {
             const output = await runTool(inner.item.name ?? '', inner.item.arguments ?? '{}')
             sendEvent({ type: 'response.item.create', item: { type: 'function_call_output', call_id: inner.item.call_id, output } })
@@ -1080,20 +1092,20 @@ export default function AiRoom(props: Props) {
   // After a note that should make the AI tutor speak (the greeting, a new slide): if it hasn't started shortly
   // after, ask it to. Never over the student or while its voice is playing; at most twice.
   useEffect(() => {
-    speakIfSilent.current = (noteAt, still) => {
+    speakIfSilent.current = (noteAt, still, wait = 1500) => {
       let tries = 0
       const kick = () => {
         if (closing.current || wrapUp.current || statusRef.current !== 'live' || (still && !still())) return
         // it's talking, or the student has spoken (the tutor answers them as usual)
         if (lastSaid.current.tutor > noteAt || lastSaid.current.student > noteAt) return
-        if (speakingRef.current) {
+        if (speakingRef.current || responding.current) {
           if (++tries <= 4) setTimeout(kick, 1200) // its voice is still playing: look again shortly
           return
         }
         sendEvent({ type: 'response.create' })
         if (++tries <= 1) setTimeout(kick, 4000) // once more if it still says nothing
       }
-      setTimeout(kick, 1500)
+      setTimeout(kick, wait)
     }
   })
 
@@ -1339,6 +1351,9 @@ export default function AiRoom(props: Props) {
   const [wCleared, setWCleared] = useState<number | null>(null)
   const [wCheck, setWCheck] = useState(false)
   const [wNext, setWNext] = useState<NextUp[]>([])
+  /** the voice commands, tried out: which they've said, and the course preview on screen (lesson 1, slide 1) */
+  const [wTried, setWTried] = useState<Tip[]>([])
+  const [wPreview, setWPreview] = useState<{ loaded: LoadedCourse; slide: Slide; title: string } | null>(null)
   /** the welcome card on screen (they're the same card as corrections, so the AI tutor floats above them) */
   const wCard: 'about' | 'suggest' | 'tips' | null =
     !welcome || status !== 'live'
@@ -1451,7 +1466,7 @@ export default function AiRoom(props: Props) {
   const appRef = useRef<HTMLDivElement | null>(null)
   const slideBoxRef = useRef<HTMLDivElement | null>(null)
   const otherRef = useRef<HTMLDivElement | null>(null)
-  const showSlide = !freeTalk || props.whiteboard
+  const showSlide = !freeTalk || props.whiteboard || !!wPreview
   const rects = useRef(new Map<HTMLElement, Rect>())
   const place = useCallback((el: HTMLElement | null, r: Rect | null) => {
     if (!el) return
@@ -1469,8 +1484,11 @@ export default function AiRoom(props: Props) {
     const box = layoutRef.current
     if (!box) return
     // a card at the bottom (a correction, the welcome call's cards): the AI tutor floats above it
-    const card = !panelOn && !showSlide ? (Array.from(box.children).find((el) => el.classList.contains('aic')) as HTMLElement | undefined) : undefined
-    const res = computeAiLayout(box.clientWidth, box.clientHeight, { main: panelOn ? 'panel' : showSlide ? 'slide' : 'none', ratio: 3 / 4, card: card?.offsetHeight ?? 0 })
+    // (over a slide or the panel, the room is shortened by the card instead, so it covers nothing)
+    const card = Array.from(box.children).find((el) => el.classList.contains('aic')) as HTMLElement | undefined
+    const ch = card?.offsetHeight ?? 0
+    const main = panelOn ? 'panel' : showSlide ? 'slide' : 'none'
+    const res = computeAiLayout(box.clientWidth, main !== 'none' && ch ? Math.max(120, box.clientHeight - ch - 22) : box.clientHeight, { main, ratio: 3 / 4, card: main === 'none' ? ch : 0 })
     if (!res) return
     place(slideBoxRef.current, panelOn ? null : res.main)
     place(panelBoxRef.current, panelOn ? res.main : null)
@@ -1510,7 +1528,7 @@ export default function AiRoom(props: Props) {
 
   /* ---------- drawing + whiteboard (the student's own; the AI tutor can't see them) ---------- */
   const [tbOpen, setTbOpen] = useState(false)
-  const surface = props.whiteboard ? 'board' : (slide?.id ?? '')
+  const surface = props.whiteboard ? 'board' : ((wPreview?.slide ?? slide)?.id ?? '')
   const { closeLookup, setWhiteboard, whiteboard, ink } = props
   useEffect(() => {
     closeLookup()
@@ -1672,6 +1690,11 @@ export default function AiRoom(props: Props) {
   const wOpen = useRef<() => void>(() => {})
   const wSave = useRef<() => void>(() => {})
   const wAsk = useRef<() => void>(() => {})
+  const wTry = useRef<(tip: Tip) => void>(() => {})
+  const wTriedRef = useRef<Tip[]>([])
+  const wChat = useRef(false)
+  const wHeardTip = useRef('')
+  const wCourses = useRef<PanelCourse[] | null>(null)
   const setFacts = useCallback((f: Facts) => {
     wFactsRef.current = f
     wCardTouched.current = Date.now()
@@ -1765,7 +1788,12 @@ export default function AiRoom(props: Props) {
       wPending.current.clear()
       setWStep(to)
       // a welcome card takes the card's place: an older correction card doesn't come back after it
-      if (to === 'card' || to === 'suggest' || to === 'tips') setShown(null)
+      if (to === 'card' || to === 'suggest' || to === 'tips') {
+        // (a correction still up is saved as it goes, as when another card replaces it)
+        const prev = shownRef.current?.card
+        if (prev) saveTerm(prev.kind === 'correction' ? prev.now : prev.options[0].text, prev.kind === 'correction' ? prev.ja : prev.heard)
+        setShown(null)
+      }
       if (to === 'card') {
         wCardTouched.current = Date.now()
         void act({ kind: 'welcome', step: 'card', facts: wFactsRef.current }).then(spoken)
@@ -1799,20 +1827,80 @@ export default function AiRoom(props: Props) {
       }
       if (to === 'tips') {
         setPanel(null)
+        void act({ kind: 'welcome', step: 'tips' }).then(spoken)
+      }
+      if (to === 'free') {
+        // the previews go; free talk until the goodbye, first practising a phrase from the scene
+        setPanel(null)
+        setWPreview(null)
         // then practise one phrase from the scene (one of its full sentences: checked on the server)
         const cur = rpCur.current
-        // (the one most worth keeping; if they said them all well, the longest of the scene's sentences)
+        // (one worth keeping, a whole sentence rather than "Regular, please."; else the scene's longest sentence)
+        const full = (x: string) => wordsOf(x).length >= 4
         const phrase = cur
-          ? (phrasesToSave(cur.scene, cur.role, cur.level, missionRef.current.twisted, missionRef.current.done)[0]?.term ??
+          ? (phrasesToSave(cur.scene, cur.role, cur.level, missionRef.current.twisted, missionRef.current.done).find((p) => full(p.term))?.term ??
             tasksFor(roleOf(cur.scene, cur.role).levels[cur.level], missionRef.current.twisted)
               .map((x) => x.hints[2])
               .sort((a, b) => b.length - a.length)[0])
           : undefined
-        void act({ kind: 'welcome', step: 'tips', ...(cur && phrase ? { sceneId: cur.scene.id, phrase } : {}) }).then(spoken)
+        if (left > 30) void act({ kind: 'welcome', step: 'free', chose: wChat.current, ...(cur && phrase ? { sceneId: cur.scene.id, phrase } : {}) }).then(spoken)
       }
+    }
+    // the voice commands, tried out: each shows its preview (nothing can be started in this call)
+    wTry.current = (tip) => {
+      if (wStepRef.current !== 'tips') return
+      const first = !wTriedRef.current.includes(tip)
+      if (first) {
+        wTriedRef.current = [...wTriedRef.current, tip]
+        setWTried(wTriedRef.current)
+      }
+      const next = nextTip(wTriedRef.current)
+      if (tip === 'chat') {
+        wChat.current = true
+        return
+      }
+      if (tip === 'rp') {
+        setWPreview(null)
+        if (!rpList?.length) {
+          // (the welcome call's own scene, if the list can't be loaded)
+          const sc = wSceneRef.current
+          void aiRoleplays().then((l) =>
+            setRpList(
+              l.length
+                ? l
+                : sc
+                  ? [{ id: sc.id, category: sc.category, title: sc.title, summary: sc.summary, image: sc.image, role: roleOf(sc, sc.studentRole).name, otherRole: roleOf(sc, otherRole(sc.studentRole)).name, tasks: [], hasProp: !!sc.prop, cleared: wCleared ?? 0, next: Math.min(2, wCleared ?? 0) as LevelIndex }]
+                  : [],
+            ),
+          )
+        }
+        setPanel({ view: 'picker', mode: 'rp', rpSel: null, courseSel: null })
+        if (first) wPending.current.set('tip', { kind: 'welcome', step: 'tip', what: 'rp', next })
+        return
+      }
+      // a course: the first slide of a course's first lesson
+      setPanel(null)
+      void (async () => {
+        const list = wCourses.current ?? (wCourses.current = await aiCourses())
+        const c = list[Math.floor(Math.random() * list.length)]
+        const loaded = c ? await fetchCourse(info.bookingId, c.id) : null
+        const sl = loaded?.course.units[0]?.lessons[0]?.slides[0]
+        if (!c || !loaded || !sl || wStepRef.current !== 'tips') return
+        setWPreview({ loaded, slide: sl, title: lang === 'ja' ? c.titleJa : c.title })
+        if (first) wPending.current.set('tip', { kind: 'welcome', step: 'tip', what: 'course', next, courseTitle: c.title })
+      })()
     }
     welcomeHear.current = (said) => {
       const step = wStepRef.current
+      if (step === 'tips') {
+        const tip = tipSaid(said)
+        const key = `${lines.current.length}:${tip}`
+        if (tip && key !== wHeardTip.current) {
+          wHeardTip.current = key
+          wTry.current(tip)
+        }
+        return
+      }
       if (step === 'about') {
         // a moment after they stop, the helper looks at what they've said
         if (wAskTimer.current) clearTimeout(wAskTimer.current)
@@ -1883,8 +1971,10 @@ export default function AiRoom(props: Props) {
             cardDoneAge: (T - wAboutAt.current) / 1000,
             cardIdle: (T - Math.max(wStepAt.current, wCardTouched.current, lastSaid.current.student, speakingRef.current ? T : lastSaid.current.tutor)) / 1000,
             wrapSent: wWrapSent.current,
-            feedback: lastSaid.current.tutor > doneAt.current,
+            // they've answered "any questions?" (spoken since mission complete) and the tutor has replied
+            answered: lastSaid.current.student > doneAt.current && lastSaid.current.tutor > lastSaid.current.student,
             tutorQuiet: speakingRef.current ? 0 : (T - lastSaid.current.tutor) / 1000,
+            chatChosen: wChat.current,
           })
     if (!m) {
       wWaitAt.current = 0
@@ -2157,7 +2247,7 @@ export default function AiRoom(props: Props) {
   return (
     <div
       ref={appRef}
-      className={`app ai-lesson student${freeTalk ? ' no-course' : ''}${props.whiteboard ? ' wb' : ''}${props.prefs.cursors ? '' : ' no-cursors'}${tbOpen ? ' tb-open' : ''}${props.side ? ' side-open' : ''}`}
+      className={`app ai-lesson student${freeTalk ? ' no-course' : ''}${wPreview ? ' wl-preview' : ''}${props.whiteboard ? ' wb' : ''}${props.prefs.cursors ? '' : ' no-cursors'}${tbOpen ? ' tb-open' : ''}${props.side ? ' side-open' : ''}`}
     >
       <audio ref={audioEl} autoPlay playsInline />
       <div className={`ai-calling${calling ? '' : ' out'}`} role="status" aria-hidden={!calling}>
@@ -2170,7 +2260,7 @@ export default function AiRoom(props: Props) {
         </div>
         <div className="ttl">
           {!freeTalk && props.loaded && <span className="course">{props.loaded.course.title}</span>}
-          <span id="crumb">{welcome ? t('wlCrumb') : freeTalk ? t('aiFreeTalk') : lesson ? lesson.title : '…'}</span>
+          <span id="crumb">{wPreview ? `${wPreview.title} · ${t('wlPreview')}` : welcome ? t('wlCrumb') : freeTalk ? t('aiFreeTalk') : lesson ? lesson.title : '…'}</span>
         </div>
         <div className="spacer" />
         <div className="navwrap">
@@ -2272,10 +2362,10 @@ export default function AiRoom(props: Props) {
                 slideBoxRef.current = el
               }}
               className="slot slideBox tool-select"
-              slide={slide}
+              slide={wPreview?.slide ?? slide}
               mode="student"
-              assetBase={props.loaded?.assetBase ?? ''}
-              characters={props.loaded?.course.characters}
+              assetBase={wPreview ? wPreview.loaded.assetBase : (props.loaded?.assetBase ?? '')}
+              characters={wPreview ? wPreview.loaded.course.characters : props.loaded?.course.characters}
               remoteMedia={props.remoteMedia}
               onLocalMedia={onMedia}
               zoomLabel={t('backToWholeSlide')}
@@ -2304,8 +2394,9 @@ export default function AiRoom(props: Props) {
                   rpSel={panel.rpSel}
                   courseSel={panel.courseSel}
                   onPick={(id) => setPanel(panel.mode === 'course' ? { ...panel, courseSel: id } : { ...panel, rpSel: id })}
-                  onStartRoleplay={(sc) => void startRoleplay(sc)}
-                  onOpenCourse={(c) => void openCourseFromPanel(c)}
+                  onStartRoleplay={(sc) => !welcome && void startRoleplay(sc)}
+                  onOpenCourse={(c) => !welcome && void openCourseFromPanel(c)}
+                  preview={welcome}
                 />
               )}
               {panelOn && panel?.view === 'roleplay' && panel.phase === 'play' && (
@@ -2399,7 +2490,7 @@ export default function AiRoom(props: Props) {
                 onStart={() => wOpen.current()}
               />
             )}
-            {wCard === 'tips' && <TipsCard t={t} />}
+            {wCard === 'tips' && <TipsCard t={t} tried={wTried} compact={!!wPreview || panelOn} onTry={(x) => wTry.current(x)} />}
             {undo && !shown && !wCard && (
               <div className="aic-undo" role="status">
                 <Ico name="check" />

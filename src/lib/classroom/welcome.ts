@@ -12,8 +12,10 @@ import { hasJapanese, inOrder, share, words } from '@/lib/ai-tutor/voice-match'
  * Steps change, and notes go to the tutor, only between turns (never while either of them is talking).
  *   suggest   one role-play chosen for them, opened by saying the phrase on the card (tap or 25 s: opens anyway)
  *   roleplay  the scene at 初級 (ended by the AI tutor, or by the classroom when time runs short)
- *   done      mission complete, welcome version: feedback only, it moves on by itself
- *   tips      what they can say in lessons ("Open the course"…): where courses are mentioned
+ *   done      mission complete, welcome version: feedback, then "any questions?"; it moves on once they've answered
+ *   tips      what they can say in lessons, tried out: "Open the course" shows a preview of a course's first slide,
+ *             "Let's do a role-play" the role-play list (a preview: nothing can be started in this call), and
+ *             "Can we just chat?" moves on to free talk
  *   free      chat until the goodbye; at 0:00 the welcome end screen replaces the classroom
  */
 
@@ -41,14 +43,15 @@ export const WELCOME_AT = {
   endScene: 240,
   /** steps before the role-play that are this late skip to the tips */
   late: 205,
-  /** mission complete → tips: at least this long, the tutor quiet for tipsQuiet after its feedback, or tipsMax */
-  tipsMin: 8,
-  tipsQuiet: 3,
-  tipsMax: 25,
+  /** mission complete → tips: once they've answered "any questions?" and the tutor has replied (at least tipsMin,
+   *  then tipsQuiet of quiet), or after tipsMax */
+  tipsMin: 10,
+  tipsQuiet: 2.5,
+  tipsMax: 60,
   /** with this little time left, the tips come at once */
   tipsLeft: 45,
-  /** the tips card shows this long, or until the goodbye */
-  tipsShow: 30,
+  /** the tips step ends when they say "Can we just chat?", or with this little time left */
+  tipsEndLeft: 35,
   goodbyeLeft: 22,
 } as const
 
@@ -214,9 +217,12 @@ export type WelcomeSnap = {
   cardIdle: number
   /** the "bring the scene to an end" note was sent */
   wrapSent: boolean
-  /** mission complete: the AI tutor has given feedback, and has been quiet this long (s) */
-  feedback: boolean
+  /** mission complete: the student has answered the tutor's "any questions?" and the tutor has replied */
+  answered: boolean
+  /** how long the tutor has been quiet (s) */
   tutorQuiet: number
+  /** the tips: they've said "Can we just chat?" (free talk next) */
+  chatChosen?: boolean
 }
 export type WelcomeMove = { to: WelcomeStep } | { do: 'wrap' | 'endScene' | 'open' | 'skipCard' } | null
 
@@ -247,10 +253,10 @@ export function welcomeNext(s: WelcomeSnap): WelcomeMove {
       if (s.elapsed >= A.wrapScene && !s.wrapSent) return { do: 'wrap' }
       return null
     case 'done':
-      if (s.left <= A.tipsLeft || s.stepAge >= A.tipsMax || (s.stepAge >= A.tipsMin && s.feedback && s.tutorQuiet >= A.tipsQuiet)) return { to: 'tips' }
+      if (s.left <= A.tipsLeft || s.stepAge >= A.tipsMax || (s.stepAge >= A.tipsMin && s.answered && s.tutorQuiet >= A.tipsQuiet)) return { to: 'tips' }
       return null
     case 'tips':
-      return s.stepAge >= A.tipsShow || s.left <= A.goodbyeLeft ? { to: 'free' } : null
+      return s.chatChosen || s.left <= A.tipsEndLeft ? { to: 'free' } : null
     case 'free':
       return null
   }
@@ -258,3 +264,23 @@ export function welcomeNext(s: WelcomeSnap): WelcomeMove {
 
 /** Joining (or rejoining after a refresh) part-way through: where to start. */
 export const welcomeStartStep = (elapsed: number): WelcomeStep => (elapsed < 80 ? 'about' : elapsed < 180 ? 'suggest' : 'free')
+
+/* ---------------- the tips, tried out ---------------- */
+
+export type Tip = 'course' | 'rp' | 'chat'
+/** the three things to say, in the order the tutor invites them */
+export const TIP_ORDER: Tip[] = ['course', 'rp', 'chat']
+export const TIP_PHRASES: Record<Tip, string> = { course: 'Open the course', rp: "Let's do a role-play", chat: 'Can we just chat?' }
+
+/** which of the three they just said (questions about them, "what's a course?", don't count) */
+export function tipSaid(said: string): Tip | null {
+  const s = said.trim()
+  if (!s || /\?\s*$/.test(s) && !/\b(?:can|could) we (?:just )?(?:chat|talk)\b/i.test(s)) return null
+  if (/\b(?:what|how|why)\b/i.test(s)) return null
+  if (/\bjust (?:chat|talk)\b|\bfree ?talk\b|\bchat (?:instead|freely)\b|フリートーク|雑談|話(?:そう|したい)/i.test(s)) return 'chat'
+  if (/\brole[- ]?plays?\b|ロールプレイ/i.test(s)) return 'rp'
+  if (/\b(?:open|start|do|try|see|show)\b[^.!?]{0,20}\b(?:courses?|lessons?)\b|\bcourses?\b|コース/i.test(s)) return 'course'
+  return null
+}
+/** the next one to invite them to try (null: all done) */
+export const nextTip = (tried: Tip[]): Tip | null => TIP_ORDER.find((x) => !tried.includes(x)) ?? null

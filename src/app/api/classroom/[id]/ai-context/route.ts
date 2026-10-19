@@ -46,7 +46,9 @@ type Action =
   | { kind: 'welcome'; step: 'card_changed'; facts?: Record<string, unknown>; changed?: unknown }
   | { kind: 'welcome'; step: 'suggest'; sceneId?: string; phrase?: string; reason?: string; saved?: boolean | null }
   | { kind: 'welcome'; step: 'wrap' }
-  | { kind: 'welcome'; step: 'tips'; sceneId?: string; phrase?: string }
+  | { kind: 'welcome'; step: 'tips' }
+  | { kind: 'welcome'; step: 'tip'; what?: string; next?: string | null; courseTitle?: string }
+  | { kind: 'welcome'; step: 'free'; chose?: boolean; sceneId?: string; phrase?: string }
 
 /** The welcome call's notes: each step on its rails (lib/classroom/welcome.ts, design: mockups/welcome-call.html). */
 const ASK_ABOUT: Record<string, string> = {
@@ -94,11 +96,24 @@ function welcomeInstruction(a: Extract<Action, { kind: 'welcome' }>): string | n
     }
     case 'wrap':
       return 'WELCOME CALL: time is nearly up for the role-play. Bring the scene to a natural close in character within a line or two, then say "That\'s the end of the role-play!" and stop there: wait for the note with how they did.'
-    case 'tips': {
+    case 'tips':
+      return `WELCOME CALL: the role-play is finished. Now show them how the classroom works by voice, as a short game. A card on their screen lists three things to say: "Open the course", "Let's do a role-play" and "Can we just chat?". In one or two short sentences, explain that in their lessons they can just say these, then invite them to try the first one now: "Open the course". Then wait for them to say it. Each one opens a preview on their screen; you'll get a note each time. Keep it light and encouraging. Don't say goodbye yet.`
+    case 'tip': {
+      const next = a.next === 'rp' ? "Let's do a role-play" : a.next === 'chat' ? 'Can we just chat?' : null
+      const invite = next ? ` Then invite them to try the next one: "${next}".` : ''
+      if (a.what === 'course') {
+        const title = q(a.courseTitle, 80)
+        return `WELCOME CALL: well done, they said it: a preview of a course lesson is on their screen now (the first slide of${title ? ` "${title}"` : ' a course'}). In a sentence or two, say this is what a course lesson looks like, and that in their lessons you go through the slides together. It's only a preview in this call: don't start teaching it.${invite}`
+      }
+      if (a.what === 'rp')
+        return `WELCOME CALL: well done, they said it: the list of role-plays is on their screen now (a preview: none can be started in this call). In a sentence or two, say that in their lessons they pick one by saying its name, for example "Let's do the hotel one", and that they get a little better at each one, level by level.${invite}`
+      return null
+    }
+    case 'free': {
       const scene = sceneById(a.sceneId)
       // only a sentence from the scene itself (one of its full-sentence hints)
       const phrase = scene ? scene.roles.flatMap((r) => r.levels.flatMap((L) => [...L.tasks, ...(L.twist ? [L.twist.task] : [])].map((t) => t.hints[2]))).find((h) => h === a.phrase) : undefined
-      return `WELCOME CALL: the role-play is finished. In two or three short sentences, tell them what they can do in their lessons, while a card on their screen shows it: they can open a course lesson with slides by saying "Open the course", choose from lots of role-plays by saying "Let's do a role-play", and go back to chatting with "Can we just chat?". These work in their lessons, not in this call: nothing opens now.${phrase ? ` Then practise one phrase from the role-play with them: "${phrase}". Ask them to say it, then to use it in a sentence of their own.` : ''} After that, keep the conversation going with easy questions about them (their week, their plans, what they'd like to do in their first lesson) until the goodbye note. Don't say goodbye yet, and never leave a long silence.`
+      return `WELCOME CALL: ${a.chose ? 'they said "Can we just chat?", so ' : ''}this is free talk now, until the goodbye note. ${phrase ? `First, practise one phrase from the role-play with them: "${phrase}". Say it slowly, ask them to say it, and react to how they said it. ` : ''}Then keep the conversation going with easy questions about them (their week, their plans, what they'd like to do in their first lesson), and keep correcting their mistakes. Never leave a long silence, and don't say goodbye before the note.`
     }
   }
   return null
@@ -172,10 +187,11 @@ function instruction(a: Action, secondsLeft: number, welcome: boolean): string |
       if (!scene) return null
       if (welcome) {
         const said = (Array.isArray(a.done) ? a.done : []).slice(0, 6).map((d) => `- ${q(d.task, 80)}: "${q(d.said, 160)}"`).join('\n')
-        return `The role-play is over and the mission-complete screen is on the student's screen. Step out of character now and give short spoken feedback, in 2 short sentences (under 20 seconds in all), each one on its own:
+        return `The role-play is over and the mission-complete screen is on the student's screen. Step out of character now and give short spoken feedback, slowly and in simple English, in 2 short sentences, each one on its own:
 1. One specific thing they did well, quoting their own words.
 2. One thing to try next time: "A more natural way is: <a better version of one of their lines>". Pick a line that really had a mistake or sounded unnatural, never one they said well, and never sounds like "mm" or "uh". If every line was fine, suggest one useful extra phrase for this situation instead.
-Then stop. Don't offer to swap roles, play it again or try another scene: the screen moves on by itself and you'll get a note.
+3. Then ask whether they have any questions about the role-play, or whether everything was clear, and wait for their answer, however long it takes. Answer any question briefly and simply.
+Don't offer to swap roles, play it again or try another scene, and don't move on to anything else yourself: when they're ready you'll get a note.
 Only correct something they actually said in the list below.
 What they said for each task:
 ${said || '(nothing recorded)'}`

@@ -101,9 +101,16 @@ const CUE =
 export function cueSentence(tutor: string): { sentence: string; say: boolean } | null {
   const m = CUE.exec(tutor)
   if (!m) return null
-  const rest = tutor.slice(m.index + m[0].length).replace(/^["“'「]+/, '')
+  const raw = tutor.slice(m.index + m[0].length)
+  const rest = raw.replace(/^["“'「]+/, '')
   const end = rest.search(/[.!?](?=\s|["”'」]|$)/)
   if (end < 0) return null
+  // a quoted phrase that the sentence then explains ('you can say "Open the course" - to start a lesson…') is
+  // talk about a phrase, not a sentence to save
+  if (/^["“「]/.test(raw)) {
+    const close = rest.search(/["”」]/)
+    if (close >= 0 && close < end && words(rest.slice(close + 1, end)).length > 0) return null
+  }
   const sentence = rest.slice(0, end + 1).replace(/["”'」]+$/, '').trim()
   const n = words(sentence).length
   if (n < 2 || n > 22) return null

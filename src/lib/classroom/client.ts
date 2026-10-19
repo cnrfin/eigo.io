@@ -238,8 +238,13 @@ export type WelcomeAction =
   | { kind: 'welcome'; step: 'card_changed'; facts: Facts; changed: FactKey[] }
   | { kind: 'welcome'; step: 'suggest'; sceneId: string; phrase: string; reason: string; saved: boolean }
   | { kind: 'welcome'; step: 'wrap' }
-  /** the tips, then practise one phrase from the role-play (one of its hint-3 sentences, checked on the server) */
-  | { kind: 'welcome'; step: 'tips'; sceneId?: string; phrase?: string }
+  /** the voice commands, tried out: the card is up */
+  | { kind: 'welcome'; step: 'tips' }
+  /** they said one: its preview is on screen; next = the one to invite next */
+  | { kind: 'welcome'; step: 'tip'; what: 'course' | 'rp'; next: 'course' | 'rp' | 'chat' | null; courseTitle?: string }
+  /** free talk until the goodbye (chose = they said "Can we just chat?"); first practise one phrase from the scene
+   *  (one of its hint-3 sentences, checked on the server) */
+  | { kind: 'welcome'; step: 'free'; chose: boolean; sceneId?: string; phrase?: string }
 
 /* ---------- the welcome call (lib/classroom/welcome.ts, /api/classroom/[id]/ai-welcome) ---------- */
 async function welcomeCall<T>(bookingId: string, body: Record<string, unknown>, fallback: T): Promise<T> {

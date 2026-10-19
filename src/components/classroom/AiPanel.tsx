@@ -48,6 +48,7 @@ export function PanelPicker({
   onPick,
   onStartRoleplay,
   onOpenCourse,
+  preview,
 }: {
   t: ClassroomT
   lang: Lang
@@ -61,6 +62,8 @@ export function PanelPicker({
   onPick: (id: string) => void
   onStartRoleplay: (s: SceneSummary) => void
   onOpenCourse: (c: PanelCourse) => void
+  /** the welcome call: a look at the list only (nothing can be started) */
+  preview?: boolean
 }) {
   const rp = scenes?.find((s) => s.id === rpSel) ?? scenes?.[0] ?? null
   const course = courses?.find((c) => c.id === courseSel) ?? courses?.[0] ?? null
@@ -112,14 +115,16 @@ export function PanelPicker({
     <div className="apn apn-pick">
       <div className="apn-hero">
         {hero}
-        <div className="apn-seg" role="tablist">
-          <button role="tab" aria-selected={mode === 'course'} className={mode === 'course' ? 'on' : ''} onClick={() => setMode('course')}>
-            {t('panelCourses')}
-          </button>
-          <button role="tab" aria-selected={mode === 'rp'} className={mode === 'rp' ? 'on' : ''} onClick={() => setMode('rp')}>
-            {t('panelRoleplays')}
-          </button>
-        </div>
+        {!preview && (
+          <div className="apn-seg" role="tablist">
+            <button role="tab" aria-selected={mode === 'course'} className={mode === 'course' ? 'on' : ''} onClick={() => setMode('course')}>
+              {t('panelCourses')}
+            </button>
+            <button role="tab" aria-selected={mode === 'rp'} className={mode === 'rp' ? 'on' : ''} onClick={() => setMode('rp')}>
+              {t('panelRoleplays')}
+            </button>
+          </div>
+        )}
       </div>
       <div className="apn-list" ref={list}>
         {loading && <div className="apn-load" />}
@@ -148,10 +153,16 @@ export function PanelPicker({
               ))}
       </div>
       <div className="apn-foot">
-        <span className="apn-hint">{t('panelPick')}</span>
-        <button className="apn-go" onClick={start} disabled={mode === 'rp' ? !rp : !course}>
-          {t('panelStart')}
-        </button>
+        {preview ? (
+          <span className="apn-hint apn-pv">{t('wlPreviewRp')}</span>
+        ) : (
+          <>
+            <span className="apn-hint">{t('panelPick')}</span>
+            <button className="apn-go" onClick={start} disabled={mode === 'rp' ? !rp : !course}>
+              {t('panelStart')}
+            </button>
+          </>
+        )}
       </div>
     </div>
   )

@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Block, Course, Lesson, Slide } from '@/lib/slides/types'
 import { findLesson, loadCourse } from '@/lib/classroom/courses'
-import { ACCENT_RULE, LEVEL_RULES, normalizeSettings, settingsToRules, type EnglishLevel, type TutorSettings } from './settings'
+import { ACCENT_RULE, BEGINNER_JA, LEVEL_RULES, normalizeSettings, settingsToRules, type EnglishLevel, type TutorSettings } from './settings'
 import type { FunctionTool } from './openai'
 
 /**
@@ -316,9 +316,8 @@ async function memoryDigest(db: SupabaseClient, userId: string): Promise<string>
  * tutor must never run ahead of the notes. Pitched to the English level they gave before the call.
  */
 function welcomeCall(level: EnglishLevel | ''): string {
-  const low = level === 'starter' || level === 'basic'
   const pitch = level
-    ? `THEIR ENGLISH (they told us before the call): ${LEVEL_RULES[level]}${low ? ' Because they are a beginner, say every instruction (what happens next, what a card on their screen is for, what to say) in one simple English sentence and then once more, briefly, in Japanese. Welcome them the same way. If they answer in Japanese, that is fine: react to it, give them the English for it, and carry on.' : ''}`
+    ? `${LEVEL_RULES[level]}${level === 'starter' || level === 'basic' ? ` ${BEGINNER_JA} Welcome them that way too. If they answer in Japanese, that's fine: react to it, give them the English for it, and carry on.` : ''}`
     : 'Their level is not known yet: start slowly and simply, and adjust to how they answer.'
   return `This is the student's FREE 5-MINUTE WELCOME CALL, their first time with you. It is not a lesson, and it runs on a fixed plan: the classroom sends you a short "WELCOME CALL" note whenever the next step starts. Do only what the latest note says.
 ${pitch}
@@ -326,7 +325,8 @@ How it starts:
 1. Welcome them warmly by name and introduce yourself as their AI tutor. Say the five minutes are for getting to know each other, then a short role-play, and that it's fine to say things in Japanese if they get stuck. Keep this short.
 2. Get to know them for about a minute and a half, one easy question at a time: what they do, why they're learning English, something specific they'd like to be able to do in English, and what they enjoy. Don't accept a one-line answer and move on: ask a follow-up to get the details (who, where, why, what kind, when), for example "to meet new people" → "Where would you like to meet people? At work, when you travel?". React warmly and briefly; they should speak more than you.
 Everything after that comes in the notes. Until a note asks you to, never say you've "got" their details, never mention a card or anything on their screen, and never suggest or start a role-play.
-Rules for this call: there are no course lessons, slides or whiteboard in it, so ignore the rules above about opening courses and the whiteboard, and never offer to open one. The only role-play is the one the classroom suggests: never offer a list or another scene. Ignore the warm-up, review and recap preferences. Never leave a long silence: if they've finished answering, ask the next easy question.`
+Rules for this call: there are no course lessons, slides or whiteboard in it, so ignore the rules above about opening courses and the whiteboard, and never offer to open one. The only role-play is the one the classroom suggests: never offer a list or another scene. Ignore the warm-up, review and recap preferences. Never leave a long silence: if they've finished answering, ask the next easy question.
+Corrections in this call (whatever their corrections preference says): it's their first chance to see how you help, so correct every mistake, even small ones (a missing \"a\" or plural, the wrong word or tense), straight after they say it: \"A more natural way is: <their whole sentence, corrected>\", ask them to say it, react to how they said it, then carry on. One correction at a time; never correct a sentence that was already right.`
 }
 
 export async function buildSessionBrief(

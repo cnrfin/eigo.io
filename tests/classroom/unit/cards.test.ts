@@ -27,6 +27,8 @@ ok('near: one letter in a long word', saidIt('colour', 'color') && !saidIt('can'
 ok('Wi-Fi heard as wifey is not read', inOrder('is there wifey I can use', 'Is there Wi-Fi I can use?').filter(Boolean).length === 5)
 ok('share', share('a b c', 'a b c d') === 0.75)
 ok('cue: complete sentence', cueSentence('Good try! A more natural way is: Could I get a hot coffee, please? Try it.')?.sentence === 'Could I get a hot coffee, please?')
+ok('cue: a quoted phrase being explained is not a card', cueSentence('In your lessons, you can say "Open the course" - to start a lesson with slides, or you can say "Let\'s do a roleplay" - to pick a scene.') === null)
+ok('cue: a quoted sentence on its own still is', cueSentence('In English you can say: "Could I get a coffee, please?"')?.sentence === 'Could I get a coffee, please?')
 ok('cue: not yet complete', cueSentence('A more natural way is: Could I get a hot') === null)
 ok('cue: quoted, "is to say"', cueSentence('A more natural way is to say "Yesterday I went to Osaka." Try it.')?.sentence === 'Yesterday I went to Osaka.')
 ok('cue: in English you can say → say', cueSentence('In English you can say: Could I sit by the window?')?.say === true)

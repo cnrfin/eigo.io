@@ -68,7 +68,14 @@ const emit = async (ev) => { await act(async () => { channel.dispatchEvent(new w
   // 1) connected, but the tutor says nothing: the calling screen stays, and it's asked to greet
   check('connected and silent: still on the calling screen', calling())
   await T.tick(2000)
-  check('the tutor is asked to speak (once the greeting note is in)', kicks() === 1 && posts('start').length === 1, kicks())
+  check('not too soon: the greeting gets time to start by itself (an early prompt restarted it)', kicks() === 0)
+  // a reply being put together (response.created): still no prompt
+  await emit({ type: 'response.event', event: { type: 'response.created' } })
+  await T.tick(2500)
+  check('no prompt while a reply is being prepared', kicks() === 0, kicks())
+  await emit({ type: 'response.event', event: { type: 'response.done' } })
+  await T.tick(1500)
+  check('the tutor is asked to speak (once the greeting note is in and nothing came)', kicks() === 1 && posts('start').length === 1, kicks())
   await emit({ type: 'session.output_transcript.delta', delta: 'Hey Connor! ', start_ms: 3000, end_ms: 3400 })
   check('the reveal starts with its first words', calling())
   await T.tick(1400)

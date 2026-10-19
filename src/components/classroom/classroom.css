@@ -126,7 +126,7 @@
 .cr .snav #closeCourse{color:var(--text-muted)}.cr .snav #closeCourse:hover{color:var(--text)}
 .cr .snav .closeCourse{color:var(--text-muted)}.cr .snav .closeCourse:hover{color:var(--text)} /* AI classroom: the student's own close, shown on phones too */
 .cr .app.no-course .navwrap,.cr .app.no-course #notesBtn{display:none}
-.cr .app.no-course:not(.wb):not(.sharing) .slideBox{visibility:hidden;pointer-events:none}
+.cr .app.no-course:not(.wb):not(.sharing):not(.wl-preview) .slideBox{visibility:hidden;pointer-events:none}
 .cr .app.no-course:not(.wb) .handle,.cr .app.no-course:not(.wb) .toolbar{display:none}
 .cr .snav #gridBtn.on{color:var(--accent)}
 .cr .snav .ico{width:19px;height:19px}
@@ -678,7 +678,17 @@
 .cr .wlc-p span{color:var(--text-muted);transition:color .15s}
 .cr .wlc-p span.on{color:var(--text)}
 .cr .wlc-tips{display:flex;flex-direction:column;gap:6px}
-.cr .wlc-tip{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:12px;background:var(--inset);animation:wlc-in .4s var(--ease) both}
+.cr .wlc-tip{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:12px;background:var(--inset);width:100%;text-align:left;border:1.5px solid transparent;animation:wlc-in .4s var(--ease) both;transition:transform .12s ease-out,border-color .2s}
+.cr .wlc-tip:active{transform:scale(.98)}
+.cr .wlc-tip.next{border-color:var(--accent)}
+.cr .wlc-tip.done .wlc-q{color:var(--text-muted)}
+.cr .wlc-try{margin-left:auto;font-size:11px;font-weight:700;color:var(--accent)}
+.cr .aic.wlc.compact{padding:8px}
+.cr .aic.wlc.compact .wlc-tips{flex-direction:row;gap:6px}
+.cr .aic.wlc.compact .wlc-tip{flex:1;justify-content:center;padding:8px 10px;animation:none}
+.cr .aic.wlc.compact .wlc-q{flex:none;font-size:13px}
+@media (max-width:560px){.cr .aic.wlc.compact .wlc-tips{flex-direction:column}}
+.cr .apn-pv{font-size:12px;color:var(--text-muted)}
 .cr .wlc-tip .ico{width:16px;height:16px;color:var(--accent)}
 .cr .wlc-q{font-size:15px;font-weight:600;flex:1}
 .cr .wlc-d{font-size:12px;color:var(--text-muted);text-align:right}

@@ -1,4 +1,4 @@
-import { FALLBACK_PICK, WELCOME_AT, cardReply, factsReady, heardPhrase, mergeAboutMe, quoteIsTheirs, sameFact, stillToAsk, validateWelcome, voicePhrase, waitsForGap, welcomeNext, welcomeStartStep, type WelcomeSnap } from '@/lib/classroom/welcome'
+import { FALLBACK_PICK, WELCOME_AT, nextTip, tipSaid, cardReply, factsReady, heardPhrase, mergeAboutMe, quoteIsTheirs, sameFact, stillToAsk, validateWelcome, voicePhrase, waitsForGap, welcomeNext, welcomeStartStep, type WelcomeSnap } from '@/lib/classroom/welcome'
 import { SCENES, roleplayInstruction, roleplayInstructionParts } from '@/lib/roleplay'
 import { LEVEL_RULES, normalizeSettings, settingsToRules } from '@/lib/ai-tutor/settings'
 let bad = 0
@@ -62,7 +62,7 @@ ok('"I\'m not sure" does not', !heardPhrase("I'm not sure", phrase).go)
 ok('a question does not', !heardPhrase('What is a role-play?', phrase).go)
 
 /* ---- the director ---- */
-const snap = (o: Partial<WelcomeSnap>): WelcomeSnap => ({ step: 'about', elapsed: 30, left: 270, stepAge: 10, facts: {}, thin: [], cardDone: false, cardDoneAge: 0, cardIdle: 0, wrapSent: false, feedback: false, tutorQuiet: 0, ...o })
+const snap = (o: Partial<WelcomeSnap>): WelcomeSnap => ({ step: 'about', elapsed: 30, left: 270, stepAge: 10, facts: {}, thin: [], cardDone: false, cardDoneAge: 0, cardIdle: 0, wrapSent: false, answered: false, tutorQuiet: 0, ...o })
 const to = (o: Partial<WelcomeSnap>) => JSON.stringify(welcomeNext(snap(o)))
 const four = { job: 'a', why: 'b', goal: 'c', likes: 'd' }
 ok('about: waits while there is little to show', welcomeNext(snap({ facts: { job: 'x' } })) === null)
@@ -78,10 +78,16 @@ ok('card: saved or not, it shows how it ended, then the role-play', welcomeNext(
 ok('suggest: opens by itself after 25 s', to({ step: 'suggest', stepAge: WELCOME_AT.autoOpen }) === '{"do":"open"}' && welcomeNext(snap({ step: 'suggest', stepAge: 20 })) === null)
 ok('roleplay: asks the tutor to end it near 3:35, once', to({ step: 'roleplay', elapsed: WELCOME_AT.wrapScene }) === '{"do":"wrap"}' && welcomeNext(snap({ step: 'roleplay', elapsed: WELCOME_AT.wrapScene + 5, wrapSent: true })) === null)
 ok('roleplay: ends it at 4:00', to({ step: 'roleplay', elapsed: WELCOME_AT.endScene, wrapSent: true }) === '{"do":"endScene"}')
-ok('done: waits for the feedback', welcomeNext(snap({ step: 'done', stepAge: 5, feedback: true, tutorQuiet: 4 })) === null && welcomeNext(snap({ step: 'done', stepAge: 10, feedback: true, tutorQuiet: 1 })) === null)
-ok('done: after the feedback and a pause → the tips', to({ step: 'done', stepAge: 10, feedback: true, tutorQuiet: 3 }) === '{"to":"tips"}')
-ok('done: at the latest after 25 s, or with 45 s left', to({ step: 'done', stepAge: 25 }) === '{"to":"tips"}' && to({ step: 'done', stepAge: 2, left: 40 }) === '{"to":"tips"}')
-ok('tips: until the goodbye', welcomeNext(snap({ step: 'tips', stepAge: 10, left: 60 })) === null && to({ step: 'tips', stepAge: 10, left: 20 }) === '{"to":"free"}' && to({ step: 'tips', stepAge: 30 }) === '{"to":"free"}')
+ok('done: never quickly (at least 10 s), and not while the tutor is still answering', welcomeNext(snap({ step: 'done', stepAge: 8, answered: true, tutorQuiet: 4 })) === null && welcomeNext(snap({ step: 'done', stepAge: 12, answered: true, tutorQuiet: 1 })) === null)
+ok('done: waits for their answer to "any questions?"', welcomeNext(snap({ step: 'done', stepAge: 40, answered: false, tutorQuiet: 10 })) === null)
+ok('done: answered, the tutor replied, a pause → the tips', to({ step: 'done', stepAge: 12, answered: true, tutorQuiet: 3 }) === '{"to":"tips"}')
+ok('done: at the latest after 60 s, or with 45 s left', to({ step: 'done', stepAge: 60 }) === '{"to":"tips"}' && to({ step: 'done', stepAge: 2, left: 40 }) === '{"to":"tips"}')
+ok('tips: stays while they try the phrases', welcomeNext(snap({ step: 'tips', stepAge: 50, left: 60 })) === null)
+ok('tips: "Can we just chat?" → free talk', to({ step: 'tips', stepAge: 10, chatChosen: true }) === '{"to":"free"}')
+ok('tips: or with 35 s left', to({ step: 'tips', stepAge: 10, left: WELCOME_AT.tipsEndLeft }) === '{"to":"free"}')
+for (const [s2, want] of [['Open the course', 'course'], ["Let's do a course", 'course'], ['コースを開いて', 'course'], ["Let's do a role-play", 'rp'], ['ロールプレイ', 'rp'], ['Can we just chat?', 'chat'], ['フリートークがいい', 'chat'], ['What is a course?', null], ['Do you like role-plays?', null], ['I like coffee', null]] as const)
+  ok(`tips: "${s2}" → ${want}`, tipSaid(s2) === want, tipSaid(s2))
+ok('tips: the next one to invite', nextTip([]) === 'course' && nextTip(['course']) === 'rp' && nextTip(['rp', 'course']) === 'chat' && nextTip(['course', 'rp', 'chat']) === null)
 ok('very late: skip to the tips', to({ step: 'suggest', elapsed: WELCOME_AT.late }) === '{"to":"tips"}' && to({ step: 'about', elapsed: WELCOME_AT.late }) === '{"to":"tips"}')
 ok('free: stays', welcomeNext(snap({ step: 'free' })) === null)
 ok('everything waits for a gap between turns, except ending a scene', waitsForGap({ to: 'card' }) && waitsForGap({ do: 'open' }) && !waitsForGap({ do: 'endScene' }))

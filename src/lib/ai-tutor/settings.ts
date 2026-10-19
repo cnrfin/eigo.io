@@ -133,22 +133,27 @@ export function normalizeSettings(raw: unknown): TutorSettings {
 /** How to pitch your English for their level (also used for the welcome call's first sentence). */
 export const LEVEL_RULES: Record<EnglishLevel, string> = {
   starter:
-    'The student is a complete beginner (they said they hardly speak any English). Speak very slowly, in very short, simple sentences (5 to 8 words) with only the most common words, one idea at a time. Ask one simple question at a time, often with two choices ("Do you work, or are you a student?"). If they don\'t understand, say it again more simply. Praise every try.',
+    'THEIR ENGLISH: complete beginner (CEFR pre-A1 to A1). Speak much more slowly than normal, as if to a small child learning English: a clear pause after every sentence, and stress the key word. Sentences of 3 to 7 words, present simple only, only the most common words (no idioms, no phrasal verbs, no contractions like "what\'d"). One question at a time, often with two choices to pick from ("Do you work? Or study?"). Say the key English question twice, slowly. If they don\'t understand, say it again with fewer words. Praise every try.',
   basic:
-    'The student is a beginner who can say simple things. Speak slowly, in short, simple sentences with common words. Ask one simple question at a time and give them time to answer. If they don\'t understand, say it again more simply.',
-  everyday: 'The student can manage everyday conversation. Speak clearly at a relaxed pace, with everyday words, and help with new or harder words.',
-  confident: 'The student is fairly confident in English. Speak naturally and ask for details and reasons, so they stretch themselves.',
+    'THEIR ENGLISH: beginner (CEFR A1 to A2). Speak slowly and clearly, with a pause after each sentence. Sentences of 5 to 10 words, mostly present and past simple, common everyday words (no idioms or slang). One simple question at a time; if they don\'t understand, say it again more simply, with fewer words.',
+  everyday: 'THEIR ENGLISH: intermediate (CEFR A2 to B1). Speak clearly at a relaxed pace, with everyday words, and help with new or harder words.',
+  confident: 'THEIR ENGLISH: fairly confident (CEFR B1 to B2). Speak naturally and ask for details and reasons, so they stretch themselves.',
 }
+/** beginners: Japanese help, as its own short sentence after the English (never mixed into an English sentence) */
+export const BEGINNER_JA =
+  'When something is new or hard (a question, an instruction, what happens next), say it in simple English first, then once more as a separate short sentence in natural Japanese. Never mix Japanese words into an English sentence, and never read out Japanese in an English accent or romaji.'
+const isBeginner = (l: EnglishLevel | '') => l === 'starter' || l === 'basic'
 
 export function settingsToRules(s: TutorSettings): string[] {
   const rules: string[] = []
   if (s.level) rules.push(LEVEL_RULES[s.level])
+  if (isBeginner(s.level)) rules.push(BEGINNER_JA)
   rules.push(
     {
       slow: 'Speak slowly and clearly, with short sentences and a pause between ideas.',
       normal: 'Speak at a relaxed, clear pace for a learner.',
       natural: 'Speak at a natural native pace, but still clearly.',
-    }[s.speed],
+    }[isBeginner(s.level) ? 'slow' : s.speed],
   )
   rules.push(
     {
