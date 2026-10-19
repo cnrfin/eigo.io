@@ -59,4 +59,10 @@ ok('alreadySaid: the same words with different punctuation', alreadySaid('yes, I
 ok('letters: a pause that split a word', letters("I'm an aroma therapist") === letters("I'm an aromatherapist."))
 const cust = cueCard('I study English to talk to customer', 'A more natural way is: I study English to talk to customers. Can you say it?')
 ok('cueCard: "talk to customer" → "talk to customers" is a correction', cust?.kind === 'correction' && cust.now === 'I study English to talk to customers.' && cust.was === 'I study English to talk to customer', cust)
+// matched from the end; an extra word in the middle is a correction, a filler isn't
+ok('alreadySaid: an extra word ("I am go") is a correction', !alreadySaid('I am go to the park', 'I go to the park.'))
+const extra = cueCard('I am go to the park', 'A more natural way is: I go to the park.')
+ok('cueCard: "I am go to the park" → a correction card', extra?.kind === 'correction' && extra.now === 'I go to the park.', extra)
+ok('alreadySaid: the sentence at the end of a longer turn', alreadySaid("Hi Tom, I'm from Tokyo and I'm a nurse", "I'm a nurse."))
+ok('alreadySaid: a filler in between', alreadySaid('I, uh, go to the park', 'I go to the park.'))
 process.exit(bad ? 1 : 0)

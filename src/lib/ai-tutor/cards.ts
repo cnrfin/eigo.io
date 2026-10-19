@@ -154,7 +154,6 @@ export function mistakeFor(lines: CardLine[], tutor: string): string {
   return score >= 0.6 ? best : sentences[sentences.length - 1]
 }
 
-/** A card made in the browser from the AI tutor's words alone (no reason or Japanese yet). */
 /** the letters only ("aroma therapist" and "aromatherapist" are the same: a transcript split, not a mistake) */
 export const letters = (s: string) => words(s).join('')
 
@@ -165,27 +164,33 @@ const inflected = (a: string, b: string) => {
 }
 
 /**
- * They already said the corrected sentence: every word of it, in order, as the same word. A word the transcript
- * spelt a little differently ("colour" / "color") counts; a different ending ("customer" / "customers") doesn't.
- * (It used to count too, so the most common small fixes got no card.)
+ * They already said the corrected sentence: every word of it, in order, as the same word, with nothing but fillers
+ * in between. Matched from the end (the sentence is usually the last thing they said, after "Hi Tom, …"). A word the
+ * transcript spelt a little differently ("colour" / "color") counts; a different ending ("customer" / "customers")
+ * or an extra word ("I am go" / "I go") is a real correction.
  */
 export function alreadySaid(student: string, sentence: string): boolean {
   if (sameWords(student, sentence) || letters(student) === letters(sentence)) return true
   const said = words(student)
-  let j = 0
-  for (const w of words(sentence)) {
-    let k = -1
-    for (let i = j; i < said.length; i++)
-      if (said[i] === w || (near(said[i], w) && !inflected(said[i], w))) {
-        k = i
-        break
-      }
+  const want = words(sentence)
+  const same = (a: string, b: string) => a === b || (near(a, b) && !inflected(a, b))
+  // each word of the sentence, last to first: the latest of their words before the previous match
+  const matched: number[] = []
+  let k = said.length
+  for (let w = want.length - 1; w >= 0; w--) {
+    k--
+    while (k >= 0 && !same(said[k], want[w])) k--
     if (k < 0) return false
-    j = k + 1
+    matched.push(k)
   }
+  // between the first and last match: only the sentence's own words and fillers
+  const first = matched[matched.length - 1]
+  const last = matched[0]
+  for (let i = first; i <= last; i++) if (!matched.includes(i) && !FILLER.has(said[i])) return false
   return true
 }
 
+/** A card made in the browser from the AI tutor's words alone (no reason or Japanese yet). */
 export function cueCard(student: string, tutor: string): Card | null {
   const c = cueSentence(tutor)
   if (!c || !student) return null
