@@ -55,7 +55,6 @@ const emit = async (ev) => { await act(async () => { channel.dispatchEvent(new w
   const base = REPO + '/src/lib/roleplay/scenes/'
   g.RP_SCENES = [require(base + 'travel/cafe-abroad.json'), require(base + 'service/salon-massage.json'), require(base + 'business/work-intro.json')]
   g.CATALOG = [{ id: 'c_greatbritain', title: 'Haruka in the UK: Part 1', titleJa: 'イギリスでのハルカ 第1章', level: 'A2', description: 'x', descriptionJa: 'x', scenes: ['https://cdn/x.jpg'], lessonCount: 12, doneCount: 0 }]
-  // (joined 55 s in, so the role-play note, never before 0:50, comes within the run)
   g.aiSessionResponse = { sessionId: 'live_1', sdp: 'v=0 answer', endsAt: new Date(Date.now() + 245_000).toISOString() }
   g.TICK = []
   g.turnResponse = (b) => ({ move: 'stay', slide: null, action: b.screen ? { kind: 'open_course', courseId: 'c_greatbritain' } : { kind: 'none' }, quote: 'open the course', ticks: b.roleplay ? g.TICK.filter((t) => !b.roleplay.done.includes(t.id)) : [] })
