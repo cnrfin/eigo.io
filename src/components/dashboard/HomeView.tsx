@@ -44,6 +44,8 @@ interface HomeViewProps {
   onTakeTests: () => void
   /** pilot: "Talk to AI tutor" (start an AI lesson now) replaces "Take Tests" */
   aiEnabled?: boolean
+  /** /dashboard?ai=start (the welcome call's end screen): open the start-now modal */
+  openAi?: boolean
   /** not known yet whether the AI button or Tests goes here (first visit): show a placeholder */
   aiPending?: boolean
   /** the AI modal's "schedule one instead": booking with the AI tutor chosen */
@@ -247,6 +249,11 @@ export default function HomeView(props: HomeViewProps) {
   const ai = useAiProfile(!!props.aiEnabled)
   const aiMood = useRef(newMood())
   const [aiOpen, setAiOpen] = useState(false)
+  const [aiAutoOpened, setAiAutoOpened] = useState(false)
+  if (props.openAi && props.aiEnabled && !aiAutoOpened) {
+    setAiAutoOpened(true)
+    setAiOpen(true)
+  }
   // load what the modal needs (course to continue, lengths, minutes) in the background, so it opens complete
   const { session, user } = useAuth()
   useEffect(() => {

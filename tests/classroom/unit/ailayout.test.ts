@@ -20,4 +20,14 @@ ok('wide slide: tutor on the right', computeAiLayout(1400, 700, { main: 'slide' 
 ok('narrow slide: tutor underneath', computeAiLayout(590, 540, { main: 'slide' })!.mode === 'slide-top')
 ok('tall panel: on top', computeAiLayout(390, 640, { main: 'panel' })!.mode === 'panel-top')
 ok('nothing open: tutor ≤ 210', computeAiLayout(1900, 900, { main: 'none' })!.tutor.w <= 210)
+// a card at the bottom (corrections, the welcome call's cards): the tutor floats above it, smaller
+for (const [W, H, C] of [[1400, 700, 240], [1000, 540, 300], [390, 640, 330], [800, 480, 360]]) {
+  const r = computeAiLayout(W, H, { main: 'none', card: C })!
+  const free = computeAiLayout(W, H, { main: 'none' })!
+  const top = H - C - 14
+  ok(`${W}x${H} card ${C}: the tutor and its name clear the card`, r.tutor.y + r.tutor.h + 30 <= top + 1, [r.tutor, top])
+  ok(`${W}x${H} card ${C}: smaller than without a card`, r.tutor.w <= free.tutor.w && r.tutor.w >= 56, [r.tutor.w, free.tutor.w])
+  ok(`${W}x${H} card ${C}: centred`, Math.abs(r.tutor.x + r.tutor.w / 2 - W / 2) < 1)
+}
+ok('a card with a slide open: the tutor stays put', JSON.stringify(computeAiLayout(1400, 700, { main: 'slide', card: 260 })!.tutor) === JSON.stringify(computeAiLayout(1400, 700, { main: 'slide' })!.tutor))
 console.log(bad ? bad + ' FAILED' : 'all passed')

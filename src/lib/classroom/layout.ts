@@ -129,13 +129,23 @@ export type AiLayoutResult = {
 
 /**
  * The AI classroom (design: mockups/ai-classroom-layout.html).
- *  - nothing open: the tutor in the middle (up to 210px)
+ *  - nothing open: the tutor in the middle (up to 210px); with a card up (corrections, the welcome call's cards),
+ *    smaller and floating in the space above it, so the card never covers its face
  *  - the panel: a square flush left (up to 4:5 when width is tight), the tutor centred in the space on the right;
  *    in a tall window the panel goes on top, full width, and the tutor underneath
  *  - a slide (or the whiteboard): its own shape, on the left with the tutor on the right when that costs the
  *    slide (almost) nothing; otherwise centred on top with a smaller tutor underneath
  */
-export function computeAiLayout(W: number, H: number, opts: { main: 'none' | 'panel' | 'slide'; ratio?: number }): AiLayoutResult | null {
+export function computeAiLayout(
+  W: number,
+  H: number,
+  opts: {
+    main: 'none' | 'panel' | 'slide'
+    ratio?: number
+    /** the height of a card at the bottom of the room (0 = none); only moves the tutor when nothing else is open */
+    card?: number
+  },
+): AiLayoutResult | null {
   if (!W || !H) return null
   const NAME = 30 // room for the name under the tutor
   const sq = (cx: number, cy: number, s: number): Rect => ({ x: cx - s / 2, y: cy - s / 2 - NAME / 2, w: s, h: s })
@@ -145,6 +155,13 @@ export function computeAiLayout(W: number, H: number, opts: { main: 'none' | 'pa
     return { mode, main, tutor, lift: main ? Math.max(0, H - bottom - 28) : 0 }
   }
 
+  if (opts.main === 'none' && opts.card && opts.card > 0) {
+    // the card sits 14px from the bottom: the tutor floats centred in what's above it
+    const above = Math.max(0, H - opts.card - 14 - G)
+    const s = Math.max(56, Math.min(W * 0.2, above * 0.62 - NAME / 2, 130))
+    const t = sq(W / 2, above / 2, s)
+    return done('float', null, { ...t, y: Math.max(4, t.y) })
+  }
   if (opts.main === 'none') {
     const s = Math.max(72, Math.min(W * 0.3, H * 0.38, 210))
     return done('float', null, sq(W / 2, H / 2, s))

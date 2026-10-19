@@ -1,0 +1,212 @@
+import { hasJapanese, inOrder, share, words } from '@/lib/ai-tutor/voice-match'
+
+/**
+ * The free 5-minute welcome call (ai-panel-implementation-plan.md, phase 3d; design: mockups/welcome-call.html).
+ * It runs on its own rails: the classroom moves it from step to step on the call clock and tells the AI tutor
+ * each step in a note. Pure functions, shared by the browser, the server and the tests.
+ *
+ *   about     getting to know them; the helper picks out the facts (each backed by their own words)
+ *   card      the About-you card: tap これで保存 or say "yes"; a spoken correction updates a line
+ *   suggest   one role-play chosen for them, opened by saying the phrase on the card (tap or 25 s: opens anyway)
+ *   roleplay  the scene at 初級 (ended by the AI tutor, or by the classroom when time runs short)
+ *   done      mission complete, welcome version: feedback only, it moves on by itself
+ *   tips      what they can say in lessons ("Open the course"…): where courses are mentioned
+ *   free      chat until the goodbye; at 0:00 the welcome end screen replaces the classroom
+ */
+
+export type WelcomeStep = 'about' | 'card' | 'suggest' | 'roleplay' | 'done' | 'tips' | 'free'
+
+/** seconds (on the call clock unless it says otherwise) */
+export const WELCOME_AT = {
+  /** the About-you card by now, with whatever facts there are (none: straight to the role-play) */
+  cardBy: 90,
+  /** the card waits this long for an answer (then it goes, unsaved: the end screen offers it again) */
+  cardWait: 25,
+  /** after saving, the "saved" line shows this long */
+  savedHold: 1.4,
+  /** the suggestion opens by itself after this long */
+  autoOpen: 25,
+  /** the AI tutor is asked to end the scene… */
+  wrapScene: 215,
+  /** …and the classroom ends it */
+  endScene: 240,
+  /** steps before the role-play that are this late skip to the tips */
+  late: 200,
+  /** mission complete → tips: at least this long, the tutor quiet for tipsQuiet after its feedback, or tipsMax */
+  tipsMin: 8,
+  tipsQuiet: 3,
+  tipsMax: 25,
+  /** with this little time left, the tips come at once */
+  tipsLeft: 45,
+  /** the tips card shows this long, or until the goodbye */
+  tipsShow: 30,
+  goodbyeLeft: 22,
+} as const
+
+export type FactKey = 'job' | 'why' | 'goal' | 'likes'
+export const FACT_KEYS: FactKey[] = ['job', 'why', 'goal', 'likes']
+/** what the About-you card shows (and what goes in About me, in English, for the AI tutor) */
+export const FACT_LABELS: Record<FactKey, { ja: string; en: string }> = {
+  job: { ja: 'お仕事', en: 'Work' },
+  why: { ja: '英語を学ぶ理由', en: 'Why English' },
+  goal: { ja: '目標', en: 'Goal' },
+  likes: { ja: '好きなこと', en: 'Likes' },
+}
+export type Facts = Partial<Record<FactKey, string>>
+export const factCount = (f: Facts) => FACT_KEYS.filter((k) => !!f[k]).length
+
+/** One role-play chosen for them: the phrase to open it is "Let's do the <name> role-play". */
+export type WelcomePick = { sceneId: string; name: string; reasonJa: string; reasonEn: string }
+export const FALLBACK_PICK: WelcomePick = { sceneId: 'cafe-abroad', name: 'café', reasonJa: '', reasonEn: '' }
+
+export const voicePhrase = (name: string) => (name ? `Let's do the ${name} role-play` : "Let's do the role-play")
+
+const fold = (s: string) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
+const squash = (s: string) => s.replace(/[\s、。！？!?.,・「」]/g, '')
+
+/** the helper's quote really is something the student said */
+export function quoteIsTheirs(quote: string, studentText: string): boolean {
+  const q = quote.trim()
+  if (!q) return false
+  if (hasJapanese(q)) return q.length >= 2 && squash(studentText).includes(squash(q))
+  const n = words(q).length
+  return n > 0 && share(fold(studentText), fold(q)) >= (n <= 2 ? 1 : 0.8)
+}
+
+const cleanValue = (v: unknown, max: number) => (typeof v === 'string' ? v.replace(/\s+/g, ' ').replace(/[<>]/g, '').trim().slice(0, max) : '')
+
+/**
+ * The helper's answer, checked: each fact only with the student's own words behind it, in short English;
+ * the role-play one from the list, its name words from its English title.
+ */
+export function validateWelcome(raw: unknown, studentText: string, scenes: { id: string; titleEn: string }[]): { facts: Facts; pick: WelcomePick | null } {
+  const r = (raw && typeof raw === 'object' ? raw : {}) as { facts?: Record<string, { value?: unknown; quote?: unknown } | undefined>; scene?: Record<string, unknown> }
+  const facts: Facts = {}
+  for (const k of FACT_KEYS) {
+    const f = r.facts?.[k]
+    const value = cleanValue(f?.value, 70)
+    const quote = cleanValue(f?.quote, 200)
+    if (value.length < 2 || hasJapanese(value) || words(value).length > 10) continue
+    if (!quoteIsTheirs(quote, studentText)) continue
+    facts[k] = value
+  }
+  let pick: WelcomePick | null = null
+  const s = r.scene
+  const sc = s && typeof s.id === 'string' ? scenes.find((x) => x.id === s.id) : undefined
+  if (sc) {
+    const title = new Set(fold(sc.titleEn).split(/[^a-z]+/).filter(Boolean))
+    const nameWords = fold(cleanValue(s!.name, 30)).split(/\s+/).filter(Boolean)
+    const nameOk = nameWords.length >= 1 && nameWords.length <= 3 && nameWords.every((w) => title.has(w.replace(/[^a-z]/g, '')))
+    const reasonJa = cleanValue(s!.reason_ja, 44)
+    const reasonEn = cleanValue(s!.reason_en, 100)
+    pick = {
+      sceneId: sc.id,
+      // keep the title's spelling ("café")
+      name: nameOk ? cleanValue(s!.name, 30).toLowerCase() : '',
+      reasonJa: hasJapanese(reasonJa) ? reasonJa : '',
+      reasonEn: reasonEn && !hasJapanese(reasonEn) ? reasonEn : '',
+    }
+  }
+  return { facts, pick }
+}
+
+/** About me (ai_tutor_profiles.settings.aboutMe, max 600): the confirmed facts added to what's there, never replacing it */
+export function aboutMeText(facts: Facts): string {
+  return FACT_KEYS.filter((k) => facts[k])
+    .map((k) => `${FACT_LABELS[k].en}: ${facts[k]!.replace(/[.\s]+$/, '')}.`)
+    .join(' ')
+}
+export function mergeAboutMe(existing: string, facts: Facts, max = 600): string {
+  const add = aboutMeText(facts)
+  const old = existing.trim()
+  if (!add || old.includes(add)) return old
+  if (!old) return add.slice(0, max)
+  const room = max - old.length - 1
+  if (room < 12) return old
+  return `${old}\n${add.length > room ? add.slice(0, room - 1).trimEnd() + '…' : add}`
+}
+
+/* ---------------- what the student says to the cards ---------------- */
+
+const CORRECTION = /\b(?:actually|not (?:a |an |really )?|no,|nope|wrong|instead|but i|i don'?t|i'?m not|i work as|i'?m a|i work (?:at|in|for))\b|違|ちが|じゃなく|ではなく|ではありません|じゃないです/i
+const LEAD = '^[\\s、。.!,…-]*'
+const YES = new RegExp(`${LEAD}(?:yes|yeah|yep|yup|ok(?:ay)?|sure|right|correct|perfect|exactly|great|good|fine|that'?s (?:right|correct|fine|good|perfect|it)|(?:it )?looks? (?:good|right|fine|great|perfect)|sounds (?:good|right)|save it|all good|はい|ええ|うん|そうです|合ってます|あってます|合っています|大丈夫|オッケー|お願いします|保存)(?![a-z])`, 'i')
+
+/** the About-you card: a correction (ask the helper again) / a yes (save) / nothing */
+export function cardReply(said: string): 'fix' | 'yes' | null {
+  const s = said.trim()
+  if (!s) return null
+  if (CORRECTION.test(s)) return 'fix'
+  if (YES.test(s)) return 'yes'
+  return null
+}
+
+const START = /\b(?:let'?s (?:do|try|start|play|go)|(?:can|could|shall) we (?:do|try|start)|i'?d like to (?:do|try)|i want to (?:do|try)|start (?:it|the role[- ]?play))\b|はじめ|始め|やりたい|やります|やってみ/i
+const GO_YES = new RegExp(`${LEAD}(?:ok(?:ay)?|yes|yeah|sure|ready|alright|all right|great|はい|ええ|うん|お願いします|オッケー)(?![a-z])`, 'i')
+
+/** the suggestion card: which of the phrase's words they've said, and whether that opens the role-play */
+export function heardPhrase(said: string, phrase: string): { lit: boolean[]; go: boolean } {
+  const lit = inOrder(fold(said), fold(phrase))
+  const s = said.trim()
+  const question = /\?\s*$|\b(?:what|how|which)\b/i.test(s)
+  const go = !!s && !question && (lit.filter(Boolean).length / Math.max(1, lit.length) >= 0.6 || START.test(s) || GO_YES.test(s) || /role[- ]?play|ロールプレイ/i.test(s))
+  return { lit, go }
+}
+
+/** the AI tutor starting the suggested scene ("Great, let's start the role-play."), statements only */
+export const TUTOR_STARTS = /\b(?:let'?s|let us|we'?ll|I'?ll)\s+(?:start|begin|do|get started with|jump into)\b[^.?!]*\b(?:role[- ]?play|scene)\b|\blet'?s (?:get started|begin)\b/i
+
+/* ---------------- the director ---------------- */
+
+export type WelcomeSnap = {
+  step: WelcomeStep
+  /** call clock: seconds since it started, seconds left */
+  elapsed: number
+  left: number
+  /** seconds in this step */
+  stepAge: number
+  facts: Facts
+  /** the About-you card was answered (saved or closed), and how long ago */
+  cardDone: boolean
+  cardDoneAge: number
+  /** the "bring the scene to an end" note was sent */
+  wrapSent: boolean
+  /** mission complete: the AI tutor has given feedback, and has been quiet this long (s) */
+  feedback: boolean
+  tutorQuiet: number
+}
+export type WelcomeMove = { to: WelcomeStep } | { do: 'wrap' | 'endScene' | 'open' } | null
+
+/** Where the call goes next (null = stay). The classroom calls it every second. */
+export function welcomeNext(s: WelcomeSnap): WelcomeMove {
+  const A = WELCOME_AT
+  const n = factCount(s.facts)
+  switch (s.step) {
+    case 'about':
+      if (s.elapsed >= A.late) return { to: 'tips' }
+      if (n >= 3) return { to: 'card' }
+      if (s.elapsed >= A.cardBy) return { to: n ? 'card' : 'suggest' }
+      return null
+    case 'card':
+      if (s.elapsed >= A.late) return { to: 'tips' }
+      if (s.cardDone ? s.cardDoneAge >= A.savedHold : s.stepAge >= A.cardWait) return { to: 'suggest' }
+      return null
+    case 'suggest':
+      if (s.elapsed >= A.late) return { to: 'tips' }
+      return s.stepAge >= A.autoOpen ? { do: 'open' } : null
+    case 'roleplay':
+      if (s.elapsed >= A.endScene) return { do: 'endScene' }
+      if (s.elapsed >= A.wrapScene && !s.wrapSent) return { do: 'wrap' }
+      return null
+    case 'done':
+      if (s.left <= A.tipsLeft || s.stepAge >= A.tipsMax || (s.stepAge >= A.tipsMin && s.feedback && s.tutorQuiet >= A.tipsQuiet)) return { to: 'tips' }
+      return null
+    case 'tips':
+      return s.stepAge >= A.tipsShow || s.left <= A.goodbyeLeft ? { to: 'free' } : null
+    case 'free':
+      return null
+  }
+}
+
+/** Joining (or rejoining after a refresh) part-way through: where to start. */
+export const welcomeStartStep = (elapsed: number): WelcomeStep => (elapsed < 80 ? 'about' : elapsed < 180 ? 'suggest' : 'free')

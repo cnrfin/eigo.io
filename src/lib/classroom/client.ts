@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef } from 'react'
 import type { Card } from '@/lib/ai-tutor/cards'
 import type { ScreenAction } from '@/lib/ai-tutor/actions'
 import type { Scene } from '@/lib/roleplay/types'
+import type { Facts, WelcomePick } from '@/lib/classroom/welcome'
 import type { SceneSummary } from '@/lib/roleplay/types'
 import type { RealtimeChannel } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
@@ -210,7 +211,7 @@ export type StudentAction =
   | ({ kind: 'slide'; review?: { returnTo: number } } & SlideRef)
   | { kind: 'lesson'; courseId: string; lessonId: string }
   | { kind: 'not_yet'; missing: string[] }
-  | { kind: 'nudge'; where?: 'slides' | 'free' | 'roleplay' }
+  | { kind: 'nudge'; where?: 'slides' | 'free' | 'roleplay' | 'welcome' }
   /** the lesson was started again from slide 1 */
   | { kind: 'restarted' }
   /** left: seconds on the classroom clock (it can end a little before the server's end) */
@@ -223,9 +224,37 @@ export type StudentAction =
   /** every task on the student's list is ticked: the AI tutor brings the scene to an end */
   | { kind: 'roleplay_tasks_done' }
   /** the mission-complete screen is up: spoken feedback, then swap / again / another */
-  | { kind: 'roleplay_done'; sceneId: string; role: 'a' | 'b'; done: { task: string; said: string }[]; missed: string[]; canSwap: boolean; phrases?: string[] }
+  | { kind: 'roleplay_done'; sceneId: string; role: 'a' | 'b'; done: { task: string; said: string }[]; missed: string[]; canSwap: boolean; phrases?: string[]; welcome?: boolean }
   /** the AI panel: the picker opened, or the student closed it */
   | { kind: 'panel'; what: 'picker' | 'closed' | 'course' }
+  /** the welcome call (lib/classroom/welcome.ts): a new step on its rails */
+  | WelcomeAction
+
+export type WelcomeAction =
+  | { kind: 'welcome'; step: 'card'; facts: Facts }
+  | { kind: 'welcome'; step: 'suggest'; sceneId: string; phrase: string; reason: string; saved: boolean | null }
+  | { kind: 'welcome'; step: 'wrap' }
+  | { kind: 'welcome'; step: 'tips' }
+
+/* ---------- the welcome call (lib/classroom/welcome.ts, /api/classroom/[id]/ai-welcome) ---------- */
+async function welcomeCall<T>(bookingId: string, body: Record<string, unknown>, fallback: T): Promise<T> {
+  try {
+    const r = await call(`/api/classroom/${bookingId}/ai-welcome`, { method: 'POST', body: JSON.stringify(body) })
+    return r.ok ? ((await r.json()) as T) : fallback
+  } catch {
+    return fallback
+  }
+}
+/** what the student has said about themselves so far, and a role-play for them */
+export const welcomeAbout = (bookingId: string, sessionId: string, lines: { from: 'student' | 'tutor'; text: string }[]) =>
+  welcomeCall<{ facts: Facts; pick: WelcomePick | null }>(bookingId, { op: 'about', sessionId, lines }, { facts: {}, pick: null })
+/** confirmed: added to About me (null = not saved) */
+export const welcomeSave = (bookingId: string, facts: Facts) =>
+  welcomeCall<{ aboutMe?: string } | null>(bookingId, { op: 'save', facts }, null).then((r) => (r && typeof r.aboutMe === 'string' ? r.aboutMe : null))
+export const welcomeScene = (bookingId: string, sceneId: string) =>
+  welcomeCall<{ scene?: Scene }>(bookingId, { op: 'scene', sceneId }, {}).then((r) => r.scene ?? null)
+export const welcomeRecord = (bookingId: string, sceneId: string) =>
+  welcomeCall<{ cleared?: number }>(bookingId, { op: 'record', sceneId }, {}).then((r) => (typeof r.cleared === 'number' ? r.cleared : null))
 
 /** AI lessons: tell the AI tutor about a student action. Our server turns it into a fixed-template
  *  instruction on the live session (the browser can't send instructions itself). */

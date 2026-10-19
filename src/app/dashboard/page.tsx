@@ -846,6 +846,8 @@ function DashboardContent() {
   const searchParams = useSearchParams()
   const durationParam = searchParams.get('duration')
   const tabParam = searchParams.get('tab')
+  // ?ai=start: open the AI start-now modal (the welcome call's end screen links here)
+  const aiParam = searchParams.get('ai')
   // ?preview=announce — force-show the course announcement (no flag stamped)
   const previewParam = searchParams.get('preview')
 
@@ -1433,6 +1435,7 @@ function DashboardContent() {
                   onBook={() => { setBookingTutor('human'); setActiveTab('booking') }}
                   onBookAi={() => { setBookingTutor('ai'); setActiveTab('booking') }}
                   aiEnabled={aiShown}
+                  openAi={aiParam === 'start'}
                   aiPending={aiPending}
                   onReviewPhrases={() => setActiveTab('vocab')}
                   onTakeTests={() => router.push('/dashboard/tests')}

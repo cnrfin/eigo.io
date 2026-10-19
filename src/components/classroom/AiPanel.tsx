@@ -313,6 +313,7 @@ export function RoleplayDone({
   onSwap,
   onNext,
   onEnd,
+  welcome,
 }: {
   t: ClassroomT
   lang: Lang
@@ -331,6 +332,8 @@ export function RoleplayDone({
   onSwap: (() => void) | null
   onNext: () => void
   onEnd: () => void
+  /** the welcome call: no swap / again / next, it moves on by itself */
+  welcome?: boolean
 }) {
   const tasks = tasksFor(roleOf(scene, role).levels[level], mission.twisted)
   const said = Object.values(mission.done)
@@ -393,25 +396,32 @@ export function RoleplayDone({
           </div>
         ))}
       </div>
-      <div className="apn-acts">
-        <button className="apn-btn" onClick={onAgain}>
-          <Ico name="undo" className="ico flip" />
-          {t('rpAgain')}
-        </button>
-        {onSwap && (
-          <button className="apn-btn pri" onClick={onSwap}>
-            <Ico name="users" />
-            {t('rpSwap')}
+      {welcome ? (
+        <div className="apn-next" role="status">
+          <i />
+          {t('wlMovingOn')}
+        </div>
+      ) : (
+        <div className="apn-acts">
+          <button className="apn-btn" onClick={onAgain}>
+            <Ico name="undo" className="ico flip" />
+            {t('rpAgain')}
           </button>
-        )}
-        <button className="apn-btn" onClick={onNext}>
-          <Ico name="right" />
-          {t('rpNextScene')}
-        </button>
-        <button className="apn-end" onClick={onEnd}>
-          {t('rpEnd')}
-        </button>
-      </div>
+          {onSwap && (
+            <button className="apn-btn pri" onClick={onSwap}>
+              <Ico name="users" />
+              {t('rpSwap')}
+            </button>
+          )}
+          <button className="apn-btn" onClick={onNext}>
+            <Ico name="right" />
+            {t('rpNextScene')}
+          </button>
+          <button className="apn-end" onClick={onEnd}>
+            {t('rpEnd')}
+          </button>
+        </div>
+      )}
     </div>
   )
 }

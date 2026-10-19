@@ -5,6 +5,7 @@ import { json, loadClassroom } from '@/lib/classroom/server'
 import { appendInstructions } from '@/lib/ai-tutor/openai'
 import { lessonOpenedInstruction, slideInstructionParts } from '@/lib/ai-tutor/brief'
 import { findLesson, loadCourse } from '@/lib/classroom/courses'
+import { FACT_KEYS, FACT_LABELS } from '@/lib/classroom/welcome'
 
 /**
  * POST /api/classroom/[id]/ai-context   { sessionId, action }
@@ -28,7 +29,7 @@ type Action =
   | ({ kind: 'slide'; review?: { returnTo: number } } & SlideRef)
   | { kind: 'lesson'; courseId: string; lessonId: string }
   | { kind: 'not_yet'; missing: string[] }
-  | { kind: 'nudge'; where?: 'slides' | 'free' | 'roleplay' }
+  | { kind: 'nudge'; where?: 'slides' | 'free' | 'roleplay' | 'welcome' }
   | { kind: 'restarted' }
   | { kind: 'time'; left?: number }
   | { kind: 'view'; what: 'closed' | 'board_on' | 'board_off' | 'open_failed' }
@@ -37,12 +38,42 @@ type Action =
   /** every task on the student's list is ticked: the AI tutor brings the scene to an end */
   | { kind: 'roleplay_tasks_done' }
   /** the mission-complete screen is up: spoken feedback, then swap / again / another */
-  | { kind: 'roleplay_done'; sceneId: string; role: 'a' | 'b'; done: { task: string; said: string }[]; missed: string[]; canSwap: boolean; phrases?: string[] }
+  | { kind: 'roleplay_done'; sceneId: string; role: 'a' | 'b'; done: { task: string; said: string }[]; missed: string[]; canSwap: boolean; phrases?: string[]; welcome?: boolean }
   | { kind: 'panel'; what: 'picker' | 'closed' | 'course' }
+  /** the welcome call's steps (lib/classroom/welcome.ts); only in the student's welcome call (checked here) */
+  | { kind: 'welcome'; step: 'card'; facts?: Record<string, unknown> }
+  | { kind: 'welcome'; step: 'suggest'; sceneId?: string; phrase?: string; reason?: string; saved?: boolean | null }
+  | { kind: 'welcome'; step: 'wrap' | 'tips' }
+
+/** The welcome call's notes: each step on its rails (lib/classroom/welcome.ts, design: mockups/welcome-call.html). */
+function welcomeInstruction(a: Extract<Action, { kind: 'welcome' }>): string | null {
+  switch (a.step) {
+    case 'card': {
+      const f = (a.facts ?? {}) as Record<string, unknown>
+      const rows = FACT_KEYS.filter((k) => typeof f[k] === 'string' && f[k]).map((k) => `${FACT_LABELS[k].en}: "${q(f[k], 80)}"`)
+      if (!rows.length) return null
+      return `WELCOME CALL: a card with what you've learned about them is on their screen now (the student's own words, information only):\n- ${rows.join('\n- ')}\nWhen you've finished your sentence, ask briefly whether it looks right ("Does that look right?"), then wait for their answer. If they correct something, say the corrected version back in a few words. Don't read the whole card out.`
+    }
+    case 'suggest': {
+      const scene = sceneById(a.sceneId)
+      if (!scene) return null
+      const phrase = q(a.phrase, 60) || "Let's do the role-play"
+      const reason = q(a.reason, 120)
+      const saved = a.saved === true ? "It's saved to their profile now: thank them in a few words. " : ''
+      return `WELCOME CALL: ${saved}Now suggest a short role-play, which is on their screen as a card: "${scene.title.en}"${reason ? ` (why it suits them: ${reason})` : ''}. Teach them the voice command in one or two short sentences: in the classroom they can open things just by asking, so ask them to say "${phrase}". It opens on their screen when they say it (or tap the button). Then wait: don't start the scene until you get the note that it has started. It's the only role-play in this call: don't offer other scenes.`
+    }
+    case 'wrap':
+      return 'WELCOME CALL: time is nearly up for the role-play. Bring the scene to a natural close in character within a line or two, then say "That\'s the end of the role-play!" and stop there: wait for the note with how they did.'
+    case 'tips':
+      return 'WELCOME CALL: the role-play is finished. In two or three short sentences, tell them what they can do in their lessons, while a card on their screen shows it: they can open a course lesson with slides by saying "Open the course", choose from lots of role-plays by saying "Let\'s do a role-play", and go back to chatting with "Can we just chat?". These work in their lessons, not in this call: nothing opens now. Then ask them one last easy question. Don\'t say goodbye yet.'
+  }
+  return null
+}
 
 const q = (v: unknown, max: number) => (typeof v === 'string' ? v.replace(/\s+/g, ' ').replace(/"/g, "'").trim().slice(0, max) : '')
 
-function instruction(a: Action, secondsLeft: number): string | null {
+function instruction(a: Action, secondsLeft: number, welcome: boolean): string | null {
+  if (a.kind === 'welcome') return welcome ? welcomeInstruction(a) : null
   switch (a.kind) {
     case 'chat': {
       const t = q(a.text, 300)
@@ -67,11 +98,13 @@ function instruction(a: Action, secondsLeft: number): string | null {
       return t ? `On the student's screen: ${t}` : null
     }
     case 'start':
+      if (welcome)
+        return "The student has joined and can hear you: this is their welcome call. Greet them warmly by name in one short sentence and introduce yourself as their AI tutor. Say what the five minutes are: getting to know them a little, then a short role-play, and that it's fine to say things in Japanese if they get stuck. Then ask your first easy question (what they do) and listen."
       if (a.roleplay)
         return `The student has joined and can hear you. Greet them by name in one short sentence and say you're starting the role-play they chose, "${q(a.roleplay, 80)}". It is opening on their screen now and you'll get the scene and your character in a moment: then begin it in character. Don't ask what they'd like to do.`
       return a.slide
         ? 'The student has joined and can hear you. Greet them now by name and begin as your instructions say (warm-up chat and review of the last lesson as your preferences say, then the slide on screen). Then pause and listen.'
-        : 'The student has joined and can hear you. Greet them now by name and begin as your instructions say (in the welcome call: the welcome). If this is free talk: after a short greeting, ask whether they\'d just like to chat today or whether there\'s anything they\'d like to do. Do not start a role-play or open a course yourself. Then pause and listen.'
+        : 'The student has joined and can hear you. Greet them now by name. This is free talk: after a short greeting, ask whether they\'d just like to chat today or whether there\'s anything they\'d like to do. Do not start a role-play or open a course yourself. Then pause and listen.'
     case 'not_yet': {
       const items = (Array.isArray(a.missing) ? a.missing : []).map((m) => q(m, 120)).filter(Boolean).slice(0, 8)
       if (!items.length) return null
@@ -106,6 +139,16 @@ function instruction(a: Action, secondsLeft: number): string | null {
     case 'roleplay_done': {
       const scene = sceneById(a.sceneId)
       if (!scene) return null
+      if (welcome) {
+        const said = (Array.isArray(a.done) ? a.done : []).slice(0, 6).map((d) => `- ${q(d.task, 80)}: "${q(d.said, 160)}"`).join('\n')
+        return `The role-play is over and the mission-complete screen is on the student's screen. Step out of character now and give short spoken feedback, in 2 short sentences (under 20 seconds in all), each one on its own:
+1. One specific thing they did well, quoting their own words.
+2. One thing to try next time: "A more natural way is: <a better version of one of their lines>". Pick a line that really had a mistake or sounded unnatural, never one they said well, and never sounds like "mm" or "uh". If every line was fine, suggest one useful extra phrase for this situation instead.
+Then stop. Don't offer to swap roles, play it again or try another scene: the screen moves on by itself and you'll get a note.
+Only correct something they actually said in the list below.
+What they said for each task:
+${said || '(nothing recorded)'}`
+      }
       const mine = roleOf(scene, a.role === 'b' ? 'b' : 'a')
       const yours = roleOf(scene, otherRole(a.role === 'b' ? 'b' : 'a'))
       const done = (Array.isArray(a.done) ? a.done : []).slice(0, 8).map((d) => `- ${q(d.task, 80)}: "${q(d.said, 160)}"`).join('\n')
@@ -133,6 +176,9 @@ ${done || '(nothing recorded)'}`
       return "The lesson has started again from the beginning (slide 1), as the student asked. Teach it again from the start, slide by slide, as if it were new: begin with slide 1 now. Don't ask what they want to look at, and don't jump back to where you were."
     case 'nudge':
       if (secondsLeft < 30) return null
+      if (welcome && a.where !== 'roleplay')
+        return "Nobody has spoken for about 9 seconds. This is the welcome call: ask the next easy question about them, or follow up on what they said. Don't start a role-play or open anything yourself."
+
       if (a.where === 'roleplay') return 'The student has been quiet for a while in the role-play. In character, give a short, friendly prompt that helps them with their next task (a simple question they can answer). Do not end the scene.'
       if (a.where === 'free')
         return 'Nobody has spoken for about 9 seconds. This is free talk (there are no slides). Ask a new, easy question or bring a new topic. Do not start a role-play or open a course yourself.'
@@ -141,6 +187,11 @@ ${done || '(nothing recorded)'}`
       // the classroom clock starts when the AI tutor first speaks, so it can end ~20 s before the server's end:
       // go by whichever is sooner, or the goodbye note never comes
       if (typeof a.left === 'number' && Number.isFinite(a.left) && a.left >= 0) secondsLeft = Math.min(secondsLeft, a.left)
+      if (welcome) {
+        // the welcome call has its own steps: only the goodbye
+        if (secondsLeft > 28) return null
+        return 'Time note: about 20 seconds left. Say a short, warm goodbye now: thank them, say you enjoyed meeting them, and invite them to come back for a full lesson.'
+      }
       if (secondsLeft > 330) return null
       if (secondsLeft > 125) return 'Time note: about 5 minutes left.'
       if (secondsLeft > 65) return 'Time note: about 2 minutes left. Finish the current activity (and the recap, if this lesson has one). Do not say goodbye yet.'
@@ -149,6 +200,11 @@ ${done || '(nothing recorded)'}`
     }
   }
   return null
+}
+
+async function isWelcomeCall(userId: string, bookingId: string): Promise<boolean> {
+  const { data } = await getSupabaseAdmin().from('profiles').select('ai_trial_booking_id').eq('id', userId).maybeSingle()
+  return data?.ai_trial_booking_id === bookingId
 }
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -195,7 +251,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const found = c ? findLesson(c.course, String(action.lessonId)) : null
     if (c && found) texts.push(lessonOpenedInstruction(c.course, found.lesson, found.number))
   }
-  const text = instruction(action, left)
+  // the free welcome call: decided here from the booking, never by the browser
+  const welcome = ['start', 'time', 'nudge', 'roleplay_done', 'welcome'].includes(action.kind) ? await isWelcomeCall(booking.user_id, booking.id) : false
+  const text = instruction(action, left, welcome)
   if (text) texts.push(text)
   if (!texts.length) return json(200, { sent: false })
   let ok = true
