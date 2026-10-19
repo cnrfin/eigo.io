@@ -1468,8 +1468,15 @@ export default function AiRoom(props: Props) {
   })
   // no tile for the student: the mic button's ring grows with their voice
   const micBtn = useRef<HTMLButtonElement | null>(null)
+  // (and when the student last spoke, by their mic's level: the transcript sometimes loses words said over the tutor)
+  const micVoiceAt = useRef(0)
+  const micLoudFrom = useRef(0)
   useAudioLevel(micOn ? micStream : null, (v) => {
     micBtn.current?.style.setProperty('--lv', v.toFixed(2))
+    const T = Date.now()
+    if (v < 0.35) micLoudFrom.current = 0
+    else if (!micLoudFrom.current) micLoudFrom.current = T
+    else if (T - micLoudFrom.current > 400) micVoiceAt.current = T
   })
   useEffect(() => {
     if (!remoteStream) return
@@ -1888,6 +1895,7 @@ export default function AiRoom(props: Props) {
   const wReadySent = useRef(false)
   /** the transcript line where the tutor taught "Let's do a role-play" */
   const wTaughtLine = useRef(-1)
+  const wTaughtAt = useRef(0)
   /** the student's lines already corrected (or checked), and the course preview loaded ahead */
   const wPreviewNext = useRef<Promise<{ loaded: LoadedCourse; slide: Slide; title: string } | null> | null>(null)
   const wSuggestSent = useRef(false)
@@ -2032,10 +2040,12 @@ export default function AiRoom(props: Props) {
         wLoadPick.current()
       }
       if (step === 'suggest' && wSceneRef.current && !wHeardAt.current) {
-        // "Let's do a role-play" (the whole phrase; never "let's do…"): it opens once they've stopped
+        // "Let's do a role-play": it opens once they've stopped. Also "Let's do a…" when the transcript cut the rest
+        // off (it did, as the tutor started talking over them)
         const h = heardPhrase(studentSince(wFrom.current), wPhraseRef.current)
         setWLit(h.lit)
-        if (h.whole || SAYS_ROLEPLAY.test(said)) {
+        if (h.whole || SAYS_ROLEPLAY.test(said) || (h.lit[0] && h.lit[1])) {
+          logEv(`welcome:heard "${said.slice(-40)}"`)
           wHeardAt.current = Date.now()
           setWHeard(true)
         }
@@ -2068,15 +2078,18 @@ export default function AiRoom(props: Props) {
       const k = lines.current.length - 1
       if (step === 'about' && SAYS_ROLEPLAY.test(sentence)) {
         wTaughtLine.current = k
+        wTaughtAt.current = Date.now()
         wLoadPick.current()
       }
-      // its next turn after teaching the phrase (not more of the teaching, or "go ahead, say it"): it's answering
-      // them saying it, so the scene opens. Twice the transcript lost their words (said over the tutor's), and the
-      // tutor went ahead with the panel shut. Also when it starts setting the scene
+      // it opens only once the student has said the phrase (welcomeHear). The one fallback: the tutor starts setting
+      // the scene and their mic heard them speak after it taught the phrase (the transcript has lost their words,
+      // said over the tutor's, more than once)
       else if (
         (step === 'suggest' || step === 'about') &&
         wReadySent.current &&
-        ((k > wTaughtLine.current && wTaughtLine.current >= 0 && !SAYS_ROLEPLAY.test(sentence) && !/\b(?:say|try)\b/i.test(sentence)) || TUTOR_SETS_SCENE.test(sentence))
+        wTaughtAt.current > 0 &&
+        micVoiceAt.current > wTaughtAt.current &&
+        TUTOR_SETS_SCENE.test(sentence)
       ) {
         logEv(`welcome:open-from-tutor "${sentence.slice(0, 60)}"`)
         wOpen.current()
@@ -2124,8 +2137,9 @@ export default function AiRoom(props: Props) {
     wWaitAt.current = 0
     if ('to' in m) {
       wGo.current(m.to)
-      // (the tutor hadn't moved on itself: a reminder)
-      if (m.prompt && m.to === 'command') void act({ kind: 'welcome', step: 'command' })
+      // (no "do the voice command" note any more: it twice arrived just as the tutor had started the voice command,
+      // and once the preview was explained the tutor did the voice command all over again. If it's quiet in this step,
+      // the silence note says what's next)
     } else if (m.do === 'promptSuggest') {
       wSuggestSent.current = true
       // (not when it's already on it: the note arrived as it taught the phrase, and it started its sentence over)
