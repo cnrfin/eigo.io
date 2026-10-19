@@ -126,6 +126,8 @@ const lastSentence = (s: string) => {
 const FILLER = new Set(['mm', 'mmm', 'hmm', 'hm', 'uh', 'um', 'umm', 'er', 'erm', 'ah', 'oh', 'okay', 'ok', 'yeah', 'yes', 'yep', 'no', 'right', 'sure', 'thanks', 'thank', 'you', 'too', 'so', 'well', 'and', 'nice', 'cool', 'great'])
 /** only a thinking sound or a one-word reply ("mm", "uh", "okay", "thank you"): never a mistake to correct */
 export const isFiller = (s: string) => words(s).filter((w) => !FILLER.has(w)).length < 2 && words(s).length <= 3
+/** hesitation sounds: skipped inside a sentence (an extra "so" or "and" there is a real word, so a correction) */
+const HESITATION = new Set(['uh', 'um', 'umm', 'er', 'erm', 'mm', 'mmm', 'hmm', 'hm', 'ah', 'eh'])
 
 /**
  * The student's words a correction is about. Usually their last turn, but not always: in role-play feedback the
@@ -164,7 +166,7 @@ const inflected = (a: string, b: string) => {
 }
 
 /**
- * They already said the corrected sentence: every word of it, in order, as the same word, with nothing but fillers
+ * They already said the corrected sentence: every word of it, in order, as the same word, with nothing but "uh", "um"…
  * in between. Matched from the end (the sentence is usually the last thing they said, after "Hi Tom, …"). A word the
  * transcript spelt a little differently ("colour" / "color") counts; a different ending ("customer" / "customers")
  * or an extra word ("I am go" / "I go") is a real correction.
@@ -183,10 +185,10 @@ export function alreadySaid(student: string, sentence: string): boolean {
     if (k < 0) return false
     matched.push(k)
   }
-  // between the first and last match: only the sentence's own words and fillers
+  // between the first and last match: only the sentence's own words and hesitation sounds
   const first = matched[matched.length - 1]
   const last = matched[0]
-  for (let i = first; i <= last; i++) if (!matched.includes(i) && !FILLER.has(said[i])) return false
+  for (let i = first; i <= last; i++) if (!matched.includes(i) && !HESITATION.has(said[i])) return false
   return true
 }
 

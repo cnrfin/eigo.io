@@ -1,4 +1,4 @@
-import { validateCard, mayHaveCard, lastExchange, tutorItemId, cueSentence, cueCard, mergeCard, fitDraft, validateDraft, alreadySaid, letters } from '@/lib/ai-tutor/cards'
+import { validateCard, mayHaveCard, lastExchange, tutorItemId, cueSentence, cueCard, mergeCard, fitDraft, validateDraft, alreadySaid, letters, isFiller } from '@/lib/ai-tutor/cards'
 import { saidIt, share, inOrder } from '@/lib/ai-tutor/voice-match'
 let bad = 0
 const ok = (n: string, c: boolean, x: unknown = '') => { console.log((c ? 'ok   ' : 'FAIL ') + n + (c ? '' : '  -> ' + JSON.stringify(x))); if (!c) bad++ }
@@ -65,4 +65,8 @@ const extra = cueCard('I am go to the park', 'A more natural way is: I go to the
 ok('cueCard: "I am go to the park" → a correction card', extra?.kind === 'correction' && extra.now === 'I go to the park.', extra)
 ok('alreadySaid: the sentence at the end of a longer turn', alreadySaid("Hi Tom, I'm from Tokyo and I'm a nurse", "I'm a nurse."))
 ok('alreadySaid: a filler in between', alreadySaid('I, uh, go to the park', 'I go to the park.'))
+// only hesitation sounds are skipped inside a sentence; a filler word like "so" there is a correction
+ok('alreadySaid: an extra "so" is a correction', !alreadySaid('I so go to the park', 'I go to the park.'))
+ok('alreadySaid: "um" in between is skipped', alreadySaid('I, um, go to the park', 'I go to the park.'))
+ok('isFiller unchanged: "yes" and "mm"', isFiller('yes') && isFiller('mm'))
 process.exit(bad ? 1 : 0)
