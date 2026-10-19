@@ -128,6 +128,16 @@ const emit = async (ev) => { await act(async () => { channel.dispatchEvent(new w
   await student('I live here since three years.', 53000); await T.tick(800)
   await tutor('Oh, nice! Do you like it?', 54000); await T.tick(2200)
   check('free talk: a mistake the tutor didn\'t correct is saved quietly (no card)', saved('I have lived here for three years.') && !T.$('.aic'), g.log.filter((l) => l.includes('/words') && l.includes('POST')).slice(words0).join(' | '))
+
+  // a pause split the word ("aroma" … "therapist"): the tutor's "correction" is what they said, so no card and nothing saved
+  const words1 = g.log.filter((l) => l.includes('/words') && l.includes('POST')).length
+  g.prepResponse = fix("I'm an aroma", "I'm an aromatherapist.", '私はアロマセラピストです')
+  await student("Hi Tom, I'm from Tokyo and I'm an aroma", 60000); await T.tick(800)
+  await student('therapist', 63000); await T.tick(800)
+  await tutor("A more natural way is: I'm an aromatherapist. Can you try that?", 64000); await T.tick(3000)
+  const newWords = g.log.filter((l) => l.includes('/words') && l.includes('POST')).slice(words1)
+  check('a word split by a pause: no card', !T.$('.aic'), txt('.aic'))
+  check('…and nothing saved to the word list', newWords.length === 0, newWords.join(' | '))
   g.prepResponse = null
 
   console.log(fails ? `${fails} FAILED` : 'all passed')

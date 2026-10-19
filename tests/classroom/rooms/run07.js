@@ -295,15 +295,16 @@ const emit = async (ev) => { await act(async () => { channel.dispatchEvent(new w
   const wordPosts = g.log.filter((l) => l.includes('/words') && l.includes('POST')).length
   await T.click(T.$('.aic-x')); await T.tick(60)
   check('closing the card saves nothing', !T.$('.aic') && g.log.filter((l) => l.includes('/words') && l.includes('POST')).length === wordPosts)
-  // a slow helper: no card for up to 3 s, then the card without its reason line, which is added when it comes
+  // a slow helper: no card for up to 0.8 s, then the card without its reason line, which is added when it comes
   g.assistResponse = { card: { kind: 'correction', was: 'I go', now: 'Yesterday I went to the park.', ja: '昨日公園に行きました', why: '過去なので went' } }
   g.assistDelay = 5000
   await heardS('Yesterday I go to the park.', 58000)
   await emit({ type: 'session.output_transcript.delta', delta: 'Nice! A more natural way is: Yesterday I went to the park.', start_ms: 59000, end_ms: 59600 })
+  check('slow helper: nothing shown at once', !T.$('.aic'))
   await T.tick(1200)
-  check('slow helper: nothing shown yet', !T.$('.aic'))
+  check('after 0.8 s the card shows anyway, without the reason line', txt('.aic-now') === 'Yesterday I went to the park.' && !T.$('.aic-why'), txt('.aic'))
   await T.tick(2200)
-  check('after 3 s the card shows anyway', txt('.aic-now') === 'Yesterday I went to the park.' && !T.$('.aic-why'), txt('.aic'))
+  check('…still no reason line while the helper is busy', !!T.$('.aic') && !T.$('.aic-why'), txt('.aic'))
   await T.tick(2200)
   check('the reason line is added when it arrives', txt('.aic-why') === '過去なので went', txt('.aic'))
   g.assistDelay = 0

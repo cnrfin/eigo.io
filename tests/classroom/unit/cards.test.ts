@@ -1,4 +1,4 @@
-import { validateCard, mayHaveCard, lastExchange, tutorItemId, cueSentence, cueCard, mergeCard, fitDraft, validateDraft } from '@/lib/ai-tutor/cards'
+import { validateCard, mayHaveCard, lastExchange, tutorItemId, cueSentence, cueCard, mergeCard, fitDraft, validateDraft, alreadySaid, letters } from '@/lib/ai-tutor/cards'
 import { saidIt, share, inOrder } from '@/lib/ai-tutor/voice-match'
 let bad = 0
 const ok = (n: string, c: boolean, x: unknown = '') => { console.log((c ? 'ok   ' : 'FAIL ') + n + (c ? '' : '  -> ' + JSON.stringify(x))); if (!c) bad++ }
@@ -52,4 +52,11 @@ ok('fit: the tutor corrected something else → no fit', fitDraft(cueCard('Yeste
 const sayDraft = validateDraft({ kind: 'say', heard: '窓側', normal: 'Can I have a window seat?', polite: 'Could I sit by the window, please?', casual: '' }, '窓側の席がいいです')
 const sayFit = fitDraft(cueCard('窓側の席がいいです', 'In English you can say: Could I sit by the window, please?')!, sayDraft)
 ok('fit say: the spoken one first (with its style), the others after', sayFit?.kind === 'say' && sayFit.options[0].style === 'polite' && sayFit.options[0].text === 'Could I sit by the window, please?' && sayFit.options.length === 2, sayFit)
+// a different ending is a real correction; a one-letter spelling difference or punctuation isn't
+ok('alreadySaid: customer / customers is a correction', !alreadySaid('I study to talk to my customer', 'I study to talk to my customers.'))
+ok('alreadySaid: colour / color is the same word', alreadySaid('My favourite colour is blue', 'My favourite color is blue.'))
+ok('alreadySaid: the same words with different punctuation', alreadySaid('yes, I went to Osaka', 'Yes! I went to Osaka.'))
+ok('letters: a pause that split a word', letters("I'm an aroma therapist") === letters("I'm an aromatherapist."))
+const cust = cueCard('I study English to talk to customer', 'A more natural way is: I study English to talk to customers. Can you say it?')
+ok('cueCard: "talk to customer" → "talk to customers" is a correction', cust?.kind === 'correction' && cust.now === 'I study English to talk to customers.' && cust.was === 'I study English to talk to customer', cust)
 process.exit(bad ? 1 : 0)

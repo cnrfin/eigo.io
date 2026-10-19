@@ -29,7 +29,7 @@ It exits with 1 if anything fails, and lists the failing checks. Run it after an
 |---|---|
 | `actions.test.ts` | The action judge's guardrails (`lib/ai-tutor/actions.ts`): what's possible from each screen, quotes must be real, the tutor alone can't start things |
 | `ailayout.test.ts` | The AI classroom layout (`lib/classroom/layout.ts`): tutor, panel and slide placement at every size |
-| `cards.test.ts`, `cards2.test.ts` | Correction / "how do I say" cards (`lib/ai-tutor/cards.ts`): validation, instant cards, matching a correction to the right line, fillers |
+| `cards.test.ts`, `cards2.test.ts` | Correction / "how do I say" cards (`lib/ai-tutor/cards.ts`): validation, instant cards, matching a correction to the right line, fillers, a different word ending is a real correction (`alreadySaid`) |
 | `closecmd.test.ts` | Opening and closing a course by voice (`lib/classroom/course-commands.ts`) |
 | `intent.test.ts` | Role-play panel voice commands (`lib/roleplay/intent.ts`) |
 | `names.test.ts` | Recognising a course by its spoken name (`lib/ai-tutor/course-names.ts`) |
@@ -62,7 +62,7 @@ It exits with 1 if anything fails, and lists the failing checks. Run it after an
 | `run19` | A lesson booked with a role-play: it opens as the lesson starts, at the booked level |
 | `run20` | The welcome talk, led by the tutor: no courses or whiteboard, the facts picked out quietly, the role-play card when the tutor names one, opening only on the whole phrase once they've stopped, mission complete, the voice command and its course preview, the Q&A, and no reminders needed |
 | `run21` | The welcome call's end screen: replaces the classroom at 0:00, About me saved from there, what to try next |
-| `run22` | Correction cards: they stay until the student's try is over (saved 1.2 s after the tutor reacts, or at 30 s), never the same phrase twice, a try never prepared again, the slide-change correction moment in a course (`fix` in the slide note, one every 2 minutes, the rest saved), missed mistakes saved quietly in free talk |
+| `run22` | Correction cards: they stay until the student's try is over (saved 1.2 s after the tutor reacts, or at 30 s), never the same phrase twice, a try never prepared again, the slide-change correction moment in a course (`fix` in the slide note, one every 2 minutes, the rest saved), missed mistakes saved quietly in free talk, no card or save when a pause split a word ("aroma" … "therapist") |
 
 ## Writing a new run
 
