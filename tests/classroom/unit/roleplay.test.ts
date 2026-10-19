@@ -1,4 +1,4 @@
-import { SCENES, sceneById, roleplayInstruction, nextLevel, tasksFor, roleOf } from '@/lib/roleplay'
+import { SCENES, sceneById, roleplayInstruction, roleplayInstructionParts, nextLevel, tasksFor, roleOf } from '@/lib/roleplay'
 import { computeLayout } from '@/lib/classroom/layout'
 import { existsSync } from 'fs'
 let bad = 0
@@ -39,7 +39,10 @@ ok('twist task goes in right after its trigger task (wifi)', tasksFor(L2, true).
 }
 const ins = roleplayInstruction(cafe, 'a', 2)
 ok('instruction names both characters, the tasks, the twist and the menu', /You play: Barista/.test(ins) && /1\. Order a drink your way/.test(ins) && /Twist: after the student has done "Ask about Wi-Fi"/.test(ins) && /Flat white ¥500/.test(ins), ins)
-ok('instruction length is reasonable', ins.length < 2600, ins.length)
+ok('instruction length is reasonable', ins.length < 2700, ins.length)
+const parts = SCENES.flatMap((sc) => (['a', 'b'] as const).flatMap((r) => ([0, 1, 2] as const).flatMap((lv) => [false, true].flatMap((ready) => roleplayInstructionParts(sc, r, lv, ready).map((p) => ({ id: `${sc.id} ${r} ${lv}${ready ? ' ready' : ''}`, n: p.length, cut: p.endsWith('…') }))))))
+const tooLong = parts.filter((p) => p.n > 1800 || p.cut)
+ok('every part sent is at most 1800 characters (none cut off)', parts.length > 0 && tooLong.length === 0, tooLong.slice(0, 3))
 const swapped = roleplayInstruction(cafe, 'b', 0)
 ok('swapped roles: the AI tutor plays the customer', /The student plays: Barista/.test(swapped) && /You play: Customer/.test(swapped))
 const lay = computeLayout(1200, 700, { showSlide: true, square: true })!

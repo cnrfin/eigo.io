@@ -93,5 +93,8 @@ ok('role-play: set the scene, ask if ready, then start', /set the scene/.test(ro
 let worst = { n: 0, id: '' }
 for (const sc of SCENES) for (const r of ['a', 'b'] as const) for (const lv of [0, 1, 2] as const) for (const part of roleplayInstructionParts(sc, r, lv)) if (part.length > worst.n) worst = { n: part.length, id: `${sc.id} ${r} ${lv}` }
 ok('every part of every role-play start note fits in one note (1800 characters, nothing cut off)', worst.n < 1800, worst)
-ok('the rules always arrive whole (the last part)', SCENES.every((sc) => roleplayInstructionParts(sc, 'a', 2).at(-1)!.endsWith('only then give your feedback.')))
+ok('the rules always arrive whole (the last part)', SCENES.every((sc) => {
+  const last = roleplayInstructionParts(sc, 'a', 2).at(-1)!
+  return last.includes('only then give your feedback') && last.includes('unless that note says so')
+}))
 console.log(bad ? bad + ' FAILED' : 'all passed')

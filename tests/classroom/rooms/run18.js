@@ -67,7 +67,8 @@ const emit = async (ev) => { await act(async () => { channel.dispatchEvent(new w
   check('no panel yet', !T.$('.panelBox .apn'))
   check('nothing open: the tutor floats in the middle', T.$('.app').dataset.mode === 'float', T.$('.app').dataset.mode)
   const posts = (k) => ctx().filter((l) => l.includes(`"kind":"${k}"`))
-  const turns = () => g.log.filter((l) => l.includes('/ai-turn')).length
+  // the tick checks only (the screen-change check of the same line goes without the role-play, and isn't counted)
+  const turns = () => g.log.filter((l) => l.includes('/ai-turn') && l.includes('"roleplay":{')).length
   // the izakaya (初級: people, drinks, confirm). The tick check is slow (1.5 s) and only knows what's been said so far.
   g.turnDelay = 1500
   const ticksFor = (b) => {
