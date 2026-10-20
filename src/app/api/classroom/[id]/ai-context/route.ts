@@ -51,7 +51,9 @@ type Action =
 function welcomeInstruction(a: Extract<Action, { kind: 'welcome' }>): string | null {
   switch (a.step) {
     case 'suggest':
-      return 'WELCOME TALK (time check): when you\'ve finished what you\'re saying, move on to the role-play, as your plan says (step 3): say you have a short role-play for them and teach the phrase "Let\'s do a role-play."'
+      // step 3: only the phrase. (With the scene in the same note, the tutor went straight into the scene without
+      // teaching the phrase; the scene now comes when they say it and the role-play opens.)
+      return 'ROLE-PLAY TIME (step 3): the three questions are done. When you\'ve finished what you\'re saying, react to their last answer in a few words, then say you have a short role-play for them and teach the phrase in exactly these words: In the classroom, you can open things just by asking. Please say: "Let\'s do a role-play." Then stop and wait for them to say it. When they have, reply only "Great!" and wait for the "ROLE-PLAY STARTS NOW" note with the scene. Don\'t describe or start any scene before that note.'
     case 'correct': {
       // the natural version of what they just said (the helper's, checked: English, a short sentence)
       const now = q(a.now, 160)

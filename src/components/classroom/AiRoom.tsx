@@ -984,7 +984,7 @@ export default function AiRoom(props: Props) {
   const handleEvent = useCallback(
     async (ev: { type: string; [k: string]: unknown }) => {
       // (the logs: every event but the transcript and audio deltas, with the response's status or the error)
-      if (!/delta$/.test(ev.type)) {
+      if (!/delta$/.test(ev.type) && !/delta$/.test(String((ev.event as { type?: string } | undefined)?.type ?? ''))) {
         const inner = ev.event as { type?: string; response?: { status?: string; status_details?: unknown } } | undefined
         const err = ev.error as { message?: string; code?: string } | undefined
         const st = inner?.response?.status
@@ -1761,7 +1761,8 @@ export default function AiRoom(props: Props) {
       const m0 = missionRef.current
       const sid = sessionId.current
       const plain = (x: Line[]) => x.map((l) => ({ from: l.from, text: l.text }))
-      const last: Promise<{ id: string; said: string }[]> = sid
+      const left0 = tasksFor(roleOf(cur.scene, cur.role).levels[cur.level], m0.twisted).filter((x) => !m0.done[x.id]).length
+      const last: Promise<{ id: string; said: string }[]> = sid && left0
         ? aiTurn(info.bookingId, {
             sessionId: sid,
             roleplay: { sceneId: cur.scene.id, role: cur.role, level: cur.level, twisted: m0.twisted, done: Object.keys(m0.done), lines: plain(L.slice(rpFrom.current).slice(-30)) },
@@ -1779,7 +1780,9 @@ export default function AiRoom(props: Props) {
         for (const x of xs) if (x && !out.some((o) => sameWords(o.now, x.now))) out.push(x)
         return out.slice(0, 3)
       })
-      const within = <T,>(p: Promise<T>, empty: T) => Promise.race([p, new Promise<T>((r) => setTimeout(() => r(empty), 8000))])
+      // (at most 3 s: waiting up to 8 s for a slow check left a long silence before the feedback. A tick that comes
+      // later still shows on the screen; a mistake found later isn't listed)
+      const within = <T,>(p: Promise<T>, empty: T) => Promise.race([p, new Promise<T>((r) => setTimeout(() => r(empty), 3000))])
       void Promise.all([within(last, []), within(fixes, [])]).then(([ticks, found]) => {
         if (rpToken.current !== token) return
         if (ticks.length) tickDo.current(ticks, token)
@@ -1991,18 +1994,12 @@ export default function AiRoom(props: Props) {
         })()
       return wSceneP.current
     }
-    /** step 3: the tutor is told to teach the phrase, with the scene to start once they've said it (once) */
+    /** step 3: the tutor is told to teach the phrase (once). The scene comes when they say it and it opens */
     wSendReady.current = () => {
       if (wReadySent.current) return
       wReadySent.current = true
-      void wPrepare.current().then((sc) => {
-        if (!sc) {
-          wReadySent.current = false
-          return
-        }
-        logEv(`welcome:ready ${sc.id}`)
-        void act({ kind: 'roleplay', sceneId: sc.id, role: sc.studentRole, level: 0, ready: true })
-      })
+      logEv('welcome:roleplay-time')
+      void act({ kind: 'welcome', step: 'suggest' })
     }
     // the tutor teaches "Let's do a role-play": the card (the scene is usually ready already)
     wLoadPick.current = () => {
@@ -2025,7 +2022,8 @@ export default function AiRoom(props: Props) {
       if (wOpening.current || (wStepRef.current !== 'suggest' && wStepRef.current !== 'about') || !sc) return
       wOpening.current = true
       wGo.current('roleplay')
-      beginRoleplay(sc, sc.studentRole, 0, wReadySent.current)
+      // (the scene note goes now, with the panel: the tutor says "Great!" and waits for it)
+      beginRoleplay(sc, sc.studentRole, 0, false)
     }
     wGo.current = (to) => {
       if (wStepRef.current === to) return
@@ -2611,6 +2609,8 @@ export default function AiRoom(props: Props) {
                   onNext={() => openPicker('rp')}
                   onEnd={closePanel}
                   welcome={welcome}
+                  // "looking at how you did…" only until the tutor starts its feedback
+                  waiting={lastSaid.current.tutor < doneAt.current + 1500}
                 />
               )}
             </div>

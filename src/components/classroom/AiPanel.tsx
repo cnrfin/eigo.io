@@ -322,6 +322,7 @@ export function RoleplayDone({
   onNext,
   onEnd,
   welcome,
+  waiting,
 }: {
   t: ClassroomT
   lang: Lang
@@ -338,6 +339,8 @@ export function RoleplayDone({
   onEnd: () => void
   /** the welcome call: no swap / again / next, it moves on by itself */
   welcome?: boolean
+  /** the welcome call: the tutor hasn't started its feedback yet */
+  waiting?: boolean
 }) {
   const tasks = tasksFor(roleOf(scene, role).levels[level], mission.twisted)
   return (
@@ -382,10 +385,12 @@ export function RoleplayDone({
         <div className="apn-time">{mmss(took)}</div>
       </div>
       {welcome ? (
-        <div className="apn-next" role="status">
-          <i />
-          {t('wlMovingOn')}
-        </div>
+        waiting ? (
+          <div className="apn-next" role="status">
+            <i />
+            {t('wlMovingOn')}
+          </div>
+        ) : null
       ) : (
         <div className="apn-acts">
           <button className="apn-btn" onClick={onAgain}>
