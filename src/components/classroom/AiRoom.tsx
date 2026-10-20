@@ -1906,6 +1906,7 @@ export default function AiRoom(props: Props) {
   const wLoadPick = useRef<() => void>(() => {})
   const wPrepare = useRef<() => Promise<Scene | null>>(() => Promise.resolve(null))
   const wSceneP = useRef<Promise<Scene | null> | null>(null)
+  const wSendReady = useRef<() => void>(() => {})
   const setFacts = useCallback((f: Facts) => {
     wFactsRef.current = f
     setWFacts(f)
@@ -1948,9 +1949,11 @@ export default function AiRoom(props: Props) {
         }
         // the role-play for them (until it's on screen)
         if (r.pick && !wSceneRef.current) wPick.current = r.pick
-        // once they've said what they do (the pick goes by their job first): the scene is fixed, and the tutor is told
-        // about it now, for later. (Sent while it taught the phrase, it went straight into the scene without waiting.)
+        // once they've said what they do (the pick goes by their job first): the scene is fixed and loaded, quietly
         if (r.pick && next.job && !wSceneP.current) void wPrepare.current()
+        // all three questions answered: now the tutor gets the role-play (step 3). Never before: told about it during the
+        // questions, "for later", it dropped the other two questions and went straight to the role-play
+        if (wStepRef.current === 'about' && FACT_KEYS.every((k) => next[k])) wSendReady.current()
         if (wAskAgain.current) {
           wAskAgain.current = false
           wAsk.current()
@@ -1984,17 +1987,29 @@ export default function AiRoom(props: Props) {
           if (!sc && pick.sceneId !== FALLBACK_PICK.sceneId) sc = await welcomeScene(info.bookingId, FALLBACK_PICK.sceneId)
           if (!sc || (wStepRef.current !== 'about' && wStepRef.current !== null)) return null
           wSceneRef.current = sc
-          wReadySent.current = true
-          logEv(`welcome:ready ${sc.id}`)
-          void act({ kind: 'roleplay', sceneId: sc.id, role: sc.studentRole, level: 0, ready: true })
           return sc
         })()
       return wSceneP.current
+    }
+    /** step 3: the tutor is told to teach the phrase, with the scene to start once they've said it (once) */
+    wSendReady.current = () => {
+      if (wReadySent.current) return
+      wReadySent.current = true
+      void wPrepare.current().then((sc) => {
+        if (!sc) {
+          wReadySent.current = false
+          return
+        }
+        logEv(`welcome:ready ${sc.id}`)
+        void act({ kind: 'roleplay', sceneId: sc.id, role: sc.studentRole, level: 0, ready: true })
+      })
     }
     // the tutor teaches "Let's do a role-play": the card (the scene is usually ready already)
     wLoadPick.current = () => {
       if (wLoading.current) return
       wLoading.current = true
+      // (if the questions note hasn't gone yet: the tutor started step 3 itself, or they said the phrase first)
+      wSendReady.current()
       void wPrepare.current().then((sc) => {
         wLoading.current = false
         if (!sc || wStepRef.current !== 'about') return
@@ -2151,8 +2166,9 @@ export default function AiRoom(props: Props) {
       // the silence note says what's next)
     } else if (m.do === 'promptSuggest') {
       wSuggestSent.current = true
-      // (not when it's already on it: the note arrived as it taught the phrase, and it started its sentence over)
-      if (!/role[\s-]?play/i.test(runs.current.tutor.text)) void act({ kind: 'welcome', step: 'suggest' })
+      // time for the role-play even if the helper didn't hear all three answers: the role-play note (once), unless
+      // it's already on it (a note as it taught the phrase made it start its sentence over)
+      if (!/role[\s-]?play/i.test(runs.current.tutor.text)) wSendReady.current()
     } else if (m.do === 'open') wOpen.current()
     else if (m.do === 'wrap') {
       wWrapSent.current = true

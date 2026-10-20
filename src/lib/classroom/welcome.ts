@@ -254,7 +254,7 @@ export const welcomeStartStep = (elapsed: number): WelcomeStep => (elapsed < 150
  */
 export function welcomeNudge(step?: string): string {
   const at: Record<string, string> = {
-    about: 'You are in the three questions (step 2): ask the next one, or, if you have asked all three, go on to the role-play (step 3).',
+    about: 'You are in the three questions (step 2): ask the next one you haven\'t asked yet (where they\'re from and what they do, what they\'re interested in, why they\'re studying English). Don\'t start the role-play: it comes with its own note.',
     suggest: 'You have just taught "Let\'s do a role-play" (step 3): gently ask them to say it.',
     done: 'The role-play is over and you have given your feedback. Next is the voice command (step 5).',
     command: 'The role-play is done, and this is the voice command (step 5): ask them to say "Open the course".',
