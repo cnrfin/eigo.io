@@ -203,7 +203,7 @@ function HeroLesson({ lesson, locale, wherebyUrl, isAdmin, classroomEnabled, onC
         <button onClick={() => onReschedule(lesson)} className="text-xs font-medium transition-colors hover:opacity-70" style={{ color: 'var(--text-muted)' }}>
           {locale === 'ja' ? '予約変更' : 'Reschedule'}
         </button>
-        <span style={{ color: 'var(--hairline)' }}>·</span>
+        <span style={{ color: 'var(--divider)' }}>·</span>
         <button onClick={() => onCancel(lesson)} className="text-xs font-medium transition-colors hover:opacity-70" style={{ color: 'var(--text-muted)' }}>
           {locale === 'ja' ? 'キャンセル' : 'Cancel'}
         </button>

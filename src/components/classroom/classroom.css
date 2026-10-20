@@ -6,7 +6,7 @@
   --text:#ffffff;--text-secondary:#cacaca;--text-muted:#6b6f78;
   --accent:#7cc7ae;--accent-bg:#22352f;--danger:#ef5f64;--warning:#f2c27a;
   --selected-bg:#ffffff;--selected-text:#0d1a16;
-  --hairline:rgba(255,255,255,.08);--edge:rgba(255,255,255,.08);--item-hover:rgba(255,255,255,.06);
+  --hairline:transparent;--edge:rgba(255,255,255,.08);--item-hover:rgba(255,255,255,.06);
   --overlay:rgba(0,0,0,.85);--tile:rgba(0,0,0,.6);
   --glass:rgba(28,30,35,.58);--glass-edge:rgba(255,255,255,.12);--glass-ink:#ffffff;
   --bubble:#fae1d8;--bubble-ink:#151414;

@@ -35,7 +35,10 @@
   --dash-bg: #16181d;
   --panel: #212328;
   --card: #212328;
-  --hairline: rgba(255, 255, 255, 0.06);
+  /* cards and containers: no 1px border in either theme (dark had one; removed). Tabs, transparent pills and buttons
+     keep theirs with --edge; filled controls that keep a line in dark (calendar slots) use --control-line */
+  --hairline: transparent;
+  --control-line: rgba(255, 255, 255, 0.06);
   --divider: rgba(255, 255, 255, 0.07);
   --edge: rgba(255, 255, 255, 0.08);
   --track-line: #4f535c; /* course-map dashed connector (dark) */
@@ -113,6 +116,7 @@
   --panel: #f2f2f2;
   --card: #f2f2f2;
   --hairline: transparent;
+  --control-line: transparent;
   --divider: rgba(0, 0, 0, 0.06);
   --edge: rgba(0, 0, 0, 0.08); /* 1px border for buttons that sit ON cards */
   --track-line: #d7d7da; /* course-map dashed connector (light) — subtle */

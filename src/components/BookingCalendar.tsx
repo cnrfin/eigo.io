@@ -483,7 +483,7 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
                 style={{
                   background: duration === d ? 'var(--text)' : 'var(--panel)',
                   color: locked ? 'var(--text-disabled)' : duration === d ? 'var(--selected-text)' : 'var(--text-secondary)',
-                  border: duration === d ? '1px solid transparent' : '1px solid var(--hairline)',
+                  border: duration === d ? '1px solid transparent' : '1px solid var(--control-line)',
                   boxShadow: duration === d ? 'none' : 'var(--card-shadow)',
                   cursor: locked ? 'not-allowed' : 'pointer',
                   opacity: locked ? 0.5 : 1,
@@ -626,7 +626,7 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
                               : {
                                   background: 'var(--panel)',
                                   color: blocked ? 'var(--text-disabled)' : 'var(--text-secondary)',
-                                  border: '1px solid var(--hairline)',
+                                  border: '1px solid var(--control-line)',
                                   boxShadow: 'var(--card-shadow)',
                                 }),
                             opacity: blocked ? 0.4 : 1,
