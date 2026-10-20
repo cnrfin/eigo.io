@@ -276,6 +276,8 @@ export interface Course {
   chips?: { ja: string[]; en: string[] }
   /** Order within the series (lower first). */
   sortOrder?: number
+  /** The soft teal shapes framing every slide. Unset = shown (older courses); false = plain slides. */
+  decor?: boolean
   /** Recurring characters (optional; older courses don't have it). */
   characters?: Character[]
   units: Unit[]

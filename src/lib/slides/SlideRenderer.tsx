@@ -397,6 +397,8 @@ export function characterColor(name: string, characters: Character[] = []): numb
 interface CharacterCtx {
   characters: Character[]
   assetBase?: string
+  /** the course's framing shapes (Course.decor); false = plain slides */
+  decor?: boolean
 }
 const CharactersContext = createContext<CharacterCtx>({ characters: [] })
 
@@ -407,13 +409,16 @@ const CharactersContext = createContext<CharacterCtx>({ characters: [] })
 export function SlideCharacters({
   characters,
   assetBase,
+  decor,
   children,
 }: {
   characters: Character[] | undefined
   assetBase?: string
+  /** Course.decor: false hides the framing shapes on every slide */
+  decor?: boolean
   children: ReactNode
 }) {
-  return <CharactersContext.Provider value={{ characters: characters ?? [], assetBase }}>{children}</CharactersContext.Provider>
+  return <CharactersContext.Provider value={{ characters: characters ?? [], assetBase, decor }}>{children}</CharactersContext.Provider>
 }
 
 function DialogueView({ b }: { b: DialogueBlock }) {
@@ -765,12 +770,13 @@ function SlideHeader({ label, title }: { label: string; title: string }) {
 
 /** The 1280×960 (4:3) slide, unscaled. */
 export function SlideCanvas({ slide, mode = 'student', assetBase }: Omit<SlideRendererProps, 'overlay' | 'className'>) {
+  const { decor } = useContext(CharactersContext)
   return (
     <div
       className={`es-canvas es-bg-${slide.background}${slide.header ? '' : ' is-cover'}${slide.flashback ? ' is-flashback' : ''}`}
       style={{ width: STAGE_W, height: STAGE_H }}
     >
-      <SlideDecor cover={!slide.header} />
+      {decor !== false && <SlideDecor cover={!slide.header} />}
       <div className="es-watermark" aria-hidden>
         eigo.io
       </div>

@@ -1,7 +1,7 @@
 import { BubbleColorPicker } from './BubbleColorPicker'
 import { characterColor, slugify, summarizeCourse, uid, type CefrLevel, type Course } from '@slides'
 import type { CourseEditor } from '../useCourseEditor'
-import { Field, IconButton, Select, TextArea, TextInput } from '../ui/fields'
+import { Field, IconButton, Select, TextArea, TextInput, Toggle } from '../ui/fields'
 import { IconPlus, IconTrash } from '../ui/icons'
 import { ImageField } from './ImageField'
 
@@ -116,6 +116,12 @@ export function CourseSettings({ course, editor, onDelete }: { course: Course; e
                 placeholder="Everyday English, Travel, Culture"
                 onChange={(v) => set((d) => void (d.chips = { ja: d.chips?.ja ?? [], en: splitChips(v) }), 'chipsEn')}
               />
+            </Field>
+          </div>
+
+          <div className="card">
+            <Field label="Slide style" hint="The soft teal shapes in the corners of every slide.">
+              <Toggle label="Show corner shapes" checked={course.decor !== false} onChange={(v) => set((d) => void (d.decor = v), 'decor')} />
             </Field>
           </div>
 

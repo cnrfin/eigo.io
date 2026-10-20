@@ -2547,6 +2547,7 @@ export default function AiRoom(props: Props) {
               mode="student"
               assetBase={wPreview ? wPreview.loaded.assetBase : (props.loaded?.assetBase ?? '')}
               characters={wPreview ? wPreview.loaded.course.characters : props.loaded?.course.characters}
+              decor={wPreview ? wPreview.loaded.course.decor : props.loaded?.course.decor}
               remoteMedia={props.remoteMedia}
               onLocalMedia={onMedia}
               zoomLabel={t('backToWholeSlide')}

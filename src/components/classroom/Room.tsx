@@ -761,6 +761,7 @@ export default function Room(props: Props) {
                 mode={mode}
                 assetBase={props.loaded?.assetBase ?? ''}
                 characters={props.loaded?.course.characters}
+                decor={props.loaded?.course.decor}
                 remoteMedia={props.remoteMedia}
                 onLocalMedia={props.onLocalMedia}
                 zoomLabel={t('backToWholeSlide')}

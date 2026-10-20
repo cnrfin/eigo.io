@@ -255,7 +255,7 @@ function Editor({ courseId, onClose, themeToggle }: { courseId: string; onClose:
   if (!course || !selection) return <div className="app"><div className="center-msg muted">Loading…</div></div>
 
   return (
-    <SlideCharacters characters={course.characters} assetBase={assetBase}>
+    <SlideCharacters characters={course.characters} assetBase={assetBase} decor={course.decor}>
     <div className="app">
       <header className="topbar">
         <button className="btn btn-ghost btn-sm" onClick={onClose}>

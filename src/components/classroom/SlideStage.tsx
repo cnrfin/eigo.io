@@ -36,6 +36,8 @@ type Props = {
   mode: SlideMode
   assetBase: string
   characters: Character[] | undefined
+  /** Course.decor (false = no framing shapes) */
+  decor?: boolean
   className: string
   /** a play / pause from the other person, to apply here */
   /** word lookup on the slide's text */
@@ -392,7 +394,7 @@ const SlideStage = forwardRef<SlideStageHandle, Props>(function SlideStage(props
       <div className="stage" ref={stageRef}>
         <div id="slideHost" ref={hostRef}>
           {props.slide && (
-            <SlideCharacters characters={props.characters} assetBase={props.assetBase}>
+            <SlideCharacters characters={props.characters} assetBase={props.assetBase} decor={props.decor}>
               <SlideMediaSync value={mediaApi}>
                 <SlideVocabSave value={props.vocabApi}>
                   <SlideActivity value={props.activityApi}>
