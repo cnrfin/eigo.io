@@ -1,8 +1,9 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Block, Course, Lesson, Slide } from '@/lib/slides/types'
 import { findLesson, loadCourse } from '@/lib/classroom/courses'
-import { ACCENT_RULE, LEVEL_RULES, normalizeSettings, settingsToRules, type EnglishLevel, type TutorSettings } from './settings'
+import { ACCENT_RULE, LEVEL_RULES, settingsToRules, type EnglishLevel, type TutorSettings } from './settings'
 import type { FunctionTool } from './openai'
+import { withTutorName } from './tutor-name'
 import { AI_PLAN_MINUTES, PLAN_MINUTES, PLAN_PRICES } from '@/lib/stripe'
 import { TOPUP_MINUTES, TOPUP_VALID_MONTHS } from '@/lib/minutes'
 
@@ -368,7 +369,8 @@ export async function buildSessionBrief(
   ])
   // the free 5-minute welcome call (once per account): an onboarding chat, not a lesson
   const welcome = !!student && student.ai_trial_booking_id === booking.id
-  const settings: TutorSettings = normalizeSettings(row?.settings)
+  // (always with a name: one is given the first time)
+  const settings: TutorSettings = await withTutorName(db, booking.user_id, row?.settings)
 
   let lessonPart = ''
   let slideCount = 0

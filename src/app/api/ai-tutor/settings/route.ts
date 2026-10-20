@@ -3,6 +3,7 @@ import { verifySupabaseToken } from '@/lib/supabase-jwt'
 import { getSupabaseAdmin } from '@/lib/supabase-admin'
 import { normalizeSettings } from '@/lib/ai-tutor/settings'
 import { aiAccess } from '@/lib/ai-tutor/access'
+import { withTutorName } from '@/lib/ai-tutor/tutor-name'
 
 /**
  * GET /api/ai-tutor/settings   → { enabled, settings }
@@ -25,7 +26,8 @@ export async function GET(request: NextRequest) {
   const enabled = (await aiAccess(user)).ok
   if (!enabled) return NextResponse.json({ enabled: false, settings: null })
   const { data } = await db.from('ai_tutor_profiles').select('settings').eq('user_id', user.id).maybeSingle()
-  return NextResponse.json({ enabled: true, settings: normalizeSettings(data?.settings) })
+  // (a name is given the first time: the start card says "Talk to Mia now", not "Talk to AI tutor")
+  return NextResponse.json({ enabled: true, settings: await withTutorName(db, user.id, data?.settings) })
 }
 
 export async function PUT(request: NextRequest) {

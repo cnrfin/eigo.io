@@ -1,6 +1,6 @@
 /* "Start now" AI lessons: start card + dashboard modal (design: mockups/ai-start-now.html) */
 .ais { position: relative; }
-.ais-head { display: flex; gap: 14px; align-items: center; padding-right: 80px; }
+.ais-head { display: flex; gap: 14px; align-items: center; padding-right: 96px; }
 .ais-compact .ais-head { padding-right: 0; }
 .ais-av { width: 64px; flex: none; }
 .ais-compact .ais-av { width: 48px; }
@@ -24,6 +24,8 @@
 .ais-two span { font-size: .74rem; color: var(--text-muted); }
 .ais-icon { width: 32px; height: 32px; background: var(--inset); color: #fff; }
 :root[data-theme="light"] .ais-icon { background: var(--text-subtle); } /* white needs a darker grey in light mode */
+/* the welcome talk's speech bubble: light sage with a sage icon */
+.ais-icon.ais-icon-wt, :root[data-theme="light"] .ais-icon.ais-icon-wt { background: var(--accent-bg); color: var(--accent); }
 .ais-fixed:hover { background: var(--panel); }
 .ais-fixed .cs-pmain { cursor: default; }
 .ais-fixed .cs-pmain:active { transform: none; }
@@ -53,7 +55,7 @@
   animation: ais-fade .2s ease-out;
 }
 .ais-modal {
-  position: relative; width: min(460px, 100%); padding: 22px; border-radius: 22px; background: var(--panel);
+  position: relative; width: min(500px, 100%); padding: 22px; border-radius: 22px; background: var(--panel);
   border: 1px solid var(--hairline); box-shadow: 0 20px 60px rgba(0, 0, 0, .25);
   animation: ais-in .25s ease-out;
 }
@@ -64,6 +66,14 @@
 }
 .ais-ib:hover { color: var(--text); }
 .ais-ib:active { transform: scale(.9); }
+:root[data-theme="light"] .ais-modal { background: var(--card-white); }
+/* "Settings": a text button where the gear and ✕ were */
+.ais-tb {
+  height: 32px; padding: 0 14px; border-radius: 999px; background: var(--inset); color: var(--text-secondary);
+  font-size: .75rem; font-weight: 600; transition: transform .12s ease-out, color .15s;
+}
+.ais-tb:hover { color: var(--text); }
+.ais-tb:active { transform: scale(.95); }
 @keyframes ais-fade { from { opacity: 0 } }
 @keyframes ais-in { from { opacity: 0; filter: blur(6px); transform: scale(.98) } }
 @media (prefers-reduced-motion: reduce) { .ais-scrim, .ais-modal { animation: none; } }
