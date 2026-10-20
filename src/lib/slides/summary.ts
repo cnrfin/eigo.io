@@ -61,6 +61,13 @@ export function validateCourse(c: Course): CourseIssue[] {
           if (b.type === 'truefalse' && b.items.length === 0) issues.push({ level: 'error', where: sw, message: 'True/false block has no statements.' })
           if (b.type === 'match' && b.pairs.length < 2) issues.push({ level: 'error', where: sw, message: 'Matching needs at least two pairs.' })
           if (b.type === 'match' && b.pairs.some((p) => !p.image)) issues.push({ level: 'warning', where: sw, message: 'Matching picture not added yet.' })
+          if (b.type === 'listen' && b.items.length === 0) issues.push({ level: 'error', where: sw, message: 'Listen and choose has no items.' })
+          if (b.type === 'listen' && b.items.some((it) => !it.audio))
+            issues.push({ level: 'warning', where: sw, message: 'Listen and choose: some clips not added yet (the teacher says those words).' })
+          if (b.type === 'listen' && b.items.some((it) => it.options.length < 2 || it.answer >= it.options.length))
+            issues.push({ level: 'error', where: sw, message: 'Listen and choose: every item needs 2 or more options and a right answer.' })
+          if (b.type === 'saymatch' && b.pairs.some((p) => !p.a.trim() || !p.b.trim())) issues.push({ level: 'error', where: sw, message: '“Did you get it?” has an empty word.' })
+          if (b.type === 'gapfill' && !b.lines.some((l) => /…|\.\.\./.test(l))) issues.push({ level: 'warning', where: sw, message: 'Gap-fill has no gaps (type … for each).' })
         }
       })
     })

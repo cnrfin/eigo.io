@@ -32,6 +32,7 @@ import { IconCopy, IconDown, IconPlus, IconTrash, IconUp } from '../ui/icons'
 import { ImageField } from './ImageField'
 import { BubbleColorPicker } from './BubbleColorPicker'
 import { MediaField } from './MediaField'
+import { PracticeInspector, RevealToggle } from './PracticeInspector'
 
 const SIZE_OPTS: { value: TextSize; label: string }[] = [
   { value: 'sm', label: 'S' },
@@ -62,6 +63,13 @@ export const BLOCK_LABELS: Record<BlockType, string> = {
   media: 'Video / audio',
   truefalse: 'True / false',
   match: 'Matching',
+  listen: 'Listen and choose',
+  repeat: 'Model and repeat',
+  saymatch: 'Did you get it?',
+  prompt: 'Speaking prompt',
+  gapfill: 'Personal gap-fill',
+  timer: 'Timer',
+  cando: 'Can-do goal',
 }
 
 interface Props {
@@ -752,6 +760,7 @@ function BlockInspector({
             </Field>
           </>
         ) : null}
+        <PracticeInspector courseId={courseId} block={b} setBlock={setBlock} />
       </Section>
 
       <Section title="Visibility">
@@ -760,6 +769,7 @@ function BlockInspector({
           checked={Boolean(b.tutorOnly)}
           onChange={(v) => setBlock((x) => void (x.tutorOnly = v))}
         />
+        <RevealToggle block={b} setBlock={setBlock} />
       </Section>
 
       <Section title="Position (% of slide)">

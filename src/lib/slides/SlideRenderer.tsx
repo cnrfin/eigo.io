@@ -10,6 +10,7 @@
  */
 import { createContext, Fragment, useContext, useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import { STAGE_H, STAGE_W } from './templates'
+import { CanDoView, GapFillView, ListenView, PromptView, RepeatView, RevealGate, SayMatchView, TimerView } from './activities'
 import type {
   Block,
   Character,
@@ -162,6 +163,8 @@ const VocabSaveContext = createContext<VocabSaveApi | null>(null)
 export function SlideVocabSave({ value, children }: { value: VocabSaveApi | null; children: ReactNode }) {
   return <VocabSaveContext.Provider value={value}>{children}</VocabSaveContext.Provider>
 }
+/** The live lesson's "save to my cards" (null in the studio and teacher view). */
+export const useVocabSave = () => useContext(VocabSaveContext)
 
 function VocabView({ b }: { b: VocabBlock }) {
   const save = useContext(VocabSaveContext)
@@ -489,7 +492,7 @@ const ActivityContext = createContext<ActivityApi | null>(null)
 export function SlideActivity({ value, children }: { value: ActivityApi | null; children: ReactNode }) {
   return <ActivityContext.Provider value={value}>{children}</ActivityContext.Provider>
 }
-function useActivityState<T>(blockId: string, initial: T): [T, (v: T) => void, ActivityApi | null] {
+export function useActivityState<T>(blockId: string, initial: T): [T, (v: T) => void, ActivityApi | null] {
   const api = useContext(ActivityContext)
   const [local, setLocal] = useState<T>(initial)
   const [, bump] = useState(0)
@@ -724,6 +727,20 @@ export function BlockView({ block, assetBase, mode = 'student' }: { block: Block
       return <TrueFalseView b={block} blockId={block.id} mode={mode} />
     case 'match':
       return <MatchView b={block} blockId={block.id} mode={mode} assetBase={assetBase} />
+    case 'listen':
+      return <ListenView b={block} blockId={block.id} mode={mode} assetBase={assetBase} />
+    case 'repeat':
+      return <RepeatView b={block} blockId={block.id} mode={mode} assetBase={assetBase} />
+    case 'saymatch':
+      return <SayMatchView b={block} blockId={block.id} mode={mode} />
+    case 'prompt':
+      return <PromptView b={block} blockId={block.id} mode={mode} />
+    case 'gapfill':
+      return <GapFillView b={block} blockId={block.id} mode={mode} />
+    case 'timer':
+      return <TimerView b={block} blockId={block.id} mode={mode} />
+    case 'cando':
+      return <CanDoView b={block} blockId={block.id} mode={mode} />
   }
 }
 
@@ -796,7 +813,13 @@ export function SlideCanvas({ slide, mode = 'student', assetBase }: Omit<SlideRe
             }}
           >
             {b.tutorOnly ? <span className="es-tutor-tag">Teacher</span> : null}
-            <BlockView block={b} assetBase={assetBase} mode={mode} />
+            {b.reveal ? (
+              <RevealGate blockId={b.id} mode={mode}>
+                <BlockView block={b} assetBase={assetBase} mode={mode} />
+              </RevealGate>
+            ) : (
+              <BlockView block={b} assetBase={assetBase} mode={mode} />
+            )}
           </div>
         )
       })}

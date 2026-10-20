@@ -30,6 +30,8 @@ interface BlockBase {
   frame: Frame
   /** Visible to the teacher only (answers, prompts, instructions). */
   tutorOnly?: boolean
+  /** Hidden from the student until someone taps "Show" (guess first, then reveal). */
+  reveal?: boolean
 }
 
 export interface HeadingBlock extends BlockBase {
@@ -193,6 +195,96 @@ export interface MatchBlock extends BlockBase {
   pairs: MatchPair[]
 }
 
+/* ---------- Interactive blocks for practice (pronunciation and beyond) ---------- */
+
+export interface ListenOption {
+  /** A word, a syllable ("ho", "tel") or "↗ / ↘". */
+  text?: string
+  /** Relative asset path: a picture to tap instead of a word. */
+  image?: string
+  alt?: string
+}
+
+export interface ListenItem {
+  /** Relative asset path of the clip. Empty = the tutor says it (the tutor sees what to say). */
+  audio: string
+  options: ListenOption[]
+  /** Index of the right option. */
+  answer: number
+  /** What the clip says, e.g. a whole sentence (teacher view, and shown to the student after they answer). */
+  says?: string
+}
+
+/**
+ * Listen and choose: a clip plays (or the tutor says it), the student taps what they heard. One item at a
+ * time, with a score at the end. Words, syllables (which part is strong?), pictures or intonation arrows.
+ */
+export interface ListenBlock extends BlockBase {
+  type: 'listen'
+  items: ListenItem[]
+  /** How many times the student may replay a clip (0 = no limit). */
+  replays: number
+}
+
+export interface RepeatItem {
+  text: string
+  /** Clips in the course voices (relative asset paths). */
+  audio?: { ukF?: string; ukM?: string; usF?: string; usM?: string }
+  /** Simple respelling shown on tap, e.g. "nice ta MEE-choo". */
+  respell?: string
+}
+
+/** Model and repeat: word or phrase cards with play buttons in UK/US voices; the tutor marks each one. */
+export interface RepeatBlock extends BlockBase {
+  type: 'repeat'
+  items: RepeatItem[]
+}
+
+/**
+ * "Did you get it?": the student secretly picks one word of a pair and says it; the tutor says what it heard;
+ * then the pick is revealed and a point is scored if they match. The pick stays hidden from the tutor until then.
+ */
+export interface SayMatchBlock extends BlockBase {
+  type: 'saymatch'
+  pairs: { a: string; b: string }[]
+  rounds: number
+}
+
+/** A speaking task: question, optional sentence starters, an example answer hidden until tapped, and goals to tick. */
+export interface PromptBlock extends BlockBase {
+  type: 'prompt'
+  text: string
+  starters?: string[]
+  /** Example answer (hidden from the student until tapped). */
+  model?: string
+  /** Things to do in a role-play or task; tapped off as they happen. */
+  goals?: string[]
+}
+
+/** Personal gap-fill: phrase frames with gaps (…) the student fills with their own details, then can save. */
+export interface GapFillBlock extends BlockBase {
+  type: 'gapfill'
+  /** One frame per line; "…" marks each gap. */
+  lines: string[]
+}
+
+/** A countdown for races and timed tasks. */
+export interface TimerBlock extends BlockBase {
+  type: 'timer'
+  seconds: number
+  label?: string
+}
+
+/** Today's goal, and at the end of the lesson the student's own rating: ✓ / with help / not yet. */
+export interface CanDoBlock extends BlockBase {
+  type: 'cando'
+  goal: string
+  /** e.g. "Lesson 4 of 14" */
+  progress?: string
+  /** Show the rating buttons (on the wrap-up). */
+  rate: boolean
+}
+
 export type Block =
   | HeadingBlock
   | TextBlock
@@ -205,6 +297,13 @@ export type Block =
   | MediaBlock
   | TrueFalseBlock
   | MatchBlock
+  | ListenBlock
+  | RepeatBlock
+  | SayMatchBlock
+  | PromptBlock
+  | GapFillBlock
+  | TimerBlock
+  | CanDoBlock
 
 export type BlockType = Block['type']
 

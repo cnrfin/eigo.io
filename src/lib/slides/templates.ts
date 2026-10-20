@@ -95,6 +95,29 @@ export function createBlock(type: BlockType, frame: Frame = f(30, 35, 40, 30)): 
           { text: 'A second statement.', answer: false, why: 'Why it is false.' },
         ],
       }
+    case 'listen':
+      return {
+        id,
+        type,
+        frame,
+        replays: 1,
+        items: [
+          { audio: '', options: [{ text: 'light' }, { text: 'right' }], answer: 0 },
+          { audio: '', options: [{ text: 'glass' }, { text: 'grass' }], answer: 1 },
+        ],
+      }
+    case 'repeat':
+      return { id, type, frame, items: [{ text: 'light' }, { text: 'right' }] }
+    case 'saymatch':
+      return { id, type, frame, rounds: 8, pairs: [{ a: 'light', b: 'right' }, { a: 'long', b: 'wrong' }] }
+    case 'prompt':
+      return { id, type, frame, text: 'Tell me about…', starters: ['I usually…'], model: '', goals: [] }
+    case 'gapfill':
+      return { id, type, frame, lines: ['My name is …', 'I live near …'] }
+    case 'timer':
+      return { id, type, frame, seconds: 60, label: '' }
+    case 'cando':
+      return { id, type, frame, goal: 'Today’s goal: …', progress: '', rate: false }
     case 'match':
       return {
         id,

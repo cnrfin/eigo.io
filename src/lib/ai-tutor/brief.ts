@@ -45,6 +45,30 @@ function blockText(b: Block): string {
       return 'True or false (answers for you only):\n' + b.items.map((i, n) => `${n + 1}. ${clip(i.text, 160)} → ${i.answer ? 'TRUE' : 'FALSE'}${i.why ? ` (${clip(i.why, 120)})` : ''}`).join('\n')
     case 'match':
       return 'Matching activity (words to pictures): ' + b.pairs.map((p) => p.term).join(', ')
+    case 'listen':
+      return (
+        `Listen and choose (one item at a time; the student taps what they heard; answers for you only):\n` +
+        b.items
+          .map((it, n) => {
+            const opts = it.options.map((o) => o.text || o.alt || 'picture').join(' / ')
+            const ans = it.options[it.answer]
+            const key = ans?.text || ans?.alt || ''
+            return `${n + 1}. ${opts} → ${key}${it.audio ? ' (a clip plays on their screen)' : ` (no clip: when this item is on screen, YOU say "${clip(it.says || key, 120)}" once, naturally, then wait for their tap)`}`
+          })
+          .join('\n')
+      )
+    case 'repeat':
+      return `Model and repeat (word cards; the student hears the clip, repeats, then says it alone): ${b.items.map((i) => clip(i.text, 60)).join(' | ')}`
+    case 'saymatch':
+      return `"Did you get it?" game, ${b.rounds} rounds with ${b.pairs.map((p) => `${p.a}/${p.b}`).join(', ')}: the student secretly chooses a word and says it; you say which word you heard ("I heard light"), before you know their choice; then they check it on screen.`
+    case 'prompt':
+      return `Speaking task: ${clip(b.text, 300)}${b.starters?.filter(Boolean).length ? `\nSentence starters on screen: ${b.starters.filter(Boolean).join(' | ')}` : ''}${b.goals?.filter(Boolean).length ? `\nGoals: ${b.goals.filter(Boolean).join('; ')}` : ''}${b.model ? `\nExample answer (hidden until they tap it; for you): ${clip(b.model, 200)}` : ''}`
+    case 'gapfill':
+      return `Personal gap-fill (the student fills each … with their own details, then says the line): ${b.lines.map((l) => clip(l, 80)).join(' | ')}`
+    case 'timer':
+      return `[timer: ${b.seconds} seconds${b.label ? `, "${clip(b.label, 80)}"` : ''}; the student starts it]`
+    case 'cando':
+      return `${b.progress ? `${clip(b.progress, 40)}. ` : ''}${clip(b.goal, 200)}${b.rate ? ' (the student rates it on screen: I can / with help / not yet)' : ''}`
     default:
       return ''
   }
@@ -53,7 +77,7 @@ function blockText(b: Block): string {
 export function slideText(s: Slide, n: number): string {
   const head = s.header ? `${s.header.label ? s.header.label + ' · ' : ''}${s.header.title}` : ''
   const body = s.blocks
-    .map((b) => (b.tutorOnly ? `(teacher only) ${blockText(b)}` : blockText(b)))
+    .map((b) => (b.tutorOnly ? `(teacher only) ${blockText(b)}` : b.reveal ? `(hidden from the student until they tap "Show": let them guess first) ${blockText(b)}` : blockText(b)))
     .filter(Boolean)
     .join('\n')
   const notes = s.tutorNotes
@@ -91,6 +115,24 @@ export function checklist(s: Slide): string[] {
         break
       case 'match':
         out.push(`matching: the student matches all ${b.pairs.length} pairs on screen`)
+        break
+      case 'listen':
+        out.push(`listening: all ${b.items.length} items, one at a time; the student taps each answer on screen (never say the answer before they tap)`)
+        break
+      case 'repeat':
+        out.push(`repeat: each card (${b.items.length}): model it, the student repeats, then says it alone; say only whether you understood it`)
+        break
+      case 'saymatch':
+        out.push(`"Did you get it?": ${b.rounds} rounds; each time say which word you heard, before they check`)
+        break
+      case 'prompt':
+        out.push(`the speaking task: the student answers in full sentences${b.goals?.filter(Boolean).length ? ' and does every goal' : ''}`)
+        break
+      case 'gapfill':
+        out.push(`gap-fill: the student fills and says every line (${b.lines.length})`)
+        break
+      case 'cando':
+        if (b.rate) out.push('the can-do check: the student rates today’s goal on screen')
         break
       case 'media':
         out.push(`the ${b.kind === 'audio' ? 'audio clip' : 'video'}: say "I'll press play now" to play it, stay quiet while it plays, then ask about it`)
