@@ -4,7 +4,7 @@
   "title": { "ja": "旅館で温泉のマナーを説明", "en": "Explaining onsen manners at a ryokan" },
   "summary": { "ja": "部屋に案内して、浴衣や温泉の入り方、夕食の時間を英語で説明する。", "en": "Show a guest to their room and explain the yukata, the hot spring and dinner." },
   "setting": "A traditional ryokan in a hot spring town, in the late afternoon. A guest from abroad has just checked in, and a member of staff shows them to their tatami room.",
-  "image": "",
+  "image": "/roleplay/ryokan-onsen.jpg",
   "studentRole": "a",
   "roles": [
     {

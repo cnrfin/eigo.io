@@ -4,7 +4,7 @@
   "title": { "ja": "空港で荷物が出てこない", "en": "When your bag doesn't arrive" },
   "summary": { "ja": "空港のカウンターで、届かない荷物の特徴や連絡先を伝える。", "en": "Report a missing bag at the airport: describe it and say where to send it." },
   "setting": "The baggage service desk in the arrivals hall at Vancouver Airport, Canada. A passenger has just arrived on Sky Pacific flight SP 101 from Tokyo, and their suitcase hasn't come out on the belt.",
-  "image": "",
+  "image": "/roleplay/lost-luggage.jpg",
   "studentRole": "a",
   "roles": [
     {

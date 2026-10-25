@@ -4,7 +4,7 @@
   "title": { "ja": "マッサージ店で接客", "en": "Serving customers at a massage salon" },
   "summary": { "ja": "コースや時間を案内して、力加減を確かめ、施術のあとのアドバイスを伝える。", "en": "Explain the treatments, check the pressure and give advice afterwards." },
   "setting": "A relaxation salon near a busy shopping street in Tokyo, in the early evening. A tourist who has been walking all day comes in; the staff speak English to them.",
-  "image": "",
+  "image": "/roleplay/salon-massage.jpg",
   "studentRole": "a",
   "roles": [
     {

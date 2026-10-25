@@ -4,7 +4,7 @@
   "title": { "ja": "ラーメン店で注文・食べ方を案内", "en": "Helping guests at a ramen shop" },
   "summary": { "ja": "食券の買い方や麺のかたさ、替え玉、食べ方のマナーを英語で案内する。", "en": "Explain the ticket machine, noodle firmness, kaedama and how to enjoy ramen." },
   "setting": "A small, popular ramen shop with a counter in Tokyo, at lunchtime. Customers buy a ticket from the machine by the door and hand it to the staff. A tourist comes in for their first ramen in Japan.",
-  "image": "",
+  "image": "/roleplay/ramen-shop.jpg",
   "studentRole": "a",
   "roles": [
     {

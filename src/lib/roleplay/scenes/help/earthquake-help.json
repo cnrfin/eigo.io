@@ -4,7 +4,7 @@
   "title": { "ja": "地震のとき外国人を案内する", "en": "Helping a tourist after an earthquake" },
   "summary": { "ja": "地震のあと、不安な観光客を落ち着かせて、避難場所や情報の集め方を伝える。", "en": "After an earthquake, calm a worried tourist and tell them where to go and how to get news." },
   "setting": "A street near Kitamachi Station in Tokyo, a few minutes after a fairly strong earthquake. The shaking has stopped and no one is hurt, but the trains have stopped for safety checks. A tourist standing nearby looks frightened.",
-  "image": "",
+  "image": "/roleplay/earthquake-help.jpg",
   "studentRole": "a",
   "roles": [
     {

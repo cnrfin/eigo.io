@@ -4,7 +4,7 @@
   "title": { "ja": "趣味の話で盛り上がる", "en": "Talking about hobbies" },
   "summary": { "ja": "自分の趣味を話して、相手の趣味も聞き、一緒にやろうと誘う。", "en": "Talk about your hobbies, ask about theirs and invite them to try yours." },
   "setting": "A café on a Sunday afternoon. Two friends are having coffee and chatting about what they do in their free time.",
-  "image": "",
+  "image": "/roleplay/hobbies.jpg",
   "studentRole": "a",
   "roles": [
     {

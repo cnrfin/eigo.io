@@ -4,7 +4,7 @@
   "title": { "ja": "誕生日をお祝いする", "en": "Celebrating a friend's birthday" },
   "summary": { "ja": "友だちの誕生日をお祝いして、プレゼントを渡し、近況を話す。", "en": "Wish a friend happy birthday, give them a present and catch up." },
   "setting": "A café in Tokyo on a weekday afternoon. It's the birthday of Olivia, a friend from abroad, and their Japanese friend has brought a present to give them.",
-  "image": "",
+  "image": "/roleplay/birthday.jpg",
   "studentRole": "a",
   "roles": [
     {

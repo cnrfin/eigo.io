@@ -4,7 +4,7 @@
   "title": { "ja": "空港の案内カウンターで対応", "en": "Helping at an airport information desk" },
   "summary": { "ja": "到着した旅行者に、都心への行き方や時刻、料金、乗り場を案内する。", "en": "Tell arriving travellers how to get into the city: times, fares and where to go." },
   "setting": "The information counter in the arrivals hall of an airport near Tokyo, in the evening. A traveller who has just landed comes to the counter; the staff speak English to them.",
-  "image": "",
+  "image": "/roleplay/info-counter.jpg",
   "studentRole": "a",
   "roles": [
     {

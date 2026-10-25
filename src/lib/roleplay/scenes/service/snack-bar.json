@@ -4,7 +4,7 @@
   "title": { "ja": "バーで外国人のお客さんと話す", "en": "Chatting with a guest at a bar" },
   "summary": { "ja": "飲み物の注文を受けてチャージを説明し、おすすめや旅の話で会話を楽しむ。", "en": "Take drink orders, explain the table charge, recommend drinks and make conversation." },
   "setting": "Hana, a small snack bar with a counter and a karaoke machine in a side street in Osaka, on a weeknight. A traveller from abroad comes in alone; the bartender speaks English with them.",
-  "image": "",
+  "image": "/roleplay/snack-bar.jpg",
   "studentRole": "a",
   "roles": [
     {

@@ -4,7 +4,7 @@
   "title": { "ja": "コンビニのレジで対応", "en": "At the convenience store register" },
   "summary": { "ja": "お弁当を温めるか、袋やおはしがいるか聞いて、金額と支払い方法を案内する。", "en": "Offer to heat the bento, ask about a bag and chopsticks, and take the payment." },
   "setting": "A convenience store near a station in Tokyo, at lunchtime. A tourist brings a bento, a rice ball and a bottle of green tea to the register; the clerk speaks English to them.",
-  "image": "",
+  "image": "/roleplay/convenience-store.jpg",
   "studentRole": "a",
   "roles": [
     {

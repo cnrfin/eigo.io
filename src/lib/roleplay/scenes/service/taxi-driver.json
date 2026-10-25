@@ -4,7 +4,7 @@
   "title": { "ja": "タクシー運転手として案内", "en": "Driving a taxi for tourists" },
   "summary": { "ja": "行き先を確認して、時間や料金を伝え、降りる場所や支払いを案内する。", "en": "Check where to go, give the time and fare, and help with drop-off and payment." },
   "setting": "A taxi leaving the taxi rank at Kyoto Station. A tourist gets into the back seat; the driver speaks English with them.",
-  "image": "",
+  "image": "/roleplay/taxi-driver.jpg",
   "studentRole": "a",
   "roles": [
     {

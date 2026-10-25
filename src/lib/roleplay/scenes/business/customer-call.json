@@ -4,7 +4,7 @@
   "title": { "ja": "海外のお客様からの問い合わせ電話", "en": "A call from an overseas customer" },
   "summary": { "ja": "届かない注文について電話を受け、状況を調べて、解決策を伝える。", "en": "Take a call about an order that hasn't arrived, check it and offer a solution." },
   "setting": "The customer service line of Kaze Tableware, an online shop in Japan that sells tableware overseas. It's Tuesday 20 October. Sarah Wilson, a customer in Canada, is calling because the order hasn't arrived.",
-  "image": "",
+  "image": "/roleplay/customer-call.jpg",
   "studentRole": "a",
   "roles": [
     {

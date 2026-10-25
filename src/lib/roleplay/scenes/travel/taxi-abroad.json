@@ -4,7 +4,7 @@
   "title": { "ja": "タクシーで行き先を伝える", "en": "Telling a taxi driver where to go" },
   "summary": { "ja": "行き先を伝えて、時間や料金を聞き、降りる場所を伝える。", "en": "Say where you're going, ask about time and price, and say where to stop." },
   "setting": "A taxi in a city abroad, on a Sunday morning. The passenger gets in outside the Park Lane Hotel downtown. A city marathon is on today, so some roads are closed.",
-  "image": "",
+  "image": "/roleplay/taxi-abroad.jpg",
   "studentRole": "a",
   "roles": [
     {

@@ -4,7 +4,7 @@
   "title": { "ja": "薬局で症状を伝える", "en": "Explaining symptoms at a pharmacy" },
   "summary": { "ja": "風邪の症状を伝えて、薬の飲み方や注意することを聞く。", "en": "Describe your cold symptoms and ask how to take the medicine." },
   "setting": "A pharmacy in a city abroad, in the afternoon. A traveller has caught a cold (sore throat, cough, a slight fever) and comes to the counter. The pharmacist suggests over-the-counter cold medicine and simple advice; nothing serious.",
-  "image": "",
+  "image": "/roleplay/pharmacy-abroad.jpg",
   "studentRole": "a",
   "roles": [
     {

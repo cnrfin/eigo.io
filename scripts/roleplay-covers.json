@@ -1,0 +1,990 @@
+{
+  "_about": "Role-play cover photos from Pexels (free to use). \"use\" is the photo id that gets downloaded; change it to one of the alternates (or any Pexels photo id) and run: node scripts/roleplay-covers.mjs",
+  "airport-pickup": {
+    "title": "Meeting a visitor at the airport",
+    "use": "4836109",
+    "options": [
+      {
+        "id": "4836109",
+        "alt": "Spacious airport terminal with airplane and tarmac view in Tokyo, Japan.",
+        "page": "https://www.pexels.com/photo/view-of-airplane-at-the-tarmac-from-glass-windows-of-the-airport-4836109/"
+      },
+      {
+        "id": "35118078",
+        "alt": "Aerial view of the check-in counters at Haneda Airport, Tokyo, showcasing modern architecture.",
+        "page": "https://www.pexels.com/photo/haneda-airport-check-in-area-in-tokyo-japan-35118078/"
+      },
+      {
+        "id": "1719490",
+        "alt": "Bright arrivals sign with airplane symbol in an airport terminal.",
+        "page": "https://www.pexels.com/photo/arrivals-aankomst-terminal-1-signage-1719490/"
+      }
+    ]
+  },
+  "apologise-delay": {
+    "title": "Apologising for a delay",
+    "use": "6326375",
+    "options": [
+      {
+        "id": "6326375",
+        "alt": "Businessman engaged in a video call at a wooden desk in a bright office.",
+        "page": "https://www.pexels.com/photo/photo-of-man-using-laptop-6326375/"
+      },
+      {
+        "id": "7245808",
+        "alt": "A businessman engaging in a virtual meeting using a laptop at an office desk.",
+        "page": "https://www.pexels.com/photo/a-man-in-blue-plaid-long-sleeves-using-a-laptop-7245808/"
+      },
+      {
+        "id": "6325973",
+        "alt": "Business professional having a video call at the office with a colleague using a laptop.",
+        "page": "https://www.pexels.com/photo/a-man-using-laptop-6325973/"
+      }
+    ]
+  },
+  "business-dinner": {
+    "title": "Dinner with a client on a business trip",
+    "use": "8775049",
+    "options": [
+      {
+        "id": "8775049",
+        "alt": "Two adults enjoying a dinner meeting in an elegant restaurant setting.",
+        "page": "https://www.pexels.com/photo/a-man-and-woman-having-a-dinner-meeting-8775049/"
+      },
+      {
+        "id": "29219956",
+        "alt": "Stylish restaurant interior with patrons and staff in London, UK.",
+        "page": "https://www.pexels.com/photo/elegant-indoor-restaurant-setting-in-london-29219956/"
+      },
+      {
+        "id": "4427903",
+        "alt": "Two business professionals discussing ideas over a glass of wine in a modern café setting.",
+        "page": "https://www.pexels.com/photo/coworkers-on-a-date-4427903/"
+      }
+    ]
+  },
+  "customer-call": {
+    "title": "A call from an overseas customer",
+    "use": "7709199",
+    "options": [
+      {
+        "id": "7709199",
+        "alt": "Focused Asian woman in headset providing customer support in office setting.",
+        "page": "https://www.pexels.com/photo/a-close-up-shot-of-a-woman-wearing-a-headset-7709199/"
+      },
+      {
+        "id": "8101323",
+        "alt": "Cheerful Asian woman in office setting wearing headset, offering customer service support.",
+        "page": "https://www.pexels.com/photo/woman-wearing-a-plaid-blazer-8101323/"
+      },
+      {
+        "id": "7681135",
+        "alt": "Asian man in a call center wearing a headset, dressed in a gray suit, handling customer service calls.",
+        "page": "https://www.pexels.com/photo/man-in-gray-jacket-wearing-headset-7681135/"
+      }
+    ]
+  },
+  "meeting-opinion": {
+    "title": "Giving your opinion in a meeting",
+    "use": "39190578",
+    "options": [
+      {
+        "id": "39190578",
+        "alt": "Creative team in a modern office engaged in a video conference meeting, discussing business strategies.",
+        "page": "https://www.pexels.com/photo/team-collaboration-in-a-modern-office-setting-39190578/"
+      },
+      {
+        "id": "1181745",
+        "alt": "From above of diverse employees gathering at table in contemporary conference hall and having video call with coworker on TV set",
+        "page": "https://www.pexels.com/photo/diverse-coworkers-having-online-conference-in-modern-office-1181745/"
+      },
+      {
+        "id": "7644158",
+        "alt": "Professionals engage in a virtual business meeting around a conference table.",
+        "page": "https://www.pexels.com/photo/business-people-in-a-meeting-via-video-call-7644158/"
+      }
+    ]
+  },
+  "meeting-small-talk": {
+    "title": "Small talk before an online meeting",
+    "use": "5917845",
+    "options": [
+      {
+        "id": "5917845",
+        "alt": "Businesswoman waving during an online meeting in a cozy café setting.",
+        "page": "https://www.pexels.com/photo/woman-saying-hello-on-online-meeting-5917845/"
+      },
+      {
+        "id": "4031712",
+        "alt": "Close-up of a video call showing a smiling woman on a laptop screen in a cozy indoor setting.",
+        "page": "https://www.pexels.com/photo/woman-having-a-video-call-4031712/"
+      },
+      {
+        "id": "5486096",
+        "alt": "Hands at a laptop showing a group video call in a home office setting.",
+        "page": "https://www.pexels.com/photo/a-group-of-people-chatting-in-a-video-call-in-a-laptop-5486096/"
+      }
+    ]
+  },
+  "negotiation": {
+    "title": "Negotiating price and delivery",
+    "use": "6326381",
+    "options": [
+      {
+        "id": "6326381",
+        "alt": "Two professionals engaged in a video conference showing office documents.",
+        "page": "https://www.pexels.com/photo/photo-of-people-having-video-conference-6326381/"
+      },
+      {
+        "id": "6285294",
+        "alt": "Man reviewing business charts during a remote video call, showcasing data analysis.",
+        "page": "https://www.pexels.com/photo/businessman-reading-charts-6285294/"
+      },
+      {
+        "id": "6814534",
+        "alt": "A man in a blazer negotiating across a table in a modern office setting.",
+        "page": "https://www.pexels.com/photo/man-wearing-gray-blazer-while-sitting-on-the-office-chair-6814534/"
+      }
+    ]
+  },
+  "presentation-qa": {
+    "title": "Questions after a presentation",
+    "use": "6285264",
+    "options": [
+      {
+        "id": "6285264",
+        "alt": "Smiling man with headphones showing graphs during a virtual meeting.",
+        "page": "https://www.pexels.com/photo/man-presenting-at-work-6285264/"
+      },
+      {
+        "id": "4153277",
+        "alt": "Middle-aged woman participating in a video call from a home office setting surrounded by plants.",
+        "page": "https://www.pexels.com/photo/woman-with-her-hand-raised-in-a-video-call-4153277/"
+      },
+      {
+        "id": "6285272",
+        "alt": "Man wearing headphones discussing charts during a remote work call at home office.",
+        "page": "https://www.pexels.com/photo/man-showing-charts-during-online-conference-6285272/"
+      }
+    ]
+  },
+  "schedule-call": {
+    "title": "Setting up a meeting on a call",
+    "use": "6172482",
+    "options": [
+      {
+        "id": "6172482",
+        "alt": "Person writing important notes in a desk calendar with a pen, set in an office.",
+        "page": "https://www.pexels.com/photo/a-person-writing-on-calendar-6172482/"
+      },
+      {
+        "id": "6170644",
+        "alt": "Close-up of a woman planning her schedule on a desk calendar in an office setting.",
+        "page": "https://www.pexels.com/photo/a-person-writing-on-a-desk-calendar-6170644/"
+      },
+      {
+        "id": "9849940",
+        "alt": "A woman in a creative workspace on a video call with a colleague on a laptop.",
+        "page": "https://www.pexels.com/photo/creative-professional-on-video-call-9849940/"
+      }
+    ]
+  },
+  "birthday": {
+    "title": "Celebrating a friend's birthday",
+    "use": "7561092",
+    "options": [
+      {
+        "id": "7561092",
+        "alt": "Two people exchanging a wrapped gift at a birthday celebration with decorations in the background.",
+        "page": "https://www.pexels.com/photo/close-up-photo-of-two-people-holding-a-present-7561092/"
+      },
+      {
+        "id": "7358313",
+        "alt": "Hands exchanging a wrapped gift box with an orange ribbon, symbolizing generosity.",
+        "page": "https://www.pexels.com/photo/close-up-photo-of-a-gift-7358313/"
+      },
+      {
+        "id": "36557574",
+        "alt": "Cozy café table with latte art coffee and delicious desserts, captured in a Tokyo café.",
+        "page": "https://www.pexels.com/photo/elegant-cafe-scene-with-coffee-and-dessert-in-tokyo-36557574/"
+      }
+    ]
+  },
+  "decline-invite": {
+    "title": "Saying no and changing plans",
+    "use": "4333580",
+    "options": [
+      {
+        "id": "4333580",
+        "alt": "Positive young Asian woman smiling and looking away while standing near window and having smartphone conversation at home",
+        "page": "https://www.pexels.com/photo/glad-asian-female-talking-on-smartphone-near-window-4333580/"
+      },
+      {
+        "id": "6612278",
+        "alt": "Casual young woman in cozy outfit talking on smartphone while sitting indoors by a window.",
+        "page": "https://www.pexels.com/photo/pensive-woman-talking-on-phone-6612278/"
+      },
+      {
+        "id": "5637754",
+        "alt": "A relaxed backyard barbecue featuring friends enjoying conversation and grilling outdoors.",
+        "page": "https://www.pexels.com/photo/man-in-gray-sweater-talking-to-his-friend-while-holding-a-5637754/"
+      }
+    ]
+  },
+  "hobbies": {
+    "title": "Talking about hobbies",
+    "use": "8937482",
+    "options": [
+      {
+        "id": "8937482",
+        "alt": "Two friends having a lively conversation over coffee in a cozy coffee shop setting.",
+        "page": "https://www.pexels.com/photo/men-having-coffee-beside-a-window-8937482/"
+      },
+      {
+        "id": "16932916",
+        "alt": "Two women relax and enjoy coffee together by a sunny window with greenery outside.",
+        "page": "https://www.pexels.com/photo/friends-gossiping-over-coffee-sitting-by-the-window-16932916/"
+      },
+      {
+        "id": "9050619",
+        "alt": "Two people enjoying a warm conversation through a cafe window, highlighting relaxed and friendly interactions.",
+        "page": "https://www.pexels.com/photo/man-and-woman-talking-near-the-window-9050619/"
+      }
+    ]
+  },
+  "home-party": {
+    "title": "Having a friend over for dinner",
+    "use": "4846374",
+    "options": [
+      {
+        "id": "4846374",
+        "alt": "Crop unrecognizable person shaping Japanese dumplings gyozas while cooking in kitchen at home",
+        "page": "https://www.pexels.com/photo/crop-person-making-gyozas-at-home-4846374/"
+      },
+      {
+        "id": "5146884",
+        "alt": "Friends enjoying a cozy day cooking together in a stylish kitchen setting.",
+        "page": "https://www.pexels.com/photo/women-and-men-in-kitchen-5146884/"
+      },
+      {
+        "id": "7488996",
+        "alt": "Asian couple preparing a meal together in a bright kitchen, sharing a joyful moment.",
+        "page": "https://www.pexels.com/photo/a-couple-in-the-kitchen-together-7488996/"
+      }
+    ]
+  },
+  "japanese-customs": {
+    "title": "Explaining Japanese customs",
+    "use": "35132140",
+    "options": [
+      {
+        "id": "35132140",
+        "alt": "Savoring an authentic Japanese meal with fresh vegetables, rice, and tempura in a Kyoto restaurant.",
+        "page": "https://www.pexels.com/photo/authentic-japanese-meal-in-kyoto-restaurant-35132140/"
+      },
+      {
+        "id": "31001129",
+        "alt": "Customers enjoy soba noodles at a traditional udon shop in Japan, captured during a busy evening.",
+        "page": "https://www.pexels.com/photo/authentic-japanese-noodle-shop-experience-31001129/"
+      },
+      {
+        "id": "18341850",
+        "alt": "Traditional Japanese restaurant interior with decorative signage and sake bottles.",
+        "page": "https://www.pexels.com/photo/traditional-decorations-on-wall-18341850/"
+      }
+    ]
+  },
+  "language-exchange": {
+    "title": "Making friends at a language exchange",
+    "use": "36729801",
+    "options": [
+      {
+        "id": "36729801",
+        "alt": "Group of smiling friends enjoying a conversation over coffee at a cafe.",
+        "page": "https://www.pexels.com/photo/social-gathering-of-friends-in-a-cozy-cafe-36729801/"
+      },
+      {
+        "id": "7319161",
+        "alt": "Happy young female smiling and looking at camera while demonstrating empty name tag during event",
+        "page": "https://www.pexels.com/photo/cheerful-woman-showing-blank-name-tag-7319161/"
+      },
+      {
+        "id": "6502730",
+        "alt": "A teacher and student engage in a conversation in a study setting, fostering learning.",
+        "page": "https://www.pexels.com/photo/a-female-teacher-tutoring-her-male-student-6502730/"
+      }
+    ]
+  },
+  "recommend-japan": {
+    "title": "Recommending things to do in Japan",
+    "use": "31413759",
+    "options": [
+      {
+        "id": "31413759",
+        "alt": "Urban cafe scene in Tokyo with people dining against a large glass window view of the street.",
+        "page": "https://www.pexels.com/photo/modern-cafe-in-central-tokyo-overlooking-street-31413759/"
+      },
+      {
+        "id": "28874053",
+        "alt": "Vibrant scene of tourists exploring Nakamise Street leading to Senso-ji Temple in Tokyo, Japan.",
+        "page": "https://www.pexels.com/photo/bustling-street-market-leading-to-senso-ji-temple-28874053/"
+      },
+      {
+        "id": "6493056",
+        "alt": "A vibrant street scene in Taito City, Tokyo, featuring people, shops, and the iconic Tokyo Skytree.",
+        "page": "https://www.pexels.com/photo/people-walking-along-street-markets-viewing-a-skyscraper-tower-6493056/"
+      }
+    ]
+  },
+  "share-house": {
+    "title": "Agreeing on share house rules",
+    "use": "4781426",
+    "options": [
+      {
+        "id": "4781426",
+        "alt": "Friends enjoy a relaxed moment together in a sunny kitchen, reflecting a lifestyle of camaraderie and warmth.",
+        "page": "https://www.pexels.com/photo/woman-in-black-crew-neck-t-shirt-sitting-on-chair-4781426/"
+      },
+      {
+        "id": "6382460",
+        "alt": "Cheerful young women speaking with each other and smiling in kitchen with different utensil",
+        "page": "https://www.pexels.com/photo/positive-women-talking-in-kitchen-with-utensil-6382460/"
+      },
+      {
+        "id": "19968510",
+        "alt": "Two young men casually seated in a modern kitchen interior, engaging in conversation.",
+        "page": "https://www.pexels.com/photo/two-men-in-a-kitchen-19968510/"
+      }
+    ]
+  },
+  "travel-stories": {
+    "title": "Sharing travel stories",
+    "use": "5253857",
+    "options": [
+      {
+        "id": "5253857",
+        "alt": "Two women smiling and looking at a smartphone, sharing a joyful moment indoors.",
+        "page": "https://www.pexels.com/photo/women-smiling-while-looking-at-the-smartphone-5253857/"
+      },
+      {
+        "id": "7501178",
+        "alt": "Explore the stunning beaches and turquoise waters of Ishigaki, Okinawa with scenic boat views.",
+        "page": "https://www.pexels.com/photo/scenic-view-of-beach-on-daytime-7501178/"
+      },
+      {
+        "id": "37747245",
+        "alt": "Stunning view of Miyakojima's rocky coastline and turquoise waters under a clear sky.",
+        "page": "https://www.pexels.com/photo/scenic-beach-landscape-of-miyakojima-okinawa-37747245/"
+      }
+    ]
+  },
+  "weekend-plans": {
+    "title": "Making weekend plans",
+    "use": "33561154",
+    "options": [
+      {
+        "id": "33561154",
+        "alt": "People in traditional attire at a vibrant Japanese street festival with lanterns and tents.",
+        "page": "https://www.pexels.com/photo/traditional-japanese-festival-scene-with-lanterns-33561154/"
+      },
+      {
+        "id": "5588363",
+        "alt": "Friends sharing a moment over coffee in a cozy cafe, exploring a menu together.",
+        "page": "https://www.pexels.com/photo/women-looking-at-a-phone-5588363/"
+      },
+      {
+        "id": "18996331",
+        "alt": "Stunning view of golden ginkgo trees in a Tokyo park capturing the essence of fall foliage.",
+        "page": "https://www.pexels.com/photo/yellow-trees-in-park-in-autumn-18996331/"
+      }
+    ]
+  },
+  "earthquake-help": {
+    "title": "Helping a tourist after an earthquake",
+    "use": "16348550",
+    "options": [
+      {
+        "id": "16348550",
+        "alt": "Capture of the historic Tokyo Station building with crowds on a sunlit street in Tokyo, Japan.",
+        "page": "https://www.pexels.com/photo/street-and-sunlit-building-in-tokyo-16348550/"
+      },
+      {
+        "id": "19888188",
+        "alt": "View of Tokyo Railway Station with bustling crowd and skyscrapers in background.",
+        "page": "https://www.pexels.com/photo/facade-of-the-tokyo-railway-station-19888188/"
+      },
+      {
+        "id": "34883469",
+        "alt": "A bustling day at Tokyo Station with autumn foliage and skyscrapers.",
+        "page": "https://www.pexels.com/photo/autumn-day-at-tokyo-station-plaza-34883469/"
+      }
+    ]
+  },
+  "neighbour-rules": {
+    "title": "Explaining garbage day to a neighbour",
+    "use": "38568812",
+    "options": [
+      {
+        "id": "38568812",
+        "alt": "A modern residential building with an exterior metal staircase in a Tokyo neighborhood on a sunny day.",
+        "page": "https://www.pexels.com/photo/residential-building-with-metal-staircase-in-tokyo-38568812/"
+      },
+      {
+        "id": "17869493",
+        "alt": "Five colorful recycling bins organized for waste segregation in an urban setting.",
+        "page": "https://www.pexels.com/photo/colorful-garbage-bins-17869493/"
+      },
+      {
+        "id": "33333228",
+        "alt": "Tranquil urban street in a Japanese residential neighborhood under clear skies.",
+        "page": "https://www.pexels.com/photo/quiet-urban-street-in-japanese-residential-area-33333228/"
+      }
+    ]
+  },
+  "recommend-sights": {
+    "title": "Recommending places to visit",
+    "use": "15881453",
+    "options": [
+      {
+        "id": "15881453",
+        "alt": "A beautiful view of a traditional Japanese castle surrounded by trees and visitors.",
+        "page": "https://www.pexels.com/photo/people-walking-at-square-near-traditional-temple-15881453/"
+      },
+      {
+        "id": "32675907",
+        "alt": "Capture the stunning architecture of Himeji Castle with bustling city life in Himeji, Japan.",
+        "page": "https://www.pexels.com/photo/majestic-view-of-himeji-castle-in-japan-32675907/"
+      },
+      {
+        "id": "31295174",
+        "alt": "A stunning view of Himeji Castle with vibrant autumn leaves against a clear blue sky.",
+        "page": "https://www.pexels.com/photo/himeji-castle-in-autumn-with-red-foliage-31295174/"
+      }
+    ]
+  },
+  "restaurant-help": {
+    "title": "Helping at a meal ticket machine",
+    "use": "17387432",
+    "options": [
+      {
+        "id": "17387432",
+        "alt": "Cozy interior of Japanese restaurant with chefs preparing meals.",
+        "page": "https://www.pexels.com/photo/dinner-at-a-cozy-place-marugame-udon-17387432/"
+      },
+      {
+        "id": "31414243",
+        "alt": "Night view of a Japanese udon shop and vending machine in Osaka, Japan.",
+        "page": "https://www.pexels.com/photo/authentic-night-scene-in-osaka-japan-31414243/"
+      },
+      {
+        "id": "17671007",
+        "alt": "Asian chef skillfully prepares fresh noodles, focusing on traditional techniques and artful craftsmanship.",
+        "page": "https://www.pexels.com/photo/cook-standing-and-working-17671007/"
+      }
+    ]
+  },
+  "shrine-manners": {
+    "title": "Explaining manners at a shrine",
+    "use": "33499008",
+    "options": [
+      {
+        "id": "33499008",
+        "alt": "Traditional temizuya ritual with ladles at a Japanese Shinto shrine.",
+        "page": "https://www.pexels.com/photo/japanese-temizuya-ritual-at-shinto-shrine-33499008/"
+      },
+      {
+        "id": "37521816",
+        "alt": "Capture of a temizuya purification ritual at a Nara shrine, Japan.",
+        "page": "https://www.pexels.com/photo/traditional-temizuya-ritual-at-nara-shrine-37521816/"
+      },
+      {
+        "id": "30560606",
+        "alt": "Japanese temizuya water purification fountain in Shibuya, Tokyo temple garden.",
+        "page": "https://www.pexels.com/photo/traditional-temizuya-in-shibuya-tokyo-30560606/"
+      }
+    ]
+  },
+  "station-transfer": {
+    "title": "Helping with a train transfer",
+    "use": "17139638",
+    "options": [
+      {
+        "id": "17139638",
+        "alt": "Japanese railway station in Nara with ticket gates and travellers (alt translated from Japanese).",
+        "page": "https://www.pexels.com/photo/17139638/"
+      },
+      {
+        "id": "5905655",
+        "alt": "Crowded entrance to a Tokyo subway station with commuters passing through the ticket gates (alt translated from Japanese).",
+        "page": "https://www.pexels.com/photo/5905655/"
+      },
+      {
+        "id": "35202792",
+        "alt": "Busy evening at a Japanese station, passengers entering through the ticket gates to the platforms (alt translated from Japanese).",
+        "page": "https://www.pexels.com/photo/35202792/"
+      }
+    ]
+  },
+  "street-directions": {
+    "title": "Giving directions in the street",
+    "use": "18695427",
+    "options": [
+      {
+        "id": "18695427",
+        "alt": "Two men stand in a city setting, one pointing at a landmark. Ideal for travel themes.",
+        "page": "https://www.pexels.com/photo/elderly-man-pointing-a-direction-to-a-tourist-18695427/"
+      },
+      {
+        "id": "22882159",
+        "alt": "Entrance to Tokyo Station's Marunouchi North Entrance with people and signage visible.",
+        "page": "https://www.pexels.com/photo/entrance-to-railway-station-in-tokyo-22882159/"
+      },
+      {
+        "id": "32694231",
+        "alt": "Two adults using smartphone for navigation while sightseeing outdoors. Casual travel scene.",
+        "page": "https://www.pexels.com/photo/travelers-using-smartphone-for-navigation-outdoors-32694231/"
+      }
+    ]
+  },
+  "take-a-photo": {
+    "title": "Taking a photo for tourists",
+    "use": "31255858",
+    "options": [
+      {
+        "id": "31255858",
+        "alt": "Visitors at Kyoto's historic Kiyomizu-dera Temple surrounded by vibrant autumn colors.",
+        "page": "https://www.pexels.com/photo/kyoto-s-kiyomizu-dera-temple-during-autumn-31255858/"
+      },
+      {
+        "id": "33116182",
+        "alt": "A group of friends in traditional kimono taking a selfie outside a historical temple in Kyoto.",
+        "page": "https://www.pexels.com/photo/group-selfie-in-traditional-kimono-at-temple-33116182/"
+      },
+      {
+        "id": "34368455",
+        "alt": "Explore the serene beauty of a traditional Japanese temple gate in Kyoto, Japan.",
+        "page": "https://www.pexels.com/photo/traditional-japanese-temple-gate-in-kyoto-34368455/"
+      }
+    ]
+  },
+  "ticket-machine": {
+    "title": "Helping at the ticket machine",
+    "use": "31283860",
+    "options": [
+      {
+        "id": "31283860",
+        "alt": "Person using a ticket machine at a Japanese subway station; clean, modern setting (alt translated from Japanese).",
+        "page": "https://www.pexels.com/photo/31283860/"
+      },
+      {
+        "id": "17311572",
+        "alt": "Ticket machines at Toyohashi Station, Japan (alt translated from Japanese).",
+        "page": "https://www.pexels.com/photo/17311572/"
+      },
+      {
+        "id": "19702166",
+        "alt": "Digital ticket machines at a subway station in Nagoya, Japan (alt translated from Japanese).",
+        "page": "https://www.pexels.com/photo/19702166/"
+      }
+    ]
+  },
+  "tourist-trouble": {
+    "title": "Helping a tourist in trouble",
+    "use": "19303583",
+    "options": [
+      {
+        "id": "19303583",
+        "alt": "People walking through a busy Japanese city railway station with signs, ticket machines and a clock (alt translated from Japanese).",
+        "page": "https://www.pexels.com/photo/19303583/"
+      },
+      {
+        "id": "5225274",
+        "alt": "Confused multiracial couple searching way in map while discovering city together during summer holidays",
+        "page": "https://www.pexels.com/photo/young-diverse-lost-couple-finding-route-in-map-5225274/"
+      },
+      {
+        "id": "30487724",
+        "alt": "Commuters at a bustling train station in Tokyo, Japan, waiting for their train.",
+        "page": "https://www.pexels.com/photo/busy-tokyo-train-station-platform-scene-30487724/"
+      }
+    ]
+  },
+  "clothes-shop": {
+    "title": "Serving customers at a clothes shop",
+    "use": "5418894",
+    "options": [
+      {
+        "id": "5418894",
+        "alt": "Two women shopping and discussing clothes in a stylish boutique, focusing on a beige shirt.",
+        "page": "https://www.pexels.com/photo/women-watching-clothes-in-clothes-store-5418894/"
+      },
+      {
+        "id": "20052448",
+        "alt": "A cozy boutique interior featuring fashionable clothing racks and shoppers exploring stylish apparel.",
+        "page": "https://www.pexels.com/photo/man-at-clothes-store-20052448/"
+      },
+      {
+        "id": "5864244",
+        "alt": "Customers browsing clothing in a stylish boutique store with elegant interior design.",
+        "page": "https://www.pexels.com/photo/women-shopping-in-clothing-store-5864244/"
+      }
+    ]
+  },
+  "convenience-store": {
+    "title": "At the convenience store register",
+    "use": "3423860",
+    "options": [
+      {
+        "id": "3423860",
+        "alt": "Explore a bustling Tokyo convenience store aisle packed with diverse products and merchandise.",
+        "page": "https://www.pexels.com/photo/photo-of-supermarket-3423860/"
+      },
+      {
+        "id": "31412759",
+        "alt": "A Kyoto convenience store with people outside on a clear day, capturing local life.",
+        "page": "https://www.pexels.com/photo/kyoto-convenience-store-on-a-sunny-day-31412759/"
+      },
+      {
+        "id": "20210397",
+        "alt": "FamilyMart entrance with merchandise and people in Toyota, Japan.",
+        "page": "https://www.pexels.com/photo/merchandise-displayed-in-front-of-a-store-20210397/"
+      }
+    ]
+  },
+  "hotel-front-desk": {
+    "title": "Working at a hotel front desk",
+    "use": "5371677",
+    "options": [
+      {
+        "id": "5371677",
+        "alt": "Friendly hotel concierge in uniform smiling and welcoming guests at the reception desk.",
+        "page": "https://www.pexels.com/photo/receptionist-in-uniform-standing-behind-front-desk-5371677/"
+      },
+      {
+        "id": "7820359",
+        "alt": "Close-up of a hotel receptionist receiving a credit card from a guest, highlighting a transaction at check-in.",
+        "page": "https://www.pexels.com/photo/man-handing-a-credit-card-to-a-hotel-receptionist-7820359/"
+      },
+      {
+        "id": "3771087",
+        "alt": "Smiling female receptionist wearing elegant clothes standing at reception desk in old fashioned interior of hotel and looking at camera",
+        "page": "https://www.pexels.com/photo/hospitable-woman-standing-behind-front-desk-3771087/"
+      }
+    ]
+  },
+  "info-counter": {
+    "title": "Helping at an airport information desk",
+    "use": "35220418",
+    "options": [
+      {
+        "id": "35220418",
+        "alt": "A sunny day view of Tokyo International Airport's entrance with clear blue skies.",
+        "page": "https://www.pexels.com/photo/tokyo-international-airport-exterior-view-35220418/"
+      },
+      {
+        "id": "35118079",
+        "alt": "Iconic Godzilla statue inside a bustling, modern airport terminal with a high ceiling.",
+        "page": "https://www.pexels.com/photo/godzilla-installation-in-modern-airport-terminal-35118079/"
+      },
+      {
+        "id": "1716825",
+        "alt": "Airport terminal with digital flight information boards showing arrivals and departures.",
+        "page": "https://www.pexels.com/photo/airline-flight-schedules-on-flat-screen-televisions-1716825/"
+      }
+    ]
+  },
+  "ramen-shop": {
+    "title": "Helping guests at a ramen shop",
+    "use": "2091013",
+    "options": [
+      {
+        "id": "2091013",
+        "alt": "Intimate dining experience at a ramen restaurant in Shibuya, Tokyo with individual booths.",
+        "page": "https://www.pexels.com/photo/photo-of-two-women-sitting-beside-each-other-2091013/"
+      },
+      {
+        "id": "29831531",
+        "alt": "A bustling urban street in Japan featuring a traditional ramen shop amidst modern buildings.",
+        "page": "https://www.pexels.com/photo/japanese-urban-street-with-ramen-shop-29831531/"
+      },
+      {
+        "id": "38217220",
+        "alt": "Charming Japanese ramen shop with vibrant signage on an urban street corner.",
+        "page": "https://www.pexels.com/photo/cozy-ramen-shopfront-on-a-city-street-38217220/"
+      }
+    ]
+  },
+  "ryokan-onsen": {
+    "title": "Explaining onsen manners at a ryokan",
+    "use": "37067835",
+    "options": [
+      {
+        "id": "37067835",
+        "alt": "Beautifully arranged tatami room with low tables and cushions in a Japanese ryokan.",
+        "page": "https://www.pexels.com/photo/traditional-tatami-room-setup-in-japan-ryokan-37067835/"
+      },
+      {
+        "id": "36352757",
+        "alt": "A cozy and welcoming reception area of a Japanese onsen with vending machines and traditional decor.",
+        "page": "https://www.pexels.com/photo/interior-of-japanese-onsen-spa-reception-area-36352757/"
+      },
+      {
+        "id": "1615328",
+        "alt": "A tranquil hot spring town with steam rising from mineral-rich waters, surrounded by traditional architecture.",
+        "page": "https://www.pexels.com/photo/body-of-water-near-white-building-1615328/"
+      }
+    ]
+  },
+  "salon-massage": {
+    "title": "Serving customers at a massage salon",
+    "use": "19695968",
+    "options": [
+      {
+        "id": "19695968",
+        "alt": "A man enjoys a relaxing shoulder massage in a peaceful spa setting, promoting relaxation and wellness.",
+        "page": "https://www.pexels.com/photo/man-relaxing-during-massage-19695968/"
+      },
+      {
+        "id": "5793781",
+        "alt": "A woman receives a soothing shoulder massage in a sunlit therapy room, promoting wellness and relaxation.",
+        "page": "https://www.pexels.com/photo/a-smiling-client-having-a-massage-5793781/"
+      },
+      {
+        "id": "19695971",
+        "alt": "A soothing foot massage at a spa promotes relaxation and wellness.",
+        "page": "https://www.pexels.com/photo/people-during-feet-massage-19695971/"
+      }
+    ]
+  },
+  "snack-bar": {
+    "title": "Chatting with a guest at a bar",
+    "use": "8827051",
+    "options": [
+      {
+        "id": "8827051",
+        "alt": "Asian man and woman joyfully singing at a karaoke session indoors, with microphones in hand.",
+        "page": "https://www.pexels.com/photo/people-with-microphones-singing-in-karaoke-8827051/"
+      },
+      {
+        "id": "39037892",
+        "alt": "Warm interior of a traditional Japanese izakaya, featuring sake bottles and ambient lighting.",
+        "page": "https://www.pexels.com/photo/cozy-japanese-izakaya-interior-with-sake-display-39037892/"
+      },
+      {
+        "id": "33828378",
+        "alt": "Two adult men having a fun time with drinks and karaoke in a bar setting.",
+        "page": "https://www.pexels.com/photo/two-friends-enjoying-drinks-and-karaoke-33828378/"
+      }
+    ]
+  },
+  "taxi-driver": {
+    "title": "Driving a taxi for tourists",
+    "use": "28927891",
+    "options": [
+      {
+        "id": "28927891",
+        "alt": "Taxis parked at a station in Inuyama, Aichi, Japan under a tree in autumn.",
+        "page": "https://www.pexels.com/photo/taxi-station-on-a-street-in-inuyama-japan-28927891/"
+      },
+      {
+        "id": "16470229",
+        "alt": "A vibrant Tokyo street featuring a classic Japanese taxi and urban architecture.",
+        "page": "https://www.pexels.com/photo/taxi-on-street-in-tokyo-16470229/"
+      },
+      {
+        "id": "33754611",
+        "alt": "White taxis parked in a Japanese urban environment, showcasing local transport.",
+        "page": "https://www.pexels.com/photo/japanese-taxis-parked-in-urban-setting-33754611/"
+      }
+    ]
+  },
+  "airport-check-in": {
+    "title": "Checking in at the airport",
+    "use": "38248818",
+    "options": [
+      {
+        "id": "38248818",
+        "alt": "Travelers in line at Hamburg Airport's check-in counters, showcasing modern architecture.",
+        "page": "https://www.pexels.com/photo/bustling-check-in-area-at-hamburg-airport-germany-38248818/"
+      },
+      {
+        "id": "32223420",
+        "alt": "Crowded airport check-in area with people queueing and visible flight information signs.",
+        "page": "https://www.pexels.com/photo/bustling-airport-check-in-counter-scene-32223420/"
+      },
+      {
+        "id": "4922074",
+        "alt": "Digital departure board and airline check-in counters inside a modern airport terminal.",
+        "page": "https://www.pexels.com/photo/a-screen-with-departure-information-mounted-on-wall-4922074/"
+      }
+    ]
+  },
+  "hotel-check-in": {
+    "title": "Checking in at a hotel",
+    "use": "3215519",
+    "options": [
+      {
+        "id": "3215519",
+        "alt": "A customer checks in at a hotel reception desk in Belo Horizonte, Brazil.",
+        "page": "https://www.pexels.com/photo/man-standing-in-front-of-front-desk-3215519/"
+      },
+      {
+        "id": "7820321",
+        "alt": "A hotel receptionist hands a key card to a guest over the counter, with documents visible.",
+        "page": "https://www.pexels.com/photo/a-hotel-receptionist-handing-a-key-card-to-a-guest-7820321/"
+      },
+      {
+        "id": "5378703",
+        "alt": "Guests interacting at a luxurious hotel reception desk, emphasizing hospitality and service.",
+        "page": "https://www.pexels.com/photo/people-at-front-desk-5378703/"
+      }
+    ]
+  },
+  "immigration": {
+    "title": "Answering questions at immigration",
+    "use": "4922356",
+    "options": [
+      {
+        "id": "4922356",
+        "alt": "Close-up view of an open passport displaying various travel stamps in an airport setting.",
+        "page": "https://www.pexels.com/photo/person-holding-an-opened-passport-4922356/"
+      },
+      {
+        "id": "4922085",
+        "alt": "Close-up of a Russian passport being held near an airport gate window with blurred aircraft in the background.",
+        "page": "https://www.pexels.com/photo/person-holding-a-passport-4922085/"
+      },
+      {
+        "id": "39075595",
+        "alt": "A person holding an Indonesian passport at a busy airport terminal in Yogyakarta, Indonesia.",
+        "page": "https://www.pexels.com/photo/holding-indonesian-passport-at-yogyakarta-airport-39075595/"
+      }
+    ]
+  },
+  "lost-luggage": {
+    "title": "When your bag doesn't arrive",
+    "use": "3693017",
+    "options": [
+      {
+        "id": "3693017",
+        "alt": "Modern baggage claim area at Suvarnabhumi Airport in Bangkok with luggage carousel and signage.",
+        "page": "https://www.pexels.com/photo/a-luggage-conveyor-inside-airport-3693017/"
+      },
+      {
+        "id": "15923462",
+        "alt": "A modern and empty airport baggage claim area with a traveler waiting.",
+        "page": "https://www.pexels.com/photo/man-standing-in-baggage-claim-in-airport-15923462/"
+      },
+      {
+        "id": "14433259",
+        "alt": "A young man pushes a luggage cart in an airport baggage claim area.",
+        "page": "https://www.pexels.com/photo/man-walking-through-airport-with-luggage-cart-14433259/"
+      }
+    ]
+  },
+  "pharmacy-abroad": {
+    "title": "Explaining symptoms at a pharmacy",
+    "use": "8657359",
+    "options": [
+      {
+        "id": "8657359",
+        "alt": "A pharmacist hands medication to a customer at a classic vintage pharmacy counter.",
+        "page": "https://www.pexels.com/photo/a-man-giving-a-small-black-bottle-to-the-woman-8657359/"
+      },
+      {
+        "id": "8657358",
+        "alt": "A pharmacist in a white uniform hands medication to a customer across the counter.",
+        "page": "https://www.pexels.com/photo/a-man-handing-a-pump-bottle-to-a-woman-8657358/"
+      },
+      {
+        "id": "8657368",
+        "alt": "Pharmacist helps customer in elegant pharmacy with rotating product display.",
+        "page": "https://www.pexels.com/photo/customer-talking-with-pharmacist-by-medicaments-display-8657368/"
+      }
+    ]
+  },
+  "restaurant-abroad": {
+    "title": "Eating at a restaurant abroad",
+    "use": "36799159",
+    "options": [
+      {
+        "id": "36799159",
+        "alt": "A focused waiter in uniform takes an order in a modern restaurant setting.",
+        "page": "https://www.pexels.com/photo/professional-waiter-taking-order-at-restaurant-36799159/"
+      },
+      {
+        "id": "36799163",
+        "alt": "Attentive waiter writing down a customer's order in a cozy indoor restaurant.",
+        "page": "https://www.pexels.com/photo/waiter-taking-order-in-a-cozy-restaurant-setting-36799163/"
+      },
+      {
+        "id": "3801649",
+        "alt": "A happy waitress in an apron takes notes inside a vibrantly decorated restaurant.",
+        "page": "https://www.pexels.com/photo/shallow-focus-photo-of-woman-smiling-while-holding-pen-and-paper-3801649/"
+      }
+    ]
+  },
+  "return-item": {
+    "title": "Returning or exchanging an item",
+    "use": "7679883",
+    "options": [
+      {
+        "id": "7679883",
+        "alt": "Customer using card for contactless payment at a fashion store counter with cashier.",
+        "page": "https://www.pexels.com/photo/a-woman-swiping-the-card-on-the-payment-terminal-in-front-of-the-cashier-7679883/"
+      },
+      {
+        "id": "36730433",
+        "alt": "Two young women shopping and interacting with cashier in clothing store.",
+        "page": "https://www.pexels.com/photo/young-women-shopping-in-clothing-store-36730433/"
+      },
+      {
+        "id": "36730431",
+        "alt": "Confident cashier handling a colorful red shopping bag for customers in a vibrant store.",
+        "page": "https://www.pexels.com/photo/retail-shopping-experience-with-customers-at-counter-36730431/"
+      }
+    ]
+  },
+  "taxi-abroad": {
+    "title": "Telling a taxi driver where to go",
+    "use": "5835466",
+    "options": [
+      {
+        "id": "5835466",
+        "alt": "Side view of unrecognizable passenger browsing smartphone while sitting on backseat of yellow cab with anonymous driver during ride",
+        "page": "https://www.pexels.com/photo/crop-passenger-and-driver-in-taxi-5835466/"
+      },
+      {
+        "id": "4606345",
+        "alt": "A professional driver in a white shirt navigates with a young passenger using his phone in the backseat.",
+        "page": "https://www.pexels.com/photo/man-in-white-dress-shirt-sitting-on-car-seat-4606345/"
+      },
+      {
+        "id": "13801677",
+        "alt": "Caucasian woman smiling as she exits a yellow taxi in a bustling city environment.",
+        "page": "https://www.pexels.com/photo/woman-getting-out-of-the-car-13801677/"
+      }
+    ]
+  },
+  "tickets-abroad": {
+    "title": "Buying a train ticket",
+    "use": "11223749",
+    "options": [
+      {
+        "id": "11223749",
+        "alt": "People at a ticket office in a railway station with unique architectural design and natural light.",
+        "page": "https://www.pexels.com/photo/railway-station-interior-11223749/"
+      },
+      {
+        "id": "14344455",
+        "alt": "A person in a trench coat stands at a ticket counter in a busy train station.",
+        "page": "https://www.pexels.com/photo/back-view-shot-of-a-woman-in-brown-trench-coat-standing-near-ticket-vending-machine-14344455/"
+      },
+      {
+        "id": "35260664",
+        "alt": "A man approaches a wooden ticket counter in an urban setting, bathed in natural light.",
+        "page": "https://www.pexels.com/photo/man-walking-inside-urban-ticket-hall-35260664/"
+      }
+    ]
+  }
+}

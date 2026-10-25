@@ -4,7 +4,7 @@
   "title": { "ja": "券売機やICカードの買い方を教える", "en": "Helping at the ticket machine" },
   "summary": { "ja": "券売機の使い方や、ICカードの買い方・チャージのしかたを説明する。", "en": "Show a tourist how to buy a ticket, get an IC card and top it up." },
   "setting": "The ticket machines at Chuo Station in Tokyo, on a weekend morning. A tourist is staring at the screen of a ticket machine and wants to go to Kitamachi.",
-  "image": "",
+  "image": "/roleplay/ticket-machine.jpg",
   "studentRole": "a",
   "roles": [
     {

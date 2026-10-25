@@ -4,7 +4,7 @@
   "title": { "ja": "語学交流会で友だちを作る", "en": "Making friends at a language exchange" },
   "summary": { "ja": "初めて会う人に自己紹介して、相手のことを聞き、また会う約束をする。", "en": "Introduce yourself, get to know someone new and make a plan to meet again." },
   "setting": "A language exchange meetup at a café in Tokyo on a Saturday afternoon. People wear name tags and chat at small tables, half in English and half in Japanese.",
-  "image": "",
+  "image": "/roleplay/language-exchange.jpg",
   "studentRole": "a",
   "roles": [
     {

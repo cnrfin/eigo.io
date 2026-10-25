@@ -4,7 +4,7 @@
   "title": { "ja": "入国審査で質問に答える", "en": "Answering questions at immigration" },
   "summary": { "ja": "旅行の目的や滞在期間、泊まる場所を聞かれて答える。", "en": "Answer questions about why you're visiting, how long you'll stay and where." },
   "setting": "The immigration desk at an international airport abroad, after a long flight from Tokyo. An officer checks each traveller's passport and asks a few questions.",
-  "image": "",
+  "image": "/roleplay/immigration.jpg",
   "studentRole": "a",
   "roles": [
     {

@@ -4,7 +4,7 @@
   "title": { "ja": "ホテルにチェックイン", "en": "Checking in at a hotel" },
   "summary": { "ja": "予約を伝えてチェックインし、朝食や部屋のことを聞く。", "en": "Check in with your booking and ask about breakfast and your room." },
   "setting": "The front desk of the Harbour View Hotel in Sydney, Australia. A guest arrives with a suitcase to check in; the booking is on the confirmation.",
-  "image": "",
+  "image": "/roleplay/hotel-check-in.jpg",
   "studentRole": "a",
   "roles": [
     {

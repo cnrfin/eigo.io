@@ -4,7 +4,7 @@
   "title": { "ja": "プレゼンの質疑応答", "en": "Questions after a presentation" },
   "summary": { "ja": "発表のあとで質問を受け、数字や理由を説明し、質疑応答を締める。", "en": "Take questions after your presentation, explain the numbers and close the Q&A." },
   "setting": "An online meeting with the overseas offices. A member of the Tokyo team has just presented the plan for a new online shop for overseas customers, and it's time for questions.",
-  "image": "",
+  "image": "/roleplay/presentation-qa.jpg",
   "studentRole": "a",
   "roles": [
     {

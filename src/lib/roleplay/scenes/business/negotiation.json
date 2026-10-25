@@ -4,7 +4,7 @@
   "title": { "ja": "価格・納期の交渉", "en": "Negotiating price and delivery" },
   "summary": { "ja": "見積もりについて話し合い、値引きの条件や納期を交渉して合意する。", "en": "Talk through a quote, negotiate the price and delivery, and close the deal." },
   "setting": "A video call between a sales rep at a lighting company in Tokyo and a buyer for a chain of furniture stores in Australia. The buyer has received a quote for the DL-200 desk lamp.",
-  "image": "",
+  "image": "/roleplay/negotiation.jpg",
   "studentRole": "a",
   "roles": [
     {

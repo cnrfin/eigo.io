@@ -4,7 +4,7 @@
   "title": { "ja": "困っている観光客を助ける", "en": "Helping a tourist in trouble" },
   "summary": { "ja": "落とし物をした観光客に事情を聞いて、駅や交番に案内する。", "en": "A tourist has lost something: find out what happened and take them to the right place." },
   "setting": "Outside the ticket gates of a busy station in Tokyo, in the early evening. A tourist is searching their pockets and looks worried. There is a police box (koban) just outside the station exit.",
-  "image": "",
+  "image": "/roleplay/tourist-trouble.jpg",
   "studentRole": "a",
   "roles": [
     {

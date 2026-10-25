@@ -4,7 +4,7 @@
   "title": { "ja": "日本の習慣を説明する", "en": "Explaining Japanese customs" },
   "summary": { "ja": "日本に来たばかりの友だちに、チップやおみやげなどの習慣をわかりやすく説明する。", "en": "Explain Japanese customs, like tipping and souvenirs, to a friend who is new to Japan." },
   "setting": "A small restaurant in Tokyo at lunchtime. A friend from abroad who moved to Japan a month ago has questions about Japanese customs.",
-  "image": "",
+  "image": "/roleplay/japanese-customs.jpg",
   "studentRole": "a",
   "roles": [
     {

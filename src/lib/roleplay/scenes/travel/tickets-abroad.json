@@ -4,7 +4,7 @@
   "title": { "ja": "駅で切符を買って乗り方を聞く", "en": "Buying a train ticket" },
   "summary": { "ja": "切符を買って、発車時間やホーム、乗り換えを聞く。", "en": "Buy a ticket and ask about times, platforms and changing trains." },
   "setting": "The ticket office at Central Station in a city abroad, at 10 a.m. on a weekday. A traveller wants to go to Lakeside, a town about an hour away, for a day trip.",
-  "image": "",
+  "image": "/roleplay/tickets-abroad.jpg",
   "studentRole": "a",
   "roles": [
     {

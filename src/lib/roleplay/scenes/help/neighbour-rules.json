@@ -4,7 +4,7 @@
   "title": { "ja": "ご近所さんにゴミ出しを説明する", "en": "Explaining garbage day to a neighbour" },
   "summary": { "ja": "引っ越してきた外国人のご近所さんに、ゴミの分け方や出す日を説明する。", "en": "Explain to a new neighbour how to sort the garbage and when to put it out." },
   "setting": "The garbage collection point (a corner with a green net) in front of a small apartment building in Tokyo, on a Monday morning. A neighbour who moved in last week comes out with a bag of garbage.",
-  "image": "",
+  "image": "/roleplay/neighbour-rules.jpg",
   "studentRole": "a",
   "roles": [
     {

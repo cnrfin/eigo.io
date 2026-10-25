@@ -4,7 +4,7 @@
   "title": { "ja": "海外のレストランで食事", "en": "Eating at a restaurant abroad" },
   "summary": { "ja": "席をお願いして、料理と飲み物を注文し、お会計をする。", "en": "Get a table, order food and drinks, and pay the bill." },
   "setting": "A casual restaurant in Toronto, Canada, on a weekday evening. It's fairly busy; a server looks after the tables. Tax and tip are not included in menu prices.",
-  "image": "",
+  "image": "/roleplay/restaurant-abroad.jpg",
   "studentRole": "a",
   "roles": [
     {

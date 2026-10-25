@@ -4,7 +4,7 @@
   "title": { "ja": "週末の予定を立てる", "en": "Making weekend plans" },
   "summary": { "ja": "友だちを週末のイベントに誘って、日にちや待ち合わせを決める。", "en": "Invite a friend to a weekend event and decide when and where to meet." },
   "setting": "A café near the station on a weekday evening. Two friends look at a flyer for the Midori Park Autumn Festival this weekend.",
-  "image": "",
+  "image": "/roleplay/weekend-plans.jpg",
   "studentRole": "a",
   "roles": [
     {

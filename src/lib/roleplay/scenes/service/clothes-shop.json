@@ -4,7 +4,7 @@
   "title": { "ja": "洋服・雑貨店で接客", "en": "Serving customers at a clothes shop" },
   "summary": { "ja": "サイズや色の質問に答えて、試着や免税、お会計を英語で案内する。", "en": "Help with sizes and colours, offer the fitting room and explain tax-free shopping." },
   "setting": "Sakura Style, a small clothes and gift shop in Tokyo, on a weekday afternoon. A tourist comes in and looks around; the staff speak English to them.",
-  "image": "",
+  "image": "/roleplay/clothes-shop.jpg",
   "studentRole": "a",
   "roles": [
     {

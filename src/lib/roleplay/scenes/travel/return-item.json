@@ -4,7 +4,7 @@
   "title": { "ja": "お店で返品・交換する", "en": "Returning or exchanging an item" },
   "summary": { "ja": "買った服のサイズが合わないことを伝えて、交換や返金をお願いする。", "en": "Explain that something you bought doesn't fit, and ask to exchange it or get a refund." },
   "setting": "A clothes shop in a shopping street abroad. A traveller comes back with a sweater and a T-shirt they bought yesterday, and the receipt.",
-  "image": "",
+  "image": "/roleplay/return-item.jpg",
   "studentRole": "a",
   "roles": [
     {

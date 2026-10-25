@@ -4,7 +4,7 @@
   "title": { "ja": "オンライン会議の前の雑談", "en": "Small talk before an online meeting" },
   "summary": { "ja": "会議が始まる前に雑談をして、議題を確認し、会議を始める。", "en": "Chat before the call starts, check the agenda and open the meeting." },
   "setting": "The weekly video call between the Tokyo and Singapore offices about the website renewal project. The Tokyo team member hosts the call; Emma from Singapore joins a couple of minutes early.",
-  "image": "",
+  "image": "/roleplay/meeting-small-talk.jpg",
   "studentRole": "a",
   "roles": [
     {

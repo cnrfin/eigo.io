@@ -4,7 +4,7 @@
   "title": { "ja": "ホテルのフロントで対応", "en": "Working at a hotel front desk" },
   "summary": { "ja": "予約を確認してチェックインを受け付け、朝食や館内の案内をする。", "en": "Check a guest in, explain breakfast and the hotel, and help with their requests." },
   "setting": "The front desk of the Sakura Hotel, a hotel near Kyoto Station. A guest from abroad arrives with a suitcase; the booking is on the screen.",
-  "image": "",
+  "image": "/roleplay/hotel-front-desk.jpg",
   "studentRole": "a",
   "roles": [
     {

@@ -4,7 +4,7 @@
   "title": { "ja": "写真を撮ってと頼まれる", "en": "Taking a photo for tourists" },
   "summary": { "ja": "観光客に写真を頼まれて、立ち位置を伝えたり撮り方を確認したりする。", "en": "Tourists ask you to take their photo: check the phone, tell them where to stand and take a few." },
   "setting": "In front of a large temple gate in Kyoto, on a busy autumn afternoon. Two tourists, Emma and a friend, want a photo of themselves with the gate behind them.",
-  "image": "",
+  "image": "/roleplay/take-a-photo.jpg",
   "studentRole": "a",
   "roles": [
     {

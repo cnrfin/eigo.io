@@ -4,7 +4,7 @@
   "title": { "ja": "出張先で取引先と会食", "en": "Dinner with a client on a business trip" },
   "summary": { "ja": "取引先との食事で、お礼を伝え、料理を注文し、雑談を楽しむ。", "en": "Thank your host, order from the menu and make small talk over dinner." },
   "setting": "A restaurant in London on the first evening of a business trip. Olivia Hart, whose company has just started buying from the Tokyo company, has invited a visitor from the Tokyo office to dinner.",
-  "image": "",
+  "image": "/roleplay/business-dinner.jpg",
   "studentRole": "a",
   "roles": [
     {

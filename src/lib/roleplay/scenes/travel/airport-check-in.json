@@ -4,7 +4,7 @@
   "title": { "ja": "空港でチェックイン", "en": "Checking in at the airport" },
   "summary": { "ja": "荷物を預けて座席を選び、搭乗口と搭乗時間を確認する。", "en": "Check in your bag, choose a seat and check your gate and boarding time." },
   "setting": "The check-in counter of Sky Pacific at Vancouver Airport, Canada, two and a half hours before flight SP 102 to Tokyo. One checked bag of up to 23 kg is included.",
-  "image": "",
+  "image": "/roleplay/airport-check-in.jpg",
   "studentRole": "a",
   "roles": [
     {

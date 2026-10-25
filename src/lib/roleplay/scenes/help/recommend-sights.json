@@ -4,7 +4,7 @@
   "title": { "ja": "観光地や行き方をすすめる", "en": "Recommending places to visit" },
   "summary": { "ja": "観光客に好みを聞いて、おすすめの場所と行き方を紹介する。", "en": "Ask what a tourist likes, then recommend places and how to get there." },
   "setting": "The tourist information board outside Kitamachi Station in Tokyo, an area with old streets and a castle, at 10 a.m. A tourist with a day to spend is looking at the area map.",
-  "image": "",
+  "image": "/roleplay/recommend-sights.jpg",
   "studentRole": "a",
   "roles": [
     {

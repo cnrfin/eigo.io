@@ -4,7 +4,7 @@
   "title": { "ja": "友だちを家に招待する", "en": "Having a friend over for dinner" },
   "summary": { "ja": "家に来た友だちを迎えて、靴や飲み物のことを伝え、一緒に餃子を作る。", "en": "Welcome a friend into your home, offer a drink and make gyoza together." },
   "setting": "The host's small apartment in Tokyo on a Saturday evening. They have invited a friend from abroad over for dinner, and the plan is to make gyoza together.",
-  "image": "",
+  "image": "/roleplay/home-party.jpg",
   "studentRole": "a",
   "roles": [
     {

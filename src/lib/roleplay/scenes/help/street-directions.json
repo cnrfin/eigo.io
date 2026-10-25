@@ -4,7 +4,7 @@
   "title": { "ja": "街で道をたずねられる", "en": "Giving directions in the street" },
   "summary": { "ja": "道に迷った観光客に、目印を使って行き方を説明する。", "en": "Help a lost tourist: give directions using landmarks." },
   "setting": "Outside the north exit of Kitamachi Station in Tokyo, at 3 p.m. on a sunny day. A tourist holding a phone is looking around for the City Museum.",
-  "image": "",
+  "image": "/roleplay/street-directions.jpg",
   "studentRole": "a",
   "roles": [
     {

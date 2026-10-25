@@ -4,7 +4,7 @@
   "title": { "ja": "駅で乗り換えを聞かれる", "en": "Helping with a train transfer" },
   "summary": { "ja": "観光客に行き方を聞かれて、路線や乗り換え、ホームを説明する。", "en": "A tourist asks the way: explain the line, where to change and which platform." },
   "setting": "The ticket gates at Chuo Station in Tokyo, on a weekday afternoon. A tourist with a suitcase is looking at the route map and wants to get to Kitamachi.",
-  "image": "",
+  "image": "/roleplay/station-transfer.jpg",
   "studentRole": "a",
   "roles": [
     {

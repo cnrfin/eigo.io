@@ -4,7 +4,7 @@
   "title": { "ja": "神社のマナーを説明する", "en": "Explaining manners at a shrine" },
   "summary": { "ja": "手水やお参りのしかた、写真やおみくじのマナーを観光客に説明する。", "en": "Show a tourist how to wash their hands, pray and draw a fortune at a shrine." },
   "setting": "A Shinto shrine in Tokyo on a quiet weekday morning. A tourist is standing by the water basin (chozuya) near the entrance gate, watching what other people do.",
-  "image": "",
+  "image": "/roleplay/shrine-manners.jpg",
   "studentRole": "a",
   "roles": [
     {

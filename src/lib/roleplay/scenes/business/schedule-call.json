@@ -4,7 +4,7 @@
   "title": { "ja": "電話・ビデオ通話で日程調整", "en": "Setting up a meeting on a call" },
   "summary": { "ja": "時差を考えながら打ち合わせの日時を提案し、決めた内容を確認する。", "en": "Suggest a meeting time across time zones and confirm what you agree." },
   "setting": "A short video call in early November between someone in the Tokyo office and Laura Bennett, a client in London, to book a one-hour video meeting about renewing their contract in the week of 9 November.",
-  "image": "",
+  "image": "/roleplay/schedule-call.jpg",
   "studentRole": "a",
   "roles": [
     {

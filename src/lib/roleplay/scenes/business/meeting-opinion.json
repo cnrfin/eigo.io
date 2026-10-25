@@ -4,7 +4,7 @@
   "title": { "ja": "会議で意見を言う・やんわり反対する", "en": "Giving your opinion in a meeting" },
   "summary": { "ja": "同僚の案に意見を言い、やんわり反対して、折衷案で合意する。", "en": "Give your view on a colleague's idea, disagree politely and agree on a compromise." },
   "setting": "A marketing team meeting on a video call. The team is deciding how to split the ¥5 million budget for the spring campaign. Alex Kim has proposed spending 70% of it on online video ads.",
-  "image": "",
+  "image": "/roleplay/meeting-opinion.jpg",
   "studentRole": "a",
   "roles": [
     {
