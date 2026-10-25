@@ -74,16 +74,46 @@ function blockText(b: Block): string {
   }
 }
 
-export function slideText(s: Slide, n: number): string {
+/**
+ * Teacher notes as the AI tutor gets them. The same notes guide a human teacher
+ * (docs/courses/teacher-notes.md), so the parts only a human needs are removed:
+ * media briefs (and everything after them), time estimates, sources and the
+ * "Shorter lesson:" planning line. Line breaks are kept so the labels stay clear.
+ */
+export function aiNotes(raw: string | undefined | null, max = 700): string {
+  const t = (raw ?? '')
+    .replace(/\[(IMAGE|AUDIO|VIDEO) TO ADD[\s\S]*$/, '')
+    .split('\n')
+    .filter((l) => !/^\s*(Sources?|Shorter lesson)\s*:/i.test(l))
+    .join('\n')
+    .replace(/\(\s*~\s*[\d.–-]+\s*(min|mins|minutes)\s*\)/gi, '')
+    .replace(/\*\*/g, '')
+    .replace(/[ \t]+/g, ' ')
+    .replace(/ *\n */g, '\n')
+    .replace(/\n{2,}/g, '\n')
+    .trim()
+  return t.length > max ? t.slice(0, max - 1) + '…' : t
+}
+
+const NOTES_HEAD = 'Teaching notes (private guide; never read out):'
+
+function slideNotes(s: Slide): string {
+  const notes = aiNotes(s.tutorNotes)
+  return notes ? `${NOTES_HEAD}\n${notes}` : ''
+}
+
+function slideBody(s: Slide, n: number): string {
   const head = s.header ? `${s.header.label ? s.header.label + ' · ' : ''}${s.header.title}` : ''
   const body = s.blocks
     .map((b) => (b.tutorOnly ? `(teacher only) ${blockText(b)}` : b.reveal ? `(hidden from the student until they tap "Show": let them guess first) ${blockText(b)}` : blockText(b)))
     .filter(Boolean)
     .join('\n')
-  const notes = s.tutorNotes
-    ? `\nNotes (use after the related content, or if asked): ${clip(s.tutorNotes.replace(/\[(IMAGE|AUDIO|VIDEO) TO ADD[\s\S]*$/, ''), 500)}`
-    : ''
-  return `--- Slide ${n}${head ? `: ${clip(head, 120)}` : ''}\n${body}${notes}`
+  return `--- Slide ${n}${head ? `: ${clip(head, 120)}` : ''}\n${body}`
+}
+
+export function slideText(s: Slide, n: number): string {
+  const notes = slideNotes(s)
+  return slideBody(s, n) + (notes ? `\n${notes}` : '')
 }
 
 /** What has to be covered on a slide, item by item (so nothing gets skipped). */
@@ -93,7 +123,10 @@ export function checklist(s: Slide): string[] {
     if (b.tutorOnly) continue
     switch (b.type) {
       case 'vocab':
-        for (const v of b.items) out.push(`the word "${v.term}": meaning, pronunciation, and the student uses it`)
+        // Quick on purpose: drilling every word took about a minute each.
+        out.push(
+          `the vocabulary (${b.items.map((v) => v.term).join(', ')}): the student reads each word aloud; then ask if they have any questions about them. Practise only the words they ask about (one sentence of their own), then move on`,
+        )
         break
       case 'dialogue': {
         const who = [...new Set(b.lines.map((l) => l.speaker))]
@@ -196,9 +229,11 @@ export function slideInstructionParts(lesson: Lesson, slideId: string, review?: 
   const head = `NOW ON THE STUDENT'S SCREEN: ${n}.\n`
   const one = head + content + list + tail
   if (estTokens(one) <= PART_MAX) return [one]
-  // two parts: what's on the slide (+ notes), then what to cover
-  const second = `(${n}, continued)` + list + tail
-  return [head + fitTokens(content, PART_MAX - estTokens(head)), fitTokens(second, PART_MAX)]
+  // Two parts: what's on the slide, then the notes and what to cover. The notes
+  // go with the checklist so a long slide can't cut them off.
+  const notes = slideNotes(sl)
+  const second = `(${n}, continued)` + (notes ? `\n${notes}` : '') + list + tail
+  return [head + fitTokens(slideBody(sl, i + 1), PART_MAX - estTokens(head)), fitTokens(second, PART_MAX)]
 }
 
 /** One string (tests and older callers). */
@@ -242,7 +277,8 @@ How to run the lesson:
 - Only when everything on the slide is covered, and the student has answered or practised each item, say that you're moving on (for example "Great, let's move on to the next slide."), then stop talking for a moment. Don't mention the next slide before that. The next slide appears on the student's screen at once and you get its content in a "NOW ON THE STUDENT'S SCREEN" note. As soon as it arrives, start teaching it yourself: don't wait for the student to say anything first. Never describe a slide before its note arrives. The same when the student asks for the next slide.
 - If the student asks to look at an earlier slide again (for example the vocabulary), say "Let's go back to the vocabulary slide" (or its number from the outline); it appears on screen. When you're done there, say "Let's carry on with the lesson" and it goes back. Don't go back unless they ask.
 - If the student wants to do the whole lesson again from the start (not just look back), say "Let's start this lesson again from the beginning". Slide 1 appears and the lesson carries on from there, slide by slide, as if it were new. "Start the course from the beginning" or "start over" means THIS lesson from slide 1, unless they name a different lesson ("lesson 1").
-- Be diligent: on every slide, cover every item in its checklist (every vocabulary word, every dialogue, every statement or question) before moving on. Your pace setting changes how much extra practice you give, never what you cover.
+- Each slide note may end with "Teaching notes": your private guide for that slide. Follow its steps, but never read the notes out, quote them or talk about them, and never mention timings or how the lesson is planned. "Answers" are for checking, only after the student has tried; "If asked" facts are only for when the student asks; "Watch for" lists mistakes to correct; "Video" says what the clip shows (you can't see it).
+- Be diligent: on every slide, cover every item in its checklist (every dialogue, every statement or question; on vocabulary slides the student reads every word, and you practise only the words they ask about) before moving on. Your pace setting changes how much extra practice you give, never what you cover.
 - You lead. As soon as everything on the current slide has been covered, say you're moving on, without a pause and without waiting for the student to ask. In free talk, bring the next question or topic yourself.
 - Reading a dialogue together: the student takes ONE character and you take every other character. Read all of your characters' lines yourself, in order, without stopping; pause only when it's the student's line. Never wait for the student on a line that belongs to one of your characters.
 - Explanations and extra points (word meanings, culture, pronunciation tips) come after the content they're about (for example, after reading the dialogue), not before it.
