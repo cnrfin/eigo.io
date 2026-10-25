@@ -4,6 +4,7 @@ import type { CourseEditor } from '../useCourseEditor'
 import { Field, IconButton, Select, TextArea, TextInput, Toggle } from '../ui/fields'
 import { IconPlus, IconTrash } from '../ui/icons'
 import { ImageField } from './ImageField'
+import { MediaField } from './MediaField'
 
 /** Keep empty entries while typing ("a, "); they're dropped when the course is used. */
 const splitChips = (v: string) => v.split(/[,、]/).map((x) => x.trimStart())
@@ -128,6 +129,15 @@ export function CourseSettings({ course, editor, onDelete }: { course: Course; e
           <div className="card">
             <Field label="Cover image">
               <ImageField courseId={course.id} value={course.coverImage} onChange={(v) => set((d) => void (d.coverImage = v))} />
+            </Field>
+            <Field label="Cover video (optional)" hint="A short muted loop that plays in the course picker instead of the cover image. Its first frame becomes the cover image if there isn’t one.">
+              <MediaField
+                courseId={course.id}
+                kind="video"
+                value={course.reel ?? ''}
+                onChange={(v) => set((d) => void (d.reel = v || undefined))}
+                onPoster={(p) => set((d) => void (d.coverImage = d.coverImage || p))}
+              />
             </Field>
           </div>
         </div>

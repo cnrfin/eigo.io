@@ -29,8 +29,8 @@ export type CatalogCourse = {
 }
 
 /**
- * Preview reels not yet stored with the course: course id → video under /public.
- * (Trial: c_greatbritain. Later this can be a `reel` field set in the studio.)
+ * Fallback for courses published before the studio had a cover video field:
+ * course id → video under /public. A course's own `reel` always wins.
  */
 const PREVIEW_REELS: Record<string, string> = {
   c_greatbritain: '/course-reels/c_greatbritain.mp4',
@@ -75,7 +75,7 @@ export function summarize(course: Course, assetBase: string): CatalogCourse {
     sortOrder: typeof course.sortOrder === 'number' ? course.sortOrder : 999,
     chips: { ja: clean(course.chips?.ja), en: clean(course.chips?.en) },
     scenes: [...new Set(scenes)].slice(0, 16).map(abs),
-    reel: (course as { reel?: string }).reel ? abs((course as { reel?: string }).reel!) : (PREVIEW_REELS[course.id] ?? null),
+    reel: course.reel ? abs(course.reel) : (PREVIEW_REELS[course.id] ?? null),
     lessonIds: course.units.flatMap((u) => u.lessons.map((l) => l.id)),
   }
 }

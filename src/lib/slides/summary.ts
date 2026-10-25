@@ -17,6 +17,7 @@ export function collectAssets(c: Course): string[] {
     if (src && !/^(https?:|data:|blob:|\/)/.test(src)) out.add(src)
   }
   add(c.coverImage)
+  if (c.reel) add(c.reel)
   for (const ch of c.characters ?? []) add(ch.avatar)
   for (const u of c.units)
     for (const l of u.lessons)
@@ -44,7 +45,7 @@ export function validateCourse(c: Course): CourseIssue[] {
   if (!c.title.trim()) issues.push({ level: 'error', where: 'Course', message: 'Course needs a title.' })
   if (!/^[a-z0-9-]+$/.test(c.slug)) issues.push({ level: 'error', where: 'Course', message: 'Slug may only contain a–z, 0–9 and hyphens.' })
   if (!c.level) issues.push({ level: 'warning', where: 'Course', message: 'No CEFR level set.' })
-  if (!c.coverImage) issues.push({ level: 'warning', where: 'Course', message: 'No cover image.' })
+  if (!c.coverImage && !c.reel) issues.push({ level: 'warning', where: 'Course', message: 'No cover image or video.' })
   if (c.units.length === 0) issues.push({ level: 'error', where: 'Course', message: 'Course has no units.' })
   c.units.forEach((u, ui) => {
     const uw = `Unit ${ui + 1}`

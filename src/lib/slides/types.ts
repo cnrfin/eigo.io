@@ -367,6 +367,8 @@ export interface Course {
   category: string
   /** Relative asset path, e.g. "images/cover.jpg". */
   coverImage: string
+  /** Optional short looping video (relative asset path) that plays instead of the cover picture in the course picker. */
+  reel?: string
   /** Japanese description shown in the booking course picker (optional). */
   descriptionJa?: string
   /** Series the course belongs to, e.g. "Great Britain" (one row per series in the picker). */
