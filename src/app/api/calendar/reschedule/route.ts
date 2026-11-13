@@ -61,8 +61,7 @@ export async function POST(request: NextRequest) {
     let wherebyRoomUrl = null
     let wherebyHostUrl = null
 
-    const isAi = oldBooking.lesson_kind === 'ai'
-    if (!isAi) try {
+    try {
       const room = await createWherebyRoom({
         endDate: lessonEndJST.toISOString(),
         roomNamePrefix: 'eigo',
@@ -79,18 +78,15 @@ export async function POST(request: NextRequest) {
     }
 
     // Create new Google Calendar event
-    // AI lessons don't go on Connor's calendar
-    const event = isAi
-      ? { id: null }
-      : await createBookingEvent({
-          date,
-          time,
-          durationMinutes: duration,
-          studentEmail: user.email || '',
-          studentName: user.user_metadata?.full_name || user.email,
-          timezone,
-          location: wherebyRoomUrl || undefined,
-        })
+    const event = await createBookingEvent({
+      date,
+      time,
+      durationMinutes: duration,
+      studentEmail: user.email || '',
+      studentName: user.user_metadata?.full_name || user.email,
+      timezone,
+      location: wherebyRoomUrl || undefined,
+    })
 
     // Store new booking in Supabase
     const { data: newBookingRow, error: dbError } = await supabase.from('bookings').insert({
@@ -103,11 +99,6 @@ export async function POST(request: NextRequest) {
       whereby_room_url: wherebyRoomUrl,
       whereby_host_url: wherebyHostUrl,
       status: 'confirmed',
-      // keep the course lesson chosen when it was booked
-      slide_course_id: oldBooking.slide_course_id ?? null,
-      slide_lesson_id: oldBooking.slide_lesson_id ?? null,
-      // an AI lesson stays an AI lesson (no Whereby room needed)
-      ...(oldBooking.lesson_kind === 'ai' ? { lesson_kind: 'ai', ai_minutes_charged: oldBooking.ai_minutes_charged ?? null } : {}),
     }).select('id').single()
 
     if (dbError) {

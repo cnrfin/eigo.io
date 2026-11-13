@@ -16,7 +16,8 @@ import { Ico } from './Icons'
 const canPickSpeaker = typeof HTMLMediaElement !== 'undefined' && 'setSinkId' in HTMLMediaElement.prototype
 
 export function lessonTitle(info: JoinInfo, t: ClassroomT) {
-  return info.lesson ? `Lesson ${info.lesson.number}: ${info.lesson.lessonTitle}` : t('freeTalk')
+  void info
+  return t('freeTalk')
 }
 
 export default function Lobby({
@@ -151,7 +152,6 @@ export default function Lobby({
           <div className="lhead">
             <b>{lessonTitle(info, t)}</b>
             <span>
-              {info.lesson ? `${info.lesson.courseTitle} · ` : ''}
               {t('withName', { name: info.other.name })}
             </span>
           </div>

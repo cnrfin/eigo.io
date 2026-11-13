@@ -1,15 +1,11 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useRef } from 'react'
 import { motion } from 'framer-motion'
 import { Squircle } from '@squircle-js/react'
 import { useTheme } from '@/context/ThemeContext'
 import SquircleCard from '@/components/ui/SquircleCard'
 import RiveIcon, { type RiveIconHandle } from '@/components/ui/RiveIcon'
-import AiAvatar from '@/components/ai/AiAvatar'
-import { AiStartModal, prefetchAiStart, useAiProfile } from '@/components/ai/AiStart'
-import { useAuth } from '@/context/AuthContext'
-import { newMood } from '@/lib/ai-tutor/avatar-mood'
 
 type Locale = 'ja' | 'en'
 
@@ -23,8 +19,6 @@ export type HomeViewLesson = {
   wherebyRoomUrl: string | null
   wherebyMeetingId: string | null
   hasSummary?: boolean
-  /** AI tutor lessons always open in the eigo classroom */
-  lessonKind?: 'human' | 'ai'
 }
 
 interface HomeViewProps {
@@ -42,14 +36,6 @@ interface HomeViewProps {
   onBook: () => void
   onReviewPhrases: () => void
   onTakeTests: () => void
-  /** pilot: "Talk to AI tutor" (start an AI lesson now) replaces "Take Tests" */
-  aiEnabled?: boolean
-  /** /dashboard?ai=start (the welcome call's end screen): open the start-now modal */
-  openAi?: boolean
-  /** not known yet whether the AI button or Tests goes here (first visit): show a placeholder */
-  aiPending?: boolean
-  /** the AI modal's "schedule one instead": booking with the AI tutor chosen */
-  onBookAi?: () => void
   onViewPlans: () => void
   onCancelLesson: (lesson: HomeViewLesson) => void
   onRescheduleLesson: (lesson: HomeViewLesson) => void
@@ -170,7 +156,7 @@ function HeroLesson({ lesson, locale, wherebyUrl, isAdmin, classroomEnabled, onC
   const mins = (lessonDate(lesson).getTime() - new Date().getTime()) / 60000
   const canEnter = isAdmin || (mins <= 10 && mins > -lesson.durationMinutes)
   // Pilot users go to the eigo classroom (same tab; it enforces the 10-minute rule itself).
-  const inClassroom = classroomEnabled || lesson.lessonKind === 'ai'
+  const inClassroom = !!classroomEnabled
   const room = inClassroom ? `/classroom/${lesson.id}` : lesson.wherebyRoomUrl || wherebyUrl || '#'
   return (
     <SquircleCard radius={22} className="p-5">
@@ -178,9 +164,6 @@ function HeroLesson({ lesson, locale, wherebyUrl, isAdmin, classroomEnabled, onC
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-wider flex items-center gap-2" style={{ color: 'var(--text-subtle)' }}>
             {locale === 'ja' ? '次のレッスン' : 'Next lesson'}
-            {lesson.lessonKind === 'ai' && (
-              <span className="px-2 py-0.5 text-[10px] font-semibold rounded-full normal-case tracking-normal" style={{ background: 'var(--accent-bg)', color: 'var(--accent)' }}>AI</span>
-            )}
           </p>
           <p className="text-lg font-semibold mt-1" style={{ color: 'var(--text)' }}>{fmtDate(lesson, locale)}</p>
           <p className="text-sm mt-0.5" style={{ color: 'var(--text-secondary)' }}>{fmtTime(lesson, locale)}</p>
@@ -245,23 +228,6 @@ export default function HomeView(props: HomeViewProps) {
   const { locale, greeting, firstName, subStatus, trialCompleted, lessons, loadingLessons, wherebyUrl, isAdmin, classroomEnabled } = props
   const { theme } = useTheme()
   const mesh = theme === 'dark' ? MESH_DARK : MESH
-  // pilot: the AI tutor's avatar on its button, and the start-now modal
-  const ai = useAiProfile(!!props.aiEnabled)
-  const aiMood = useRef(newMood())
-  const [aiOpen, setAiOpen] = useState(false)
-  const [aiAutoOpened, setAiAutoOpened] = useState(false)
-  if (props.openAi && props.aiEnabled && !aiAutoOpened) {
-    setAiAutoOpened(true)
-    setAiOpen(true)
-  }
-  // load what the modal needs (course to continue, lengths, minutes) in the background, so it opens complete
-  const { session, user } = useAuth()
-  useEffect(() => {
-    if (!props.aiEnabled) return
-    const id = setTimeout(() => void prefetchAiStart(session?.access_token, user?.id), 400)
-    return () => clearTimeout(id)
-  }, [props.aiEnabled, session?.access_token, user?.id])
-
   let lessonsSection: React.ReactNode = null
   if (lessons.length > 0) {
     // Cached or live lessons — render immediately, even mid-refresh.
@@ -335,41 +301,8 @@ export default function HomeView(props: HomeViewProps) {
       <div className="flex flex-wrap justify-center gap-3 mb-10">
         <ActionButton artboard="book" label={locale === 'ja' ? 'レッスン予約' : 'Book lesson'} onClick={props.onBook} colors={mesh.blueGreen} flat={theme !== 'dark'} />
         <ActionButton artboard="phrases" label={locale === 'ja' ? 'フレーズ復習' : 'Review Phrases'} onClick={props.onReviewPhrases} colors={mesh.pinkPurple} flat={theme !== 'dark'} />
-        {props.aiPending ? (
-          <span aria-hidden className="h-[46px] w-[170px] rounded-full animate-pulse" style={{ background: 'var(--inset)' }} />
-        ) : props.aiEnabled ? (
-          <ActionButton
-            artboard="ai"
-            label={locale === 'ja' ? 'AIチューターと話す' : 'Talk to AI tutor'}
-            onClick={() => setAiOpen(true)}
-            onHover={() => {
-              aiMood.current.face = 'happy'
-              aiMood.current.until = performance.now() + 1400
-            }}
-            icon={
-              <span className="block w-[26px] -my-1" aria-hidden>
-                {ai.ready ? <AiAvatar color={ai.color} blush={ai.blush} mood={aiMood} /> : <span className="block w-[26px] h-[26px] rounded-full animate-pulse" style={{ background: 'var(--inset)' }} />}
-              </span>
-            }
-            colors={mesh.blueGreen}
-            flat={theme !== 'dark'}
-          />
-        ) : (
-          <ActionButton artboard="exam" label={locale === 'ja' ? 'テスト' : 'Take Tests'} onClick={props.onTakeTests} colors={mesh.yellowOrange} flat={theme !== 'dark'} />
-        )}
+        <ActionButton artboard="exam" label={locale === 'ja' ? 'テスト' : 'Take Tests'} onClick={props.onTakeTests} colors={mesh.yellowOrange} flat={theme !== 'dark'} />
       </div>
-      {aiOpen && (
-        <AiStartModal
-          locale={locale}
-          profile={ai}
-          onClose={() => setAiOpen(false)}
-          onSchedule={() => {
-            setAiOpen(false)
-            ;(props.onBookAi ?? props.onBook)()
-          }}
-        />
-      )}
-
       <div className="max-w-xl mx-auto">
         {lessonsSection}
 

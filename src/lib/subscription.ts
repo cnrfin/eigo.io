@@ -36,6 +36,7 @@ export interface Subscription {
   apple_original_transaction_id: string | null
   apple_product_id: string | null
   payment_source: 'stripe' | 'apple' | null
+  /** 'ai' = the retired AI plan (old rows only) */
   plan: 'light' | 'standard' | 'test' | 'ai'
   billing_interval: 'monthly' | 'yearly'
   price_tier: PriceTier
@@ -94,7 +95,7 @@ export async function getMinuteBalance(
     .select('minutes_used, action')
     .eq('user_id', userId)
     .eq('period_start', sub.current_period_start)
-    .eq('pool', 'plan') // AI-plan and top-up minutes are separate pools (src/lib/minutes.ts)
+    .eq('pool', 'plan') // rows from the retired AI tutor used other pools ('ai', 'topup')
 
   if (error) {
     console.error('Failed to fetch minute usage:', error)
@@ -159,4 +160,30 @@ export async function recordMinuteUsage(
     console.error('Failed to record minute usage:', error)
     throw error
   }
+}
+
+/**
+ * Refund what a booking was charged (plan minutes), back to the billing period it was charged in.
+ * Returns the minutes refunded. Nothing for trial / test-account / admin bookings, which weren't charged.
+ */
+export async function refundBooking(userId: string, bookingId: string): Promise<number> {
+  const supabase = getSupabaseAdmin()
+  const { data } = await supabase
+    .from('minute_usage')
+    .select('minutes_used, action, pool, period_start')
+    .eq('booking_id', bookingId)
+    .eq('user_id', userId)
+  const net = new Map<string, number>()
+  for (const r of data ?? []) {
+    if ((r.pool ?? 'plan') !== 'plan') continue
+    const d = r.action === 'booked' ? r.minutes_used : r.action === 'cancelled_refund' ? -r.minutes_used : 0
+    net.set(r.period_start, (net.get(r.period_start) ?? 0) + d)
+  }
+  let refunded = 0
+  for (const [periodStart, minutes] of net) {
+    if (minutes <= 0) continue
+    await recordMinuteUsage(userId, bookingId, minutes, periodStart, 'cancelled_refund')
+    refunded += minutes
+  }
+  return refunded
 }

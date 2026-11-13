@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { checkRoleplayPick, roleplayColumns } from '@/lib/roleplay/booking'
 import { createClient } from '@supabase/supabase-js'
 import { createBookingEvent, getAvailableSlots, timezoneToJst } from '@/lib/google-calendar'
 import { createWherebyRoom } from '@/lib/whereby'
@@ -9,24 +8,15 @@ import { createStudentCalendarEvent } from '@/lib/student-calendar'
 import { getUserSubscription, hasEnoughMinutes, recordMinuteUsage } from '@/lib/subscription'
 import { getUserPermissions } from '@/lib/user-permissions'
 import { isAdminEmail } from '@/lib/admin-redirect'
-import { nextLessonFor } from '@/lib/classroom/catalog'
-import { AI_MAX_LENGTH, AI_MIN_LENGTH } from '@/lib/ai-tutor/settings'
-import { chargeAiLesson, getBalance } from '@/lib/minutes'
-import { aiAccess } from '@/lib/ai-tutor/access'
-import { splitAiCharge, type ChargePart } from '@/lib/minutes-core'
 
 // POST /api/calendar/book
-// Body: { date: '2026-03-23', time: '17:00', duration: 30, timezone: 'Europe/London', slideCourseId?: 'c_greatbritain' }
-// With slideCourseId (classroom pilot), the booking gets the student's next
-// lesson in that course, worked out here: not completed and not already on an
-// upcoming booking. The form books several times in date order, so they get
-// consecutive lessons.
+// Body: { date: '2026-03-23', time: '17:00', duration: 30, timezone: 'Europe/London' }
 export async function POST(request: NextRequest) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   try {
     const body = await request.json()
-    const { date, time, duration, timezone = 'Asia/Tokyo', skipAdminEmail = false, slideCourseId = null, lessonKind = 'human', roleplay: rawRoleplay = null } = body
+    const { date, time, duration, timezone = 'Asia/Tokyo', skipAdminEmail = false } = body
 
     if (!date || !time || !duration) {
       return NextResponse.json(
@@ -67,87 +57,6 @@ export async function POST(request: NextRequest) {
     // the DB CHECK constraint. Admins have no subscription, so no minutes are
     // recorded either (recordMinuteUsage requires a subscription).
     const isAdmin = isAdminEmail(user.email)
-
-    // Optional course for the classroom (pilot users only).
-    let slideCourse: { courseId: string; lessonId: string } | null = null
-    if (slideCourseId != null) {
-      if (typeof slideCourseId !== 'string' || (!perms.classroom_enabled && !isAdmin)) {
-        return NextResponse.json({ error: 'Courses are not available for this account' }, { status: 400 })
-      }
-      const next = await nextLessonFor(user.id, slideCourseId)
-      if (!next) return NextResponse.json({ error: 'Unknown course' }, { status: 400 })
-      slideCourse = { courseId: slideCourseId, lessonId: next.lessonId }
-    }
-
-    // ---------- AI tutor lesson: any time, 60% of the minutes, no Whereby / no teacher calendar ----------
-    if (lessonKind === 'ai') {
-      if (!(await aiAccess(user)).ok) {
-        return NextResponse.json({ error: 'AI lessons are not available for this account' }, { status: 403 })
-      }
-      // a role-play instead of a course (AI lessons only: the AI tutor plays the other character)
-      const roleplay = await checkRoleplayPick(user.id, rawRoleplay)
-      if (roleplay === 'bad') return NextResponse.json({ error: 'This role-play or level is not available' }, { status: 400 })
-      // AI lessons: 15 or 30 minutes, or a shorter length that uses up the month's last minutes (aiLengthsFor);
-      // any whole length from 5 to 30 is fine here, the minute check below decides what they can afford
-      if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !/^\d{2}:\d{2}$/.test(time) || !Number.isInteger(duration) || duration < AI_MIN_LENGTH || duration > AI_MAX_LENGTH) {
-        return NextResponse.json({ error: 'Invalid date, time or duration' }, { status: 400 })
-      }
-      const { jstDate, jstTime } = timezoneToJst(date, time, timezone)
-      if (new Date(`${jstDate}T${jstTime}:00+09:00`).getTime() < Date.now() - 60_000) {
-        return NextResponse.json({ error: 'This time has already passed' }, { status: 400 })
-      }
-      // AI minutes first (AI plan, then top-ups), then plan minutes at 60% (src/lib/minutes-core.ts).
-      // Admins and test accounts aren't charged.
-      const charged = !isAdmin && !isTester
-      const balance = charged ? await getBalance(user.id) : null
-      let parts: ChargePart[] | null = []
-      if (balance) {
-        if (!balance.active && !balance.snapshot.topups.length) {
-          return NextResponse.json({ error: 'No active subscription. Please subscribe first.', code: 'NO_SUBSCRIPTION' }, { status: 403 })
-        }
-        parts = splitAiCharge(balance.snapshot, duration)
-        if (!parts) {
-          return NextResponse.json({ error: 'Not enough minutes remaining.', code: 'INSUFFICIENT_MINUTES' }, { status: 403 })
-        }
-      }
-      const { data: aiRow, error: aiErr } = await supabase
-        .from('bookings')
-        .insert({
-          user_id: user.id,
-          date: jstDate,
-          start_time: jstTime,
-          duration_minutes: duration,
-          status: 'confirmed',
-          lesson_kind: 'ai',
-          // minutes taken from the student's balances (AI + top-up + plan); the exact split is in minute_usage
-          ai_minutes_charged: (parts ?? []).reduce((a, p) => a + p.minutes, 0),
-          slide_course_id: roleplay ? null : (slideCourse?.courseId ?? null),
-          slide_lesson_id: roleplay ? null : (slideCourse?.lessonId ?? null),
-          ...roleplayColumns(roleplay),
-        })
-        .select('id')
-        .single()
-      if (aiErr || !aiRow) {
-        console.error('Failed to store AI booking:', aiErr)
-        return NextResponse.json({ error: 'Failed to create booking' }, { status: 500 })
-      }
-      if (balance) {
-        try {
-          await chargeAiLesson(user.id, aiRow.id, duration, balance)
-        } catch (usageError) {
-          console.error('Failed to record AI minute usage:', usageError)
-        }
-      }
-      return NextResponse.json({
-        success: true,
-        booking: { id: aiRow.id, date, time, duration, timezone, status: 'confirmed', lessonKind: 'ai', charge: parts },
-      })
-    }
-
-    // The AI plan is AI tutor lessons only
-    if (subscription?.plan === 'ai' && subscription.status !== 'cancelled' && !isAdmin && !isTester) {
-      return NextResponse.json({ error: 'Your plan includes AI tutor lessons only.', code: 'PLAN_AI_ONLY' }, { status: 403 })
-    }
 
     if (!isTrial && !isAdmin && !isTester) {
       if (!subscription || subscription.status === 'cancelled') {
@@ -237,8 +146,6 @@ export async function POST(request: NextRequest) {
       whereby_room_url: wherebyRoomUrl,
       whereby_host_url: wherebyHostUrl,
       status: 'confirmed',
-      slide_course_id: slideCourse?.courseId ?? null,
-      slide_lesson_id: slideCourse?.lessonId ?? null,
     }).select('id').single()
 
     if (dbError) {

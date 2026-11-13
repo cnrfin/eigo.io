@@ -1,0 +1,9 @@
+/* Booking: plan minutes this booking uses (BookingCalendar) */
+.tp-meter { max-width: 30rem; margin: -.4rem auto 1.4rem; }
+.tp-meter .tp-lbl { display: flex; justify-content: space-between; gap: 12px; font-size: .72rem; color: var(--text-muted); margin-bottom: 6px; }
+.tp-meter .tp-lbl b { color: var(--text); font-weight: 600; }
+.tp-track { position: relative; height: 8px; border-radius: 4px; background: var(--surface-hover); overflow: hidden; }
+.tp-track .tp-use { position: absolute; top: 0; bottom: 0; right: 0; background: var(--accent); border-radius: 4px; transition: width .5s cubic-bezier(.22, 1, .36, 1); }
+@media (prefers-reduced-motion: reduce) {
+  .tp-track .tp-use { transition: none !important; }
+}

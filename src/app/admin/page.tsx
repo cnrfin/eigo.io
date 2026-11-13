@@ -7,7 +7,6 @@ import { Squircle } from '@squircle-js/react'
 import SquircleBox from '@/components/ui/SquircleBox'
 import Header from '@/components/Header'
 import RatingsCard from '@/components/admin/RatingsCard'
-import { TOPUP_MINUTES, TOPUP_VALID_MONTHS } from '@/lib/minutes-core'
 import { motion, AnimatePresence } from 'framer-motion'
 
 const ADMIN_EMAILS = ['cnrfin93@gmail.com']
@@ -79,9 +78,6 @@ type StudentProfile = {
   avatar_url: string | null
   minutesRemaining: number | null
   minutesPerMonth: number | null
-  /** AI minutes left (AI plan + top-ups) */
-  aiMinutesLeft?: number
-  plan?: string | null
 }
 
 type StudentProgress = {
@@ -363,7 +359,6 @@ function AdminContent() {
 
   // Students
   const [studentList, setStudentList] = useState<StudentProfile[]>([])
-  const [granting, setGranting] = useState(false)
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null)
   const [studentProgress, setStudentProgress] = useState<StudentProgress | null>(null)
   const [loadingStudents, setLoadingStudents] = useState(false)
@@ -1582,7 +1577,6 @@ function AdminContent() {
                       { key: 'transcription_enabled', label: 'Transcripts', desc: 'Written transcript of each lesson' },
                       { key: 'classroom_enabled', label: 'New classroom (pilot)', desc: 'Lessons open in the eigo classroom instead of the plain Whereby link' },
                       { key: 'booking_test_mode', label: 'Test bookings', desc: 'Testing only: book any duration at any time, with no subscription or minutes' },
-                      { key: 'ai_enabled', label: 'AI tutor (pilot)', desc: 'Can book AI tutor lessons (voice AI in the classroom; uses 60% of the minutes)' },
                     ]
                     return (
                       <SquircleBox cornerRadius={14} className="p-6 space-y-5" style={{ background: 'var(--surface)' }}>
@@ -1691,39 +1685,6 @@ function AdminContent() {
                       </Squircle>
                     ))}
                   </div>
-
-                  {/* AI minutes for the chosen student: what's left, and a quick +60 */}
-                  {selectedStudentId && (() => {
-                    const s = studentList.find((x) => x.id === selectedStudentId)
-                    if (!s) return null
-                    return (
-                      <div className="flex items-center gap-3 text-sm" style={{ color: 'var(--text-muted)' }}>
-                        <span>
-                          {s.plan ? `${({ light: 'Lite', standard: 'Standard', test: 'Exam Pass', ai: 'AI Plan' } as Record<string, string>)[s.plan] ?? s.plan} · ` : ''}AI minutes: <b style={{ color: 'var(--text)' }}>{s.aiMinutesLeft ?? 0}</b>
-                        </span>
-                        <Squircle asChild cornerRadius={8} cornerSmoothing={0.8}>
-                          <button
-                            disabled={granting}
-                            className="px-3 py-1.5 text-xs font-medium transition-all hover:opacity-90 disabled:opacity-50"
-                            style={{ background: 'var(--surface)', color: 'var(--text)' }}
-                            onClick={async () => {
-                              if (!window.confirm(`Give ${s.display_name || s.email || 'this student'} ${TOPUP_MINUTES} AI minutes (valid ${TOPUP_VALID_MONTHS} months)?`)) return
-                              setGranting(true)
-                              try {
-                                const r = await fetch('/api/admin/ai-minutes', { method: 'POST', headers: { ...headers(), 'Content-Type': 'application/json' }, body: JSON.stringify({ userId: s.id, minutes: TOPUP_MINUTES }) })
-                                const d = await r.json().catch(() => ({}))
-                                if (r.ok) setStudentList((list) => list.map((x) => (x.id === s.id ? { ...x, aiMinutesLeft: d.aiMinutesLeft } : x)))
-                              } finally {
-                                setGranting(false)
-                              }
-                            }}
-                          >
-                            {granting ? 'Adding…' : `+${TOPUP_MINUTES} AI minutes`}
-                          </button>
-                        </Squircle>
-                      </div>
-                    )
-                  })()}
 
                   {/* Student progress content */}
                   {selectedStudentId && (

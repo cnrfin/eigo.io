@@ -1,14 +1,8 @@
 'use client'
 
 import { useCallback, useEffect, useRef } from 'react'
-import type { Card } from '@/lib/ai-tutor/cards'
-import type { ScreenAction } from '@/lib/ai-tutor/actions'
-import type { Scene } from '@/lib/roleplay/types'
-import type { Facts, FactsRead, WelcomePick } from '@/lib/classroom/welcome'
-import type { SceneSummary } from '@/lib/roleplay/types'
 import type { RealtimeChannel } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
-import type { Course } from '@/lib/slides/types'
 import type { InkItem, InkOp } from '@/components/classroom/ink'
 
 /** Browser-side helpers for the classroom: API calls and the lesson's Realtime channel. */
@@ -44,27 +38,11 @@ export type JoinInfo = {
   other: { name: string }
   uiLang: 'ja' | 'en'
   nativeLang: string
-  lesson: { courseTitle: string; lessonTitle: string; number: number } | null
-  open: OpenLesson | null
   whiteboard: boolean
   studentDraw?: boolean
   ink: Record<string, InkItem[]>
-  activity?: Record<string, unknown>
   chat: ChatMsg[]
   serverNow: string
-  /** AI tutor lesson: no Whereby room; the tutor is a GPT-Live voice session */
-  ai?: boolean
-  /** AI lessons: the AI tutor avatar's colour (ORB_COLORS id) and whether it has rosy cheeks */
-  aiColor?: string | null
-  aiBlush?: boolean
-  /** the student's free 5-minute welcome call */
-  aiWelcome?: boolean
-  /** AI lessons: the English level the student gave (ai-tutor/settings.ts ENGLISH_LEVELS; '' = not given) */
-  aiLevel?: string
-  /** AI lessons: the student's correction setting (ai-tutor/settings.ts): when the classroom brings up a correction */
-  aiCorrections?: 'relaxed' | 'end_of_activity' | 'immediate'
-  /** AI lessons: a role-play chosen when booking; it opens as the lesson starts (null on a rejoin) */
-  roleplay?: { sceneId: string; level: 0 | 1 | 2 } | null
 }
 
 export type JoinDenied = {
@@ -114,250 +92,6 @@ export async function postEvent(
   }
 }
 
-/** AI lesson: exchange the browser's WebRTC offer for OpenAI's answer (our server creates the session). */
-export async function startAiSession(
-  bookingId: string,
-  sdp: string,
-): Promise<{ ok: true; sessionId: string; sdp: string; endsAt: string } | { ok: false; reason: string }> {
-  try {
-    const r = await call(`/api/classroom/${bookingId}/ai-session`, { method: 'POST', body: JSON.stringify({ sdp }) })
-    const j = await r.json().catch(() => ({}))
-    if (!r.ok) return { ok: false, reason: j.reason ?? j.error ?? 'error' }
-    return { ok: true, sessionId: j.sessionId, sdp: j.sdp, endsAt: j.endsAt }
-  } catch {
-    return { ok: false, reason: 'network' }
-  }
-}
-
-/** AI lesson: save the transcript (and close the session record). Uses keepalive so it survives page unload. */
-export async function saveAiTranscript(
-  bookingId: string,
-  sessionId: string,
-  lines: { from: 'student' | 'tutor'; text: string; t: number }[],
-  final: boolean,
-  /** what happened in the live session since the last save (for the Vercel logs, to look into problems) */
-  events: string[] = [],
-) {
-  try {
-    await call(`/api/classroom/${bookingId}/ai-transcript`, { method: 'POST', body: JSON.stringify({ sessionId, lines, final, events }), keepalive: true })
-  } catch {
-    /* best effort */
-  }
-}
-
-export type SlideRef = { courseId: string; lessonId: string; slideId: string }
-
-/** Something the student did in an AI lesson that the AI tutor should react to. */
-/** AI lessons: a correction or "How do I say…?" card for the AI tutor's last turn, or (mode 'prepare') prepared after a student turn (null = none). */
-export async function aiAssist(
-  bookingId: string,
-  body: { sessionId: string; lines: { from: 'student' | 'tutor'; text: string }[]; mode?: 'prepare' },
-): Promise<Card | null> {
-  try {
-    const r = await call(`/api/classroom/${bookingId}/ai-assist`, { method: 'POST', body: JSON.stringify(body) })
-    return r.ok ? (((await r.json()).card as Card | null) ?? null) : null
-  } catch {
-    return null
-  }
-}
-
-/** AI panel: the role-play list with the student's progress (lib/roleplay/progress.ts). */
-export async function aiRoleplays(): Promise<SceneSummary[]> {
-  try {
-    const r = await call('/api/roleplay')
-    return r.ok ? (((await r.json()).scenes as SceneSummary[]) ?? []) : []
-  } catch {
-    return []
-  }
-}
-/** AI panel: one role-play in full, when it starts. */
-export async function aiRoleplayScene(id: string): Promise<Scene | null> {
-  try {
-    const r = await call(`/api/roleplay?scene=${encodeURIComponent(id)}`)
-    return r.ok ? (((await r.json()).scene as Scene) ?? null) : null
-  } catch {
-    return null
-  }
-}
-/** AI panel: a role-play mission completed (moves the level on). */
-export async function recordRoleplay(sceneId: string, role: 'a' | 'b', level: 0 | 1 | 2): Promise<number | null> {
-  try {
-    const r = await call('/api/roleplay', { method: 'POST', body: JSON.stringify({ sceneId, role, level }) })
-    return r.ok ? Number((await r.json()).cleared) : null
-  } catch {
-    return null
-  }
-}
-/** AI panel: the courses for the in-lesson picker (the same catalog as the dashboard picker). */
-export type PanelCourse = { id: string; title: string; titleJa: string; level: string; description: string; descriptionJa: string; image: string | null; lessonCount: number; doneCount: number }
-export async function aiCourses(): Promise<PanelCourse[]> {
-  try {
-    const r = await call('/api/slide-courses/catalog')
-    if (!r.ok) return []
-    const list = ((await r.json()).courses ?? []) as Record<string, unknown>[]
-    return list.map((c) => ({
-      id: String(c.id),
-      title: String(c.title ?? ''),
-      titleJa: String(c.titleJa ?? c.title ?? ''),
-      level: String(c.level ?? ''),
-      description: String(c.description ?? ''),
-      descriptionJa: String(c.descriptionJa ?? c.description ?? ''),
-      image: Array.isArray(c.scenes) && c.scenes.length ? String(c.scenes[0]) : null,
-      lessonCount: Number(c.lessonCount) || 0,
-      doneCount: Number(c.doneCount) || 0,
-    }))
-  } catch {
-    return []
-  }
-}
-
-export type StudentAction =
-  | { kind: 'chat'; text: string }
-  | { kind: 'lookup'; term: string; meaning: string }
-  | { kind: 'save'; term: string }
-  | { kind: 'activity'; text: string }
-  | { kind: 'media'; text: string }
-  | { kind: 'start'; slide?: SlideRef | null; roleplay?: string }
-  | { kind: 'resume'; slide?: SlideRef | null }
-  | ({ kind: 'slide'; review?: { returnTo: number }; fix?: { was: string; now: string } } & SlideRef)
-  | { kind: 'lesson'; courseId: string; lessonId: string }
-  | { kind: 'not_yet'; missing: string[] }
-  | { kind: 'nudge'; where?: 'slides' | 'free' | 'roleplay' | 'welcome'; step?: string }
-  /** the lesson was started again from slide 1 */
-  | { kind: 'restarted' }
-  /** left: seconds on the classroom clock (it can end a little before the server's end) */
-  | { kind: 'time'; left?: number }
-  | { kind: 'view'; what: 'closed' | 'board_on' | 'board_off' | 'open_failed' }
-  /** a card on the student's screen: its phrase was saved to the word list, or they picked a version */
-  | { kind: 'card'; what: 'saved' | 'chose'; text: string; style?: string }
-  /** a role-play starts on the AI panel (the server sends the AI tutor the scene, its character and the tasks) */
-  | { kind: 'roleplay'; sceneId: string; role: 'a' | 'b'; level: 0 | 1 | 2; ready?: boolean }
-  /** every task on the student's list is ticked: the AI tutor brings the scene to an end */
-  | { kind: 'roleplay_tasks_done' }
-  /** the mission-complete screen is up: spoken feedback, then swap / again / another */
-  | { kind: 'roleplay_done'; sceneId: string; role: 'a' | 'b'; done: { task: string; said: string }[]; missed: string[]; canSwap: boolean; phrases?: string[]; welcome?: boolean; fixes?: { was: string; now: string }[] }
-  /** the AI panel: the picker opened, or the student closed it */
-  | { kind: 'panel'; what: 'picker' | 'closed' | 'course' }
-  /** the welcome call (lib/classroom/welcome.ts): a new step on its rails */
-  | WelcomeAction
-
-export type WelcomeAction =
-  /** the welcome talk's time reminders, only if a part runs late: suggest the role-play / wrap the scene up / move on
-   *  to the voice command */
-  | { kind: 'welcome'; step: 'suggest' | 'wrap' | 'command' }
-  /** they made a mistake the tutor let pass: the card is on their screen; the tutor says it and asks them to repeat */
-  | { kind: 'welcome'; step: 'correct'; now: string }
-
-/* ---------- the welcome call (lib/classroom/welcome.ts, /api/classroom/[id]/ai-welcome) ---------- */
-async function welcomeCall<T>(bookingId: string, body: Record<string, unknown>, fallback: T): Promise<T> {
-  try {
-    const r = await call(`/api/classroom/${bookingId}/ai-welcome`, { method: 'POST', body: JSON.stringify(body) })
-    return r.ok ? ((await r.json()) as T) : fallback
-  } catch {
-    return fallback
-  }
-}
-/** what the student has said about themselves so far, and a role-play for them */
-export const welcomeAbout = (bookingId: string, sessionId: string, lines: { from: 'student' | 'tutor'; text: string }[]) =>
-  welcomeCall<FactsRead & { pick: WelcomePick | null }>(bookingId, { op: 'about', sessionId, lines }, { facts: {}, thin: [], pick: null }).then((r) => ({ ...r, thin: Array.isArray(r.thin) ? r.thin : [] }))
-/** confirmed: added to About me (null = not saved) */
-export const welcomeSave = (bookingId: string, facts: Facts) =>
-  welcomeCall<{ aboutMe?: string } | null>(bookingId, { op: 'save', facts }, null).then((r) => (r && typeof r.aboutMe === 'string' ? r.aboutMe : null))
-export const welcomeScenes = (bookingId: string) =>
-  welcomeCall<{ scenes?: { id: string; en: string; ja: string }[] }>(bookingId, { op: 'scenes' }, {}).then((r) => r.scenes ?? [])
-export const welcomeScene = (bookingId: string, sceneId: string) =>
-  welcomeCall<{ scene?: Scene }>(bookingId, { op: 'scene', sceneId }, {}).then((r) => r.scene ?? null)
-export const welcomeRecord = (bookingId: string, sceneId: string) =>
-  welcomeCall<{ cleared?: number }>(bookingId, { op: 'record', sceneId }, {}).then((r) => (typeof r.cleared === 'number' ? r.cleared : null))
-
-/** AI lessons: tell the AI tutor about a student action. Our server turns it into a fixed-template
- *  instruction on the live session (the browser can't send instructions itself). */
-export async function sendAiAction(bookingId: string, sessionId: string, action: StudentAction): Promise<boolean> {
-  try {
-    const r = await call(`/api/classroom/${bookingId}/ai-context`, { method: 'POST', body: JSON.stringify({ sessionId, action }) })
-    return r.ok
-  } catch {
-    return false
-  }
-}
-
-/** AI lessons: the published courses' ids and titles (to recognise "I'll open <course> now"). */
-export async function aiCourseTitles(): Promise<{ id: string; title: string; titleJa: string }[]> {
-  try {
-    const r = await call('/api/slide-courses/catalog', { method: 'GET' })
-    const d = await r.json().catch(() => ({}))
-    return Array.isArray(d.courses) ? d.courses.map((c: { id: string; title: string; titleJa: string }) => ({ id: c.id, title: c.title, titleJa: c.titleJa })) : []
-  } catch {
-    return []
-  }
-}
-
-/** AI lessons: open a course lesson. courseId "" = the student's current course; lessonId "" = where they left off,
- *  "#N" = lesson N of the course. (The server resolves both.) */
-export async function aiOpenLesson(bookingId: string, courseId: string, lessonId: string): Promise<{ open: OpenLesson; title: string } | { error: string }> {
-  try {
-    const r = await call(`/api/classroom/${bookingId}/ai-open`, { method: 'POST', body: JSON.stringify({ courseId, lessonId }) })
-    const d = await r.json().catch(() => ({}))
-    return r.ok ? d : { error: d.error || 'Could not open the lesson.' }
-  } catch {
-    return { error: 'Could not open the lesson.' }
-  }
-}
-
-export type AiTurn = {
-  move: 'stay' | 'next' | 'back' | 'return'
-  slide: number | null
-  /** the action judge (lib/ai-tutor/actions.ts): a screen change, already checked on the server */
-  action?: ScreenAction
-  quote?: string
-  /** a role-play: the student's tasks done now, with their words (lib/roleplay/ticks.ts) */
-  ticks?: { id: string; said: string }[]
-}
-
-/** AI lessons: should the slide change after this turn? (a small fast model on our server decides) */
-export async function aiTurn(
-  bookingId: string,
-  body: {
-    sessionId: string
-    /** the slide check (with a course open) */
-    courseId?: string
-    lessonId?: string
-    slideId?: string
-    furthest?: number
-    reviewing?: boolean
-    lines?: { from: 'student' | 'tutor'; text: string }[]
-    /** the action judge */
-    screen?: { view: 'free' | 'course' | 'picker' | 'roleplay'; board: boolean; pickerMode?: 'rp' | 'course'; roleplay?: string; wrappingUp?: boolean }
-    courses?: { id: string; title: string }[]
-    scenes?: { id: string; title: string }[]
-    recent?: { from: 'student' | 'tutor'; text: string }[]
-    /** a role-play being played: which tasks are done now */
-    roleplay?: { sceneId: string; role: 'a' | 'b'; level: 0 | 1 | 2; twisted: boolean; done: string[]; lines?: { from: 'student' | 'tutor'; text: string }[] }
-  },
-): Promise<AiTurn> {
-  const none: AiTurn = { move: 'stay', slide: null, action: { kind: 'none' }, quote: '' }
-  try {
-    const r = await call(`/api/classroom/${bookingId}/ai-turn`, { method: 'POST', body: JSON.stringify(body) })
-    if (!r.ok) return none
-    return { ...none, ...(await r.json()) }
-  } catch {
-    return none
-  }
-}
-
-/** AI lessons: one-tap problem report (flag button). */
-export async function sendAiReport(
-  bookingId: string,
-  body: { reason: 'slide' | 'audio' | 'content' | 'other'; note?: string; sessionId?: string | null; courseId?: string; lessonId?: string; slideId?: string; slideNo?: number; recent?: string },
-): Promise<boolean> {
-  try {
-    const r = await call(`/api/classroom/${bookingId}/ai-report`, { method: 'POST', body: JSON.stringify(body) })
-    return r.ok
-  } catch {
-    return false
-  }
-}
-
 /** Teacher: mark the booking as a no-show (or undo it). */
 export async function markNoShow(bookingId: string, on: boolean): Promise<boolean> {
   try {
@@ -368,9 +102,9 @@ export async function markNoShow(bookingId: string, on: boolean): Promise<boolea
   }
 }
 
-export async function postMessage(bookingId: string, text: string, asTutor = false): Promise<ChatMsg | null> {
+export async function postMessage(bookingId: string, text: string): Promise<ChatMsg | null> {
   try {
-    const r = await call(`/api/classroom/${bookingId}/messages`, { method: 'POST', body: JSON.stringify(asTutor ? { text, asTutor } : { text }) })
+    const r = await call(`/api/classroom/${bookingId}/messages`, { method: 'POST', body: JSON.stringify({ text }) })
     if (!r.ok) return null
     return (await r.json()).message as ChatMsg
   } catch {
@@ -402,34 +136,6 @@ export async function downloadChat(bookingId: string) {
   a.click()
   a.remove()
   setTimeout(() => URL.revokeObjectURL(a.href), 1000)
-}
-
-export type LoadedCourse = { course: Course; version: number; assetBase: string }
-
-export async function fetchCourse(bookingId: string, courseId: string): Promise<LoadedCourse | null> {
-  try {
-    const r = await call(`/api/classroom/${bookingId}/course?courseId=${encodeURIComponent(courseId)}`)
-    return r.ok ? ((await r.json()) as LoadedCourse) : null
-  } catch {
-    return null
-  }
-}
-
-export type LibraryCourse = {
-  id: string
-  title: string
-  level: string
-  units: { title: string; lessons: { id: string; title: string; slides: number }[] }[]
-}
-export type LibraryProgress = Record<string, { lessonId: string | null; slideId: string | null; completed: string[] }>
-
-export async function fetchLibrary(bookingId: string): Promise<{ courses: LibraryCourse[]; progress: LibraryProgress } | null> {
-  try {
-    const r = await call(`/api/classroom/${bookingId}/library`)
-    return r.ok ? await r.json() : null
-  } catch {
-    return null
-  }
 }
 
 export async function putInk(bookingId: string, surface: string, items: InkItem[], keepalive = false): Promise<boolean> {
@@ -509,27 +215,6 @@ export async function saveWord(bookingId: string, w: SaveWordInput): Promise<boo
 export async function removeWord(bookingId: string, itemId: string): Promise<boolean> {
   try {
     const r = await call(`/api/classroom/${bookingId}/words?itemId=${encodeURIComponent(itemId)}`, { method: 'DELETE' })
-    return r.ok
-  } catch {
-    return false
-  }
-}
-
-export async function putActivity(bookingId: string, blockId: string, state: unknown): Promise<boolean> {
-  try {
-    const r = await call(`/api/classroom/${bookingId}/activity`, { method: 'PUT', body: JSON.stringify({ blockId, state }) })
-    return r.ok
-  } catch {
-    return false
-  }
-}
-
-export async function postState(bookingId: string, open: OpenLesson | null): Promise<boolean> {
-  try {
-    const r = await call(`/api/classroom/${bookingId}/state`, {
-      method: 'POST',
-      body: JSON.stringify(open ?? { courseId: null }),
-    })
     return r.ok
   } catch {
     return false

@@ -8,7 +8,6 @@ import { Squircle } from '@squircle-js/react'
 import SquircleBox from '@/components/ui/SquircleBox'
 import AuthModal from '@/components/AuthModal'
 import { motion, AnimatePresence, useSpring, useTransform } from 'framer-motion'
-import { AI_PLAN_MINUTES } from '@/lib/minutes-core'
 
 type BillingInterval = 'monthly' | 'yearly'
 
@@ -87,15 +86,6 @@ export default function PlansPage() {
   const [checkingOut, setCheckingOut] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [showAuth, setShowAuth] = useState(false)
-  // AI pilot students see the AI plan in place of Exam Pass (until the AI rollout)
-  const [aiPilot, setAiPilot] = useState(false)
-  useEffect(() => {
-    if (!session?.access_token) return
-    fetch('/api/subscription', { headers: { Authorization: `Bearer ${session.access_token}` } })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((d) => setAiPilot(!!d?.features?.aiEnabled))
-      .catch(() => {})
-  }, [session?.access_token])
 
   // Check trial window. Logged-out visitors (and crawlers) are treated as
   // trial-eligible, so they see the full price AND the discounted "with trial"
@@ -144,7 +134,7 @@ export default function PlansPage() {
     return () => window.clearInterval(timer)
   }, [trialHoursLeft])
 
-  const handleCheckout = useCallback(async (plan: 'light' | 'standard' | 'test' | 'ai') => {
+  const handleCheckout = useCallback(async (plan: 'light' | 'standard' | 'test') => {
     // Logged out: prompt sign-up / login instead of hitting Stripe.
     if (!session?.access_token) { setShowAuth(true); return }
     setCheckingOut(plan)
@@ -479,61 +469,7 @@ export default function PlansPage() {
             })}
           </div>
 
-          {/* ─── AI plan (AI pilot students, in place of Exam Pass) / Exam Pass (模試パス): tests only, monthly ─── */}
-          {aiPilot ? (
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.45, duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
-            className="mb-8"
-          >
-            <SquircleBox cornerRadius={20} className="group glass-card p-7 flex flex-col sm:flex-row sm:items-center gap-5 relative overflow-hidden">
-              {/* Dark mode: pastel mesh orbits in on hover */}
-              {dark && (
-                <span
-                  aria-hidden
-                  className="mesh-orbit absolute inset-0 opacity-0 translate-x-3 translate-y-3 group-hover:opacity-100 group-hover:translate-x-0 group-hover:translate-y-0"
-                  style={{ background: planMeshGrad('test'), filter: 'blur(12px)', transition: 'opacity 220ms ease-out, transform 320ms ease-out' }}
-                />
-              )}
-              <div className="flex-1 min-w-0 relative z-10">
-                <h2 className="text-xl font-bold mb-1" style={{ color: 'var(--text)' }}>
-                  {locale === 'ja' ? 'AIプラン' : 'AI Plan'}
-                </h2>
-                <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
-                  {locale === 'ja'
-                    ? `AIチューターとのレッスンが${interval === 'yearly' ? `年${(AI_PLAN_MINUTES * 12).toLocaleString('en-US')}分` : `月${AI_PLAN_MINUTES}分`}。すべてのコースと模試も使えます。講師とのレッスンは含まれません。`
-                    : `${(interval === 'yearly' ? AI_PLAN_MINUTES * 12 : AI_PLAN_MINUTES).toLocaleString('en-US')} minutes of AI tutor lessons a ${interval === 'yearly' ? 'year' : 'month'}, plus every course and mock exam. Lessons with teachers not included.`}
-                </p>
-              </div>
-              <div className="flex items-center gap-5 shrink-0 relative z-10">
-                <div className="text-right">
-                  <span className="text-3xl font-bold tracking-tight" style={{ color: 'var(--text)' }}>{interval === 'yearly' ? '¥29,800' : '¥2,980'}</span>
-                  <span className="text-sm ml-1.5" style={{ color: 'var(--text-muted)' }}>
-                    {interval === 'yearly' ? (locale === 'ja' ? '/年' : '/yr') : locale === 'ja' ? '/月' : '/mo'}
-                  </span>
-                </div>
-                <Squircle asChild cornerRadius={12} cornerSmoothing={0.8}>
-                  <button
-                    onClick={() => handleCheckout('ai')}
-                    disabled={!!checkingOut}
-                    className="px-6 py-3.5 text-sm font-semibold transition-all disabled:opacity-50 hover:opacity-90"
-                    style={secondaryBtnStyle}
-                  >
-                    {checkingOut === 'ai' ? (
-                      <span className="inline-flex items-center gap-2">
-                        <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                        {locale === 'ja' ? '処理中...' : 'Loading...'}
-                      </span>
-                    ) : (
-                      locale === 'ja' ? 'このプランで始める' : 'Get started'
-                    )}
-                  </button>
-                </Squircle>
-              </div>
-            </SquircleBox>
-          </motion.div>
-          ) : (
+          {/* ─── Exam Pass (模試パス): tests only, monthly ─── */}
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
@@ -586,7 +522,6 @@ export default function PlansPage() {
               </div>
             </SquircleBox>
           </motion.div>
-          )}
 
           {/* ─── Footer notes ─── */}
           <div className="text-center space-y-2">

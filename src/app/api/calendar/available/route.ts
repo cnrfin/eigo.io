@@ -31,7 +31,7 @@ function allSlotsFromNow(date: string, timezone: string, leadMs = -15 * 60_000):
   return out
 }
 
-// GET /api/calendar/available?date=2026-03-23&duration=30&tz=Asia/Tokyo[&kind=ai]
+// GET /api/calendar/available?date=2026-03-23&duration=30&tz=Asia/Tokyo
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
   const date = searchParams.get('date')
@@ -51,12 +51,6 @@ export async function GET(request: NextRequest) {
   const userNow = new Intl.DateTimeFormat('en-CA', { timeZone: timezone, year: 'numeric', month: '2-digit', day: '2-digit' }).format(now)
   if (date < userNow) {
     return NextResponse.json({ date, duration, timezone, slots: [] })
-  }
-
-  // AI tutor lessons: any 15-minute slot that hasn't started yet (the AI tutor is always free, and the
-  // lesson runs its full length from when it starts, so booking at 21:28 for 21:30 is fine)
-  if (searchParams.get('kind') === 'ai') {
-    return NextResponse.json({ date, duration, timezone, slots: allSlotsFromNow(date, timezone, -60_000), ai: true })
   }
 
   try {

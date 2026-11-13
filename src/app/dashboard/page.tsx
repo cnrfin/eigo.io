@@ -17,8 +17,6 @@ import BookingCalendar, { type BookingResult } from '@/components/BookingCalenda
 import { motion, AnimatePresence } from 'framer-motion'
 import { formatNextReview, previewIntervals, type ReviewRating } from '@/lib/srs'
 import HomeView from '@/components/dashboard/HomeView'
-import { cachedAiAccess, hasCachedAiAccess, rememberAiAccess } from '@/components/ai/AiStart'
-import { aiMinutesLeft, type MinuteSnapshot } from '@/lib/minutes-core'
 import PronAnnounceArt from '@/components/dashboard/PronAnnounceArt'
 import { useDashboardNav } from '@/context/DashboardNavContext'
 
@@ -34,8 +32,6 @@ type Lesson = {
   hasSummary?: boolean
   keyTopics?: string[]
   phrases?: string[]
-  lessonKind?: 'human' | 'ai'
-  course?: { courseTitle: string; courseTitleJa: string; lessonNumber: number | null } | null
 }
 
 
@@ -579,15 +575,9 @@ function HistoryLessonCard({
           <div className="shrink-0">
             <p className="font-medium flex items-center gap-2" style={{ color: 'var(--text)' }}>
               {dateStr}
-              {lesson.lessonKind === 'ai' && (
-                <span className="px-2 py-0.5 text-[11px] font-semibold rounded-full" style={{ background: 'var(--accent-bg)', color: 'var(--accent)' }}>AI</span>
-              )}
             </p>
             <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-              {timeStr} · {lesson.durationMinutes} min ·{' '}
-              {lesson.course
-                ? `${locale === 'ja' ? lesson.course.courseTitleJa : lesson.course.courseTitle}${lesson.course.lessonNumber ? ` · Lesson ${lesson.course.lessonNumber}` : ''}`
-                : locale === 'ja' ? 'フリートーク' : 'Free talk'}
+              {timeStr} · {lesson.durationMinutes} min
             </p>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
@@ -596,7 +586,7 @@ function HistoryLessonCard({
                 {locale === 'ja' ? '欠席' : 'Missed'}
               </span>
             )}
-            {lesson.status !== 'no_show' && (lesson.wherebyRoomUrl || lesson.lessonKind === 'ai') && (
+            {lesson.status !== 'no_show' && lesson.wherebyRoomUrl && (
               <>
                 {/* Transcript button */}
                 <Squircle asChild cornerRadius={8} cornerSmoothing={0.8}>
@@ -641,8 +631,7 @@ function HistoryLessonCard({
                   </Squircle>
                 )}
 
-                {/* Download recording button (tutor lessons only: AI lessons aren't recorded) */}
-                {lesson.lessonKind !== 'ai' && (
+                {/* Download recording button */}
                 <Squircle asChild cornerRadius={8} cornerSmoothing={0.8}>
                   <button
                     ref={downloadBtnRef}
@@ -669,7 +658,6 @@ function HistoryLessonCard({
                       : (locale === 'ja' ? 'ダウンロード' : 'Download')}
                   </button>
                 </Squircle>
-                )}
               </>
             )}
           </div>
@@ -846,8 +834,6 @@ function DashboardContent() {
   const searchParams = useSearchParams()
   const durationParam = searchParams.get('duration')
   const tabParam = searchParams.get('tab')
-  // ?ai=start: open the AI start-now modal (the welcome call's end screen links here)
-  const aiParam = searchParams.get('ai')
   // ?preview=announce — force-show the course announcement (no flag stamped)
   const previewParam = searchParams.get('preview')
 
@@ -930,16 +916,7 @@ function DashboardContent() {
   const [subStatus, setSubStatus] = useState<'loading' | 'none' | 'active' | 'past_due'>('loading')
   const [bookingTestMode, setBookingTestMode] = useState(false) // test accounts: any duration, any time
   const [classroomEnabled, setClassroomEnabled] = useState(false)
-  const [bookingTutor, setBookingTutor] = useState<'human' | 'ai'>('human') // the AI modal's "schedule one" opens booking on the AI tutor
-  const [aiEnabled, setAiEnabled] = useState(false) // pilot: AI tutor lessons // pilot: lessons open in /classroom/[id]
-  const [aiKnown, setAiKnown] = useState(false) // /api/subscription has answered
-  // until then, the last known answer for this student, so "Talk to AI tutor" doesn't pop in late
-  const aiShown = aiKnown ? aiEnabled : cachedAiAccess(user?.id)
-  // first visit on this device: don't know yet whether to show "Talk to AI tutor" or "Tests" (placeholder)
-  const aiPending = !aiKnown && !hasCachedAiAccess(user?.id)
   const [minutesRemaining, setMinutesRemaining] = useState<number | null>(null)
-  const [aiMinutes, setAiMinutes] = useState<MinuteSnapshot | null>(null) // AI pilot: plan + AI + top-up minutes
-  const [aiOnly, setAiOnly] = useState(false) // AI plan: AI tutor lessons only
   const [trialCompleted, setTrialCompleted] = useState<boolean | null>(null) // null = loading
   const HISTORY_PER_PAGE = 10
 
@@ -1285,11 +1262,6 @@ function DashboardContent() {
             setMinutesRemaining(data.balance.minutesRemaining)
           }
           setBookingTestMode(!!data.features?.bookingTestMode)
-          setAiEnabled(!!data.features?.aiEnabled)
-          setAiKnown(true)
-          rememberAiAccess(user?.id, !!data.features?.aiEnabled)
-          setAiMinutes(data.aiMinutes?.snapshot ?? null)
-          setAiOnly(!!data.features?.aiOnly)
           setClassroomEnabled(!!data.features?.classroomEnabled)
         } else {
           setSubStatus('none')
@@ -1432,11 +1404,7 @@ function DashboardContent() {
                   wherebyUrl={wherebyUrl}
                   isAdmin={isAdmin}
                   classroomEnabled={classroomEnabled}
-                  onBook={() => { setBookingTutor('human'); setActiveTab('booking') }}
-                  onBookAi={() => { setBookingTutor('ai'); setActiveTab('booking') }}
-                  aiEnabled={aiShown}
-                  openAi={aiParam === 'start'}
-                  aiPending={aiPending}
+                  onBook={() => setActiveTab('booking')}
                   onReviewPhrases={() => setActiveTab('vocab')}
                   onTakeTests={() => router.push('/dashboard/tests')}
                   onViewPlans={() => (window.location.href = '/plans')}
@@ -1465,13 +1433,7 @@ function DashboardContent() {
                   <h1 className="text-2xl sm:text-4xl font-bold" style={{ color: 'var(--text)' }}>
                     {locale === 'ja' ? '予約' : 'Book'}
                   </h1>
-                  {/* AI plan: AI minutes left (AI plan + top-ups) */}
-                  {aiOnly && aiMinutes && (
-                    <span className="text-xs font-medium px-3 py-1.5 rounded-full" style={{ background: 'color-mix(in srgb, var(--accent) 10%, transparent)', color: 'var(--accent)' }}>
-                      {locale === 'ja' ? `AI ${aiMinutesLeft(aiMinutes)}分残り` : `${aiMinutesLeft(aiMinutes)} AI min left`}
-                    </span>
-                  )}
-                  {!aiOnly && subStatus === 'active' && minutesRemaining !== null && (
+                  {subStatus === 'active' && minutesRemaining !== null && (
                     <span
                       className="text-xs font-medium px-3 py-1.5 rounded-full"
                       style={{
@@ -1491,12 +1453,7 @@ function DashboardContent() {
                   rescheduleLesson={lessonToReschedule ? { id: lessonToReschedule.id, googleEventId: lessonToReschedule.googleEventId } : undefined}
                   hasSubscription={subStatus === 'active'}
                   testMode={bookingTestMode}
-                  classroomEnabled={classroomEnabled}
-                  aiEnabled={aiEnabled}
-                  initialTutor={bookingTutor}
-                  aiOnly={aiOnly}
-                  minutesRemaining={subStatus === 'active' && !aiOnly ? minutesRemaining : null}
-                  aiMinutes={aiMinutes}
+                  minutesRemaining={subStatus === 'active' ? minutesRemaining : null}
                 />
               </div>
               </motion.div>

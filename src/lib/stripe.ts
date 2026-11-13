@@ -1,5 +1,4 @@
 import Stripe from 'stripe'
-import { AI_PLAN_MINUTES } from './minutes-core'
 
 let _stripe: Stripe | null = null
 
@@ -14,8 +13,8 @@ export function getStripe(): Stripe {
 
 // ---------- Price ID helpers ----------
 
-export type PlanName = 'light' | 'standard' | 'test' | 'ai'
-export const PLAN_NAMES: PlanName[] = ['light', 'standard', 'test', 'ai']
+export type PlanName = 'light' | 'standard' | 'test'
+export const PLAN_NAMES: PlanName[] = ['light', 'standard', 'test']
 export type BillingInterval = 'monthly' | 'yearly'
 export type PriceTier = 'trial' | 'full'
 
@@ -31,11 +30,6 @@ const PRICE_ENV_MAP: Record<string, string> = {
   // Exam Pass (模試パス): tests only, no lesson minutes. Monthly, no trial price.
   'test_monthly_trial': 'STRIPE_PRICE_TEST_MONTHLY_FULL', // trial window doesn't discount tests
   'test_monthly_full': 'STRIPE_PRICE_TEST_MONTHLY_FULL',
-  // AI plan: AI tutor lessons only (pilot until the AI rollout). No trial price (the trial is a free 5-minute AI call).
-  'ai_monthly_trial': 'STRIPE_PRICE_AI_MONTHLY',
-  'ai_monthly_full': 'STRIPE_PRICE_AI_MONTHLY',
-  'ai_yearly_trial': 'STRIPE_PRICE_AI_YEARLY',
-  'ai_yearly_full': 'STRIPE_PRICE_AI_YEARLY',
 }
 
 /** Which plan a Stripe price belongs to (plan switches made in the Billing Portal change the price, not our metadata). */
@@ -72,15 +66,6 @@ export const PLAN_MINUTES: Record<PlanName, number> = {
   light: 120,    // 30 min/week ≈ 2 hr/month
   standard: 240, // 60 min/week ≈ 4 hr/month
   test: 0,       // Exam Pass: tests only, no lesson minutes
-  ai: 0,         // AI plan: no teacher-lesson minutes, AI minutes instead (AI_PLAN_MINUTES)
-}
-
-/** AI minutes a month on the AI plan (AI tutor lessons use them 1:1): set in minutes-core, shared with the browser. */
-export { AI_PLAN_MINUTES }
-
-/** AI minutes for one billing period (subscriptions.ai_minutes_per_month): yearly gets the year's up front. */
-export function aiAllowance(plan: PlanName, interval: BillingInterval): number {
-  return plan === 'ai' ? AI_PLAN_MINUTES * (interval === 'yearly' ? 12 : 1) : 0
 }
 
 /**
@@ -98,7 +83,6 @@ export const PLAN_DISPLAY_NAMES: Record<PlanName, string> = {
   light: 'Student Lite',
   standard: 'Student Standard',
   test: 'Exam Pass',
-  ai: 'AI Plan',
 }
 
 export const PLAN_PRICES = {
@@ -112,9 +96,5 @@ export const PLAN_PRICES = {
   },
   test: {
     monthly: { trial: 2980, full: 2980 }, // no trial discount
-  },
-  ai: {
-    monthly: { trial: 2980, full: 2980 },
-    yearly: { trial: 29800, full: 29800 },
   },
 } as const

@@ -5,19 +5,9 @@ import { useLanguage } from '@/context/LanguageContext'
 import { useTheme } from '@/context/ThemeContext'
 import { pillTabStyle } from '@/lib/pill-tabs'
 import { useAuth } from '@/context/AuthContext'
-import AiAvatar from '@/components/ai/AiAvatar'
 import { Squircle } from '@squircle-js/react'
 import SquircleBox from '@/components/ui/SquircleBox'
-import CourseSheet, { type CatalogEntry, type RoleplayChoice } from '@/components/booking/CourseSheet'
-import { aiRoleplays } from '@/lib/classroom/client'
-import { LEVEL_NAMES, type SceneSummary } from '@/lib/roleplay/types'
-import { AI_LENGTHS, aiMinutesFor } from '@/lib/ai-tutor/settings'
-import { aiLengthsFor, priceAiLessons, type MinuteSnapshot } from '@/lib/minutes-core'
-import { AiStartCard, useAiStartState } from '@/components/ai/AiStart'
-import '@/components/booking/tutor-picker.css'
-
-/** Course picker when booking (classroom pilot). Off until the courses are finished: set to true to bring it back. */
-const COURSE_BOOKING_ENABLED = true
+import '@/components/booking/minutes-meter.css'
 
 type SelectedBooking = { date: string; time: string; dayLabel: string }
 
@@ -25,25 +15,15 @@ export type BookingResultDetail = { date: string; time: string; success: boolean
 export type BookingResult = { success: boolean; message: string; details?: BookingResultDetail[] }
 
 
-export default function BookingCalendar({ selectedDuration, onBookingComplete, rescheduleLesson, hasSubscription = false, testMode = false, classroomEnabled = false, aiEnabled = false, minutesRemaining = null, aiMinutes = null, initialTutor = 'human', aiOnly = false }: { selectedDuration?: number; onBookingComplete?: (result?: BookingResult) => void; rescheduleLesson?: { id: string; googleEventId: string | null }; hasSubscription?: boolean; /** test account (user_permissions.booking_test_mode): every duration and every time of day */ testMode?: boolean; /** classroom pilot: a course can be added to the booking */ classroomEnabled?: boolean; /** AI tutor pilot: Connor / AI tutor picker */ aiEnabled?: boolean; /** plan minutes left this month (usage bar); null hides it */ minutesRemaining?: number | null; /** which tutor is chosen first */ initialTutor?: 'human' | 'ai'; /** AI pilot: plan + AI + top-up minutes an AI lesson can draw on */ aiMinutes?: MinuteSnapshot | null; /** AI plan: AI tutor lessons only (no teacher pill) */ aiOnly?: boolean }) {
+export default function BookingCalendar({ selectedDuration, onBookingComplete, rescheduleLesson, hasSubscription = false, testMode = false, minutesRemaining = null }: { selectedDuration?: number; onBookingComplete?: (result?: BookingResult) => void; rescheduleLesson?: { id: string; googleEventId: string | null }; hasSubscription?: boolean; /** test account (user_permissions.booking_test_mode): every duration and every time of day */ testMode?: boolean; /** plan minutes left this month (usage bar); null hides it */ minutesRemaining?: number | null }) {
   const { t, locale } = useLanguage()
   const { session } = useAuth()
   const [currentDate, setCurrentDate] = useState(new Date())
   const { theme } = useTheme()
   const selectedStyle = pillTabStyle(true, theme === 'dark' ? 'dark' : 'light') // shared selected treatment (radius comes from each element)
   const [selectedDay, setSelectedDay] = useState<number | null>(null)
-  const [pickedDuration, setDuration] = useState(selectedDuration || (initialTutor === 'ai' ? 15 : hasSubscription ? 30 : 15))
+  const [duration, setDuration] = useState(selectedDuration || (hasSubscription ? 30 : 15))
   const [availableSlots, setAvailableSlots] = useState<string[]>([])
-  // Who teaches: Connor (Whereby) or the AI tutor (pilot). Rescheduling keeps the original kind.
-  const [tutor, setTutor] = useState<'human' | 'ai'>(aiOnly ? 'ai' : initialTutor)
-  const isAi = aiEnabled && !rescheduleLesson && tutor === 'ai'
-  // AI lengths: 15 / 30, plus a shorter one that uses up the month's last minutes (they don't roll over)
-  const aiSnapshot: MinuteSnapshot | null = testMode ? null : (aiMinutes ?? (minutesRemaining != null ? { planLeft: minutesRemaining, aiLeft: 0, topups: [] } : null))
-  const aiOptions = aiLengthsFor(aiSnapshot)
-  const aiDurations = aiOptions.length ? aiOptions : [...AI_LENGTHS]
-  const duration = isAi && !aiDurations.includes(pickedDuration) ? aiDurations[0] : pickedDuration
-  // AI pilot: what "start now" can do (lengths, lesson in progress, a teacher lesson soon)
-  const { state: aiStart } = useAiStartState(aiEnabled && !rescheduleLesson)
   const [loadingSlots, setLoadingSlots] = useState(false)
   const [booking, setBooking] = useState(false)
   const [bookingResult, setBookingResult] = useState<{
@@ -58,56 +38,6 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
   // Recurring booking
   const [recurringEnabled, setRecurringEnabled] = useState(false)
   const [recurringWeeks, setRecurringWeeks] = useState(4)
-
-  // Course for the booking (classroom pilot). Free talk when none is chosen.
-  const [catalog, setCatalog] = useState<CatalogEntry[]>([])
-  const [courseId, setCourseId] = useState<string | null>(null)
-  const [sheetOpen, setSheetOpen] = useState(false)
-  const [catalogTick, setCatalogTick] = useState(0)
-  const accessToken = session?.access_token
-  // the name the student gave their AI tutor (settings), shown on the AI pill; "AI tutor" until they name it
-  const [aiTutorName, setAiTutorName] = useState('')
-  const [aiOrbColor, setAiOrbColor] = useState<string | null>(null)
-  const [aiBlush, setAiBlush] = useState(true)
-  useEffect(() => {
-    if (!aiEnabled || !accessToken) return
-    let alive = true
-    fetch('/api/ai-tutor/settings', { headers: { Authorization: `Bearer ${accessToken}` } })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((d) => {
-        const n = typeof d?.settings?.tutorName === 'string' ? d.settings.tutorName.trim() : ''
-        if (alive && n) setAiTutorName(n)
-        if (alive && typeof d?.settings?.orbColor === 'string') setAiOrbColor(d.settings.orbColor)
-        if (alive && typeof d?.settings?.blush === 'boolean') setAiBlush(d.settings.blush)
-      })
-      .catch(() => {})
-    return () => {
-      alive = false
-    }
-  }, [aiEnabled, accessToken])
-  useEffect(() => {
-    if (!COURSE_BOOKING_ENABLED || !classroomEnabled || !accessToken) return
-    let alive = true
-    fetch('/api/slide-courses/catalog', { headers: { Authorization: `Bearer ${accessToken}` } })
-      .then((r) => (r.ok ? r.json() : { courses: [] }))
-      .then((d) => { if (alive) setCatalog(d.courses ?? []) })
-      .catch(() => {})
-    return () => { alive = false }
-  }, [classroomEnabled, accessToken, catalogTick])
-  // Role-plays (AI lessons only, phase 3c): chosen instead of a course; the lesson opens straight into it
-  const [rpList, setRpList] = useState<SceneSummary[] | null>(null)
-  const [rpPick, setRpPick] = useState<RoleplayChoice | null>(null)
-  useEffect(() => {
-    if (!aiEnabled || !accessToken) return
-    let alive = true
-    void aiRoleplays().then((l) => { if (alive) setRpList(l) })
-    return () => { alive = false }
-  }, [aiEnabled, accessToken, catalogTick])
-  const closeSheet = useCallback(() => setSheetOpen(false), [])
-  const rpOn = isAi && !!rpList?.length
-  const roleplay = rpOn && rpPick ? (rpList ?? []).find((x) => x.id === rpPick.sceneId) ?? null : null
-  const coursesOn = COURSE_BOOKING_ENABLED && classroomEnabled && catalog.length > 0 && !rescheduleLesson
-  const course = coursesOn && courseId && !roleplay ? catalog.find((c) => c.id === courseId) ?? null : null
 
   // Teacher profile
   const [teacherName, setTeacherName] = useState('')
@@ -150,7 +80,7 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
     const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
     try {
       // The token lets the server recognise test accounts (all slots); normal users get the usual availability.
-      const res = await fetch(`/api/calendar/available?date=${dateStr}&duration=${duration}&tz=${encodeURIComponent(userTimezone)}${isAi ? '&kind=ai' : ''}`, {
+      const res = await fetch(`/api/calendar/available?date=${dateStr}&duration=${duration}&tz=${encodeURIComponent(userTimezone)}`, {
         headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : undefined,
       })
       const data = await res.json()
@@ -160,7 +90,7 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
     } finally {
       setLoadingSlots(false)
     }
-  }, [year, month, duration, userTimezone, session?.access_token, isAi])
+  }, [year, month, duration, userTimezone, session?.access_token])
 
   useEffect(() => {
     if (selectedDay) fetchSlots(selectedDay)
@@ -251,31 +181,15 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
   }
 
   // Every lesson that will be booked (weekly copies included), in date order.
-  // The server gives them consecutive course lessons in this order too.
   const expandBookings = (list: SelectedBooking[]) => {
     const all = recurringEnabled
       ? list.flatMap((b) => generateRecurringDates(b.date, recurringWeeks).map((d) => ({ date: d, time: b.time, dayLabel: b.dayLabel })))
       : [...list]
     return all.sort((a, b) => a.date.localeCompare(b.date) || a.time.localeCompare(b.time))
   }
-  const lessonAt = (i: number) => (course ? course.queue[i] ?? course.lessonCount : 0)
-  const lessonOf = (b: SelectedBooking) => {
-    const i = expandBookings(selectedBookings).findIndex((x) => x.date === b.date && x.time === b.time)
-    return lessonAt(i)
-  }
-  const lessonRange = () => {
-    const n = expandBookings(selectedBookings).length
-    const a = lessonAt(0), z = lessonAt(Math.max(0, n - 1))
-    return a === z ? `Lesson ${a}` : `Lesson ${a} 〜 ${z}`
-  }
-
   // plan minutes for the current selection (weekly copies included)
   const lessonCount = recurringEnabled ? selectedBookings.length * recurringWeeks : selectedBookings.length
-  // AI lessons use AI minutes first, then plan minutes at 60%: the bar shows the plan-minute part
-  const planMinutes = isAi
-    ? (aiSnapshot ? (priceAiLessons(aiSnapshot, duration, lessonCount)?.plan ?? lessonCount * aiMinutesFor(duration)) : lessonCount * aiMinutesFor(duration))
-    : lessonCount * duration
-  const fullMinutes = lessonCount * duration
+  const planMinutes = lessonCount * duration
 
   const handleConfirmBooking = async () => {
     if (selectedBookings.length === 0 || !session) return
@@ -331,9 +245,6 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
               duration,
               timezone: userTimezone,
               skipAdminEmail: isMultiBooking,
-              ...(course ? { slideCourseId: course.id } : {}),
-              ...(isAi ? { lessonKind: 'ai' } : {}),
-              ...(isAi && roleplay && rpPick ? { roleplay: rpPick } : {}),
             }),
           })
           if (res.ok) {
@@ -387,8 +298,6 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
     setBookingResult(result)
 
     setSelectedBookings([])
-    if (course) { setCourseId(null); setCatalogTick((x) => x + 1) } // the student's lesson queue has moved on
-    if (roleplay) setRpPick(null)
     if (selectedDay) fetchSlots(selectedDay)
     onBookingComplete?.(result)
     setBooking(false)
@@ -405,42 +314,7 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
         </SquircleBox>
       )}
 
-      {/* AI tutor pilot: Connor / AI tutor pills. The picture grows into the selected pill. */}
-      {aiEnabled && !rescheduleLesson ? (
-        <div className="tp-row" role="radiogroup" aria-label={locale === 'ja' ? '講師を選ぶ' : 'Choose your tutor'}>
-          {(aiOnly ? (['ai'] as const) : (['human', 'ai'] as const)).map((k) => (
-            <button
-              key={k}
-              type="button"
-              role="radio"
-              aria-checked={tutor === k}
-              className={`tp-pill${tutor === k ? ' on' : ''}`}
-              onClick={() => {
-                if (tutor === k) return
-                // AI lessons: 15 or 30 minutes, or what's left this month (longer voice sessions lose context and tire students)
-                if (k === 'ai' && !aiDurations.includes(duration)) setDuration(aiDurations[0])
-                setTutor(k)
-                setSelectedBookings([])
-                setBookingResult(null)
-              }}
-            >
-              <span className="tp-pic" aria-hidden>
-                {k === 'ai' ? (
-                  <span className="tp-ai">
-                    <AiAvatar color={aiOrbColor} blush={aiBlush} />
-                  </span>
-                ) : teacherAvatar ? (
-                  <img src={teacherAvatar} alt="" referrerPolicy="no-referrer" />
-                ) : (
-                  <span className="tp-initial">{(teacherName || 'C').charAt(0)}</span>
-                )}
-              </span>
-              {k === 'ai' ? aiTutorName || (locale === 'ja' ? 'AIチューター' : 'AI tutor') : (teacherName.split(' ')[0] || 'Connor')}
-              {k === 'ai' && !aiOnly && <span className="tp-off">40% OFF</span>}
-            </button>
-          ))}
-        </div>
-      ) : (
+      {/* Teacher */}
         <div className="flex items-center justify-center gap-2.5 mb-5" style={{ minHeight: '2.25rem' }}>
           {teacherAvatar ? (
             <img
@@ -466,13 +340,12 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
               ? (locale === 'ja' ? `${teacherName.split(' ')[0]} とレッスンを予約` : `Book a lesson with ${teacherName.split(' ')[0]}`)
               : ''}
           </p>
-        </div>
-      )}
+          </div>
 
       {/* Duration selector */}
       <div className="flex gap-2 mb-3 justify-center">
-        {(isAi ? aiDurations : [15, 30, 45, 60, 75]).map((d) => {
-          const locked = isAi ? !aiOptions.length : !hasSubscription && !testMode && d !== 15
+        {[15, 30, 45, 60, 75].map((d) => {
+          const locked = !hasSubscription && !testMode && d !== 15
           return (
             <Squircle key={d} asChild cornerRadius={8} cornerSmoothing={0.8}>
               <button
@@ -502,9 +375,9 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
         {shortTz}
       </div>
 
-      {/* Plan minutes: what this booking uses. AI lessons use 60%; the dashed outline shows the same booking with Connor. */}
+      {/* Plan minutes: what this booking uses */}
       {minutesRemaining != null && (
-        <div className={`tp-meter${isAi ? ' ai' : ''}`}>
+        <div className="tp-meter">
           <div className="tp-lbl">
             <span>{locale === 'ja' ? <>今月の残り <b>{minutesRemaining}分</b></> : <><b>{minutesRemaining} min</b> left this month</>}</span>
             <span>
@@ -514,19 +387,8 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
             </span>
           </div>
           <div className="tp-track">
-            <span className="tp-ghost" style={{ width: `${Math.min(100, (fullMinutes / Math.max(1, minutesRemaining)) * 100)}%` }} />
             <span className="tp-use" style={{ width: `${Math.min(100, (planMinutes / Math.max(1, minutesRemaining)) * 100)}%` }} />
           </div>
-        </div>
-      )}
-
-      {/* AI pilot: start now (the length above), or book a time below */}
-      {isAi && (
-        <div className="mb-6">
-          <AiStartCard compact locale={locale === 'ja' ? 'ja' : 'en'} profile={{ name: aiTutorName, color: aiOrbColor, blush: aiBlush }} state={aiStart} duration={duration} />
-          <p className="text-xs mt-5 mb-1 text-center" style={{ color: 'var(--text-muted)' }}>
-            {locale === 'ja' ? 'または日時を予約' : 'Or book a time'}
-          </p>
         </div>
       )}
 
@@ -647,7 +509,7 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
       {/* Selected bookings summary */}
       {selectedBookings.length > 0 && (
         <div className="mb-4">
-          <div className={coursesOn ? 'grid grid-cols-1 md:grid-cols-2 gap-6 items-start' : ''}>
+          <div>
           {selectedBookings.length > 0 ? (
           <div>
           <h3 className="text-sm mb-2" style={{ color: 'var(--text-secondary)' }}>
@@ -661,7 +523,6 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
                   style={{ background: 'var(--surface)', color: 'var(--text-secondary)' }}
                 >
                   {b.dayLabel} {b.time}
-                  {course && <span style={{ color: 'var(--accent)', fontWeight: 600 }}>· L{lessonOf(b)}</span>}
                   <button onClick={() => removeBooking(i)} className="hover:opacity-70" style={{ color: 'var(--text-muted)' }}>✕</button>
                 </span>
               </Squircle>
@@ -710,54 +571,6 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
           </div>
           ) : <div className="hidden md:block" />}
 
-          {/* Course (classroom pilot) or, for AI lessons, a role-play: optional, free talk when none is chosen */}
-          {(coursesOn || rpOn) && (
-            <div>
-              <h3 className="text-sm mb-2" style={{ color: 'var(--text-secondary)' }}>
-                {rpOn ? (locale === 'ja' ? 'コース・ロールプレイ' : 'Course or role-play') : locale === 'ja' ? 'コース' : 'Course'}
-              </h3>
-              {roleplay && rpPick ? (
-                <div className="cs-picked">
-                  <button type="button" className="cs-pmain" onClick={() => setSheetOpen(true)} aria-label={locale === 'ja' ? 'ロールプレイを変更' : 'Change role-play'}>
-                    {roleplay.image ? <img src={roleplay.image} alt="" /> : <span className="cs-ph" />}
-                    <span style={{ minWidth: 0 }}>
-                      <b style={{ color: 'var(--text)' }}>{locale === 'ja' ? roleplay.title.ja : roleplay.title.en}</b>
-                      <span><span className="cs-rpk">{locale === 'ja' ? 'ロールプレイ' : 'Role-play'}</span>{LEVEL_NAMES[rpPick.level][locale === 'ja' ? 'ja' : 'en']}</span>
-                    </span>
-                  </button>
-                  <button type="button" className="cs-x" onClick={() => setRpPick(null)} aria-label={locale === 'ja' ? 'ロールプレイを外す' : 'Remove role-play'}>✕</button>
-                </div>
-              ) : course ? (
-                <div className="cs-picked">
-                  <button type="button" className="cs-pmain" onClick={() => setSheetOpen(true)} aria-label={locale === 'ja' ? 'コースを変更' : 'Change course'}>
-                    {course.scenes[0] ? <img src={course.scenes[0]} alt="" /> : <span className="cs-ph" />}
-                    <span style={{ minWidth: 0 }}>
-                      <b style={{ color: 'var(--text)' }}>{locale === 'ja' ? course.titleJa : course.title}</b>
-                      <span>{lessonRange()}</span>
-                    </span>
-                  </button>
-                  <button type="button" className="cs-x" onClick={() => setCourseId(null)} aria-label={locale === 'ja' ? 'コースを外す' : 'Remove course'}>✕</button>
-                </div>
-              ) : (
-                <button type="button" className="cs-add" onClick={() => setSheetOpen(true)}>
-                  <span className="cs-plus">＋</span>
-                  {rpOn ? (
-                    <span>
-                      <b className="block font-semibold" style={{ color: 'var(--text)' }}>{locale === 'ja' ? 'コース・ロールプレイを選ぶ' : 'Choose a course or role-play'}</b>
-                      <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{locale === 'ja' ? '空欄のままならフリートーク' : 'Leave blank for free talk'}</span>
-                    </span>
-                  ) : (
-                    <span>
-                      <b className="block font-semibold" style={{ color: 'var(--text)' }}>{locale === 'ja' ? 'コースを追加' : 'Add a course'}</b>
-                      <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                        {locale === 'ja' ? '選ばない場合は、フリートークなどのレッスンになります' : 'Without a course, the lesson is free talk or similar'}
-                      </span>
-                    </span>
-                  )}
-                </button>
-              )}
-            </div>
-          )}
           </div>
 
           {selectedBookings.length > 0 && (<>
@@ -821,18 +634,6 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
         </div>
       )}
 
-      {sheetOpen && (coursesOn || rpOn) && (
-        <CourseSheet
-          courses={coursesOn ? catalog : []}
-          initialId={courseId}
-          lang={locale === 'ja' ? 'ja' : 'en'}
-          onChoose={(id) => { setCourseId(id); setRpPick(null); setSheetOpen(false) }}
-          onClose={closeSheet}
-          roleplays={rpOn ? rpList : null}
-          initialRoleplay={roleplay ? rpPick : null}
-          onChooseRoleplay={(c) => { setRpPick(c); setCourseId(null); setSheetOpen(false) }}
-        />
-      )}
     </div>
   )
 }

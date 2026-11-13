@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { aiAllowance, getStripe, getStripePriceId, planAllowance } from '@/lib/stripe'
-import { getUserPermissions } from '@/lib/user-permissions'
-import { isAdminEmail } from '@/lib/admin-redirect'
+import { getStripe, getStripePriceId, planAllowance } from '@/lib/stripe'
 import type { PlanName, BillingInterval } from '@/lib/stripe'
 import { getPriceTier } from '@/lib/subscription'
 
@@ -28,7 +26,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    if (!['light', 'standard', 'test', 'ai'].includes(plan)) {
+    if (!['light', 'standard', 'test'].includes(plan)) {
       return NextResponse.json({ error: 'Invalid plan' }, { status: 400 })
     }
     if (!['monthly', 'yearly'].includes(interval)) {
@@ -57,13 +55,6 @@ export async function POST(request: NextRequest) {
 
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    // The AI plan is for pilot students only until the AI rollout
-    if (plan === 'ai' && !isAdminEmail(user.email)) {
-      const { getSupabaseAdmin } = await import('@/lib/supabase-admin')
-      const perms = await getUserPermissions(getSupabaseAdmin(), user.id)
-      if (!perms.ai_enabled) return NextResponse.json({ error: 'Invalid plan' }, { status: 400 })
     }
 
     // Fetch profile for trial window check
@@ -123,7 +114,6 @@ export async function POST(request: NextRequest) {
         interval,
         tier,
         minutes_per_month: String(planAllowance(plan, interval)),
-        ai_minutes_per_month: String(aiAllowance(plan, interval)),
       },
       subscription_data: {
         metadata: {
@@ -132,7 +122,6 @@ export async function POST(request: NextRequest) {
           interval,
           tier,
           minutes_per_month: String(planAllowance(plan, interval)),
-          ai_minutes_per_month: String(aiAllowance(plan, interval)),
         },
       },
     })

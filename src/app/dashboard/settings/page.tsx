@@ -6,8 +6,6 @@ import { useTheme } from '@/context/ThemeContext'
 import { pillTabStyle } from '@/lib/pill-tabs'
 import { useState, useEffect, useRef } from 'react'
 import SquircleCard from '@/components/ui/SquircleCard'
-import AiTutorSettingsCard from '@/components/dashboard/AiTutorSettingsCard'
-import MinuteBars, { minuteInfo, type MinuteInfo } from '@/components/dashboard/MinuteBars'
 import { motion } from 'framer-motion'
 
 // New-design button recipes (match BookingCalendar / HomeView: tween scale,
@@ -37,8 +35,6 @@ export default function SettingsPage() {
     periodStart: string; periodEnd: string;
   } | null>(null)
   const [loadingSub, setLoadingSub] = useState(true)
-  // AI pilot: lesson + AI minute bars with "add AI minutes" (instead of the single minutes bar)
-  const [minutes, setMinutes] = useState<MinuteInfo | null>(null)
   const [openingPortal, setOpeningPortal] = useState(false)
 
   // Avatar upload
@@ -102,7 +98,6 @@ export default function SettingsPage() {
           const data = await res.json()
           setSubscription(data.subscription)
           setBalance(data.balance)
-          setMinutes(minuteInfo(data))
         }
       } catch {
         // ignore
@@ -630,11 +625,6 @@ export default function SettingsPage() {
           </SquircleCard>
           </motion.div>
 
-          {/* AI tutor settings (AI tutor pilot users only; renders nothing otherwise) */}
-          <motion.div variants={{ hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0 } }}>
-            <AiTutorSettingsCard locale={locale} />
-          </motion.div>
-
           {/* Subscription / Your Plan */}
           <motion.div variants={{ hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0 } }}>
           <SquircleCard radius={20} className="p-5 sm:p-8">
@@ -665,7 +655,7 @@ export default function SettingsPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-base font-medium" style={{ color: 'var(--text)' }}>
-                      {({ light: 'Student Lite', standard: 'Student Standard', test: 'Exam Pass', ai: 'AI Plan' } as Record<string, string>)[subscription.plan] ?? subscription.plan}
+                      {({ light: 'Student Lite', standard: 'Student Standard', test: 'Exam Pass' } as Record<string, string>)[subscription.plan] ?? subscription.plan}
                       <span className="text-sm font-normal ml-2" style={{ color: 'var(--text-muted)' }}>
                         ({subscription.billingInterval === 'monthly'
                           ? (locale === 'ja' ? '月額' : 'Monthly')
@@ -690,25 +680,8 @@ export default function SettingsPage() {
                   </span>
                 </div>
 
-                {minutes && (
-                  <div className="max-w-sm">
-                    <MinuteBars info={minutes} locale={locale === 'ja' ? 'ja' : 'en'} />
-                    {balance && (
-                      <p className="text-xs mt-3" style={{ color: 'var(--text-subtle)' }}>
-                        {subscription.cancelAtPeriodEnd
-                          ? (locale === 'ja'
-                            ? `${new Date(balance.periodEnd).toLocaleDateString('ja-JP')} に解約されます`
-                            : `Cancels on ${new Date(balance.periodEnd).toLocaleDateString('en-GB')}`)
-                          : (locale === 'ja'
-                            ? `次回更新: ${new Date(balance.periodEnd).toLocaleDateString('ja-JP')}`
-                            : `Renews: ${new Date(balance.periodEnd).toLocaleDateString('en-GB')}`)}
-                      </p>
-                    )}
-                  </div>
-                )}
-
                 {/* Minute usage bar (plans with lesson minutes) */}
-                {!minutes && balance && balance.minutesPerMonth > 0 && (
+                {balance && balance.minutesPerMonth > 0 && (
                   <div>
                     <div className="flex justify-between text-xs mb-2" style={{ color: 'var(--text-muted)' }}>
                       <span>

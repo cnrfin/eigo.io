@@ -24,7 +24,7 @@ export type ClassroomBooking = {
   slide_course_id: string | null
   slide_lesson_id: string | null
   chat_log: ChatItem[]
-  /** 'ai' = AI tutor lesson (GPT-Live, no Whereby room) */
+  /** 'ai' = a lesson from the retired AI tutor (no Whereby room, so it can't be joined) */
   lesson_kind: 'human' | 'ai'
 }
 
@@ -125,9 +125,9 @@ export async function loadClassroom(
 
 export { uiLangFor }
 
-/** In an AI tutor lesson the student runs the lesson (the AI moves slides through their client). */
+/** Only the teacher runs the lesson (whiteboard, student drawing). */
 export function canControlLesson(ctx: ClassroomContext) {
-  return ctx.access.role === 'teacher' || ctx.booking.lesson_kind === 'ai'
+  return ctx.access.role === 'teacher'
 }
 
 /** Make sure a classroom_sessions row exists (idempotent). */

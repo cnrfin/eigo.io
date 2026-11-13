@@ -3,7 +3,6 @@ import { getUserSubscription, getMinuteBalance } from '@/lib/subscription'
 import { verifySupabaseToken } from '@/lib/supabase-jwt'
 import { getUserPermissions } from '@/lib/user-permissions'
 import { getSupabaseAdmin } from '@/lib/supabase-admin'
-import { getBalance } from '@/lib/minutes'
 
 // GET /api/subscription
 // Returns user's subscription details + remaining minutes
@@ -28,22 +27,12 @@ export async function GET(request: NextRequest) {
     ])
     // Opt-in features the dashboard needs to know about (pilot classroom,
     // test bookings). Additive field: older clients ignore it.
-    // AI tutor: pilot students, or the AI plan (AI tutor lessons only)
-    const aiPlan = !!subscription && subscription.plan === 'ai' && subscription.status !== 'cancelled'
     const features = {
       classroomEnabled: perms.classroom_enabled,
       bookingTestMode: perms.booking_test_mode,
-      aiEnabled: perms.ai_enabled || aiPlan,
-      aiOnly: aiPlan,
-    }
-    // AI pilot: AI minutes (AI plan + top-ups) and what an AI lesson can draw on. Additive field.
-    let aiMinutes = null
-    if (features.aiEnabled) {
-      const b = await getBalance(user.id)
-      aiMinutes = { total: b.ai.total, left: b.ai.left, topupLeft: b.snapshot.topups.reduce((a, t) => a + t.left, 0), topupTotal: b.topups.reduce((a, t) => a + t.minutes, 0), snapshot: b.snapshot }
     }
     if (!subscription) {
-      return NextResponse.json({ subscription: null, balance: null, features, aiMinutes })
+      return NextResponse.json({ subscription: null, balance: null, features })
     }
 
     return NextResponse.json({
@@ -58,7 +47,6 @@ export async function GET(request: NextRequest) {
       },
       balance,
       features,
-      aiMinutes,
     })
   } catch (error) {
     console.error('Subscription fetch error:', error)

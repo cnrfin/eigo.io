@@ -9,7 +9,6 @@
     "lint": "eslint",
     "postinstall": "bash scripts/install-ffmpeg.sh",
     "studio": "VITE_CONFIG_NATIVE_IGNORE_WARNING=true vite --config studio/vite.config.ts",
-    "check:roleplay": "node scripts/check-roleplay-scenes.mjs",
     "test:classroom": "node tests/classroom/run-all.mjs"
   },
   "dependencies": {

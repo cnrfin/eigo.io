@@ -15,7 +15,7 @@
  */
 import { build } from 'esbuild'
 import { spawn } from 'node:child_process'
-import { mkdirSync, readdirSync } from 'node:fs'
+import { existsSync, mkdirSync, readdirSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -89,7 +89,7 @@ async function check(name, file) {
 }
 
 const unitDir = join(here, 'unit')
-const units = readdirSync(unitDir).filter((f) => f.endsWith('.test.ts') && `unit/${f}`.includes(filter)).sort()
+const units = (existsSync(unitDir) ? readdirSync(unitDir) : []).filter((f) => f.endsWith('.test.ts') && `unit/${f}`.includes(filter)).sort()
 const roomDir = join(here, 'rooms')
 const rooms = readdirSync(roomDir).filter((f) => /^run\d+\.js$/.test(f) && `rooms/${f}`.includes(filter)).sort()
 
