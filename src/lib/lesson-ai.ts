@@ -143,6 +143,11 @@ function spokenWords(s: string): string[] {
     .filter(Boolean)
 }
 
+/** trim and collapse runs of whitespace; anything that isn't a string becomes '' */
+function tidy(s: unknown): string {
+  return typeof s === 'string' ? s.replace(/\s+/g, ' ').trim() : ''
+}
+
 /**
  * Keep only corrections a listener could have heard: the words must differ, and the
  * correction must not just add words at the end (that's "say more", not a mistake).
@@ -203,9 +208,9 @@ Return a JSON object with:
    - Natural collocations and idioms
    - Practical phrases the student can reuse
    For each phrase:
-   - "phrase_en": The English phrase (e.g. "I'm looking forward to")
-   - "example_en": A full example sentence using the phrase
-   - "translation_ja": Natural Japanese translation of the phrase
+   - "phrase_en": The English phrase (e.g. "I'm looking forward to"), 2 to 8 words. Write it exactly as it is said, with no placeholders: no "(something)", "(do something)", "sb/sth", "~", "...", and no alternatives with "/"
+   - "example_en": A full example sentence that contains phrase_en exactly as written: the same words, in the same form and order (not "taking a photo of" for "take a photo of"). It must be longer than the phrase itself, so never just the phrase on its own
+   - "translation_ja": Natural Japanese translation of the phrase (always fill this in)
    - "explanation_ja": Brief explanation in Japanese of when/how to use this phrase
    - "explanation_en": Same explanation in English
    - "category": One of "daily", "business", "travel", "academic", "social", "general"
@@ -254,13 +259,18 @@ IMPORTANT:
         explanation_en: m.explanation_en || '',
       }))
       .filter(m => isSpokenMistake(m.example_student, m.correction)),
-    vocabulary_phrases: (parsed.vocabulary_phrases || []).map(v => ({
-      phrase_en: v.phrase_en || '',
-      example_en: v.example_en || '',
-      translation_ja: v.translation_ja || '',
-      explanation_ja: v.explanation_ja || '',
-      explanation_en: v.explanation_en || '',
-      category: v.category || 'general',
-    })),
+    // Phrases become review questions in the app (meaning, build it, complete the
+    // sentence), so keep only ones with an English phrase and a Japanese meaning.
+    // An example that doesn't quite match is kept: the app just skips that question.
+    vocabulary_phrases: (parsed.vocabulary_phrases || [])
+      .map(v => ({
+        phrase_en: tidy(v.phrase_en),
+        example_en: tidy(v.example_en),
+        translation_ja: tidy(v.translation_ja),
+        explanation_ja: tidy(v.explanation_ja),
+        explanation_en: tidy(v.explanation_en),
+        category: v.category || 'general',
+      }))
+      .filter(v => v.phrase_en && v.translation_ja),
   }
 }
