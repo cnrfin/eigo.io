@@ -19,6 +19,8 @@ import PhraseReview, { toQuizCards } from '@/components/dashboard/PhraseReview'
 import PhraseList from '@/components/dashboard/PhraseList'
 import HomeView from '@/components/dashboard/HomeView'
 import PronAnnounceArt from '@/components/dashboard/PronAnnounceArt'
+import DownloadMenu, { saveFile } from '@/components/ui/DownloadMenu'
+import NotesView from '@/components/dashboard/NotesView'
 import { useDashboardNav } from '@/context/DashboardNavContext'
 
 type Lesson = {
@@ -170,27 +172,7 @@ type VocabPhrase = {
 
 // ─── Export phrases (CSV / Anki TSV) ───
 function ExportPhrasesButton({ cards, locale }: { cards: VocabCard[]; locale: string }) {
-  const [open, setOpen] = useState(false)
-  const ref = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    if (!open) return
-    const onDown = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
-    }
-    document.addEventListener('mousedown', onDown)
-    return () => document.removeEventListener('mousedown', onDown)
-  }, [open])
-
-  const download = (content: string, filename: string, mime: string) => {
-    const blob = new Blob([content], { type: mime })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = filename
-    a.click()
-    URL.revokeObjectURL(url)
-  }
+  const download = (content: string, filename: string, mime: string) => saveFile(content, filename, mime)
 
   const exportCsv = () => {
     const esc = (v: string | number | null | undefined) => {
@@ -205,7 +187,6 @@ function ExportPhrasesButton({ cards, locale }: { cards: VocabCard[]; locale: st
     ].map(esc).join(','))
     // Leading BOM so Excel decodes the Japanese text as UTF-8
     download('\uFEFF' + [header.map(esc).join(','), ...rows].join('\n'), 'eigo-phrases.csv', 'text/csv;charset=utf-8')
-    setOpen(false)
   }
 
   const exportAnki = () => {
@@ -221,39 +202,17 @@ function ExportPhrasesButton({ cards, locale }: { cards: VocabCard[]; locale: st
     // File header directives understood by Anki's import dialog
     const directives = ['#separator:tab', '#html:true', '#columns:Front\tBack\tTags', '#tags column:3']
     download([...directives, ...rows].join('\n'), 'eigo-phrases-anki.txt', 'text/plain;charset=utf-8')
-    setOpen(false)
   }
 
   return (
-    <div className="relative" ref={ref}>
-      <button
-        onClick={() => setOpen((v) => !v)}
-        disabled={cards.length === 0}
-        className="flex items-center gap-1.5 px-3.5 py-2 text-sm font-medium rounded-xl transition-all duration-[120ms] ease-out hover:scale-[1.02] active:scale-[0.95] disabled:opacity-40 disabled:hover:scale-100 disabled:active:scale-100"
-        style={{ background: 'var(--panel)', color: 'var(--text)', border: '1px solid var(--hairline)', boxShadow: 'var(--card-shadow)' }}
-        aria-expanded={open}
-      >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <path d="M12 3v12m0 0-4-4m4 4 4-4" /><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" />
-        </svg>
-        {locale === 'ja' ? 'エクスポート' : 'Export as…'}
-      </button>
-      {open && (
-        <div
-          className="modal-card absolute right-0 top-full mt-2 z-50 p-1.5 rounded-2xl"
-          style={{ minWidth: 190, background: 'var(--card)', border: '1px solid var(--hairline)', boxShadow: 'var(--card-shadow)' }}
-        >
-          <button onClick={exportCsv} className="sidebar-item w-full text-left px-3 py-2 text-sm rounded-xl" style={{ color: 'var(--text)' }}>
-            CSV
-            <span className="block text-xs" style={{ color: 'var(--text-subtle)' }}>{locale === 'ja' ? 'Excel・スプレッドシート用' : 'For Excel / Sheets'}</span>
-          </button>
-          <button onClick={exportAnki} className="sidebar-item w-full text-left px-3 py-2 text-sm rounded-xl" style={{ color: 'var(--text)' }}>
-            Anki
-            <span className="block text-xs" style={{ color: 'var(--text-subtle)' }}>{locale === 'ja' ? 'Ankiにインポートできるファイル' : 'Importable flashcard file'}</span>
-          </button>
-        </div>
-      )}
-    </div>
+    <DownloadMenu
+      label={locale === 'ja' ? 'エクスポート' : 'Export as…'}
+      disabled={cards.length === 0}
+      options={[
+        { label: 'CSV', sub: locale === 'ja' ? 'Excel・スプレッドシート用' : 'For Excel / Sheets', onSelect: exportCsv },
+        { label: 'Anki', sub: locale === 'ja' ? 'Ankiにインポートできるファイル' : 'Importable flashcard file', onSelect: exportAnki },
+      ]}
+    />
   )
 }
 
@@ -852,6 +811,7 @@ function DashboardContent() {
     if (tabParam === 'booking') setActiveTab('booking')
     // /dashboard?tab=vocab: the classroom's "Review Now" after a lesson
     if (tabParam === 'vocab') setActiveTab('vocab')
+    if (tabParam === 'notes') setActiveTab('notes')
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tabParam])
 
@@ -930,6 +890,7 @@ function DashboardContent() {
       const tabParam = new URLSearchParams(window.location.search).get('tab')
       if (tabParam === 'booking') setActiveTab('booking')
       if (tabParam === 'vocab') setActiveTab('vocab')
+      if (tabParam === 'notes') setActiveTab('notes')
     }
   }, [durationParam])
 
@@ -1233,11 +1194,21 @@ function DashboardContent() {
     }
   }, [session?.access_token, fetchHistory, fetchVocab])
 
-  // Surface tab indicators (phrases due, lessons awaiting a summary) to the sidebar.
+  // Unread lesson notes (the teacher saves them from a course page) for the sidebar dot.
+  const [notesUnread, setNotesUnread] = useState(0)
+  useEffect(() => {
+    if (!session?.access_token) return
+    fetch('/api/notes?count=unread', { headers: { Authorization: `Bearer ${session.access_token}` } })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => { if (typeof d?.unread === 'number') setNotesUnread(d.unread) })
+      .catch(() => {})
+  }, [session?.access_token])
+
+  // Surface tab indicators (phrases due, lessons awaiting a summary, unread notes) to the sidebar.
   useEffect(() => {
     const unsummarized = historyLessons.filter(l => l.hasSummary === false).length
-    setIndicators({ vocabDue: dueCount, historyUnsummarized: unsummarized })
-  }, [dueCount, historyLessons, setIndicators])
+    setIndicators({ vocabDue: dueCount, historyUnsummarized: unsummarized, notesUnread })
+  }, [dueCount, historyLessons, notesUnread, setIndicators])
 
   // News (shown on the home view, below upcoming lessons)
   useEffect(() => {
@@ -1756,6 +1727,19 @@ function DashboardContent() {
                   </motion.div>
                 )}
               </AnimatePresence>
+              </motion.div>
+            )}
+
+            {/* ═══ NOTES TAB ═══ */}
+            {activeTab === 'notes' && session?.access_token && (
+              <motion.div
+                key="tab-notes"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
+              >
+                <NotesView token={session.access_token} locale={locale} onUnreadChange={setNotesUnread} />
               </motion.div>
             )}
 

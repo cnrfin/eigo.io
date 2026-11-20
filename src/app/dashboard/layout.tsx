@@ -23,7 +23,7 @@ function TopBar() {
   // Trail after "Dashboard": pages can register their own (e.g. Tests > IELTS);
   // otherwise it's derived from the route / active tab.
   const tabLabel: Record<string, [string, string]> = {
-    home: ['ホーム', 'Home'], booking: ['予約', 'Book'], history: ['履歴', 'History'], vocab: ['フレーズ', 'Phrases'],
+    home: ['ホーム', 'Home'], booking: ['予約', 'Book'], history: ['履歴', 'History'], vocab: ['フレーズ', 'Phrases'], notes: ['ノート', 'Notes'],
   }
   const defaultTrail: Crumb[] = pathname.startsWith('/dashboard/tests')
     ? [{ label: t('テスト', 'Tests') }]

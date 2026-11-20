@@ -2,12 +2,12 @@
 
 import { createContext, useContext, useState, type ReactNode } from 'react'
 
-export type DashboardTab = 'home' | 'booking' | 'history' | 'vocab'
+export type DashboardTab = 'home' | 'booking' | 'history' | 'vocab' | 'notes'
 
 /** One breadcrumb segment after "Dashboard". onClick = navigable (not the current page). */
 export type Crumb = { label: string; onClick?: () => void }
 
-type Indicators = { vocabDue: number; historyUnsummarized: number }
+type Indicators = { vocabDue: number; historyUnsummarized: number; notesUnread: number }
 
 type NavValue = {
   activeTab: DashboardTab
@@ -25,7 +25,7 @@ const DashboardNavContext = createContext<NavValue | null>(null)
 
 export function DashboardNavProvider({ children }: { children: ReactNode }) {
   const [activeTab, setActiveTab] = useState<DashboardTab>('home')
-  const [indicators, setIndicators] = useState<Indicators>({ vocabDue: 0, historyUnsummarized: 0 })
+  const [indicators, setIndicators] = useState<Indicators>({ vocabDue: 0, historyUnsummarized: 0, notesUnread: 0 })
   const [mobileOpen, setMobileOpen] = useState(false)
   const [crumbs, setCrumbs] = useState<Crumb[]>([])
   return (

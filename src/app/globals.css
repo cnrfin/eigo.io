@@ -247,6 +247,12 @@ audio::-webkit-media-controls-panel {
    The button (.nav-btn) drives the hover/press state. */
 .nav-hl { background: transparent; }
 .nav-btn:hover .nav-hl { background: var(--item-hover); }
+/* Notes nav icon (inline SVG, no Rive artboard yet): its two text lines redraw on hover */
+.ic-notes .ln { stroke-dasharray: 80; stroke-dashoffset: 0; }
+.nav-btn:hover .ic-notes .ln { animation: notes-redraw 0.45s cubic-bezier(.3,.7,.3,1) both; }
+.nav-btn:hover .ic-notes .ln2 { animation-delay: 0.08s; }
+@keyframes notes-redraw { from { stroke-dashoffset: 80; } to { stroke-dashoffset: 0; } }
+@media (prefers-reduced-motion: reduce) { .nav-btn:hover .ic-notes .ln { animation: none; } }
 .nav-hl.is-active { background: var(--item-hover); }
 .nav-btn:active .nav-hl,
 .nav-btn:active .nav-hl.is-active { background: var(--item-active); }

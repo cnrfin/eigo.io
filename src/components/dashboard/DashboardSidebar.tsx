@@ -31,6 +31,16 @@ const I = {
       <rect x="3" y="6" width="14" height="12" rx="2" /><path d="M8 4h11a2 2 0 0 1 2 2v9" />
     </svg>
   ),
+  // Notes: drawn to match public/icons.riv (256 grid, 16-unit round strokes, 8-unit corners).
+  // No Rive artboard yet; the two text lines redraw on hover instead (.ic-notes in globals.css).
+  notes: (p: IconProps) => (
+    <svg viewBox="0 0 256 256" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="16" strokeLinecap="round" strokeLinejoin="round" className="ic-notes" aria-hidden="true" {...p}>
+      <path d="M160 40H64a8 8 0 0 0-8 8v160a8 8 0 0 0 8 8h128a8 8 0 0 0 8-8V80Z" />
+      <path d="M160 40v32a8 8 0 0 0 8 8h32" />
+      <path className="ln" d="M96 136h64" />
+      <path className="ln ln2" d="M96 176h40" />
+    </svg>
+  ),
   file: (p: IconProps) => (
     <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}>
       <path d="M6 2h8l4 4v16H6z" /><path d="M14 2v4h4M9 13h6M9 17h6" />
@@ -78,6 +88,7 @@ function NavList({ onNavigate, collapsed = false }: { onNavigate?: () => void; c
     { key: 'booking', label: 'Book', label_ja: '予約', icon: I.calendar, rive: 'book' },
     { key: 'history', label: 'History', label_ja: '履歴', icon: I.history, dot: indicators.historyUnsummarized, rive: 'lessons' },
     { key: 'vocab', label: 'Phrases', label_ja: 'フレーズ', icon: I.cards, dot: indicators.vocabDue, rive: 'phrases' },
+    { key: 'notes', label: 'Notes', label_ja: 'ノート', icon: I.notes, dot: indicators.notesUnread },
   ]
   const goTab = (key: DashboardTab) => {
     setActiveTab(key)
