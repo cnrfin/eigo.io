@@ -5,8 +5,6 @@ import { createPortal } from 'react-dom'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 import { useLanguage } from '@/context/LanguageContext'
-import { useTheme } from '@/context/ThemeContext'
-import { pillTabStyle } from '@/lib/pill-tabs'
 import { isAdminEmail } from '@/lib/admin-redirect'
 import { renderMarkdown } from '@/lib/markdown'
 import { Squircle } from '@squircle-js/react'
@@ -15,7 +13,10 @@ import SquircleCard from '@/components/ui/SquircleCard'
 import SkeletonCard from '@/components/ui/SkeletonCard'
 import BookingCalendar, { type BookingResult } from '@/components/BookingCalendar'
 import { motion, AnimatePresence } from 'framer-motion'
-import { formatNextReview, previewIntervals, type ReviewRating } from '@/lib/srs'
+import type { FsrsFields } from '@/lib/fsrs'
+import { todaysQueue } from '@/lib/phraseQuiz'
+import PhraseReview, { toQuizCards } from '@/components/dashboard/PhraseReview'
+import PhraseList from '@/components/dashboard/PhraseList'
 import HomeView from '@/components/dashboard/HomeView'
 import PronAnnounceArt from '@/components/dashboard/PronAnnounceArt'
 import { useDashboardNav } from '@/context/DashboardNavContext'
@@ -43,6 +44,12 @@ type VocabCard = {
   interval_days: number
   ease_factor: number
   next_review_at: string
+  state: FsrsFields['state']
+  stability: number | null
+  difficulty: number | null
+  scheduled_days: number | null
+  reps: number | null
+  lapses: number | null
   phrase: {
     id: string
     phrase_en: string
@@ -52,7 +59,9 @@ type VocabCard = {
     explanation_en: string
     category: string
     booking_id: string
+    source?: string | null
   }
+  created_at?: string | null
 }
 
 type NewsItem = {
@@ -830,7 +839,6 @@ function HistoryLessonCard({
 function DashboardContent() {
   const { user, session, loading } = useAuth()
   const { t, locale } = useLanguage()
-  const { theme } = useTheme()
   const searchParams = useSearchParams()
   const durationParam = searchParams.get('duration')
   const tabParam = searchParams.get('tab')
@@ -904,14 +912,7 @@ function DashboardContent() {
   const [bookingResultModal, setBookingResultModal] = useState<BookingResult | null>(null)
   const [vocabCards, setVocabCards] = useState<VocabCard[]>([])
   const [loadingVocab, setLoadingVocab] = useState(false)
-  const [vocabFilter, setVocabFilter] = useState<'all' | 'learning' | 'reviewing' | 'mastered'>('all')
-  const [vocabVisible, setVocabVisible] = useState(20)
-  const [flippedCardId, setFlippedCardId] = useState<string | null>(null)
   const [reviewMode, setReviewMode] = useState(false)
-  const [reviewQueue, setReviewQueue] = useState<VocabCard[]>([])
-  const [reviewIndex, setReviewIndex] = useState(0)
-  const [reviewFlipped, setReviewFlipped] = useState(false)
-  const [reviewingCardId, setReviewingCardId] = useState<string | null>(null)
   const [dueCount, setDueCount] = useState(0)
   const [subStatus, setSubStatus] = useState<'loading' | 'none' | 'active' | 'past_due'>('loading')
   const [bookingTestMode, setBookingTestMode] = useState(false) // test accounts: any duration, any time
@@ -1002,6 +1003,9 @@ function DashboardContent() {
       setLoadingVocab(false)
     }
   }, [session?.access_token])
+
+  // today's batch, by the same rules as the review (lib/phraseQuiz)
+  const reviewToday = useMemo(() => todaysQueue(toQuizCards(vocabCards)).batch.length, [vocabCards])
 
   const deckPhraseIds = useMemo(() => new Set(vocabCards.map(c => c.phrase?.id).filter(Boolean)), [vocabCards])
 
@@ -1095,62 +1099,6 @@ function DashboardContent() {
       })
       setVocabCards(prev => prev.filter(c => c.id !== cardId))
     } catch { /* ignore */ }
-  }
-
-  const startReview = () => {
-    const now = new Date().toISOString()
-    const due = vocabCards.filter(c => c.next_review_at <= now)
-    if (due.length === 0) return
-    // Shuffle due cards for variety
-    const shuffled = [...due].sort(() => Math.random() - 0.5)
-    setReviewQueue(shuffled)
-    setReviewIndex(0)
-    setReviewFlipped(false)
-    setReviewMode(true)
-  }
-
-  const reviewCard = async (rating: ReviewRating) => {
-    const card = reviewQueue[reviewIndex]
-    if (!card || !session?.access_token) return
-    setReviewingCardId(card.id)
-    try {
-      const res = await fetch('/api/vocabulary', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({ cardId: card.id, rating }),
-      })
-      if (res.ok) {
-        const data = await res.json()
-        // Update card in local state
-        setVocabCards(prev => prev.map(c =>
-          c.id === card.id ? {
-            ...c,
-            comfort_level: data.comfort_level,
-            interval_days: data.interval_days,
-            ease_factor: data.ease_factor,
-            next_review_at: data.next_review_at,
-            last_reviewed: new Date().toISOString(),
-            review_count: c.review_count + 1,
-          } : c
-        ))
-        setDueCount(prev => Math.max(0, prev - 1))
-      }
-    } catch { /* ignore */ } finally {
-      setReviewingCardId(null)
-    }
-    // Advance to next card
-    if (reviewIndex + 1 < reviewQueue.length) {
-      setReviewIndex(prev => prev + 1)
-      setReviewFlipped(false)
-    } else {
-      // Review session complete
-      setReviewMode(false)
-      setReviewQueue([])
-      setReviewIndex(0)
-    }
   }
 
   const rescheduleLesson = (lesson: Lesson) => {
@@ -1820,14 +1768,22 @@ function DashboardContent() {
                 exit={{ opacity: 0, y: -8 }}
                 transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
               >
-                <div className="flex items-center justify-between mb-8">
-                  <h1 className="text-2xl sm:text-4xl font-bold" style={{ color: 'var(--text)' }}>{tabTitle}</h1>
-                  <ExportPhrasesButton cards={vocabCards} locale={locale} />
-                </div>
-                {loadingVocab ? (
-                  <SkeletonCard rows={6} />
+                {reviewMode && session?.access_token ? (
+                  <PhraseReview
+                    cards={vocabCards}
+                    token={session.access_token}
+                    locale={locale}
+                    onExit={() => { setReviewMode(false); fetchVocab() }}
+                  />
+                ) : loadingVocab && vocabCards.length === 0 ? (
+                  <>
+                    <h1 className="text-2xl sm:text-4xl font-bold mb-8" style={{ color: 'var(--text)' }}>{tabTitle}</h1>
+                    <SkeletonCard rows={6} />
+                  </>
                 ) : vocabCards.length === 0 ? (
-                  <SquircleBox cornerRadius={16} className="p-8 text-center" style={{ background: 'var(--panel)', border: '1px solid var(--hairline)', boxShadow: 'var(--card-shadow)' }}>
+                  <>
+                    <h1 className="text-2xl sm:text-4xl font-bold mb-8" style={{ color: 'var(--text)' }}>{tabTitle}</h1>
+                    <SquircleBox cornerRadius={16} className="p-8 text-center" style={{ background: 'var(--panel)', border: '1px solid var(--hairline)', boxShadow: 'var(--card-shadow)' }}>
                     <p className="text-lg mb-2" style={{ color: 'var(--text-muted)' }}>
                       {locale === 'ja' ? 'まだフレーズがありません' : 'No phrases yet'}
                     </p>
@@ -1844,295 +1800,16 @@ function DashboardContent() {
                       {locale === 'ja' ? 'レッスン履歴へ →' : 'Go to history →'}
                     </button>
                   </SquircleBox>
-                ) : reviewMode && reviewQueue.length > 0 ? (
-                  /* ═══ REVIEW SESSION ═══ */
-                  <>
-                    {/* Progress bar */}
-                    <div className="flex items-center gap-3 mb-4">
-                      <button
-                        onClick={() => { setReviewMode(false); setReviewQueue([]) }}
-                        className="text-sm font-medium transition-colors hover:opacity-80"
-                        style={{ color: 'var(--text-muted)' }}
-                      >
-                        ← {locale === 'ja' ? '戻る' : 'Back'}
-                      </button>
-                      <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--surface-hover)' }}>
-                        <motion.div
-                          className="h-full rounded-full"
-                          style={{ background: 'var(--accent)' }}
-                          initial={{ width: 0 }}
-                          animate={{ width: `${((reviewIndex) / reviewQueue.length) * 100}%` }}
-                          transition={{ duration: 0.3 }}
-                        />
-                      </div>
-                      <span className="text-xs tabular-nums" style={{ color: 'var(--text-subtle)' }}>
-                        {reviewIndex + 1}/{reviewQueue.length}
-                      </span>
-                    </div>
-
-                    {/* Review card */}
-                    <AnimatePresence mode="wait">
-                      <motion.div
-                        key={reviewQueue[reviewIndex]?.id}
-                        initial={{ opacity: 0, x: 30 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -30 }}
-                        transition={{ duration: 0.25 }}
-                      >
-                        <SquircleBox cornerRadius={16} className="overflow-hidden" style={{ background: 'var(--panel)', border: '1px solid var(--hairline)', boxShadow: 'var(--card-shadow)' }}>
-                          {(() => {
-                            const card = reviewQueue[reviewIndex]
-                            if (!card?.phrase) return null
-                            return (
-                              <>
-                                {/* Question side */}
-                                <button
-                                  onClick={() => setReviewFlipped(true)}
-                                  className="w-full text-left px-6 py-8"
-                                  disabled={reviewFlipped}
-                                >
-                                  <p className="text-center text-xl font-semibold mb-2" style={{ color: 'var(--text)' }}>
-                                    {card.phrase.phrase_en}
-                                  </p>
-                                  <p className="text-center text-sm" style={{ color: 'var(--text-muted)' }}>
-                                    {card.phrase.example_en}
-                                  </p>
-                                  {!reviewFlipped && (
-                                    <p className="text-center text-xs mt-4" style={{ color: 'var(--text-subtle)' }}>
-                                      {locale === 'ja' ? 'タップして答えを見る' : 'Tap to reveal answer'}
-                                    </p>
-                                  )}
-                                </button>
-
-                                {/* Answer side */}
-                                <AnimatePresence>
-                                  {reviewFlipped && (
-                                    <motion.div
-                                      initial={{ height: 0, opacity: 0 }}
-                                      animate={{ height: 'auto', opacity: 1 }}
-                                      transition={{ duration: 0.25 }}
-                                    >
-                                      <div style={{ borderTop: '1px solid var(--border-subtle)' }}>
-                                        <div className="px-6 py-5">
-                                          <p className="text-center text-lg font-medium mb-1" style={{ color: 'var(--accent)' }}>
-                                            {card.phrase.translation_ja}
-                                          </p>
-                                          <p className="text-center text-sm" style={{ color: 'var(--text-muted)' }}>
-                                            {locale === 'ja' ? card.phrase.explanation_ja : card.phrase.explanation_en}
-                                          </p>
-                                        </div>
-
-                                        {/* Rating buttons */}
-                                        <div className="px-4 pb-5">
-                                          <p className="text-center text-xs mb-3" style={{ color: 'var(--text-subtle)' }}>
-                                            {locale === 'ja' ? 'どれくらい覚えていましたか？' : 'How well did you know this?'}
-                                          </p>
-                                          <div className="grid grid-cols-4 gap-2">
-                                            {previewIntervals(card.interval_days ?? 1, card.ease_factor ?? 2.5).map(r => (
-                                              <Squircle key={r.rating} asChild cornerRadius={10} cornerSmoothing={0.8}>
-                                                <button
-                                                  onClick={() => reviewCard(r.rating)}
-                                                  disabled={reviewingCardId === card.id}
-                                                  className="py-2.5 text-center transition-all hover:opacity-90 disabled:opacity-50"
-                                                  style={{
-                                                    background: r.rating === 1 ? 'var(--rose-bg)'
-                                                      : r.rating === 2 ? 'var(--amber-bg)'
-                                                      : r.rating === 3 ? 'var(--blue-bg)'
-                                                      : 'var(--accent-bg)',
-                                                    color: r.rating === 1 ? 'var(--rose)'
-                                                      : r.rating === 2 ? 'var(--amber)'
-                                                      : r.rating === 3 ? 'var(--blue)'
-                                                      : 'var(--accent)',
-                                                  }}
-                                                >
-                                                  <span className="text-xs font-semibold block">
-                                                    {locale === 'ja' ? r.label_ja : r.label_en}
-                                                  </span>
-                                                  <span className="text-[10px] block mt-0.5 opacity-70">
-                                                    {locale === 'ja' ? r.preview_ja : r.preview_en}
-                                                  </span>
-                                                </button>
-                                              </Squircle>
-                                            ))}
-                                          </div>
-                                        </div>
-                                      </div>
-                                    </motion.div>
-                                  )}
-                                </AnimatePresence>
-                              </>
-                            )
-                          })()}
-                        </SquircleBox>
-                      </motion.div>
-                    </AnimatePresence>
                   </>
                 ) : (
-                  /* ═══ PHRASE BANK (default view) ═══ */
-                  <>
-                    {/* Review banner */}
-                    {dueCount > 0 && (
-                      <SquircleBox cornerRadius={16} className="p-4 mb-4 flex items-center justify-between" style={{ background: 'var(--panel)', border: '1px solid var(--hairline)', boxShadow: 'var(--card-shadow)' }}>
-                        <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>
-                          {locale === 'ja'
-                            ? `${dueCount}件のフレーズが復習可能です`
-                            : `${dueCount} phrase${dueCount !== 1 ? 's' : ''} due for review`}
-                        </p>
-                        <Squircle asChild cornerRadius={10} cornerSmoothing={0.8}>
-                          <button
-                            onClick={startReview}
-                            className="px-4 py-2 text-sm font-semibold shrink-0 transition-all duration-[120ms] ease-out hover:scale-[1.03] active:scale-95"
-                            style={{ background: 'var(--accent)', color: 'var(--selected-text)' }}
-                          >
-                            {locale === 'ja' ? '復習する' : 'Review'}
-                          </button>
-                        </Squircle>
-                      </SquircleBox>
-                    )}
-
-                    {/* Stats bar */}
-                    <div className="flex items-center gap-4 mb-4">
-                      <span className="text-sm" style={{ color: 'var(--text-muted)' }}>
-                        {vocabCards.length} {locale === 'ja' ? 'フレーズ' : 'phrases'}
-                      </span>
-                      <div className="flex gap-1.5 ml-auto">
-                        {(['all', 'learning', 'reviewing', 'mastered'] as const).map(f => (
-                          <button
-                            key={f}
-                            onClick={() => { setVocabFilter(f); setVocabVisible(20) }}
-                            className="px-2.5 py-1 text-xs font-medium rounded-full transition-all duration-[120ms] ease-out hover:scale-105 active:scale-95"
-                            data-fill style={pillTabStyle(vocabFilter === f, theme === 'dark' ? 'dark' : 'light')}
-                          >
-                            {f === 'all' ? (locale === 'ja' ? 'すべて' : 'All')
-                              : f === 'learning' ? (locale === 'ja' ? '学習中' : 'Learning')
-                              : f === 'reviewing' ? (locale === 'ja' ? '復習中' : 'Reviewing')
-                              : (locale === 'ja' ? 'マスター' : 'Mastered')}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Cards */}
-                    <div className="space-y-3">
-                      {vocabCards
-                        .filter(c => vocabFilter === 'all' || c.comfort_level === vocabFilter)
-                        .slice(0, vocabVisible)
-                        .map(card => (
-                          <SquircleBox key={card.id} cornerRadius={16} className="overflow-hidden" style={{ background: 'var(--panel)', border: '1px solid var(--hairline)', boxShadow: 'var(--card-shadow)' }}>
-                            {/* Card front — tap to flip */}
-                            <button
-                              onClick={() => setFlippedCardId(flippedCardId === card.id ? null : card.id)}
-                              className="w-full text-left px-5 py-4"
-                            >
-                              <div className="flex items-center justify-between">
-                                <div className="min-w-0">
-                                  <p className="font-medium text-base" style={{ color: 'var(--text)' }}>
-                                    {card.phrase?.phrase_en}
-                                  </p>
-                                  <div className="flex items-center gap-2 mt-0.5">
-                                    {flippedCardId !== card.id && (
-                                      <span className="text-xs" style={{ color: 'var(--text-subtle)' }}>
-                                        {locale === 'ja' ? 'タップして詳細を見る' : 'Tap to reveal'}
-                                      </span>
-                                    )}
-                                  </div>
-                                </div>
-                                <div className="flex items-center gap-2 shrink-0 ml-3">
-                                  <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'var(--inset)', color: 'var(--text-subtle)' }}>
-                                    {formatNextReview(card.next_review_at, locale)}
-                                  </span>
-                                  <span className="text-xs font-medium px-2 py-0.5 rounded-full" style={{ background: 'var(--accent-bg)', color: 'var(--accent)' }}>
-                                    {card.phrase?.category}
-                                  </span>
-                                  <span
-                                    className="w-2 h-2 rounded-full"
-                                    style={{
-                                      background: card.comfort_level === 'mastered' ? 'var(--accent)'
-                                        : card.comfort_level === 'reviewing' ? 'var(--amber)'
-                                        : 'var(--accent)',
-                                    }}
-                                  />
-                                </div>
-                              </div>
-                            </button>
-
-                            {/* Card back — revealed content */}
-                            <AnimatePresence>
-                              {flippedCardId === card.id && card.phrase && (
-                                <motion.div
-                                  initial={{ height: 0, opacity: 0 }}
-                                  animate={{ height: 'auto', opacity: 1 }}
-                                  exit={{ height: 0, opacity: 0 }}
-                                  transition={{ duration: 0.2 }}
-                                  className="overflow-hidden"
-                                >
-                                  <div className="px-5 pb-4 space-y-2.5" style={{ borderTop: '1px solid var(--border-subtle)' }}>
-                                    <div className="pt-3">
-                                      <p className="text-sm font-medium mb-1" style={{ color: 'var(--accent)' }}>
-                                        {card.phrase.translation_ja}
-                                      </p>
-                                      <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-                                        {card.phrase.example_en}
-                                      </p>
-                                      <p className="text-xs mt-1.5" style={{ color: 'var(--text-muted)' }}>
-                                        {locale === 'ja' ? card.phrase.explanation_ja : card.phrase.explanation_en}
-                                      </p>
-                                    </div>
-
-                                    {/* Card info + remove */}
-                                    <div className="flex items-center justify-between pt-1">
-                                      <div className="flex items-center gap-3">
-                                        <span className="text-xs" style={{ color: 'var(--text-subtle)' }}>
-                                          {locale === 'ja' ? '復習回数' : 'Reviews'}: {card.review_count}
-                                        </span>
-                                        <span
-                                          className="text-xs px-2 py-0.5 rounded-full"
-                                          style={{
-                                            background: card.comfort_level === 'mastered' ? 'var(--accent-bg)'
-                                              : card.comfort_level === 'reviewing' ? 'var(--amber-bg)'
-                                              : 'var(--blue-bg)',
-                                            color: card.comfort_level === 'mastered' ? 'var(--accent)'
-                                              : card.comfort_level === 'reviewing' ? 'var(--amber)'
-                                              : 'var(--blue)',
-                                          }}
-                                        >
-                                          {card.comfort_level === 'learning' ? (locale === 'ja' ? '学習中' : 'Learning')
-                                            : card.comfort_level === 'reviewing' ? (locale === 'ja' ? '復習中' : 'Reviewing')
-                                            : (locale === 'ja' ? 'マスター' : 'Mastered')}
-                                        </span>
-                                      </div>
-                                      <button
-                                        onClick={() => removeCard(card.id)}
-                                        className="text-xs transition-colors hover:opacity-80"
-                                        style={{ color: 'var(--text-subtle)' }}
-                                      >
-                                        {locale === 'ja' ? '削除' : 'Remove'}
-                                      </button>
-                                    </div>
-                                  </div>
-                                </motion.div>
-                              )}
-                            </AnimatePresence>
-                          </SquircleBox>
-                        ))}
-                    </div>
-
-                    {/* Show more */}
-                    {(() => {
-                      const filtered = vocabCards.filter(c => vocabFilter === 'all' || c.comfort_level === vocabFilter)
-                      return filtered.length > vocabVisible && (
-                        <button
-                          onClick={() => setVocabVisible(prev => prev + 20)}
-                          className="w-full mt-4 py-2.5 text-sm font-medium rounded-lg transition-colors hover:opacity-80"
-                          style={{ color: 'var(--accent)' }}
-                        >
-                          {locale === 'ja'
-                            ? `さらに表示（残り${filtered.length - vocabVisible}件）`
-                            : `Show more (${filtered.length - vocabVisible} remaining)`}
-                        </button>
-                      )
-                    })()}
-                  </>
+                  <PhraseList
+                    cards={vocabCards}
+                    today={reviewToday}
+                    locale={locale}
+                    onStart={() => setReviewMode(true)}
+                    onRemove={removeCard}
+                    headerRight={<ExportPhrasesButton cards={vocabCards} locale={locale} />}
+                  />
                 )}
               </motion.div>
             )}

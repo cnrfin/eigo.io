@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifySupabaseToken } from '@/lib/supabase-jwt'
 import { createClient } from '@supabase/supabase-js'
-import { calculateNextReview, type ReviewRating } from '@/lib/srs'
+import type { ReviewRating } from '@/lib/srs'
+import { FSRS_COLUMNS, schedule } from '@/lib/fsrs'
 
 /**
  * GET /api/vocabulary
@@ -30,7 +31,7 @@ export async function GET(request: NextRequest) {
   // Fetch cards with SRS fields
   let query = supabase
     .from('vocabulary_cards')
-    .select('id, phrase_id, comfort_level, last_reviewed, review_count, interval_days, ease_factor, next_review_at, created_at')
+    .select(`id, phrase_id, comfort_level, interval_days, ease_factor, created_at, ${FSRS_COLUMNS}`)
     .eq('user_id', user.id)
 
   if (dueOnly) {
@@ -54,7 +55,7 @@ export async function GET(request: NextRequest) {
   const phraseIds = cards.map(c => c.phrase_id).filter(Boolean)
   const { data: phrases } = await supabase
     .from('vocabulary_phrases')
-    .select('id, phrase_en, example_en, translation_ja, explanation_ja, explanation_en, category, booking_id')
+    .select('id, phrase_en, example_en, translation_ja, explanation_ja, explanation_en, category, booking_id, source')
     .in('id', phraseIds)
 
   const phraseMap = new Map((phrases || []).map(p => [p.id, p]))
@@ -67,6 +68,12 @@ export async function GET(request: NextRequest) {
     interval_days: c.interval_days,
     ease_factor: c.ease_factor,
     next_review_at: c.next_review_at,
+    state: c.state,
+    stability: c.stability,
+    difficulty: c.difficulty,
+    scheduled_days: c.scheduled_days,
+    reps: c.reps,
+    lapses: c.lapses,
     created_at: c.created_at,
     phrase: phraseMap.get(c.phrase_id) || null,
   })).filter(c => c.phrase !== null)
@@ -107,6 +114,7 @@ export async function POST(request: NextRequest) {
     cardId?: string
     comfortLevel?: string
     rating?: number
+    responseMs?: number
     action?: string
     phrase_en?: string
     phrase_ja?: string
@@ -168,10 +176,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid rating (must be 1-4)' }, { status: 400 })
     }
 
-    // Fetch current card SRS state
+    // Fetch current card FSRS state
     const { data: currentCard } = await supabase
       .from('vocabulary_cards')
-      .select('review_count, interval_days, ease_factor')
+      .select(FSRS_COLUMNS)
       .eq('id', body.cardId)
       .eq('user_id', user.id)
       .single()
@@ -180,22 +188,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Card not found' }, { status: 404 })
     }
 
-    const update = calculateNextReview(
-      currentCard.interval_days ?? 1,
-      currentCard.ease_factor ?? 2.5,
-      rating
-    )
+    const { fields, history } = schedule(currentCard, rating)
 
     const { error } = await supabase
       .from('vocabulary_cards')
-      .update({
-        comfort_level: update.comfort_level,
-        interval_days: update.interval_days,
-        ease_factor: update.ease_factor,
-        next_review_at: update.next_review_at,
-        last_reviewed: new Date().toISOString(),
-        review_count: (currentCard.review_count || 0) + 1,
-      })
+      .update(fields)
       .eq('id', body.cardId)
       .eq('user_id', user.id)
 
@@ -203,7 +200,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to update card' }, { status: 500 })
     }
 
-    return NextResponse.json({ status: 'reviewed', ...update })
+    // the review log is for tuning later; a failure here shouldn't fail the review
+    const { error: logError } = await supabase
+      .from('vocab_review_history')
+      .insert({
+        user_id: user.id,
+        card_id: body.cardId,
+        ...history,
+        response_time_ms: typeof body.responseMs === 'number' ? Math.round(body.responseMs) : null,
+      })
+    if (logError) console.error('Failed to log review:', logError)
+
+    return NextResponse.json({ status: 'reviewed', ...fields })
   }
 
   // Legacy comfort level update (for manual override from card view)
@@ -258,6 +266,7 @@ export async function POST(request: NextRequest) {
           comfort_level: 'learning',
           interval_days: 1,
           ease_factor: 2.5,
+          state: 'new',
           next_review_at: new Date().toISOString(), // Due immediately
         },
         { onConflict: 'user_id,phrase_id' }
