@@ -7,6 +7,7 @@
  * the ⋯ menu deletes it, with a few seconds to undo.
  */
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import SquircleBox from '@/components/ui/SquircleBox'
 import { memoryStrength, type FsrsFields } from '@/lib/fsrs'
@@ -40,22 +41,49 @@ function Ring({ value }: { value: number }) {
   )
 }
 
-/** a small popover menu, closed by Esc or a click elsewhere */
+type MenuPos = { right: number; top?: number; bottom?: number }
+
+/**
+ * A small popover menu, closed by Esc, a click elsewhere, scrolling or resizing.
+ * It's drawn in a portal at the button's position: the cards are squircles, which
+ * clip anything inside them that spills past their edge.
+ */
 function Menu({ label, items }: { label: string; items: { label: string; danger?: boolean; onSelect: () => void }[] }) {
-  const [open, setOpen] = useState(false)
-  const ref = useRef<HTMLDivElement>(null)
+  const [pos, setPos] = useState<MenuPos | null>(null)
+  const open = pos !== null
+  const btn = useRef<HTMLButtonElement>(null)
+  const menu = useRef<HTMLDivElement>(null)
   useEffect(() => {
     if (!open) return
-    const down = (e: MouseEvent) => { if (!ref.current?.contains(e.target as Node)) setOpen(false) }
-    const key = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false) }
+    const close = () => setPos(null)
+    const down = (e: MouseEvent) => {
+      const t = e.target as Node
+      if (!menu.current?.contains(t) && !btn.current?.contains(t)) close()
+    }
+    const key = (e: KeyboardEvent) => { if (e.key === 'Escape') { close(); btn.current?.focus() } }
     document.addEventListener('mousedown', down)
     document.addEventListener('keydown', key)
-    return () => { document.removeEventListener('mousedown', down); document.removeEventListener('keydown', key) }
+    window.addEventListener('scroll', close, true)
+    window.addEventListener('resize', close)
+    return () => {
+      document.removeEventListener('mousedown', down)
+      document.removeEventListener('keydown', key)
+      window.removeEventListener('scroll', close, true)
+      window.removeEventListener('resize', close)
+    }
   }, [open])
+  const toggle = () => {
+    if (open || !btn.current) { setPos(null); return }
+    const r = btn.current.getBoundingClientRect()
+    const right = window.innerWidth - r.right
+    // opens upwards when there isn't room below
+    setPos(r.bottom + 8 + items.length * 44 + 12 > window.innerHeight ? { right, bottom: window.innerHeight - r.top + 6 } : { right, top: r.bottom + 6 })
+  }
   return (
-    <div ref={ref} className="relative shrink-0">
+    <div className="shrink-0">
       <button
-        onClick={(e) => { e.stopPropagation(); setOpen((v) => !v) }}
+        ref={btn}
+        onClick={(e) => { e.stopPropagation(); toggle() }}
         aria-label={label}
         aria-haspopup="menu"
         aria-expanded={open}
@@ -64,22 +92,24 @@ function Menu({ label, items }: { label: string; items: { label: string; danger?
       >
         <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.8" /><circle cx="12" cy="12" r="1.8" /><circle cx="19" cy="12" r="1.8" /></svg>
       </button>
+      {typeof document !== 'undefined' && createPortal(
       <AnimatePresence>
-        {open && (
+        {pos && (
           <motion.div
+            ref={menu}
             role="menu"
             initial={{ opacity: 0, scale: 0.92, filter: 'blur(4px)' }}
             animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
             exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.12 } }}
             transition={{ duration: 0.2, ease: EASE }}
-            className="absolute right-0 top-10 z-20 min-w-[180px] p-1.5 rounded-2xl origin-top-right"
-            style={{ background: 'var(--surface)', boxShadow: '0 12px 34px rgba(0,0,0,0.28)' }}
+            className={`fixed z-50 min-w-[180px] p-1.5 rounded-2xl ${pos.top !== undefined ? 'origin-top-right' : 'origin-bottom-right'}`}
+            style={{ ...pos, background: 'var(--surface)', boxShadow: '0 12px 34px rgba(0,0,0,0.28)' }}
           >
             {items.map((it) => (
               <button
                 key={it.label}
                 role="menuitem"
-                onClick={(e) => { e.stopPropagation(); setOpen(false); it.onSelect() }}
+                onClick={(e) => { e.stopPropagation(); setPos(null); it.onSelect() }}
                 className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium text-left transition-colors hover:bg-[var(--surface-hover)]"
                 style={{ color: it.danger ? 'var(--danger)' : 'var(--text)' }}
               >
@@ -91,7 +121,8 @@ function Menu({ label, items }: { label: string; items: { label: string; danger?
             ))}
           </motion.div>
         )}
-      </AnimatePresence>
+      </AnimatePresence>,
+      document.body)}
     </div>
   )
 }
