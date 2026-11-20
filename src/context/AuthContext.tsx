@@ -21,6 +21,7 @@ type AuthContextType = {
   signIn: (email: string, password: string, captchaToken?: string | null) => Promise<{ error: Error | null }>
   signUp: (email: string, password: string, firstName?: string, lastName?: string, captchaToken?: string | null) => Promise<{ error: Error | null }>
   signInWithGoogle: () => Promise<{ error: Error | null }>
+  signInWithApple: () => Promise<{ error: Error | null }>
   signInWithLine: () => Promise<{ error: Error | null }>
   // Free-funnel: mint a guest session, then convert the SAME user to permanent
   // on sign-up so the work they did as a guest survives with zero data migration.
@@ -170,6 +171,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error: error as Error | null }
   }
 
+  // Same Apple account as the iOS app: the web Services ID sits under the app's
+  // App ID, so Apple gives the same user ID and Supabase finds the same user.
+  const signInWithApple = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'apple',
+      options: {
+        redirectTo: `${window.location.origin}/dashboard`,
+      },
+    })
+    return { error: error as Error | null }
+  }
+
   const signInWithLine = async () => {
     try {
       window.location.href = '/api/auth/line'
@@ -229,7 +242,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const displayName = nameFor(user, profileName)
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, avatarUrl, displayName, gcalConnected, signIn, signUp, signInWithGoogle, signInWithLine, signInAnonymously, convertAnonUser, linkGoogleIdentity, signOut, refreshAvatar, setGcalConnected }}>
+    <AuthContext.Provider value={{ user, session, loading, avatarUrl, displayName, gcalConnected, signIn, signUp, signInWithGoogle, signInWithApple, signInWithLine, signInAnonymously, convertAnonUser, linkGoogleIdentity, signOut, refreshAvatar, setGcalConnected }}>
       {children}
     </AuthContext.Provider>
   )
