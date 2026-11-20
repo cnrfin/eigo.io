@@ -113,3 +113,55 @@ begin
   return t;
 end $$;
 revoke all on function teacher.save_note(uuid, uuid, text, text, text, text) from public, anon, authenticated;
+
+-- 2026-11-20 (later still): a course id on notes and phrases, so the Engoo lessons page can save
+-- under 'engoo'. Defaults keep the IELTS page's existing calls working.
+drop function if exists teacher.get_note(uuid, uuid, text);
+create function teacher.get_note(p_user uuid, p_booking uuid, p_lesson text, p_course text default 'ielts-gt')
+returns table(body text, updated_at timestamptz)
+language sql stable security definer set search_path = public as $$
+  select n.body, n.updated_at from lesson_notes n
+  where n.user_id = p_user and n.booking_id is not distinct from p_booking
+    and n.course_id = p_course and n.lesson_id = p_lesson;
+$$;
+
+drop function if exists teacher.save_note(uuid, uuid, text, text, text, text);
+create function teacher.save_note(p_user uuid, p_booking uuid, p_lesson text, p_body text,
+  p_course_name text default '', p_lesson_title text default '', p_course text default 'ielts-gt')
+returns timestamptz
+language plpgsql security definer set search_path = public as $$
+declare t timestamptz;
+begin
+  insert into lesson_notes (user_id, booking_id, course_id, lesson_id, body, course_name, lesson_title)
+  values (p_user, p_booking, left(coalesce(nullif(trim(p_course),''),'ielts-gt'),40), p_lesson, left(coalesce(p_body,''), 50000),
+    left(coalesce(p_course_name,''),80), left(coalesce(p_lesson_title,''),160))
+  on conflict (user_id, booking_id, course_id, lesson_id)
+  do update set body = excluded.body, course_name = excluded.course_name, lesson_title = excluded.lesson_title,
+    updated_at = now(), seen_at = null
+  returning updated_at into t;
+  return t;
+end $$;
+
+drop function if exists teacher.save_phrase(uuid, uuid, text, text, text, text, text);
+create function teacher.save_phrase(p_user uuid, p_booking uuid, p_lesson text,
+  p_phrase text, p_example text, p_ja text, p_why_ja text, p_course text default 'ielts-gt')
+returns uuid
+language plpgsql security definer set search_path = public as $$
+declare pid uuid;
+begin
+  if coalesce(trim(p_phrase),'') = '' then raise exception 'phrase required'; end if;
+  insert into vocabulary_phrases (user_id, booking_id, source, source_course_id, source_item_id,
+    phrase_en, example_en, translation_ja, explanation_ja, explanation_en, category)
+  values (p_user, p_booking, 'lesson', left(coalesce(nullif(trim(p_course),''),'ielts-gt'),40), p_lesson || ':' || md5(lower(trim(p_phrase))),
+    left(trim(p_phrase),300), left(coalesce(p_example,''),500), left(coalesce(p_ja,''),300),
+    left(coalesce(p_why_ja,''),500), '', 'general')
+  on conflict (user_id, source_course_id, source_item_id) where source_item_id is not null
+  do update set example_en = excluded.example_en, translation_ja = excluded.translation_ja,
+    explanation_ja = excluded.explanation_ja
+  returning id into pid;
+  insert into vocabulary_cards (user_id, phrase_id) values (p_user, pid)
+  on conflict (user_id, phrase_id) do nothing;
+  return pid;
+end $$;
+
+revoke all on all functions in schema teacher from public, anon, authenticated;
