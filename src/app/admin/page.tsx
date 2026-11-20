@@ -4,6 +4,7 @@ import { Suspense, useEffect, useState, useCallback, useMemo } from 'react'
 import { useAuth } from '@/context/AuthContext'
 import { useLanguage } from '@/context/LanguageContext'
 import { Squircle } from '@squircle-js/react'
+import StudentLessons from '@/components/admin/StudentLessons'
 import SquircleBox from '@/components/ui/SquircleBox'
 import Header from '@/components/Header'
 import RatingsCard from '@/components/admin/RatingsCard'
@@ -1762,6 +1763,17 @@ function AdminContent() {
                             </div>
                           </SquircleBox>
                         )}
+
+                        {/* Past lessons, each can be marked missed */}
+                        <StudentLessons
+                          bookings={studentProgress.bookings}
+                          token={session?.access_token}
+                          onChange={(id, status) => setStudentProgress((p) => {
+                            if (!p) return p
+                            const bookings = p.bookings.map((b) => (b.id === id ? { ...b, status } : b))
+                            return { ...p, bookings, stats: { ...p.stats, noShows: bookings.filter((b) => b.status === 'no_show').length } }
+                          })}
+                        />
 
                         {/* Recent activity */}
                         {studentProgress.recentActivity.length > 0 && (
