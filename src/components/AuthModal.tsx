@@ -69,24 +69,6 @@ export default function AuthModal({ onClose }: { onClose: () => void }) {
 
         {/* Social Sign In */}
         <div className="space-y-3 mb-4">
-          {/* Apple's rules: a black or white button with its logo; ours follows the theme */}
-          <Squircle asChild cornerRadius={12} cornerSmoothing={0.8}>
-            <button
-              onClick={async () => {
-                setError('')
-                const { error } = await signInWithApple()
-                if (error) setError(error.message)
-              }}
-              className="w-full flex items-center justify-center gap-3 py-3 font-medium transition-colors hover:opacity-90"
-              style={{ background: 'var(--text)', color: 'var(--bg)' }}
-            >
-              <svg className="w-5 h-5" viewBox="0 0 17 20" fill="currentColor" aria-hidden="true">
-                <path d="M14.1 10.6c0-2.6 2.1-3.8 2.2-3.9-1.2-1.8-3.1-2-3.7-2-1.6-.2-3.1.9-3.9.9-.8 0-2-.9-3.4-.9-1.7 0-3.3 1-4.2 2.6-1.8 3.1-.5 7.7 1.3 10.2.9 1.2 1.9 2.6 3.2 2.6 1.3-.1 1.8-.8 3.3-.8s2 .8 3.4.8c1.4 0 2.3-1.2 3.1-2.5 1-1.4 1.4-2.8 1.4-2.9 0 0-2.7-1-2.7-4.1zM11.6 3c.7-.9 1.2-2 1-3.2-1 0-2.3.7-3 1.6-.7.8-1.3 2-1.1 3.1 1.2.1 2.4-.6 3.1-1.5z" />
-              </svg>
-              {t('continueWithApple')}
-            </button>
-          </Squircle>
-
           <Squircle asChild cornerRadius={12} cornerSmoothing={0.8}>
             <button
               onClick={handleGoogleSignIn}
@@ -111,6 +93,24 @@ export default function AuthModal({ onClose }: { onClose: () => void }) {
                 />
               </svg>
               Google
+            </button>
+          </Squircle>
+
+          {/* Apple's rules: a black or white button with its logo; ours follows the theme */}
+          <Squircle asChild cornerRadius={12} cornerSmoothing={0.8}>
+            <button
+              onClick={async () => {
+                setError('')
+                const { error } = await signInWithApple()
+                if (error) setError(error.message)
+              }}
+              className="w-full flex items-center justify-center gap-3 py-3 font-medium transition-colors hover:opacity-90"
+              style={{ background: 'var(--text)', color: 'var(--bg)' }}
+            >
+              <svg className="w-5 h-5" viewBox="0 0 17 20" fill="currentColor" aria-hidden="true">
+                <path d="M14.1 10.6c0-2.6 2.1-3.8 2.2-3.9-1.2-1.8-3.1-2-3.7-2-1.6-.2-3.1.9-3.9.9-.8 0-2-.9-3.4-.9-1.7 0-3.3 1-4.2 2.6-1.8 3.1-.5 7.7 1.3 10.2.9 1.2 1.9 2.6 3.2 2.6 1.3-.1 1.8-.8 3.3-.8s2 .8 3.4.8c1.4 0 2.3-1.2 3.1-2.5 1-1.4 1.4-2.8 1.4-2.9 0 0-2.7-1-2.7-4.1zM11.6 3c.7-.9 1.2-2 1-3.2-1 0-2.3.7-3 1.6-.7.8-1.3 2-1.1 3.1 1.2.1 2.4-.6 3.1-1.5z" />
+              </svg>
+              Apple
             </button>
           </Squircle>
 
