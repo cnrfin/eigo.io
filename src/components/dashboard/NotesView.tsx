@@ -161,8 +161,17 @@ function alertDownloadFailed(ja: boolean) {
   window.alert(ja ? 'ダウンロードできませんでした。もう一度お試しください。' : "Couldn't download. Please try again.")
 }
 
+// The tile's few lines of text: the teacher's own notes when the note has a "Notes" section
+// (Engoo lessons save the lesson first and the notes after it), never the dashed heading underlines.
+function notePreview(body: string) {
+  const at = body.lastIndexOf('\nNotes\n-----\n')
+  const own = at >= 0 ? body.slice(at + 13) : body
+  const lines = own.split('\n').map((l) => l.trim()).filter((l) => l && !/^-+$/.test(l))
+  return (lines.length ? lines : body.split('\n').filter((l) => l.trim() && !/^\s*-+\s*$/.test(l))).slice(0, 3).join(' ')
+}
+
 function NoteTile({ note, locale, onOpen }: { note: LessonNote; locale: string; onOpen: () => void }) {
-  const preview = note.body.split('\n').filter((l) => l.trim()).slice(0, 3).join(' ')
+  const preview = notePreview(note.body)
   return (
     <button
       onClick={onOpen}
