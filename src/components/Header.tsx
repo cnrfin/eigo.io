@@ -11,7 +11,7 @@ import AuthModal from './AuthModal'
 
 export default function Header({ hideLogin = false, wide = false }: { hideLogin?: boolean; wide?: boolean }) {
   const { t, locale, toggleLocale } = useLanguage()
-  const { user, signOut, loading, avatarUrl: profileAvatarUrl } = useAuth()
+  const { user, signOut, loading, avatarUrl: profileAvatarUrl, displayName } = useAuth()
   const { theme, toggleTheme } = useTheme()
   const [showAuth, setShowAuth] = useState(false)
   const [showDropdown, setShowDropdown] = useState(false)
@@ -28,7 +28,6 @@ export default function Header({ hideLogin = false, wide = false }: { hideLogin?
   }, [])
 
   const avatarUrl = profileAvatarUrl || user?.user_metadata?.avatar_url || user?.user_metadata?.picture || null
-  const displayName = user?.user_metadata?.full_name || (user?.email && !user.email.endsWith('@line.eigo.io') ? user.email.split('@')[0] : '') || ''
 
   return (
     <>

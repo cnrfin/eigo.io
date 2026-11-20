@@ -178,7 +178,7 @@ function NavList({ onNavigate, collapsed = false }: { onNavigate?: () => void; c
 }
 
 function SidebarUser({ collapsed = false }: { collapsed?: boolean }) {
-  const { user, signOut, avatarUrl: profileAvatarUrl } = useAuth()
+  const { user, signOut, avatarUrl: profileAvatarUrl, displayName } = useAuth()
   const { t, locale } = useLanguage()
   const [open, setOpen] = useState(false)
   const [pos, setPos] = useState<{ left: number; bottom: number } | null>(null)
@@ -196,7 +196,6 @@ function SidebarUser({ collapsed = false }: { collapsed?: boolean }) {
   }, [open])
 
   const avatarUrl = profileAvatarUrl || user?.user_metadata?.avatar_url || user?.user_metadata?.picture || null
-  const displayName = user?.user_metadata?.full_name || (user?.email && !user.email.endsWith('@line.eigo.io') ? user.email.split('@')[0] : '') || ''
   const email = user?.email && !user.email.endsWith('@line.eigo.io') ? user.email : ''
 
   const toggle = () => {

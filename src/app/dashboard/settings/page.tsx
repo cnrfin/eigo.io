@@ -16,7 +16,7 @@ const btnAccent = { background: 'var(--accent)', color: 'var(--selected-text)' }
 const inputStyle = { background: 'var(--inset)', color: 'var(--text)', border: '1px solid var(--hairline)' } as const
 
 export default function SettingsPage() {
-  const { user, loading, session, signOut, refreshAvatar, avatarUrl: profileAvatarUrl, gcalConnected, setGcalConnected } = useAuth()
+  const { user, loading, session, signOut, refreshAvatar, avatarUrl: profileAvatarUrl, displayName: savedName, gcalConnected, setGcalConnected } = useAuth()
   const { locale } = useLanguage()
   const { theme, toggleTheme } = useTheme()
 
@@ -56,15 +56,10 @@ export default function SettingsPage() {
   const gcalLoading = gcalConnected === null
   const [disconnectingGcal, setDisconnectingGcal] = useState(false)
 
+  // the name field starts from the saved name (profiles.display_name first; see AuthContext)
   useEffect(() => {
-    if (user?.user_metadata?.full_name) {
-      setDisplayName(user.user_metadata.full_name)
-    } else if (user?.user_metadata?.name) {
-      setDisplayName(user.user_metadata.name)
-    } else if (user?.email && !user.email.endsWith('@line.eigo.io')) {
-      setDisplayName(user.email.split('@')[0])
-    }
-  }, [user])
+    if (savedName) setDisplayName(savedName)
+  }, [savedName])
 
   // Load contact_email from profile
   useEffect(() => {
@@ -297,6 +292,7 @@ export default function SettingsPage() {
 
       if (res.ok) {
         setEditingDisplayName(false)
+        refreshAvatar() // the header and sidebar show the new name
         setSaveMessage({
           type: 'success',
           text: locale === 'ja' ? '保存しました' : 'Saved successfully',

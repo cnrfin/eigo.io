@@ -837,7 +837,7 @@ function HistoryLessonCard({
 
 // ─── Dashboard Content ───
 function DashboardContent() {
-  const { user, session, loading } = useAuth()
+  const { user, session, loading, displayName } = useAuth()
   const { t, locale } = useLanguage()
   const searchParams = useSearchParams()
   const durationParam = searchParams.get('duration')
@@ -1314,7 +1314,7 @@ function DashboardContent() {
   }
   if (!user) return null
 
-  const firstName = (user.user_metadata?.full_name?.split(' ')[0] || user.user_metadata?.name?.split(' ')[0] || (user.email && !user.email.endsWith('@line.eigo.io') ? user.email.split('@')[0] : '') || '')
+  const firstName = displayName.split(' ')[0]
   const tabTitle = activeTab === 'history'
     ? (locale === 'ja' ? '履歴' : 'History')
     : activeTab === 'vocab'

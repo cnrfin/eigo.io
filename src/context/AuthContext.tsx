@@ -9,6 +9,12 @@ type AuthContextType = {
   session: Session | null
   loading: boolean
   avatarUrl: string | null
+  /**
+   * The student's name for the UI: profiles.display_name first (what the app and
+   * settings edit), then the sign-in metadata, then the email's first part. Never
+   * an Apple relay or LINE placeholder address. '' when there's nothing to show.
+   */
+  displayName: string
   gcalConnected: boolean | null
   // captchaToken (optional) satisfies Supabase's global hCaptcha protection when
   // it's enabled; harmless when it isn't.
@@ -22,30 +28,49 @@ type AuthContextType = {
   convertAnonUser: (email: string, password: string, firstName?: string, lastName?: string) => Promise<{ error: Error | null }>
   linkGoogleIdentity: (redirectTo?: string) => Promise<{ error: Error | null }>
   signOut: () => Promise<void>
+  /** refetches the avatar and the profile name */
   refreshAvatar: () => Promise<void>
   setGcalConnected: (connected: boolean) => void
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
+/** addresses that aren't the person's: Apple's Hide My Email relay and LINE's placeholder */
+const isPlaceholderEmail = (email?: string | null) =>
+  !email || /@privaterelay\.appleid\.com$/i.test(email) || email.endsWith('@line.eigo.io')
+
+function nameFor(user: User | null, profileName: string | null): string {
+  if (!user) return ''
+  const meta = user.user_metadata ?? {}
+  return (
+    profileName ||
+    (typeof meta.full_name === 'string' && meta.full_name.trim()) ||
+    (typeof meta.name === 'string' && meta.name.trim()) ||
+    (!isPlaceholderEmail(user.email) ? user.email!.split('@')[0] : '') ||
+    ''
+  )
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
+  const [profileName, setProfileName] = useState<string | null>(null)
   const [gcalConnected, setGcalConnected] = useState<boolean | null>(null)
 
-  // Fetch avatar from profiles table
+  // Fetch avatar and name from profiles table
   const fetchAvatar = useCallback(async (userId: string) => {
     const { data } = await supabase
       .from('profiles')
-      .select('avatar_url')
+      .select('avatar_url, display_name')
       .eq('id', userId)
       .single()
 
     if (data?.avatar_url) {
       setAvatarUrl(data.avatar_url)
     }
+    setProfileName(data?.display_name?.trim() || null)
   }, [])
 
   // Fetch Google Calendar connection status from profiles table
@@ -201,8 +226,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (user) await fetchAvatar(user.id)
   }, [user, fetchAvatar])
 
+  const displayName = nameFor(user, profileName)
+
   return (
-    <AuthContext.Provider value={{ user, session, loading, avatarUrl, gcalConnected, signIn, signUp, signInWithGoogle, signInWithLine, signInAnonymously, convertAnonUser, linkGoogleIdentity, signOut, refreshAvatar, setGcalConnected }}>
+    <AuthContext.Provider value={{ user, session, loading, avatarUrl, displayName, gcalConnected, signIn, signUp, signInWithGoogle, signInWithLine, signInAnonymously, convertAnonUser, linkGoogleIdentity, signOut, refreshAvatar, setGcalConnected }}>
       {children}
     </AuthContext.Provider>
   )
