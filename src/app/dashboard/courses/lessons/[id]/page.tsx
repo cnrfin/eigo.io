@@ -8,6 +8,7 @@ import { useLanguage } from '@/context/LanguageContext'
 import { useTheme } from '@/context/ThemeContext'
 import { Squircle } from '@squircle-js/react'
 import { useRiveFile } from '@rive-app/react-webgl2'
+import { useWebGL2 } from '@/lib/riveRenderer'
 import MascotCelebrate from '@/components/courses/MascotCelebrate'
 import PronunciationExercise from '@/components/courses/PronunciationExercise'
 import ChallengeExercise from '@/components/courses/ChallengeExercise'
@@ -92,7 +93,10 @@ export default function LessonPlayerPage() {
   // warm) the instant the complete screen appears — no missed dance frames.
   // Earl on IELTS lessons, Teri elsewhere (matches the course-map mascot).
   const celebrateSrc = data?.lesson?.slug?.startsWith('ielts') ? '/rive/earl-complete.riv' : '/rive/teri-complete.riv'
-  const { riveFile: celebrateFile } = useRiveFile({ src: celebrateSrc })
+  // Only through WebGL2 where it's used: on Intel Macs with Chrome 158+ (or with
+  // WebGL off) MascotCelebrate draws with the canvas runtime and loads the file itself.
+  const riveGL = useWebGL2()
+  const { riveFile: celebrateFile } = useRiveFile({ src: riveGL ? celebrateSrc : undefined })
 
   // UI sounds (public/sounds/*.mp3) — preloaded and decoded into Web Audio
   // buffers on mount, so playback is instant (HTMLAudio adds noticeable lag).

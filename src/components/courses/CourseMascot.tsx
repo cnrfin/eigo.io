@@ -1,14 +1,13 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
-// WebGL2 build (Rive Renderer) — renders the pupil "bite" notch without the
-// anti-alias seam the Canvas2D build leaves. WebGL2 previously failed to draw
-// the walk-cycle frames, but that was tested while framer-motion still wrapped
-// this canvas; now that the wrapper uses a plain CSS transform, WebGL2 is worth
-// re-testing. If the walk still doesn't paint here, swap back to
-// '@rive-app/react-canvas' (which draws the walk reliably, at the cost of the
-// faint pupil seam).
-import { useRive, Layout, Fit, Alignment } from '@rive-app/react-webgl2'
+// WebGL2 build (Rive Renderer) draws the rig properly (feathered shading, the
+// pupil "bite" without a seam), so it's used wherever WebGL2 works. Where it
+// doesn't, or where it crashes the GPU (Chrome 158+ on Intel Macs), the canvas
+// build draws a slightly rougher version instead of nothing (lib/riveRenderer).
+import * as RiveGL from '@rive-app/react-webgl2'
+import * as RiveCanvas from '@rive-app/react-canvas'
+import { useWebGL2 } from '@/lib/riveRenderer'
 
 const SM = 'State Machine 1'
 
@@ -23,9 +22,20 @@ export type Dir = 0 | 1 | 2 | 3
  * `src` picks the character rig (teri / earl / …); all share the same rig
  * interface (State Machine 1 + isMoving/direction/notice), so they're drop-in.
  */
-export default function CourseMascot({
-  size = 64, src = '/rive/teri.riv', moving, direction, notice, onReady,
-}: { size?: number; src?: string; moving: boolean; direction: Dir; notice: boolean; onReady?: () => void }) {
+type Props = { size?: number; src?: string; moving: boolean; direction: Dir; notice: boolean; onReady?: () => void }
+
+export default function CourseMascot(props: Props) {
+  const gl = useWebGL2()
+  if (gl === null) return <div style={{ width: props.size ?? 64, height: props.size ?? 64 }} />
+  return gl ? <MascotGL {...props} /> : <MascotCanvas {...props} />
+}
+
+// both packages export the same API; typed against one so TypeScript doesn't mix their classes
+function makeMascot(R: typeof RiveCanvas) {
+  const { useRive, Layout, Fit, Alignment } = R
+  return function Mascot({
+    size = 64, src = '/rive/teri.riv', moving, direction, notice, onReady,
+  }: Props) {
   const { rive, RiveComponent } = useRive({
     src, stateMachines: SM, autoplay: true,
     // Contain + centre so the whole artboard fits (no cropping).
@@ -92,4 +102,8 @@ export default function CourseMascot({
   }, [notice, rive]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return <RiveComponent style={{ width: size, height: size }} />
+  }
 }
+
+const MascotGL = makeMascot(RiveGL as unknown as typeof RiveCanvas)
+const MascotCanvas = makeMascot(RiveCanvas)
