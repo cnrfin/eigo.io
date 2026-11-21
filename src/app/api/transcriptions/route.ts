@@ -105,7 +105,11 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ status: 'no_recording', message: 'No recording found for this lesson' })
     }
 
-    const accessLink = await getRecordingAccessLink(recordings[0].recordingId)
+    // A lesson can have several recordings (recording stopped and restarted);
+    // use the longest, not whichever Whereby lists first, which may be a fragment.
+    const length = (r: (typeof recordings)[number]) => (Date.parse(r.endDate) || 0) - (Date.parse(r.startDate) || 0)
+    const recording = recordings.reduce((best, r) => (length(r) > length(best) ? r : best))
+    const accessLink = await getRecordingAccessLink(recording.recordingId)
     if (!accessLink) {
       return NextResponse.json({ status: 'error', message: 'Could not access the recording' })
     }
