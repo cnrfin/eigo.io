@@ -13,6 +13,8 @@ export interface CustomPrice {
   priceJpy: number
   intervalUnit: IntervalUnit
   intervalCount: number
+  /** Suggested minutes per payment (from eigo_minutes metadata, or "週N分" in the product name); null if unknown */
+  minutes: number | null
 }
 
 export interface CustomOffer {
@@ -62,6 +64,14 @@ export function perIntervalLabel(unit: IntervalUnit, count: number, ja: boolean)
 /** Roughly how many months a billing period is, for "120 a month" style hints. */
 export function periodMonths(unit: IntervalUnit, count: number): number {
   return { day: count / 30.44, week: (count * 7) / 30.44, month: count, year: count * 12 }[unit]
+}
+
+/**
+ * Minutes per payment for a "週N分" plan: N minutes a week, counted as 4 weeks a
+ * month (as the standard plans are: 30 min a week = 120 a month).
+ */
+export function minutesFromWeekly(weeklyMinutes: number, unit: IntervalUnit, count: number): number {
+  return Math.round(weeklyMinutes * 4 * periodMonths(unit, count))
 }
 
 /** The price after the sale's percentage, to the yen (as Stripe rounds a percent-off coupon on JPY). */

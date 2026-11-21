@@ -47,7 +47,13 @@ export default function CustomPlanPanel({ userId, userName, userEmail, accessTok
       const d = await r.json()
       if (!r.ok) throw new Error(d.error || 'Could not load')
       setData(d)
-      setPriceId((cur) => (cur && d.prices.some((p: CustomPrice) => p.id === cur) ? cur : d.prices[0]?.id ?? ''))
+      const prices = d.prices as CustomPrice[]
+      setPriceId((cur) => {
+        const chosen = prices.find((p) => p.id === cur) ?? prices[0]
+        // Pre-fill the minutes for the first price shown, unless some are already typed.
+        if (chosen?.minutes) setMinutes((m) => m || String(chosen.minutes))
+        return chosen?.id ?? ''
+      })
     } catch (e) {
       setLoadError(e instanceof Error ? e.message : 'Could not load')
     }
@@ -69,6 +75,13 @@ export default function CustomPlanPanel({ userId, userName, userEmail, accessTok
   const openOffer = data?.offers.find((o) => o.status === 'open') ?? null
   const paidOffers = data?.offers.filter((o) => o.status === 'paid') ?? []
   const link = openOffer ? `${typeof window !== 'undefined' ? window.location.origin : 'https://eigo.io'}/pay/${openOffer.token}` : ''
+
+  // Picking a price fills in its minutes (still editable).
+  const pickPrice = (id: string) => {
+    setPriceId(id)
+    const p = data?.prices.find((x) => x.id === id)
+    if (p?.minutes) setMinutes(String(p.minutes))
+  }
 
   const create = async () => {
     if (!price) return setMsg('Pick a price first')
@@ -147,7 +160,7 @@ export default function CustomPlanPanel({ userId, userName, userEmail, accessTok
           <div className="grid gap-3 sm:grid-cols-[1.5fr_1fr]">
             <label className="block">
               <span className="block text-xs mb-1.5" style={{ color: 'var(--text-muted)' }}>Stripe price</span>
-              <select value={priceId} onChange={(e) => setPriceId(e.target.value)} className="w-full text-sm px-3 py-2.5 rounded-lg border-none outline-none" style={fieldStyle}>
+              <select value={priceId} onChange={(e) => pickPrice(e.target.value)} className="w-full text-sm px-3 py-2.5 rounded-lg border-none outline-none" style={fieldStyle}>
                 {data.prices.map((p) => (
                   <option key={p.id} value={p.id}>
                     {yen(p.priceJpy)} {intervalLabel(p.intervalUnit, p.intervalCount, false)}{p.label ? ` · ${p.label}` : ''}

@@ -1,6 +1,6 @@
 import { randomBytes } from 'node:crypto'
 import type Stripe from 'stripe'
-import type { CustomOffer, CustomPrice, IntervalUnit, SaleInfo } from '@/lib/custom-plans'
+import { minutesFromWeekly, type CustomOffer, type CustomPrice, type IntervalUnit, type SaleInfo } from '@/lib/custom-plans'
 
 /**
  * Server side of custom plans.
@@ -42,13 +42,27 @@ export async function getCustomPrice(stripe: Stripe, priceId: string): Promise<C
 
 function toCustomPrice(p: Stripe.Price, prod: Stripe.Product): CustomPrice | null {
   if (!p.recurring || p.unit_amount == null) return null
+  const unit = p.recurring.interval as IntervalUnit
+  const count = p.recurring.interval_count
   return {
     id: p.id,
     label: p.nickname || prod.name,
     priceJpy: p.unit_amount, // JPY has no minor unit
-    intervalUnit: p.recurring.interval as IntervalUnit,
-    intervalCount: p.recurring.interval_count,
+    intervalUnit: unit,
+    intervalCount: count,
+    minutes: suggestedMinutes(p, prod, unit, count),
   }
+}
+
+/**
+ * Minutes per payment to pre-fill in the admin: an eigo_minutes metadata value on
+ * the price or product wins; otherwise "週90分" in the name means 90 a week.
+ */
+function suggestedMinutes(p: Stripe.Price, prod: Stripe.Product, unit: IntervalUnit, count: number): number | null {
+  const meta = Number(p.metadata?.eigo_minutes || prod.metadata?.eigo_minutes)
+  if (Number.isFinite(meta) && meta > 0) return Math.round(meta)
+  const weekly = (p.nickname || '').match(/週\s*(\d+)\s*分/) || prod.name.match(/週\s*(\d+)\s*分/)
+  return weekly ? minutesFromWeekly(Number(weekly[1]), unit, count) : null
 }
 
 /** The sale coupon while it can still be redeemed, else null. */
