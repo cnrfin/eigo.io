@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense } from 'react'
+import { Suspense, useEffect } from 'react'
 import ProgressiveBlur from '@/components/ui/ProgressiveBlur'
 import { usePathname, useRouter } from 'next/navigation'
 import DashboardSidebar from '@/components/dashboard/DashboardSidebar'
@@ -9,6 +9,8 @@ import TrialBookingFinalizer from '@/components/lp/TrialBookingFinalizer'
 import { DashboardNavProvider, useDashboardNav, type Crumb } from '@/context/DashboardNavContext'
 import { useLanguage } from '@/context/LanguageContext'
 import { useTheme } from '@/context/ThemeContext'
+import { useAuth } from '@/context/AuthContext'
+import { takePayReturn } from '@/lib/pay-return'
 
 // Transparent top bar inside the content column: mobile menu button + breadcrumbs
 // (left), language + theme toggles (right). No background, no border.
@@ -118,6 +120,17 @@ function TopBar() {
   )
 }
 
+// After signing in from a payment link (Google, Apple and LINE land here), go back to the link.
+function PayReturn() {
+  const { user, loading } = useAuth()
+  useEffect(() => {
+    if (loading || !user) return
+    const path = takePayReturn()
+    if (path) window.location.replace(path)
+  }, [loading, user])
+  return null
+}
+
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   // Full-screen flows (taking a test, viewing results) render without the
@@ -148,6 +161,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </div>
       {/* Finalizes a trial booking picked on the v2 landing once the guest signs up. */}
       <TrialBookingFinalizer />
+      <PayReturn />
     </DashboardNavProvider>
   )
 }

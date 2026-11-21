@@ -156,6 +156,15 @@ async function handleCheckoutCompleted(
     )
 
   if (error) console.error('Failed to upsert subscription:', error)
+
+  // A custom-plan link: mark it paid so it can't be used again.
+  if (meta.custom_offer_id) {
+    const { error: offerError } = await supabase
+      .from('custom_plan_offers')
+      .update({ status: 'paid', paid_at: new Date().toISOString(), stripe_subscription_id: stripeSubscriptionId })
+      .eq('id', meta.custom_offer_id)
+    if (offerError) console.error('Failed to mark custom plan offer paid:', offerError)
+  }
 }
 
 async function handleInvoicePaid(

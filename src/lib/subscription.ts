@@ -36,9 +36,9 @@ export interface Subscription {
   apple_original_transaction_id: string | null
   apple_product_id: string | null
   payment_source: 'stripe' | 'apple' | null
-  /** 'ai' = the retired AI plan (old rows only) */
-  plan: 'light' | 'standard' | 'test' | 'ai'
-  billing_interval: 'monthly' | 'yearly'
+  /** 'ai' = the retired AI plan (old rows only); 'custom' = a plan made for one student (see custom-plans.ts) */
+  plan: 'light' | 'standard' | 'test' | 'ai' | 'custom'
+  billing_interval: 'monthly' | 'yearly' | 'custom'
   price_tier: PriceTier
   status: string
   minutes_per_month: number

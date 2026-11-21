@@ -8,6 +8,7 @@ import StudentLessons from '@/components/admin/StudentLessons'
 import SquircleBox from '@/components/ui/SquircleBox'
 import Header from '@/components/Header'
 import RatingsCard from '@/components/admin/RatingsCard'
+import CustomPlanPanel from '@/components/admin/CustomPlanPanel'
 import { motion, AnimatePresence } from 'framer-motion'
 
 const ADMIN_EMAILS = ['cnrfin93@gmail.com']
@@ -1524,7 +1525,7 @@ function AdminContent() {
           {activeTab === 'permissions' && (
             <div className="space-y-6">
               <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
-                Turn features on or off per user. Switching one off overrides their subscription — use it to tailor a custom (e.g. discounted) plan. A user you’ve never edited has everything on.
+                Turn features on or off per user. Switching one off overrides their subscription. Use it with a custom plan to tailor what a student gets. A user you’ve never edited has everything on.
               </p>
               {loadingPerms ? (
                 <p style={{ color: 'var(--text-muted)' }}>Loading users...</p>
@@ -1580,6 +1581,7 @@ function AdminContent() {
                       { key: 'booking_test_mode', label: 'Test bookings', desc: 'Testing only: book any duration at any time, with no subscription or minutes' },
                     ]
                     return (
+                      <>
                       <SquircleBox cornerRadius={14} className="p-6 space-y-5" style={{ background: 'var(--surface)' }}>
                         <div>
                           <p className="font-semibold" style={{ color: 'var(--text)' }}>{selUser?.display_name || selUser?.email || 'User'}</p>
@@ -1633,6 +1635,13 @@ function AdminContent() {
                           )}
                         </div>
                       </SquircleBox>
+                      <CustomPlanPanel
+                        userId={selectedPermUserId}
+                        userName={selUser?.display_name || selUser?.email || 'This student'}
+                        userEmail={selUser?.email ?? null}
+                        accessToken={session?.access_token}
+                      />
+                      </>
                     )
                   })()}
                 </>

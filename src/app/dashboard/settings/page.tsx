@@ -651,12 +651,14 @@ export default function SettingsPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-base font-medium" style={{ color: 'var(--text)' }}>
-                      {({ light: 'Student Lite', standard: 'Student Standard', test: 'Exam Pass' } as Record<string, string>)[subscription.plan] ?? subscription.plan}
-                      <span className="text-sm font-normal ml-2" style={{ color: 'var(--text-muted)' }}>
-                        ({subscription.billingInterval === 'monthly'
-                          ? (locale === 'ja' ? '月額' : 'Monthly')
-                          : (locale === 'ja' ? '年額' : 'Yearly')})
-                      </span>
+                      {({ light: 'Student Lite', standard: 'Student Standard', test: 'Exam Pass', custom: locale === 'ja' ? 'カスタムプラン' : 'Custom plan' } as Record<string, string>)[subscription.plan] ?? subscription.plan}
+                      {subscription.billingInterval !== 'custom' && (
+                        <span className="text-sm font-normal ml-2" style={{ color: 'var(--text-muted)' }}>
+                          ({subscription.billingInterval === 'monthly'
+                            ? (locale === 'ja' ? '月額' : 'Monthly')
+                            : (locale === 'ja' ? '年額' : 'Yearly')})
+                        </span>
+                      )}
                     </p>
                   </div>
                   <span
