@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { getTranscription, getTranscriptionAccessLink } from '@/lib/whereby'
 import { analyzeLesson, cleanTranscript } from '@/lib/lesson-ai'
+import { MIN_SUMMARY_WORDS, spokenWordCount, stripPromptEcho } from '@/lib/transcribe'
 
 /**
  * POST /api/lessons/analyze
@@ -10,6 +11,8 @@ import { analyzeLesson, cleanTranscript } from '@/lib/lesson-ai'
  * Body: { bookingId: string }
  *
  * Returns existing analysis if already generated, otherwise creates new one.
+ * With too little speech to summarise it returns 422 { status: 'too_short' }
+ * rather than asking the AI, which would invent a lesson.
  */
 export async function POST(request: NextRequest) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
@@ -114,19 +117,33 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    if (!transcriptText || transcriptText.trim().length < 50) {
+    // Too little real speech (an echoed prompt counts as none): say so, never summarise.
+    transcriptText = stripPromptEcho(transcriptText || '')
+    const spokenWords = spokenWordCount(transcriptText)
+    if (spokenWords < MIN_SUMMARY_WORDS) {
       return NextResponse.json({
-        error: 'Transcript too short to analyze',
-      }, { status: 400 })
+        status: 'too_short',
+        error: 'This recording is too short to summarise',
+        words: spokenWords,
+      }, { status: 422 })
     }
 
     // Auto-generate cleaned transcript if it doesn't exist yet
     let cleanedTranscriptText = booking.cleaned_transcript || undefined
+    // A clean-up much longer than what was said has been padded out, so don't trust it.
+    if (cleanedTranscriptText && spokenWordCount(cleanedTranscriptText) > spokenWords * 1.5 + 20) {
+      cleanedTranscriptText = undefined
+    }
     if (!cleanedTranscriptText) {
       try {
-        cleanedTranscriptText = await cleanTranscript(transcriptText)
-        // Save immediately so it's not lost if the user leaves during analysis
-        await supabase.from('bookings').update({ cleaned_transcript: cleanedTranscriptText }).eq('id', bookingId)
+        const cleaned = await cleanTranscript(transcriptText)
+        if (spokenWordCount(cleaned) <= spokenWords * 1.5 + 20) {
+          cleanedTranscriptText = cleaned
+          // Save immediately so it's not lost if the user leaves during analysis
+          await supabase.from('bookings').update({ cleaned_transcript: cleanedTranscriptText }).eq('id', bookingId)
+        } else {
+          console.warn('Clean-up came back much longer than the raw transcript; using raw only')
+        }
       } catch (cleanErr) {
         console.error('Auto-cleanup failed, proceeding with raw only:', cleanErr)
         // Continue with raw-only analysis — better than failing entirely

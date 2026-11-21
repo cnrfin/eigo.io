@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { getRecordings, getRecordingAccessLink } from '@/lib/whereby'
-import { extractCompactAudio, transcribeAudio } from '@/lib/transcribe'
+import { extractCompactAudio, stripPromptEcho, transcribeAudio } from '@/lib/transcribe'
 import { getUserPermissions } from '@/lib/user-permissions'
 
 // Transcription pulls the recording, transcodes it and calls OpenAI, so it
@@ -17,6 +17,10 @@ export const maxDuration = 300
  * 2. If `cachedOnly` is set (hover prefetch) → return not_cached, never transcribe.
  *    This stops a hover from generating a paid transcript nobody reads.
  * 3. Otherwise (explicit open) → pull the recording, transcribe it, cache & return.
+ *
+ * A recording with no speech (or only the model echoing its prompt back, which
+ * happens on very short or silent audio) returns status 'too_short', so the
+ * apps can say so instead of showing an error or an invented transcript.
  */
 export async function GET(request: NextRequest) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
@@ -67,7 +71,13 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ status: 'disabled', message: 'Transcripts are not included in this plan' }, { status: 403 })
   }
 
+  const TOO_SHORT = { status: 'too_short', message: 'This recording is too short to transcribe' }
+
   // ── Case 0: Transcript already cached in Supabase — instant return ──
+  // (an earlier prompt echo cached before the check existed counts as no speech)
+  if (booking.transcript_text && !stripPromptEcho(booking.transcript_text)) {
+    return NextResponse.json(TOO_SHORT)
+  }
   if (booking.transcript_text) {
     return NextResponse.json({
       status: 'ready',
@@ -104,7 +114,7 @@ export async function GET(request: NextRequest) {
     const audio = await extractCompactAudio(accessLink)
     const content = await transcribeAudio(audio)
     if (!content) {
-      return NextResponse.json({ status: 'error', message: 'Transcription came back empty', stage: 'transcribe-empty' })
+      return NextResponse.json(TOO_SHORT)
     }
 
     // Cache so re-opens (and the summary step) never re-transcribe.

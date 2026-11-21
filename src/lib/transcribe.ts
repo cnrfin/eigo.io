@@ -105,19 +105,54 @@ export async function extractCompactAudio(accessLink: string): Promise<Buffer> {
   })
 }
 
+const TRANSCRIBE_PROMPT_SENTENCES = [
+  'A one-to-one English lesson between a British tutor and a Japanese learner.',
+  'The audio may contain Japanese words and Japanese names.',
+]
+
+/**
+ * Speech models echo their prompt back when a recording has little or no speech
+ * (a 10-second test recording came back as exactly the prompt). Remove any of
+ * the prompt's sentences from the text so an echo reads as "no speech".
+ */
+export function stripPromptEcho(text: string): string {
+  let out = text
+  for (const s of TRANSCRIBE_PROMPT_SENTENCES) {
+    out = out.split(s).join(' ')
+  }
+  return out.replace(/\s+/g, ' ').trim() === '' ? '' : out.trim()
+}
+
+/**
+ * Roughly how many words were spoken: Latin-script words, plus Japanese at
+ * about two characters a word (it has no spaces). Ignores speaker labels and
+ * bracketed notes like "[session …]".
+ */
+export function spokenWordCount(text: string): number {
+  const body = text.replace(/\[[^\]]*\]/g, ' ').replace(/^(Teacher|Student|Speaker \d+):/gim, ' ')
+  const latin = body.match(/[A-Za-z0-9]+(?:'[A-Za-z]+)?/g)?.length ?? 0
+  const cjk = body.match(/[぀-ヿ㐀-鿿]/g)?.length ?? 0
+  return latin + Math.round(cjk / 2)
+}
+
+/**
+ * Below this many spoken words there isn't a lesson to summarise: a summary
+ * would have to be invented. ~60 words is roughly 30 seconds of conversation.
+ */
+export const MIN_SUMMARY_WORDS = 60
+
 /**
  * Transcribe a compact audio buffer. Language is left to auto-detect because
  * lessons mix English and Japanese; the prompt nudges proper-noun spelling. On
- * success returns the raw transcript text (the caller runs the clean-up pass).
+ * success returns the raw transcript text (the caller runs the clean-up pass),
+ * or '' when the recording has no speech (including a prompt echo).
  */
 export async function transcribeAudio(audio: Buffer): Promise<string> {
   const file = await toFile(audio, 'lesson.mp3', { type: 'audio/mpeg' })
   const result = await openai().audio.transcriptions.create({
     model: TRANSCRIBE_MODEL,
     file,
-    prompt:
-      'A one-to-one English lesson between a British tutor and a Japanese learner. ' +
-      'The audio may contain Japanese words and Japanese names.',
+    prompt: TRANSCRIBE_PROMPT_SENTENCES.join(' '),
   })
-  return (result.text ?? '').trim()
+  return stripPromptEcho((result.text ?? '').trim())
 }
