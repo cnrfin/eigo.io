@@ -61,14 +61,15 @@ function TopBar() {
 
       {/* Breadcrumbs */}
       <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-sm font-medium min-w-0">
-        <button onClick={onDashboard} className="transition-opacity hover:opacity-70 shrink-0" style={{ color: 'var(--text-muted)' }}>
+        {/* phones drop the "Dashboard" root once there's a page after it, so the page name has room */}
+        <button onClick={onDashboard} className={`transition-opacity hover:opacity-70 shrink-0 ${trail.length ? 'hidden sm:inline' : ''}`} style={{ color: 'var(--text-muted)' }}>
           {t('ダッシュボード', 'Dashboard')}
         </button>
         {trail.map((c, i) => {
           const last = i === trail.length - 1
           return (
             <span key={`${c.label}-${i}`} className="flex items-center gap-1.5 min-w-0">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="shrink-0" style={{ color: 'var(--text-subtle)' }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className={`shrink-0 ${i === 0 ? 'hidden sm:block' : ''}`} style={{ color: 'var(--text-subtle)' }}>
                 <path d="M9 18l6-6-6-6" />
               </svg>
               {c.onClick && !last ? (
@@ -85,10 +86,10 @@ function TopBar() {
         })}
       </nav>
 
-      <div className="flex items-center gap-1 ml-auto">
+      <div className="flex items-center gap-1 ml-auto shrink-0">
         <button
           onClick={toggleLocale}
-          className="h-8 px-2.5 rounded-full flex items-center justify-center text-xs font-medium tracking-wide transition-opacity hover:opacity-70"
+          className="h-8 px-2.5 rounded-full flex items-center justify-center text-xs font-medium tracking-wide whitespace-nowrap transition-opacity hover:opacity-70"
           style={{ color: 'var(--text-muted)' }}
           aria-label="Toggle language"
         >

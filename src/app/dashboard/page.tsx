@@ -1636,8 +1636,8 @@ function DashboardContent() {
                       type="search"
                       value={historySearch}
                       onChange={(e) => { setHistorySearch(e.target.value); setHistoryPage(0) }}
-                      placeholder={locale === 'ja' ? 'トピック・日付・フレーズで検索' : 'Search topics, dates or phrases'}
-                      className="w-full pl-9 pr-10 py-2.5 text-sm rounded-full"
+                      placeholder={locale === 'ja' ? 'レッスンを検索' : 'Search lessons'}
+                      className={`w-full pl-9 ${historySearch ? 'pr-10' : 'pr-4'} py-2.5 text-sm rounded-full`}
                       style={{ background: 'var(--inset)', color: 'var(--text)', border: '1px solid var(--hairline)' }}
                     />
                     {historySearch && (

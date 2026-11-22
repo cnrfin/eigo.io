@@ -594,7 +594,8 @@ export default function SettingsPage() {
               </div>
 
               {/* Pronunciation grading accent */}
-              <div className="flex items-center justify-between pt-4" style={{ borderTop: '1px solid var(--hairline)' }}>
+              {/* phones: the UK/US pills sit under the label so the label doesn't wrap a word at a time */}
+              <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between pt-4" style={{ borderTop: '1px solid var(--hairline)' }}>
                 <div>
                   <p className="text-sm font-medium" style={{ color: 'var(--text)' }}>
                     {locale === 'ja' ? '発音の採点アクセント' : 'Pronunciation grading accent'}

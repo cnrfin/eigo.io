@@ -343,7 +343,8 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
           </div>
 
       {/* Duration selector */}
-      <div className="flex gap-2 mb-3 justify-center">
+      {/* on phones the five buttons share the row equally instead of squeezing their labels */}
+      <div className="flex gap-1.5 sm:gap-2 mb-3 justify-center">
         {[15, 30, 45, 60, 75].map((d) => {
           const locked = !hasSubscription && !testMode && d !== 15
           return (
@@ -352,7 +353,7 @@ export default function BookingCalendar({ selectedDuration, onBookingComplete, r
                 data-fill
                 onClick={() => { if (!locked) { setDuration(d); setSelectedBookings([]); setBookingResult(null) } }}
                 disabled={locked}
-                className="px-5 py-2.5 text-sm font-medium transition-all duration-[120ms] ease-out hover:scale-[1.02] active:scale-[0.97] disabled:hover:scale-100 disabled:active:scale-100"
+                className="flex-1 sm:flex-none px-1 sm:px-5 py-2.5 text-xs sm:text-sm font-medium whitespace-nowrap transition-all duration-[120ms] ease-out hover:scale-[1.02] active:scale-[0.97] disabled:hover:scale-100 disabled:active:scale-100"
                 style={{
                   background: duration === d ? 'var(--text)' : 'var(--panel)',
                   color: locked ? 'var(--text-disabled)' : duration === d ? 'var(--selected-text)' : 'var(--text-secondary)',

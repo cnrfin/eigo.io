@@ -197,8 +197,9 @@ export default function PhraseList({ cards, today, locale, onStart, onRemove, he
 
   return (
     <div className="w-full max-w-[760px] mx-auto">
-      <div className="flex items-center gap-3 mb-6 sm:mb-8">
-        <h1 className="flex-1 text-2xl sm:text-4xl font-bold" style={{ color: 'var(--text)' }}>{ja ? 'フレーズ' : 'Phrases'}</h1>
+      {/* phones: the title gets its own line and export/sort sit below it (all three need ~360px) */}
+      <div className="flex flex-wrap items-center gap-3 mb-6 sm:mb-8">
+        <h1 className="w-full sm:w-auto sm:flex-1 whitespace-nowrap text-2xl sm:text-4xl font-bold" style={{ color: 'var(--text)' }}>{ja ? 'フレーズ' : 'Phrases'}</h1>
         {headerRight}
         <SortPill sort={sort} setSort={(s) => { setSort(s); setVisible(PAGE) }} ja={ja} />
       </div>

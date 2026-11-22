@@ -249,9 +249,10 @@ export default function LandingClient() {
 
           {/* header — logo left, EN + login right (v2 styling) */}
           <header style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10 }}>
-            <div style={{ maxWidth: 1240, margin: '0 auto', padding: '0 32px', height: 92, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <a href={localizedHref('/', locale)} className="lp-fade-up" style={{ fontSize: 30, fontWeight: 800, letterSpacing: '-.02em', color: 'var(--text)' }}>eigo.io</a>
-              <nav className="lp-fade-up" style={{ display: 'flex', alignItems: 'center', gap: 10, animationDelay: '0.08s' }}>
+            {/* phones get a tighter bar so the logo and buttons stay on one line down to 320px */}
+            <div style={{ maxWidth: 1240, margin: '0 auto', padding: mobile ? '0 16px' : '0 32px', height: mobile ? 72 : 92, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+              <a href={localizedHref('/', locale)} className="lp-fade-up" style={{ fontSize: mobile ? 24 : 30, fontWeight: 800, letterSpacing: '-.02em', color: 'var(--text)', whiteSpace: 'nowrap' }}>eigo.io</a>
+              <nav className="lp-fade-up" style={{ display: 'flex', alignItems: 'center', gap: mobile ? 6 : 10, animationDelay: '0.08s', whiteSpace: 'nowrap', flexShrink: 0 }}>
                 <button onClick={toggleTheme} aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'} className="lp-press" style={{ background: 'transparent', color: 'var(--text-muted)', border: 0, width: 44, height: 44, borderRadius: 999, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
                   {theme === 'dark' ? (
                     <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -265,8 +266,8 @@ export default function LandingClient() {
                     <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" /></svg>
                   )}
                 </button>
-                <button onClick={toggleLocale} aria-label="Toggle language" className="lp-press" style={{ background: 'var(--v3-soft)', color: 'var(--text)', border: 0, borderRadius: 999, height: 44, padding: '0 22px', fontSize: 15, fontWeight: 400, cursor: 'pointer' }}>{ja ? 'EN' : 'JA'}</button>
-                <button onClick={() => setShowAuth(true)} className="jp lp-press" style={{ background: 'var(--text)', color: 'var(--bg)', border: 0, borderRadius: 999, height: 44, padding: '0 26px', fontSize: 15, fontWeight: 400, cursor: 'pointer' }}>{ja ? 'ログイン' : 'Login'}</button>
+                <button onClick={toggleLocale} aria-label="Toggle language" className="lp-press" style={{ background: 'var(--v3-soft)', color: 'var(--text)', border: 0, borderRadius: 999, height: mobile ? 40 : 44, padding: mobile ? '0 16px' : '0 22px', fontSize: mobile ? 14 : 15, fontWeight: 400, cursor: 'pointer' }}>{ja ? 'EN' : 'JA'}</button>
+                <button onClick={() => setShowAuth(true)} className="jp lp-press" style={{ background: 'var(--text)', color: 'var(--bg)', border: 0, borderRadius: 999, height: mobile ? 40 : 44, padding: mobile ? '0 18px' : '0 26px', fontSize: mobile ? 14 : 15, fontWeight: 400, cursor: 'pointer' }}>{ja ? 'ログイン' : 'Login'}</button>
               </nav>
             </div>
           </header>
@@ -281,14 +282,17 @@ export default function LandingClient() {
             // full panel so the bento sits centred, held there for the morph.
             <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '200vh', transform: `translateY(-${revealShift}vh)`, transition: 'transform 0.08s linear', pointerEvents: 'none' }}>
               {/* panel 1 — hero text + teacher preview, fills the first viewport */}
-              <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 24, padding: '88px 24px 40px', boxSizing: 'border-box' }}>
+              <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'safe center', gap: 24, padding: '80px 24px 40px', boxSizing: 'border-box' }}>
                 <div>{heroTitle}{heroSubtitle}</div>
                 <div style={{ pointerEvents: revealP < 0.4 ? 'auto' : 'none' }}>{heroCta}</div>
                 {/* teacher preview — the portrait + greeting from the trial card,
                     moved here to fill the hero; photo rises in, then the two chat
                     bubbles pop in one after another */}
                 <div style={{ marginTop: 30, display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                  <div className="fdv3-rise-in" style={{ animationDelay: '0.7s', position: 'relative', height: 'clamp(260px,42vh,400px)', aspectRatio: '3 / 4', borderRadius: 24, overflow: 'hidden' }}>
+                  {/* the photo takes whatever height the text, button and bubbles leave
+                      (~530px of them), so short phones don't push the title up under the
+                      header; svh = the visible height with the browser toolbars showing */}
+                  <div className="fdv3-rise-in" style={{ animationDelay: '0.7s', position: 'relative', height: 'clamp(180px, calc(100svh - 530px), 400px)', aspectRatio: '3 / 4', borderRadius: 24, overflow: 'hidden' }}>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src="/profile-lp.jpg" alt="" aria-hidden="true" draggable={false} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                     <span style={{ position: 'absolute', left: 16, bottom: 14, color: 'var(--v3-on-photo)', fontSize: 16, fontWeight: 600, textShadow: '0 1px 6px rgba(0,0,0,.5)' }}>Connor</span>
