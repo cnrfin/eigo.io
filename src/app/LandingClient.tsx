@@ -1,6 +1,6 @@
 'use client'
 
-import { Fragment, useEffect, useRef, useState } from 'react'
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Lenis from 'lenis'
 import { useAuth } from '@/context/AuthContext'
@@ -34,8 +34,13 @@ const clamp = (v: number, a = 0, b = 1) => Math.min(b, Math.max(a, v))
 // rushed, and finally slides the feature card up.
 const PHASES = {
   desktop: { reveal: 0, morphStart: 0, morphEnd: 0.45, slideStart: 0.5 },
-  mobile: { reveal: 0.13, morphStart: 0.22, morphEnd: 0.58, slideStart: 0.64 },
+  // Mobile pinned travel is 326vh (wrap 426vh − the 100vh stage): the reveal
+  // gets exactly 100vh so the hero/bento column moves 1:1 with the finger (it
+  // used to cover 100vh in ~34vh of scroll, so flicks threw it 3× too fast),
+  // then a 23vh rest on the bento, a 94vh morph, 15vh hold, 94vh card slide.
+  mobile: { reveal: 100 / 326, morphStart: 123 / 326, morphEnd: 217 / 326, slideStart: 232 / 326 },
 }
+const WRAP_VH = { desktop: 300, mobile: 426 }
 
 /* Stat count-up — identical easing to v2's LpImpactStats; plays when `play`
    becomes true (i.e. when the flag state is reached). */
@@ -138,7 +143,11 @@ export default function LandingClient() {
     const compute = () => {
       const el = wrapRef.current
       if (!el) return
-      const total = el.offsetHeight - window.innerHeight
+      // measure against the pinned stage (100vh = the large viewport, a fixed
+      // size) rather than innerHeight, which changes as a phone's address bar
+      // slides in and out and made the progress jump mid-scroll
+      const stage = el.firstElementChild as HTMLElement | null
+      const total = el.offsetHeight - (stage?.offsetHeight || window.innerHeight)
       const prog = total > 0 ? clamp(-el.getBoundingClientRect().top / total) : 0
       // On mobile the first slice of scroll is a reveal (hero text → bento), so
       // the morph window is pushed back and widened; on desktop it starts at once.
@@ -184,6 +193,26 @@ export default function LandingClient() {
   const settled = mobile ? revealP >= 1 : true                // bento resting → safe to re-measure
   const heroFade = 1 - clamp(flagP / 0.16)                    // desktop hero fade
   const bentoInteractive = mobile ? (revealP >= 1 && flagP < 0.02) : flagP < 0.02
+  // Phones scroll natively (Lenis doesn't smooth touch), so scroll-linked styles
+  // already update every frame; a CSS transition on top makes them trail the
+  // finger and catch up in jerks. Desktop keeps them (Lenis-smoothed wheel).
+  const scrollTransition = (t: string) => (mobile ? 'none' : t)
+
+  // The page re-renders on every scroll frame (`p`). These sections don't
+  // depend on it, so they're built once; React then skips them each frame
+  // instead of re-rendering the whole page below the fold (costly on phones).
+  const features = useMemo(() => <FeaturesV3 />, [])
+  const lowerSections = useMemo(() => (
+    <>
+      <VocabSection />
+      <ReviewsSection />
+      <FaqSection />
+      <SiteFooterV3 onSignup={() => setShowAuth(true)} />
+    </>
+  ), [])
+  // the scroll pill fades with the card slide; on phones it also fades as the
+  // flag forms, so it never sits on top of the stats under the flag
+  const hintOpacity = Math.min(1 - clamp((slideP - 0.55) / 0.2), mobile ? 1 - titleFade : 1)
 
   // Shared hero pieces (placed in the desktop column or the mobile overlay).
   const heroTitle = (
@@ -238,12 +267,12 @@ export default function LandingClient() {
     // redirect fires, so the page never flashes. See src/app/layout.tsx.
     <main className="lp-shell" style={{ background: 'var(--bg)', color: 'var(--text)' }}>
       {/* pinned morph stage — taller on mobile so the reveal + morph aren't rushed */}
-      <div ref={wrapRef} style={{ height: mobile ? '360vh' : '300vh', position: 'relative', zIndex: 1 }}>
+      <div ref={wrapRef} style={{ height: `${mobile ? WRAP_VH.mobile : WRAP_VH.desktop}vh`, position: 'relative', zIndex: 1 }}>
         <div style={{ position: 'sticky', top: 0, height: '100vh', overflow: 'hidden' }}>
           {/* full-screen morph canvas — particles fly in from the whole screen;
               the flag forms at the bento slot (anchorRef) so it stays aligned.
               Fades out as the features panel slides over it. */}
-          <div style={{ position: 'absolute', inset: 0, opacity: flagFade, transition: 'opacity 0.1s linear', pointerEvents: 'none' }}>
+          <div style={{ position: 'absolute', inset: 0, opacity: flagFade, transition: scrollTransition('opacity 0.1s linear'), pointerEvents: 'none' }}>
             <FlagMorph progressRef={progressRef} anchorRef={bentoSlotRef} boost={mobile ? 1.75 : 1} />
           </div>
 
@@ -280,7 +309,7 @@ export default function LandingClient() {
             // two stacked full-height panels (hero text, then bento) that scroll
             // up together during the reveal. At revealP=1 the column has lifted a
             // full panel so the bento sits centred, held there for the morph.
-            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '200vh', transform: `translateY(-${revealShift}vh)`, transition: 'transform 0.08s linear', pointerEvents: 'none' }}>
+            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '200vh', transform: `translateY(-${revealShift}vh)`, willChange: 'transform', pointerEvents: 'none' }}>
               {/* panel 1 — hero text + teacher preview, fills the first viewport */}
               <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'safe center', gap: 24, padding: '80px 24px 40px', boxSizing: 'border-box' }}>
                 <div>{heroTitle}{heroSubtitle}</div>
@@ -332,13 +361,13 @@ export default function LandingClient() {
 
           {/* flag-state content — title (same spot as the hero title), then the
               subtext + stats row below the flag. Fades in as the flag forms. */}
-          <div style={{ position: 'absolute', inset: 0, opacity: titleFade * flagFade, transition: 'opacity 0.1s linear', pointerEvents: 'none' }}>
+          <div style={{ position: 'absolute', inset: 0, opacity: titleFade * flagFade, transition: scrollTransition('opacity 0.1s linear'), pointerEvents: 'none' }}>
             {/* section title — desktop pins it near the top. Mobile anchors the
                 title's BOTTOM a fixed distance above the flag centre (44%) and the
                 subtext's TOP the same distance below, so the gaps above and below
                 the flag are always equal regardless of the flag's size. */}
             <div style={mobile
-              ? { position: 'absolute', top: '44%', left: 0, right: 0, padding: '0 24px', textAlign: 'center', transform: 'translateY(calc(-100% - 96px - 8vh))' }
+              ? { position: 'absolute', top: '44%', left: 0, right: 0, padding: '0 24px', textAlign: 'center', transform: 'translateY(calc(-100% - 56px - 6vh))' }
               : { position: 'absolute', top: 'clamp(128px,17vh,196px)', left: 0, right: 0, padding: '0 24px', textAlign: 'center' }}>
               {/* jp-display: this is heading-size text but not a heading tag, so it
                   opts into the tightened metrics explicitly. */}
@@ -346,35 +375,29 @@ export default function LandingClient() {
                 {ja ? <>イギリス発の<br />英会話スクール</> : <>A UK-based<br />English School</>}
               </div>
             </div>
-            {/* subtext + stats — below the flag. Stats stack into 3 rows on mobile. */}
+            {/* subtext + stats — below the flag */}
             <div style={mobile
-              ? { position: 'absolute', top: '44%', left: 0, right: 0, transform: 'translateY(calc(96px + 8vh))', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 22 }
+              ? { position: 'absolute', top: '44%', left: 0, right: 0, transform: 'translateY(calc(56px + 6vh))', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 22 }
               : { position: 'absolute', top: '63%', left: 0, right: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'clamp(28px,4.5vh,52px)' }}>
-              <p className="jp" style={{ margin: 0, padding: '0 24px', maxWidth: 960, textAlign: 'center', fontSize: 'clamp(15px,1.3vw,18px)', lineHeight: ja ? 1.85 : 1.7, color: 'var(--text-secondary)' }}>
+              <p className="jp" style={{ margin: 0, padding: '0 24px', maxWidth: 960, textAlign: 'center', fontSize: mobile ? 14 : 'clamp(15px,1.3vw,18px)', lineHeight: ja ? 1.85 : 1.7, color: 'var(--text-secondary)' }}>
                 {ja
                   ? 'eigo.io は、2021年にイギリスではじまったオンライン英会話スクールです。日本人の学習者に英語を教えることを専門にしています。日本語話者がつまずきやすい点を踏まえて、苦手なところを一緒に直していきます。急がず、一人ひとりのペースに合わせて進めることを大切にしています。'
                   : 'eigo.io is an online English school, started in the UK in 2021. We specialise in teaching English to Japanese learners. We know the places Japanese speakers tend to get stuck, and we work through those weak points with you. Lessons go at your pace, and there is no rush.'}
               </p>
-              <div style={{ width: '100%', maxWidth: 1240, marginTop: mobile ? 18 : 0, padding: mobile ? '0 40px' : '0 32px', boxSizing: 'border-box', display: 'flex', flexDirection: mobile ? 'column' : 'row', alignItems: mobile ? 'stretch' : 'center', gap: mobile ? 16 : 0 }}>
+              {/* one row of three on every size; phones just use smaller type (the
+                  old stacked rows ran ~120px past the bottom of the screen) */}
+              <div style={{ width: '100%', maxWidth: 1240, padding: mobile ? '0 16px' : '0 32px', boxSizing: 'border-box', display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
                 {[
                   { v: 1000, l: ja ? '指導した生徒' : 'Students taught' },
                   { v: 10000, l: ja ? '完了したレッスン' : 'Lessons completed' },
                   { v: 500000, l: ja ? '会話した分数' : 'Minutes of conversation' },
                 ].map((s, i) => (
                   <Fragment key={i}>
-                    {i > 0 && !mobile && <div aria-hidden="true" style={{ width: 1, height: 'clamp(44px,6vh,68px)', background: 'var(--border)', flex: 'none' }} />}
-                    {mobile ? (
-                      // full-width row: big number left, label right, on a hairline
-                      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 16, paddingBottom: 14, borderBottom: i < 2 ? '1px solid var(--border)' : 'none' }}>
-                        <div style={{ fontSize: 34, fontWeight: 600, letterSpacing: '-.02em', color: 'var(--text)', lineHeight: 1 }}><CountUp value={s.v} play={flagP > 0.34} /></div>
-                        <div className="jp" style={{ fontSize: 14, color: 'var(--text-secondary)' }}>{s.l}</div>
-                      </div>
-                    ) : (
-                      <div style={{ flex: 1, textAlign: 'center' }}>
-                        <div style={{ fontSize: 'clamp(26px,3vw,44px)', fontWeight: 600, letterSpacing: '-.02em', color: 'var(--text)', lineHeight: 1 }}><CountUp value={s.v} play={flagP > 0.34} /></div>
-                        <div className="jp" style={{ marginTop: 10, fontSize: 'clamp(12px,1vw,15px)', color: 'var(--text-secondary)' }}>{s.l}</div>
-                      </div>
-                    )}
+                    {i > 0 && <div aria-hidden="true" style={{ width: 1, height: mobile ? 36 : 'clamp(44px,6vh,68px)', background: 'var(--border)', flex: 'none' }} />}
+                    <div style={{ flex: 1, minWidth: 0, textAlign: 'center' }}>
+                      <div style={{ fontSize: mobile ? 22 : 'clamp(26px,3vw,44px)', fontWeight: 600, letterSpacing: '-.02em', color: 'var(--text)', lineHeight: 1 }}><CountUp value={s.v} play={flagP > 0.34} /></div>
+                      <div className="jp" style={{ marginTop: mobile ? 8 : 10, fontSize: mobile ? 12 : 'clamp(12px,1vw,15px)', lineHeight: 1.4, color: 'var(--text-secondary)' }}>{s.l}</div>
+                    </div>
                   </Fragment>
                 ))}
               </div>
@@ -384,7 +407,7 @@ export default function LandingClient() {
           {/* scroll hint — a bouncing glass pill at the bottom. Lower layer than
               the feature card (it lives in the z-1 stage), and fades out as the
               slide begins so it never pokes out below the card. */}
-          <div style={{ position: 'absolute', bottom: 'clamp(22px,4vh,40px)', left: 0, right: 0, display: 'flex', justifyContent: 'center', opacity: 1 - clamp((slideP - 0.55) / 0.2), transition: 'opacity 0.15s linear', pointerEvents: 'none' }}>
+          <div style={{ position: 'absolute', bottom: 'clamp(22px,4vh,40px)', left: 0, right: 0, display: 'flex', justifyContent: 'center', opacity: hintOpacity, transition: scrollTransition('opacity 0.15s linear'), pointerEvents: 'none' }}>
             <div className="fdv3-scrollhint" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, height: 46, padding: '0 22px', borderRadius: 999, background: 'var(--v3-glass)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', boxShadow: '0 6px 20px rgba(0,0,0,0.06)', color: 'var(--text-secondary)', fontSize: 15, fontWeight: 500 }}>
               <span className="jp">{ja ? '下にスクロール' : 'Scroll to continue'}</span>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9" /></svg>
@@ -395,14 +418,11 @@ export default function LandingClient() {
 
       {/* features — slides up over the flag (maze-style) on a higher layer */}
       <section id="features" style={{ position: 'relative', zIndex: 2, marginTop: '-100vh', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: mobile ? '78px 0 64px' : 'clamp(80px,12vh,140px) 0 clamp(120px,16vh,200px)', pointerEvents: 'none', background: 'linear-gradient(180deg, transparent 56%, var(--v3-wash) 100%)' }}>
-        <div style={{ pointerEvents: 'auto', width: '100%' }}><FeaturesV3 /></div>
+        <div style={{ pointerEvents: 'auto', width: '100%' }}>{features}</div>
       </section>
 
       {/* from here on the page scrolls normally (no overlaying sections) */}
-      <VocabSection />
-      <ReviewsSection />
-      <FaqSection />
-      <SiteFooterV3 onSignup={() => setShowAuth(true)} />
+      {lowerSections}
 
       {showAuth && <AuthModal onClose={() => setShowAuth(false)} />}
       {showTrial && <TrialBookingModal onClose={() => setShowTrial(false)} onPicked={onTrialPicked} />}
