@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { getStripe } from '@/lib/stripe'
 import { getSupabaseAdmin } from '@/lib/supabase-admin'
-import { getActiveSale, type OfferRow } from '@/lib/custom-plans-server'
-import { salePrice } from '@/lib/custom-plans'
+import { getActiveSale, getTrialCoupon, type OfferRow } from '@/lib/custom-plans-server'
+import { offerExpired, salePrice } from '@/lib/custom-plans'
 
 /**
  * A custom-plan payment link (eigo.io/pay/<token>).
@@ -12,8 +12,28 @@ import { salePrice } from '@/lib/custom-plans'
  *        student sees what it is before signing in. Signed in, `forYou` says
  *        whether the link belongs to this account.
  * POST → (signed in as the link's student) a Stripe Checkout session URL. A
- *        new session is made each time, so the link itself never expires.
+ *        new session is made each time, so the link itself never expires —
+ *        except trial-price links, which stop working 48 hours after they're made.
  */
+
+/** What the student is offered: the trial coupon on a trial link, else the sale if it's on and still running. */
+async function discountFor(offer: OfferRow) {
+  const stripe = getStripe()
+  if (offer.apply_trial) {
+    const trial = await getTrialCoupon(stripe, offer.interval_unit, offer.interval_count)
+    return trial ? { kind: 'trial' as const, couponId: trial.couponId, percentOff: trial.percentOff, name: null, forever: true } : null
+  }
+  if (offer.apply_sale) {
+    const sale = await getActiveSale(stripe)
+    return sale ? { kind: 'sale' as const, couponId: sale.couponId, percentOff: sale.percentOff, name: sale.name, forever: sale.forever } : null
+  }
+  return null
+}
+
+/** 'expired' for an open trial link past its 48 hours. */
+function statusOf(offer: OfferRow) {
+  return offer.status === 'open' && offerExpired(offer.expires_at) ? 'expired' : offer.status
+}
 
 async function userFrom(request: NextRequest) {
   const auth = request.headers.get('Authorization')
@@ -39,8 +59,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   const user = await userFrom(request)
   const forYou = user ? user.id === offer.user_id : null
 
+  const status = statusOf(offer)
   // The sale only counts while its coupon can still be redeemed.
-  const sale = offer.apply_sale && offer.status === 'open' ? await getActiveSale(getStripe()) : null
+  const discount = status === 'open' ? await discountFor(offer) : null
 
   let name: string | null = null
   if (forYou) {
@@ -49,14 +70,16 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   }
 
   return NextResponse.json({
-    status: offer.status,
+    status,
     forYou,
     name,
     priceJpy: offer.price_jpy,
-    payJpy: sale ? salePrice(offer.price_jpy, sale.percentOff) : offer.price_jpy,
-    salePercent: sale?.percentOff ?? null,
-    saleName: sale?.name ?? null,
-    saleForever: sale?.forever ?? false,
+    payJpy: discount ? salePrice(offer.price_jpy, discount.percentOff) : offer.price_jpy,
+    salePercent: discount?.percentOff ?? null,
+    saleName: discount?.name ?? null,
+    saleForever: discount?.forever ?? false,
+    trial: discount?.kind === 'trial',
+    expiresAt: offer.expires_at,
     intervalUnit: offer.interval_unit,
     intervalCount: offer.interval_count,
     minutes: offer.minutes_per_period,
@@ -71,7 +94,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   const offer = await loadOffer(token)
   if (!offer) return NextResponse.json({ error: 'not_found' }, { status: 404 })
   if (offer.user_id !== user.id) return NextResponse.json({ error: 'wrong_account' }, { status: 403 })
-  if (offer.status !== 'open') return NextResponse.json({ error: offer.status }, { status: 409 })
+  const status = statusOf(offer)
+  if (status !== 'open') return NextResponse.json({ error: status }, { status: 409 })
 
   const admin = getSupabaseAdmin()
   const { data: existingSub } = await admin
@@ -85,7 +109,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   }
 
   const stripe = getStripe()
-  const sale = offer.apply_sale ? await getActiveSale(stripe) : null
+  const discount = await discountFor(offer)
+  // a trial link must never fall back to full price without the student seeing it
+  if (offer.apply_trial && !discount) return NextResponse.json({ error: 'trial_unavailable' }, { status: 409 })
 
   try {
     let customerId = existingSub?.stripe_customer_id
@@ -108,7 +134,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       mode: 'subscription',
       currency: 'jpy',
       line_items: [{ price: offer.stripe_price_id, quantity: 1 }],
-      ...(sale ? { discounts: [{ coupon: sale.couponId }] } : {}),
+      ...(discount ? { discounts: [{ coupon: discount.couponId }] } : {}),
+      // a trial checkout can't outlive the link (Stripe needs 30 minutes to 24 hours from now)
+      ...(offer.expires_at ? { expires_at: Math.floor(Math.min(Math.max(new Date(offer.expires_at).getTime(), Date.now() + 31 * 60_000), Date.now() + 23.5 * 3600_000) / 1000) } : {}),
       success_url: `${baseUrl}/dashboard?subscribed=true`,
       cancel_url: `${baseUrl}/pay/${offer.token}`,
       metadata: meta,

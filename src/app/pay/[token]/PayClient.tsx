@@ -11,7 +11,7 @@ import { intervalLabel, perIntervalLabel, periodMonths, type IntervalUnit } from
 import { savePayReturn, takePayReturn } from '@/lib/pay-return'
 
 interface PayInfo {
-  status: 'open' | 'paid' | 'cancelled'
+  status: 'open' | 'paid' | 'cancelled' | 'expired'
   forYou: boolean | null
   name: string | null
   priceJpy: number
@@ -19,6 +19,10 @@ interface PayInfo {
   salePercent: number | null
   saleName: string | null
   saleForever: boolean
+  /** the discount is the 48-hour trial price */
+  trial: boolean
+  /** when a trial link stops working */
+  expiresAt: string | null
   intervalUnit: IntervalUnit
   intervalCount: number
   minutes: number
@@ -27,6 +31,13 @@ interface PayInfo {
 type LoadState = { kind: 'loading' } | { kind: 'missing' } | { kind: 'error' } | { kind: 'ready'; info: PayInfo }
 
 const yen = (n: number) => `¥${n.toLocaleString('ja-JP')}`
+
+/** "11月26日 10:21" / "26 Nov, 10:21" in the viewer's own time zone. */
+function deadline(iso: string, ja: boolean): string {
+  const d = new Date(iso)
+  const time = d.toLocaleTimeString(ja ? 'ja-JP' : 'en-GB', { hour: '2-digit', minute: '2-digit' })
+  return ja ? `${d.getMonth() + 1}月${d.getDate()}日 ${time}` : `${d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}, ${time}`
+}
 
 export default function PayClient({ token }: { token: string }) {
   const { user, session, loading, signOut } = useAuth()
@@ -83,6 +94,8 @@ export default function PayClient({ token }: { token: string }) {
       setPayError(
         data.error === 'already_subscribed'
           ? t('現在ご利用中のプランがまだ有効です。切り替えについては講師にご連絡ください。', 'You still have an active plan. Message your teacher about switching.')
+          : data.error === 'expired' || data.error === 'trial_unavailable'
+          ? t('体験価格のお申し込み期限が過ぎました。講師にご連絡ください。', 'The trial price has ended. Message your teacher.')
           : t('お支払いページを開けませんでした。もう一度お試しください。', 'The payment page didn’t open. Try again.'),
       )
     } catch {
@@ -137,6 +150,13 @@ export default function PayClient({ token }: { token: string }) {
               title={t('お支払い済みです', 'This plan is paid for')}
               body={t('ご登録ありがとうございます。レッスンはマイページから予約できます。', 'Thanks for subscribing. Book lessons from your dashboard.')}
               action={{ label: t('マイページへ', 'Go to dashboard'), href: '/dashboard' }}
+            />
+          )}
+
+          {state.kind === 'ready' && state.info.status === 'expired' && (
+            <Notice
+              title={t('体験価格のお申し込み期限が過ぎました', 'This trial price has ended')}
+              body={t('体験レッスン後48時間の特別価格は終了しました。プランについては講師にご連絡ください。', 'The 48-hour trial price is over. Message your teacher about a plan.')}
             />
           )}
 
@@ -199,6 +219,7 @@ function PlanCard({ info, ja, signedIn, paying, error, onPay, onSignIn, onSwitch
     [t('レッスン時間', 'Lessons'), minutesText],
     [t('お支払い', 'Billing'), renewText],
     ...(sale && info.saleForever ? [[t('割引', 'Discount'), t('ご継続中はずっとこの料金', 'Kept for as long as you stay')] as [string, string]] : []),
+    ...(info.trial && info.expiresAt ? [[t('お申し込み期限', 'Offer ends'), deadline(info.expiresAt, ja)] as [string, string]] : []),
     [t('解約', 'Cancelling'), t('いつでもできます', 'Any time')],
   ]
 
@@ -206,7 +227,9 @@ function PlanCard({ info, ja, signedIn, paying, error, onPay, onSignIn, onSwitch
     <SquircleBox cornerRadius={20} className="glass-card p-7">
       {sale && (
         <span className="inline-block text-[11px] font-semibold px-3 py-1 rounded-full mb-3" style={{ background: 'var(--accent-bg)', color: 'var(--accent)' }}>
-          {info.saleName ? `${info.saleName} ${info.salePercent}%OFF` : `${info.salePercent}%OFF`}
+          {info.trial
+            ? t(`体験レッスン特典 ${info.salePercent}%OFF`, `Trial lesson price, ${info.salePercent}% off`)
+            : info.saleName ? `${info.saleName} ${info.salePercent}%OFF` : `${info.salePercent}%OFF`}
         </span>
       )}
       <h1

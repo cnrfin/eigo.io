@@ -15,6 +15,8 @@ export interface CustomPrice {
   intervalCount: number
   /** Suggested minutes per payment (from eigo_minutes metadata, or "週N分" in the product name); null if unknown */
   minutes: number | null
+  /** The 48-hour trial discount for this length (3-month plans only), or null if there's no trial coupon for it */
+  trialPercent: number | null
 }
 
 export interface CustomOffer {
@@ -26,9 +28,22 @@ export interface CustomOffer {
   intervalCount: number
   minutesPerPeriod: number
   applySale: boolean
+  /** The 48-hour trial price: the trial coupon for this length, and the link expires */
+  applyTrial: boolean
+  trialPercent: number | null
+  /** When a trial link stops working (48 hours after it's made); null for other links */
+  expiresAt: string | null
   status: 'open' | 'paid' | 'cancelled'
   createdAt: string
   paidAt: string | null
+}
+
+/** How long a trial-price link stays payable, matching the standard plans' 48-hour trial window. */
+export const TRIAL_LINK_HOURS = 48
+
+/** An open link past its expiry can't be paid. */
+export function offerExpired(expiresAt: string | null, now = Date.now()): boolean {
+  return !!expiresAt && new Date(expiresAt).getTime() <= now
 }
 
 /** The sale coupon, if one is set up and still redeemable. */
@@ -74,7 +89,7 @@ export function minutesFromWeekly(weeklyMinutes: number, unit: IntervalUnit, cou
   return Math.round(weeklyMinutes * 4 * periodMonths(unit, count))
 }
 
-/** The price after the sale's percentage, to the yen (as Stripe rounds a percent-off coupon on JPY). */
+/** The price after a percent-off coupon (the sale or the trial), to the yen (as Stripe rounds a percent-off coupon on JPY). */
 export function salePrice(priceJpy: number, percentOff: number): number {
   return Math.round((priceJpy * (100 - percentOff)) / 100)
 }

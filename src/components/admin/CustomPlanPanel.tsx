@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Squircle } from '@squircle-js/react'
 import SquircleBox from '@/components/ui/SquircleBox'
 import {
-  HOURLY_FLOOR_GBP, intervalLabel, periodMonths, salePrice, takeHomePerHour,
+  HOURLY_FLOOR_GBP, intervalLabel, offerExpired, periodMonths, salePrice, takeHomePerHour,
   type CustomOffer, type CustomPrice, type SaleInfo,
 } from '@/lib/custom-plans'
 
@@ -16,6 +16,30 @@ interface PanelData {
 }
 
 const yen = (n: number) => `¥${n.toLocaleString('en-GB')}`
+/** What a link charges: the trial or sale price it was made with, else full price. */
+function offerCharge(o: CustomOffer, sale: SaleInfo | null): number {
+  if (o.applyTrial && o.trialPercent) return salePrice(o.priceJpy, o.trialPercent)
+  if (o.applySale && sale) return salePrice(o.priceJpy, sale.percentOff)
+  return o.priceJpy
+}
+
+function offerExtra(o: CustomOffer): string {
+  return o.applyTrial ? `, trial price ${o.trialPercent}% off` : o.applySale ? ', with the sale' : ''
+}
+
+function Toggle({ on, label, onClick }: { on: boolean; label: string; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      role="switch" aria-checked={on} aria-label={label}
+      className="relative shrink-0 w-11 h-6 rounded-full transition-colors"
+      style={{ background: on ? 'var(--accent)' : 'var(--surface-hover)' }}
+    >
+      <span className="absolute top-0.5 w-5 h-5 rounded-full bg-white transition-transform" style={{ left: 2, transform: on ? 'translateX(20px)' : 'translateX(0)' }} />
+    </button>
+  )
+}
+
 const PLAN_NAMES: Record<string, string> = { light: 'Student Lite', standard: 'Student Standard', test: 'Exam Pass', custom: 'custom', ai: 'AI' }
 
 /**
@@ -33,6 +57,8 @@ export default function CustomPlanPanel({ userId, userName, userEmail, accessTok
   const [priceId, setPriceId] = useState('')
   const [minutes, setMinutes] = useState('')
   const [applySale, setApplySale] = useState(true)
+  // the 48-hour trial price (3-month plans only); never stacks with the sale
+  const [applyTrial, setApplyTrial] = useState(false)
   const [busy, setBusy] = useState(false)
   const [msg, setMsg] = useState('')
   const [copied, setCopied] = useState(false)
@@ -68,8 +94,12 @@ export default function CustomPlanPanel({ userId, userName, userEmail, accessTok
 
   const price = data?.prices.find((p) => p.id === priceId) ?? null
   const mins = Math.round(Number(minutes))
-  const saleOn = !!data?.sale && applySale
-  const charge = price ? (saleOn && data?.sale ? salePrice(price.priceJpy, data.sale.percentOff) : price.priceJpy) : 0
+  const trialOn = !!price?.trialPercent && applyTrial
+  const saleOn = !!data?.sale && applySale && !trialOn
+  const charge = !price ? 0
+    : trialOn ? salePrice(price.priceJpy, price.trialPercent!)
+    : saleOn && data?.sale ? salePrice(price.priceJpy, data.sale.percentOff)
+    : price.priceJpy
   const hourly = price && mins > 0 ? takeHomePerHour(charge, mins) : null
   const months = price ? periodMonths(price.intervalUnit, price.intervalCount) : 1
   const openOffer = data?.offers.find((o) => o.status === 'open') ?? null
@@ -92,7 +122,7 @@ export default function CustomPlanPanel({ userId, userName, userEmail, accessTok
       const r = await fetch('/api/admin/custom-plans', {
         method: 'POST',
         headers,
-        body: JSON.stringify({ userId, priceId: price.id, minutes: mins, applySale: saleOn }),
+        body: JSON.stringify({ userId, priceId: price.id, minutes: mins, applySale: saleOn, applyTrial: trialOn }),
       })
       const d = await r.json()
       if (!r.ok) throw new Error(d.error || 'Could not create the link')
@@ -181,7 +211,19 @@ export default function CustomPlanPanel({ userId, userName, userEmail, accessTok
             <p className="text-xs -mt-3" style={{ color: 'var(--text-muted)' }}>About {Math.round(mins / months)} minutes a month</p>
           )}
 
-          {data.sale && (
+          {price?.trialPercent != null && (
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <p className="text-sm font-medium" style={{ color: 'var(--text)' }}>Trial price, {price.trialPercent}% off</p>
+                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                  Kept for as long as they stay subscribed. The link stops working 48 hours after you make it{data.sale ? ', and the sale is off' : ''}.
+                </p>
+              </div>
+              <Toggle on={applyTrial} label="Apply the trial price" onClick={() => setApplyTrial(!applyTrial)} />
+            </div>
+          )}
+
+          {data.sale && !trialOn && (
             <div className="flex items-center justify-between gap-4">
               <div>
                 <p className="text-sm font-medium" style={{ color: 'var(--text)' }}>{data.sale.name || 'Sale'}, {data.sale.percentOff}% off</p>
@@ -190,14 +232,7 @@ export default function CustomPlanPanel({ userId, userName, userEmail, accessTok
                   {data.sale.endsAt ? `If they pay after ${new Date(data.sale.endsAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}, they pay full price.` : ''}
                 </p>
               </div>
-              <button
-                onClick={() => setApplySale(!applySale)}
-                role="switch" aria-checked={applySale} aria-label="Apply the sale"
-                className="relative shrink-0 w-11 h-6 rounded-full transition-colors"
-                style={{ background: applySale ? 'var(--accent)' : 'var(--surface-hover)' }}
-              >
-                <span className="absolute top-0.5 w-5 h-5 rounded-full bg-white transition-transform" style={{ left: 2, transform: applySale ? 'translateX(20px)' : 'translateX(0)' }} />
-              </button>
+              <Toggle on={applySale} label="Apply the sale" onClick={() => setApplySale(!applySale)} />
             </div>
           )}
 
@@ -237,8 +272,8 @@ export default function CustomPlanPanel({ userId, userName, userEmail, accessTok
       {openOffer && (
         <div className="pt-5 space-y-3" style={{ borderTop: '1px solid var(--divider)' }}>
           <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-            Send this to {userName} on LINE or by email: {yen(openOffer.applySale && data?.sale ? salePrice(openOffer.priceJpy, data.sale.percentOff) : openOffer.priceJpy)}{' '}
-            {intervalLabel(openOffer.intervalUnit, openOffer.intervalCount, false)}, {openOffer.minutesPerPeriod} minutes{openOffer.applySale ? ', with the sale' : ''}
+            Send this to {userName} on LINE or by email: {yen(offerCharge(openOffer, data?.sale ?? null))}{' '}
+            {intervalLabel(openOffer.intervalUnit, openOffer.intervalCount, false)}, {openOffer.minutesPerPeriod} minutes{offerExtra(openOffer)}
           </p>
           <div className="flex items-center gap-2 rounded-lg pl-3 pr-1.5 py-1.5" style={{ background: 'var(--surface-hover)' }}>
             <span className="flex-1 min-w-0 truncate font-mono text-xs select-all" style={{ color: 'var(--text)' }}>{link}</span>
@@ -247,7 +282,11 @@ export default function CustomPlanPanel({ userId, userName, userEmail, accessTok
             </button>
           </div>
           <div className="flex items-center justify-between gap-4">
-            <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Works until {userName} pays or you turn it off</span>
+            <span className="text-xs" style={{ color: openOffer.expiresAt && offerExpired(openOffer.expiresAt) ? 'var(--danger)' : 'var(--text-muted)' }}>
+              {!openOffer.expiresAt ? `Works until ${userName} pays or you turn it off`
+                : offerExpired(openOffer.expiresAt) ? 'Expired: the 48 hours are up. Make a new link if needed.'
+                : `Works until ${new Date(openOffer.expiresAt).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}`}
+            </span>
             <button onClick={() => turnOff(openOffer.id)} disabled={busy} className="text-xs font-medium px-3 py-1.5 rounded-md" style={{ color: 'var(--danger)', border: '1px solid var(--edge)' }}>
               Turn off link
             </button>
@@ -260,7 +299,7 @@ export default function CustomPlanPanel({ userId, userName, userEmail, accessTok
           {paidOffers.map((o) => (
             <p key={o.id} className="text-xs" style={{ color: 'var(--text-muted)' }}>
               Paid {o.paidAt ? new Date(o.paidAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : ''}: {yen(o.priceJpy)}{' '}
-              {intervalLabel(o.intervalUnit, o.intervalCount, false)}, {o.minutesPerPeriod} minutes{o.applySale ? ', with the sale' : ''}
+              {intervalLabel(o.intervalUnit, o.intervalCount, false)}, {o.minutesPerPeriod} minutes{offerExtra(o)}
             </p>
           ))}
         </div>

@@ -10,12 +10,17 @@ import { minutesFromWeekly, type CustomOffer, type CustomPrice, type IntervalUni
  *   eigo_custom = true. Only those appear in the admin picker.
  * - The sale: a percent-off coupon whose ID is in STRIPE_SALE_COUPON_ID. Its
  *   "redeem by" date ends the sale; after that it's no longer offered.
+ * - The 48-hour trial price, for 3-month custom plans only: a 38%-off coupon,
+ *   duration "forever", whose ID is in STRIPE_TRIAL_COUPON_3MONTH (¥27,500 →
+ *   ¥17,050, between the standard trial monthly and yearly rates per hour).
+ *   Monthly and yearly custom plans keep their price; other lengths have no trial.
  */
 
 export const CUSTOM_PRODUCT_FLAG = 'eigo_custom'
 
-/** Active recurring JPY prices on products tagged eigo_custom=true. */
+/** Active recurring JPY prices on products tagged eigo_custom=true, each with its trial discount (if any). */
 export async function listCustomPrices(stripe: Stripe): Promise<CustomPrice[]> {
+  const trials = await getTrialCoupons(stripe)
   const prices: CustomPrice[] = []
   for await (const p of stripe.prices.list({ active: true, type: 'recurring', currency: 'jpy', expand: ['data.product'], limit: 100 })) {
     const product = p.product as Stripe.Product | Stripe.DeletedProduct
@@ -23,7 +28,7 @@ export async function listCustomPrices(stripe: Stripe): Promise<CustomPrice[]> {
     const prod = product as Stripe.Product
     if (!prod.active || prod.metadata?.[CUSTOM_PRODUCT_FLAG] !== 'true') continue
     const parsed = toCustomPrice(p, prod)
-    if (parsed) prices.push(parsed)
+    if (parsed) prices.push({ ...parsed, trialPercent: trials.get(trialKey(parsed.intervalUnit, parsed.intervalCount))?.percentOff ?? null })
   }
   return prices.sort((a, b) => a.priceJpy - b.priceJpy)
 }
@@ -51,6 +56,7 @@ function toCustomPrice(p: Stripe.Price, prod: Stripe.Product): CustomPrice | nul
     intervalUnit: unit,
     intervalCount: count,
     minutes: suggestedMinutes(p, prod, unit, count),
+    trialPercent: null, // filled in by listCustomPrices
   }
 }
 
@@ -84,6 +90,44 @@ export async function getActiveSale(stripe: Stripe): Promise<(SaleInfo & { coupo
   }
 }
 
+export interface TrialCoupon { couponId: string; percentOff: number }
+
+/** Billing lengths that have a trial coupon (only 3 months for now). */
+const TRIAL_COUPON_ENV: Record<string, string> = {
+  'month:3': 'STRIPE_TRIAL_COUPON_3MONTH',
+}
+
+function trialKey(unit: IntervalUnit, count: number): string {
+  return `${unit}:${count}`
+}
+
+async function retrieveTrialCoupon(stripe: Stripe, couponId: string): Promise<TrialCoupon | null> {
+  try {
+    const c = await stripe.coupons.retrieve(couponId)
+    // must stay on for the whole subscription, like the standard plans' trial prices
+    if (!c.valid || !c.percent_off || c.duration !== 'forever') return null
+    return { couponId: c.id, percentOff: c.percent_off }
+  } catch {
+    return null
+  }
+}
+
+/** Every trial coupon that's set up and usable, keyed by billing length. */
+async function getTrialCoupons(stripe: Stripe): Promise<Map<string, TrialCoupon>> {
+  const entries = await Promise.all(Object.entries(TRIAL_COUPON_ENV).map(async ([key, envVar]) => {
+    const id = process.env[envVar]
+    return [key, id ? await retrieveTrialCoupon(stripe, id) : null] as const
+  }))
+  return new Map(entries.filter((e): e is readonly [string, TrialCoupon] => !!e[1]))
+}
+
+/** The trial coupon for one billing length, or null if there isn't a usable one. */
+export async function getTrialCoupon(stripe: Stripe, unit: IntervalUnit, count: number): Promise<TrialCoupon | null> {
+  const envVar = TRIAL_COUPON_ENV[trialKey(unit, count)]
+  const id = envVar ? process.env[envVar] : undefined
+  return id ? retrieveTrialCoupon(stripe, id) : null
+}
+
 /** A short, unguessable link token. */
 export function newOfferToken(): string {
   return randomBytes(9).toString('base64url')
@@ -99,6 +143,9 @@ export interface OfferRow {
   interval_count: number
   minutes_per_period: number
   apply_sale: boolean
+  apply_trial: boolean
+  trial_percent: number | null
+  expires_at: string | null
   status: 'open' | 'paid' | 'cancelled'
   stripe_subscription_id: string | null
   created_at: string
@@ -115,6 +162,9 @@ export function toOffer(r: OfferRow): CustomOffer {
     intervalCount: r.interval_count,
     minutesPerPeriod: r.minutes_per_period,
     applySale: r.apply_sale,
+    applyTrial: r.apply_trial,
+    trialPercent: r.trial_percent,
+    expiresAt: r.expires_at,
     status: r.status,
     createdAt: r.created_at,
     paidAt: r.paid_at,

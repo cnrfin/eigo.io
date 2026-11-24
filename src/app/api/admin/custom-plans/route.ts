@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyAdmin, getAdminSupabase } from '@/lib/admin'
 import { getStripe } from '@/lib/stripe'
-import { getActiveSale, getCustomPrice, listCustomPrices, newOfferToken, toOffer, type OfferRow } from '@/lib/custom-plans-server'
+import { getActiveSale, getCustomPrice, getTrialCoupon, listCustomPrices, newOfferToken, toOffer, type OfferRow } from '@/lib/custom-plans-server'
+import { TRIAL_LINK_HOURS } from '@/lib/custom-plans'
 
 /**
  * Admin: custom plans for one student.
@@ -9,8 +10,10 @@ import { getActiveSale, getCustomPrice, listCustomPrices, newOfferToken, toOffer
  * GET    /api/admin/custom-plans?userId=…
  *   The custom prices in Stripe, the running sale (if any), the student's
  *   payment links, and whether they already have an active subscription.
- * POST   /api/admin/custom-plans   { userId, priceId, minutes, applySale }
- *   Create a payment link (an open offer) for the student.
+ * POST   /api/admin/custom-plans   { userId, priceId, minutes, applySale, applyTrial }
+ *   Create a payment link (an open offer) for the student. applyTrial gives
+ *   the 48-hour trial price (the trial coupon for the price's length) and
+ *   makes the link expire after 48 hours; it never stacks with the sale.
  * DELETE /api/admin/custom-plans?offerId=…
  *   Turn off an unpaid link.
  */
@@ -49,13 +52,14 @@ export async function POST(request: NextRequest) {
   const admin = await verifyAdmin(request)
   if (!admin) return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
 
-  let body: { userId?: string; priceId?: string; minutes?: number; applySale?: boolean }
+  let body: { userId?: string; priceId?: string; minutes?: number; applySale?: boolean; applyTrial?: boolean }
   try {
     body = await request.json()
   } catch {
     return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
   }
-  const { userId, priceId, applySale } = body
+  const { userId, priceId, applyTrial } = body
+  const applySale = body.applySale && !applyTrial // the trial and the sale never stack
   const minutes = Math.round(Number(body.minutes))
   if (!userId || !priceId || !Number.isFinite(minutes) || minutes <= 0) {
     return NextResponse.json({ error: 'userId, priceId and a positive number of minutes are required' }, { status: 400 })
@@ -66,6 +70,8 @@ export async function POST(request: NextRequest) {
   if (!price) return NextResponse.json({ error: 'That price isn’t an active custom price in Stripe' }, { status: 400 })
   const sale = applySale ? await getActiveSale(stripe) : null
   if (applySale && !sale) return NextResponse.json({ error: 'There’s no sale running right now' }, { status: 400 })
+  const trial = applyTrial ? await getTrialCoupon(stripe, price.intervalUnit, price.intervalCount) : null
+  if (applyTrial && !trial) return NextResponse.json({ error: 'There’s no trial coupon for this plan length in Stripe' }, { status: 400 })
 
   const supabase = getAdminSupabase()
   // One open link per student: creating a new one turns off the old.
@@ -82,6 +88,9 @@ export async function POST(request: NextRequest) {
       interval_count: price.intervalCount,
       minutes_per_period: minutes,
       apply_sale: !!sale,
+      apply_trial: !!trial,
+      trial_percent: trial?.percentOff ?? null,
+      expires_at: trial ? new Date(Date.now() + TRIAL_LINK_HOURS * 3600_000).toISOString() : null,
     })
     .select('*')
     .single()
